@@ -59,10 +59,14 @@
             throw new Error('Invalid payment data: ' + e.message);
         }
 
-        // Add to customer code before generateQR()
+        // Update the saveToArchive function to store full data
         function saveToArchive(status) {
             const archiveEntry = {
-                data: LZString.compressToBase64(JSON.stringify(paymentData)),
+                data: LZString.compressToBase64(JSON.stringify({
+                    ...paymentData,
+                    peerId: paymentId,
+                    date: new Date().toISOString()
+                })),
                 date: new Date().toISOString(),
                 total: paymentData.total,
                 status: status

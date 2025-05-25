@@ -5,22 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archivierte Belege</title>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --bg: #ebeded; --surface: #ffffff; --text: #2c3e50; --accent: #6c757d; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
-        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
         .search-box { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        #search-input { width: 100%; padding: 12px; border: 2px solid var(--accent); border-radius: 8px; font-size: 16px; }
-        .receipt-list { background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .receipt-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: #f7feff; border-radius: 12px; transition: transform 0.2s; cursor: pointer; }
+        #search-input { width: 89%; padding: 40px; border: 2px solid var(--accent); border-radius: 8px; font-size: 16px;}
+        .receipt-list { background: var(--surface); border-radius: 16px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .receipt-item { display: flex; justify-content: space-between; align-items: center; padding: 30px; margin: 10px 0; background: #e1f2fe; border-radius: 12px; transition: transform 0.2s; cursor: pointer; }
         .receipt-item:hover { transform: translateX(5px); }
         .receipt-id { font-family: monospace; color: var(--accent); }
         .receipt-date { font-size: 0.9em; color: #666; }
         .receipt-total { font-weight: bold; }
-        .status-badge { padding: 4px 12px; border-radius: 20px; color: white; font-size: 0.8em; }
+        .status-badge { padding: 7px 20px; border-radius: 20px; color: white; font-size: 0.8em; }
         .confirmed { background: #27ae60; }
         .declined { background: #c0392b; }
         .no-results { text-align: center; padding: 20px; color: #666; }
+        .income-total { margin-top: 20px; padding: 20px; background: var(--surface); border-radius: 16px; text-align: right; font-size: 1.2em; }
+        .income-total span { color: var(--accent); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -32,29 +35,116 @@
         <div class="receipt-list" id="receipt-list">
             <!-- Receipt items will be inserted here -->
         </div>
+        <div class="income-total" id="income-total">
+            Gesamteinnahmen: <span id="total-amount">€0.00</span>
+        </div>
     </div>
 
     <script>
-        // Load receipts from localStorage
+        const { jsPDF } = window.jspdf;
+
+        function generateArchiveReceipt(receiptData, status) {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
+            const paymentDate = new Date(receiptData.date).toLocaleDateString('de-DE');
+            const paymentTime = new Date(receiptData.date).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+            // Header Section
+            doc.setFillColor(44, 62, 80);
+            doc.rect(0, 0, pageWidth, 60, 'F');
+            doc.setFontSize(22);
+            doc.setTextColor(255, 255, 255);
+            doc.text("ShopName GmbH", 15, 25);
+            doc.setFontSize(10);
+            doc.text("Musterstraße 1 • 12345 Musterstadt", 15, 35);
+            doc.text("USt-ID: DE123456789 • Tel: 01234 567890", 15, 45);
+
+            // Payment Details
+            doc.setFontSize(10);
+            doc.setTextColor(200, 200, 200);
+            doc.text(`Belegnummer: ${receiptData.id}`, pageWidth - 15, 25, null, 'right');
+            doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 15, 32, null, 'right');
+
+            let yPos = 70;
+
+            // Items Header
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, yPos, pageWidth - 30, 15, 'F');
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(10);
+            doc.text("Artikel", 20, yPos + 11);
+            doc.text("Menge", 120, yPos + 11);
+            doc.text("Preis", pageWidth - 40, yPos + 11, null, 'right');
+            yPos += 20;
+
+            // Items List
+            receiptData.items.forEach((item) => {
+                doc.setFillColor(247, 254, 255);
+                doc.rect(15, yPos, pageWidth - 30, 25, 'F');
+                doc.setDrawColor(200, 200, 200);
+                doc.rect(15, yPos, pageWidth - 30, 25, 'S');
+                
+                doc.setFontSize(12);
+                doc.setTextColor(44, 62, 80);
+                doc.text(item.name.substring(0, 30), 20, yPos + 8);
+                
+                const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
+                doc.text(quantityPrice, 120, yPos + 8);
+                
+                const total = (item.quantity * item.price).toFixed(2);
+                const totalText = `€${total}`;
+                doc.text(totalText, pageWidth - 20, yPos + 8, null, 'right');
+                
+                yPos += 28;
+            });
+
+            // Total Section
+            doc.setFillColor(212, 239, 223);
+            doc.rect(15, yPos + 5, pageWidth - 30, 30, 'F');
+            doc.setDrawColor(200, 200, 200);
+            doc.rect(15, yPos + 5, pageWidth - 30, 30, 'S');
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.text(`Gesamtsumme:`, 20, yPos + 20);
+            doc.text(`€ ${receiptData.total.toFixed(2)}`, pageWidth - 20, yPos + 20, null, 'right');
+            yPos += 35;
+
+            // Status Badge
+            doc.setFillColor(status === 'Bestätigt' ? '#27ae60' : '#c0392b');
+            doc.rect(15, yPos, pageWidth - 30, 25, 'F');
+            doc.setFontSize(14);
+            doc.setTextColor(255, 255, 255);
+            doc.text(`Status: ${status}`, 20, yPos + 8);
+
+            doc.save(`beleg_${receiptData.id}.pdf`);
+        }
+
         function loadReceipts() {
             const receipts = [];
             for(let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if(key.startsWith('receipt_')) {
-                    const receipt = JSON.parse(localStorage.getItem(key));
+                    const stored = JSON.parse(localStorage.getItem(key));
+                    const originalData = JSON.parse(LZString.decompressFromBase64(stored.data));
                     receipts.push({
                         id: key.replace('receipt_', ''),
-                        data: receipt.data,
-                        date: receipt.date,
-                        total: receipt.total,
-                        status: receipt.status
+                        data: originalData,
+                        date: stored.date,
+                        total: stored.total,
+                        status: stored.status
                     });
                 }
             }
             return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
-        // Generate receipt items
+        function updateIncomeTotal(receipts) {
+            const total = receipts
+                .filter(r => r.status === 'Bestätigt')
+                .reduce((sum, r) => sum + r.total, 0);
+            document.getElementById('total-amount').textContent = `€${total.toFixed(2)}`;
+        }
+
         function generateReceiptList(receipts) {
             const list = document.getElementById('receipt-list');
             list.innerHTML = '';
@@ -80,16 +170,15 @@
                 `;
                 
                 item.addEventListener('click', () => {
-                    const url = new URL('https://kleiner-nobody.github.io/gittertier/');
-                    url.searchParams.set('id', receipt.data);
-                    window.open(url, '_blank');
+                    generateArchiveReceipt(receipt.data, receipt.status);
                 });
 
                 list.appendChild(item);
             });
+
+            updateIncomeTotal(receipts);
         }
 
-        // Search functionality
         document.getElementById('search-input').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const allReceipts = loadReceipts();
