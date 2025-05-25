@@ -3,130 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Belegarchiv</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Archivierte Belege</title>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <style>
-        :root { --bg: #f8f9fa; --surface: #ffffff; --text: #2c3e50; --accent: #6c757d; }
+        :root { --bg: #ebeded; --surface: #ffffff; --text: #2c3e50; --accent: #6c757d; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
         .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-        .header { background: #2c3e50; color: white; padding: 40px 0; margin-bottom: 40px; }
-        .result-card { background: var(--surface); border-radius: 12px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .item-box { background: #f7feff; border-radius: 8px; padding: 15px; margin: 15px 0; }
-        .total-box { background: #d4efdf; padding: 20px; border-radius: 8px; margin-top: 30px; }
-        button { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; }
-        .error { color: #c0392b; padding: 20px; background: #f2d7d5; border-radius: 8px; }
-        .url-box { background: #ebeded; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all; }
+        .search-box { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        #search-input { width: 100%; padding: 12px; border: 2px solid var(--accent); border-radius: 8px; font-size: 16px; }
+        .receipt-list { background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .receipt-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: #f7feff; border-radius: 12px; transition: transform 0.2s; cursor: pointer; }
+        .receipt-item:hover { transform: translateX(5px); }
+        .receipt-id { font-family: monospace; color: var(--accent); }
+        .receipt-date { font-size: 0.9em; color: #666; }
+        .receipt-total { font-weight: bold; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; color: white; font-size: 0.8em; }
+        .confirmed { background: #27ae60; }
+        .declined { background: #c0392b; }
+        .no-results { text-align: center; padding: 20px; color: #666; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <h1>Belegarchiv</h1>
+    <div class="container">
+        <h1>Archivierte Zahlungsbelege</h1>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Suche nach Belegnummer oder Datum...">
+        </div>
+        <div class="receipt-list" id="receipt-list">
+            <!-- Receipt items will be inserted here -->
         </div>
     </div>
 
-    <div class="container" id="main-container">
-        <!-- Content will be injected here -->
-    </div>
-
     <script>
-        const { jsPDF } = window.jspdf;
-
-        function decompressData(compressed) {
-            try {
-                // Add back padding if needed
-                let data = compressed.replace(/-/g, '+').replace(/_/g, '/');
-                while(data.length % 4) data += '=';
-                
-                const jsonString = LZString.decompressFromBase64(data);
-                return JSON.parse(jsonString);
-            } catch(e) {
-                showError('Ungültiger Belegcode');
-                return null;
+        // Load receipts from localStorage
+        function loadReceipts() {
+            const receipts = [];
+            for(let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('receipt_')) {
+                    const receipt = JSON.parse(localStorage.getItem(key));
+                    receipts.push({
+                        id: key.replace('receipt_', ''),
+                        data: receipt.data,
+                        date: receipt.date,
+                        total: receipt.total,
+                        status: receipt.status
+                    });
+                }
             }
+            return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
-        function generatePDF(receiptData) {
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.width;
-            let yPos = 0;
+        // Generate receipt items
+        function generateReceiptList(receipts) {
+            const list = document.getElementById('receipt-list');
+            list.innerHTML = '';
 
-            // Header
-            doc.setFillColor(44, 62, 80);
-            doc.rect(0, yPos, pageWidth, 40, 'F');
-            doc.setFontSize(16);
-            doc.setTextColor(255, 255, 255);
-            doc.text(`Beleg: ${receiptData.id}`, 15, 25);
-            yPos += 50;
+            if(receipts.length === 0) {
+                list.innerHTML = '<div class="no-results">Keine gespeicherten Belege gefunden</div>';
+                return;
+            }
 
-            // Items
-            receiptData.items.forEach(item => {
-                doc.setFillColor(247, 254, 255);
-                doc.rect(15, yPos, pageWidth - 30, 20, 'F');
-                doc.setTextColor(44, 62, 80);
-                doc.text(`${item.name} (${item.quantity}x)`, 20, yPos + 14);
-                doc.text(`€${(item.price * item.quantity).toFixed(2)}`, pageWidth - 20, yPos + 14, null, 'right');
-                yPos += 25;
+            receipts.forEach(receipt => {
+                const date = new Date(receipt.date);
+                const item = document.createElement('div');
+                item.className = 'receipt-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="receipt-id">${receipt.id}</div>
+                        <div class="receipt-date">${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE')}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="receipt-total">€ ${receipt.total.toFixed(2)}</div>
+                        <div class="status-badge ${receipt.status === 'Bestätigt' ? 'confirmed' : 'declined'}">${receipt.status}</div>
+                    </div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    const url = new URL('https://kleiner-nobody.github.io/gittertier/');
+                    url.searchParams.set('id', receipt.data);
+                    window.open(url, '_blank');
+                });
+
+                list.appendChild(item);
             });
-
-            // Total
-            doc.setFillColor(212, 239, 223);
-            doc.rect(15, yPos + 10, pageWidth - 30, 20, 'F');
-            doc.setTextColor(44, 62, 80);
-            doc.text(`Gesamt: €${receiptData.total.toFixed(2)}`, 20, yPos + 25);
-
-            doc.save(`beleg_${receiptData.id}.pdf`);
         }
 
-        function showError(message) {
-            const container = document.getElementById('main-container');
-            container.innerHTML = `<div class="error">${message}</div>`;
-        }
-
-        function renderReceipt(receiptData) {
-            const container = document.getElementById('main-container');
-            const currentUrl = window.location.href;
-            
-            container.innerHTML = `
-                <div class="result-card">
-                    <h2>Beleg ${receiptData.id}</h2>
-                    <div class="url-box">
-                        Permanenter Link:<br>
-                        <a href="${currentUrl}">${currentUrl}</a>
-                    </div>
-                    ${receiptData.items.map(item => `
-                        <div class="item-box">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>${item.name}</span>
-                                <span>${item.quantity}x €${item.price.toFixed(2)}</span>
-                            </div>
-                            <div style="text-align: right; margin-top: 5px;">
-                                Summe: €${(item.price * item.quantity).toFixed(2)}
-                            </div>
-                        </div>
-                    `).join('')}
-                    <div class="total-box">
-                        <h3>Gesamtsumme: €${receiptData.total.toFixed(2)}</h3>
-                        <p>Belegdatum: ${new Date(receiptData.date).toLocaleDateString('de-DE')}</p>
-                    </div>
-                    <button onclick="generatePDF(${JSON.stringify(receiptData)})" style="margin-top: 20px;">
-                        PDF herunterladen
-                    </button>
-                </div>
-            `;
-        }
+        // Search functionality
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const allReceipts = loadReceipts();
+            const filtered = allReceipts.filter(r => 
+                r.id.includes(searchTerm) || 
+                r.date.toLowerCase().includes(searchTerm)
+            );
+            generateReceiptList(filtered);
+        });
 
         // Initial load
-        const urlParams = new URLSearchParams(window.location.search);
-        const compressedData = urlParams.get('data');
-        
-        if(compressedData) {
-            const receiptData = decompressData(compressedData);
-            if(receiptData) renderReceipt(receiptData);
-        } else {
-            showError('Kein Belegcode in der URL gefunden');
-        }
+        generateReceiptList(loadReceipts());
     </script>
 </body>
 </html>
