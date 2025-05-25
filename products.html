@@ -5,141 +5,215 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produktverwaltung</title>
     <style>
-        /* Previous styles remain unchanged */
-        .header {
+        :root {
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --primary: #2b3035;
+            --accent: #218838;
+            --error: #dc3545;
+            --text: #212529;
+            --border: #dee2e6;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-list {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-top: 2rem;
+        }
+
+        .product-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            gap: 1rem;
-            flex-wrap: wrap;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #f7feff;
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
-        .toolbar {
+        .product-actions {
             display: flex;
             gap: 1rem;
+            align-items: center;
         }
 
-        .import-btn {
-            background: #17a2b8;
-            color: white;
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
 
-        .export-btn {
-            background: #ffc107;
-            color: black;
-        }
-
-        /* Add to existing button styles */
         button {
             padding: 0.5rem 1rem;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             transition: filter 0.2s;
+        }
+
+        .add-btn {
+            background: var(--accent);
+            color: white;
+        }
+
+        .delete-btn {
+            background: var(--error);
+            color: white;
+        }
+
+        .file-input {
+            margin: 1rem 0;
+        }
+
+        .import-export {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Produktverwaltung</h1>
-            <div class="toolbar">
-                <button class="add-btn" onclick="openAddModal()">+ Neues Produkt</button>
-                <button class="import-btn" onclick="document.getElementById('file-input').click()">📥 Import</button>
-                <button class="export-btn" onclick="exportProducts()">📤 Export</button>
-            </div>
+        <h1>Produktverwaltung</h1>
+        
+        <div class="import-export">
+            <button onclick="document.getElementById('file-input').click()" class="add-btn">Importieren</button>
+            <button onclick="exportProducts()" class="add-btn">Exportieren</button>
+            <input type="file" id="file-input" accept=".txt" style="display: none;">
         </div>
 
-        <!-- Add hidden file input -->
-        <input type="file" id="file-input" accept=".txt" style="display: none;" onchange="handleFileSelect(event)">
+        <button onclick="showAddModal()" class="add-btn">+ Neues Produkt</button>
 
-        <!-- Rest of the product list and modal remains unchanged -->
+        <div class="product-list" id="product-list"></div>
+
+        <!-- Add Product Modal -->
+        <div id="add-modal" class="modal">
+            <h2>Neues Produkt</h2>
+            <input type="text" id="product-name" placeholder="Produktname" class="modal-input">
+            <input type="number" step="0.01" id="product-price" placeholder="Preis" class="modal-input">
+            <input type="text" id="product-barcode" placeholder="Barcode" class="modal-input">
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button onclick="saveProduct()" class="add-btn">Speichern</button>
+                <button onclick="closeModal()" style="background: var(--primary); color: white;">Abbrechen</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Add these new functions
-        function exportProducts() {
-            const products = JSON.parse(localStorage.getItem('products')) || {};
-            const data = Object.values(products).map(p => 
-                `${p.barcode}\t${p.name}\t${p.price}`
-            ).join('\n');
+        let products = JSON.parse(localStorage.getItem('products')) || {};
 
+        function showAddModal() {
+            document.getElementById('add-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('add-modal').style.display = 'none';
+            clearInputs();
+        }
+
+        function clearInputs() {
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-price').value = '';
+            document.getElementById('product-barcode').value = '';
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('product-name').value.trim();
+            const price = parseFloat(document.getElementById('product-price').value);
+            const barcode = document.getElementById('product-barcode').value.trim();
+
+            if (!name || isNaN(price) {
+                alert('Bitte alle Felder ausfüllen');
+                return;
+            }
+
+            products[barcode] = { name, price, barcode };
+            localStorage.setItem('products', JSON.stringify(products));
+            renderProducts();
+            closeModal();
+        }
+
+        function deleteProduct(barcode) {
+            if (confirm('Produkt wirklich löschen?')) {
+                delete products[barcode];
+                localStorage.setItem('products', JSON.stringify(products));
+                renderProducts();
+            }
+        }
+
+        function renderProducts() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = Object.values(products).map(product => `
+                <div class="product-item">
+                    <div>
+                        <strong>${product.name}</strong><br>
+                        <span>Barcode: ${product.barcode}</span><br>
+                        <span>Preis: €${product.price.toFixed(2)}</span>
+                    </div>
+                    <div class="product-actions">
+                        <button onclick="deleteProduct('${product.barcode}')" class="delete-btn">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function exportProducts() {
+            const data = JSON.stringify(products);
             const blob = new Blob([data], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `produkte_${new Date().toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
         }
 
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const products = {};
-                    const lines = e.target.result.split('\n');
-                    
-                    lines.forEach((line, index) => {
-                        if (line.trim()) {
-                            const [barcode, name, price] = line.split('\t');
-                            if (!barcode || !name || isNaN(price)) {
-                                throw new Error(`Ungültiges Format in Zeile ${index + 1}`);
-                            }
-                            products[barcode] = {
-                                barcode: barcode.trim(),
-                                name: name.trim(),
-                                price: parseFloat(price)
-                            };
-                        }
-                    });
-
-                    // Merge with existing products
-                    const existing = JSON.parse(localStorage.getItem('products')) || {};
-                    const merged = { ...existing, ...products };
-                    
-                    localStorage.setItem('products', JSON.stringify(merged));
-                    loadProducts();
-                    alert(`${Object.keys(products).length} Produkte erfolgreich importiert!`);
+                    const imported = JSON.parse(e.target.result);
+                    products = { ...products, ...imported };
+                    localStorage.setItem('products', JSON.stringify(products));
+                    renderProducts();
+                    alert('Produkte erfolgreich importiert!');
                 } catch (error) {
-                    alert(`Fehler beim Import: ${error.message}`);
+                    alert('Ungültige Datei');
                 }
             };
             reader.readAsText(file);
-        }
+        });
 
-        // Modified loadProducts function with count
-        function loadProducts() {
-            const products = JSON.parse(localStorage.getItem('products')) || {};
-            const productList = document.getElementById('product-list');
-            const count = Object.keys(products).length;
-            
-            productList.innerHTML = count > 0 
-                ? Object.values(products).map(product => `
-                    <div class="product-item">
-                        <div class="product-info">
-                            <div><strong>${product.name}</strong></div>
-                            <div>Barcode: ${product.barcode}</div>
-                            <div>Preis: €${product.price.toFixed(2)}</div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="delete-btn" onclick="deleteProduct('${product.barcode}')">🗑️</button>
-                        </div>
-                    </div>
-                `).join('')
-                : `<p>Keine Produkte gefunden</p>`;
-        }
-
-        // Rest of the previous code remains unchanged
+        // Initial render
+        renderProducts();
     </script>
 </body>
 </html>
