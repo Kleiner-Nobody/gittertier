@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belegarchiv</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <style>
+        :root { --bg: #f8f9fa; --surface: #ffffff; --text: #2c3e50; --accent: #6c757d; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .header { background: #2c3e50; color: white; padding: 40px 0; margin-bottom: 40px; }
+        .result-card { background: var(--surface); border-radius: 12px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .item-box { background: #f7feff; border-radius: 8px; padding: 15px; margin: 15px 0; }
+        .total-box { background: #d4efdf; padding: 20px; border-radius: 8px; margin-top: 30px; }
+        button { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; }
+        .error { color: #c0392b; padding: 20px; background: #f2d7d5; border-radius: 8px; }
+        .url-box { background: #ebeded; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Belegarchiv</h1>
+        </div>
+    </div>
+
+    <div class="container" id="main-container">
+        <!-- Content will be injected here -->
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+
+        function decompressData(compressed) {
+            try {
+                // Add back padding if needed
+                let data = compressed.replace(/-/g, '+').replace(/_/g, '/');
+                while(data.length % 4) data += '=';
+                
+                const jsonString = LZString.decompressFromBase64(data);
+                return JSON.parse(jsonString);
+            } catch(e) {
+                showError('Ungültiger Belegcode');
+                return null;
+            }
+        }
+
+        function generatePDF(receiptData) {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
+            let yPos = 0;
+
+            // Header
+            doc.setFillColor(44, 62, 80);
+            doc.rect(0, yPos, pageWidth, 40, 'F');
+            doc.setFontSize(16);
+            doc.setTextColor(255, 255, 255);
+            doc.text(`Beleg: ${receiptData.id}`, 15, 25);
+            yPos += 50;
+
+            // Items
+            receiptData.items.forEach(item => {
+                doc.setFillColor(247, 254, 255);
+                doc.rect(15, yPos, pageWidth - 30, 20, 'F');
+                doc.setTextColor(44, 62, 80);
+                doc.text(`${item.name} (${item.quantity}x)`, 20, yPos + 14);
+                doc.text(`€${(item.price * item.quantity).toFixed(2)}`, pageWidth - 20, yPos + 14, null, 'right');
+                yPos += 25;
+            });
+
+            // Total
+            doc.setFillColor(212, 239, 223);
+            doc.rect(15, yPos + 10, pageWidth - 30, 20, 'F');
+            doc.setTextColor(44, 62, 80);
+            doc.text(`Gesamt: €${receiptData.total.toFixed(2)}`, 20, yPos + 25);
+
+            doc.save(`beleg_${receiptData.id}.pdf`);
+        }
+
+        function showError(message) {
+            const container = document.getElementById('main-container');
+            container.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function renderReceipt(receiptData) {
+            const container = document.getElementById('main-container');
+            const currentUrl = window.location.href;
+            
+            container.innerHTML = `
+                <div class="result-card">
+                    <h2>Beleg ${receiptData.id}</h2>
+                    <div class="url-box">
+                        Permanenter Link:<br>
+                        <a href="${currentUrl}">${currentUrl}</a>
+                    </div>
+                    ${receiptData.items.map(item => `
+                        <div class="item-box">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>${item.name}</span>
+                                <span>${item.quantity}x €${item.price.toFixed(2)}</span>
+                            </div>
+                            <div style="text-align: right; margin-top: 5px;">
+                                Summe: €${(item.price * item.quantity).toFixed(2)}
+                            </div>
+                        </div>
+                    `).join('')}
+                    <div class="total-box">
+                        <h3>Gesamtsumme: €${receiptData.total.toFixed(2)}</h3>
+                        <p>Belegdatum: ${new Date(receiptData.date).toLocaleDateString('de-DE')}</p>
+                    </div>
+                    <button onclick="generatePDF(${JSON.stringify(receiptData)})" style="margin-top: 20px;">
+                        PDF herunterladen
+                    </button>
+                </div>
+            `;
+        }
+
+        // Initial load
+        const urlParams = new URLSearchParams(window.location.search);
+        const compressedData = urlParams.get('data');
+        
+        if(compressedData) {
+            const receiptData = decompressData(compressedData);
+            if(receiptData) renderReceipt(receiptData);
+        } else {
+            showError('Kein Belegcode in der URL gefunden');
+        }
+    </script>
+</body>
+</html>

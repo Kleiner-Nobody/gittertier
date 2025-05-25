@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Confirm</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <style>
+        :root { --bg: #f8f9fa; --surface: #ffffff; --text: #2c3e50; --success: #27ae60; --danger: #c0392b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        #scanner-container { width: 100%; height: 400px; background: #000; border-radius: 16px; overflow: hidden; position: relative; margin: 40px 0; }
+        #scanner-video { width: 100%; height: 100%; object-fit: cover; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { 
+            background: var(--surface); 
+            padding: 30px; 
+            border-radius: 16px; 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 90%; 
+            max-width: 600px; 
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1); 
+        }
+        .item-box { background: var(--bg); border-radius: 12px; padding: 20px; margin: 10px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .button-group { display: flex; gap: 20px; margin-top: 20px; flex-shrink: 0; }
+        button { flex: 1; padding: 20px; border: none; border-radius: 12px; color: white; font-size: 1.1em; cursor: pointer; transition: filter 0.2s; }
+        #confirm-btn { background: var(--success); }
+        #decline-btn { background: var(--danger); }
+        .payment-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
+        .total-amount { font-size: 1.4em; text-align: center; margin: 20px 0; padding: 20px; background: var(--bg); border-radius: 12px; flex-shrink: 0; }
+        #items-list { overflow-y: auto; max-height: 50vh; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zahlung bestätigen</h1>
+        <div id="scanner-container">
+            <video id="scanner-video" playsinline></video>
+        </div>
+        <div class="modal-overlay" id="confirmation-modal">
+            <div class="modal-content">
+                <div class="payment-header">
+                    <h2>Zahlungsbestätigung</h2>
+                </div>
+                <div id="items-list"></div>
+                <div class="total-amount">
+                    Gesamtbetrag: <strong id="payment-amount">€0.00</strong>
+                </div>
+                <div class="button-group">
+                    <button id="confirm-btn">Bestätigen</button>
+                    <button id="decline-btn">Ablehnen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+        let currentPayment = null;
+        let mediaStream = null;
+        const video = document.getElementById('scanner-video');
+        const merchantPeer = new Peer(null, {
+            debug: 3,
+            config: {'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }]}
+        });
+
+        function stopCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+        }
+
+        async function initScanner() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" }
+                });
+                video.srcObject = mediaStream;
+                await video.play();
+                requestAnimationFrame(tick);
+            } catch(error) {
+                console.error('Kamera-Fehler:', error);
+            }
+        }
+
+        function tick() {
+            if(video.readyState === video.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if(code) {
+                    stopCamera();
+                    handleQRScan(code.data);
+                    cancelAnimationFrame(tick);
+                } else {
+                    requestAnimationFrame(tick);
+                }
+            }
+        }
+
+        function handleQRScan(data) {
+            try {
+                let paymentData;
+                try {
+                    paymentData = JSON.parse(data);
+                } catch {
+                    const decompressed = LZString.decompressFromBase64(data);
+                    paymentData = JSON.parse(decompressed);
+                }
+
+                if(!paymentData?.items || paymentData.items.length === 0) {
+                    throw new Error('Leerer Warenkorb');
+                }
+
+                currentPayment = paymentData;
+                const itemsList = document.getElementById('items-list');
+                itemsList.innerHTML = '';
+                
+                paymentData.items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'item-box';
+                    div.innerHTML = `
+                        <h3>${item.name}</h3>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <span>${item.quantity}x € ${item.price.toFixed(2)}</span>
+                            <strong>€ ${(item.quantity * item.price).toFixed(2)}</strong>
+                        </div>
+                    `;
+                    itemsList.appendChild(div);
+                });
+
+                document.getElementById('payment-amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
+                document.getElementById('confirmation-modal').style.display = 'block';
+
+                const conn = merchantPeer.connect(paymentData.peerId);
+                
+                conn.on('open', () => {
+                    currentPayment.connection = conn;
+                });
+
+                conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                });
+
+            } catch(e) {
+                console.error('Scan-Fehler:', e);
+                alert('Fehler: ' + e.message);
+                initScanner();
+            }
+        }
+
+// Original confirm button handler
+document.getElementById('confirm-btn').addEventListener('click', () => {
+    if(currentPayment.connection && currentPayment.connection.open) {
+        currentPayment.connection.send({ type: 'confirm' });
+        generateReceipt(currentPayment, 'Bestätigt');
+        document.getElementById('confirmation-modal').style.display = 'none';
+        initScanner();
+    } else {
+        alert('Verbindung zum Kunden fehlgeschlagen!');
+    }
+});
+
+// Original decline button handler
+document.getElementById('decline-btn').addEventListener('click', () => {
+    if(currentPayment.connection && currentPayment.connection.open) {
+        currentPayment.connection.send({ type: 'decline' });
+        generateReceipt(currentPayment, 'Abgelehnt'); // Added receipt generation
+        document.getElementById('confirmation-modal').style.display = 'none';
+        initScanner();
+    } else {
+        alert('Verbindung zum Kunden fehlgeschlagen!');
+    }
+});
+
+function generateReceipt(paymentData, status) {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const paymentDate = new Date().toLocaleDateString('de-DE');
+    const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    let yPos = 0;
+    let currentPage = 1;
+
+    function addHeader() {
+        doc.setFillColor(44, 62, 80);
+        doc.rect(0, yPos, pageWidth, 60, 'F');
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.text("ShopName GmbH", 15, yPos + 25);
+        doc.setFontSize(10);
+        doc.text("Musterstraße 1 • 12345 Musterstadt", 15, yPos + 35);
+        doc.text("USt-ID: DE123456789 • Tel: 01234 567890", 15, yPos + 45);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(200, 200, 200);
+        doc.text(`Belegnummer: ${paymentData.peerId}`, pageWidth - 15, yPos + 25, null, 'right');
+        doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 15, yPos + 32, null, 'right');
+        yPos += 70;
+    }
+
+    function addItemHeader() {
+        doc.setFillColor(240, 240, 240);
+        doc.rect(15, yPos, pageWidth - 30, 15, 'F');
+        doc.setTextColor(100, 100, 100);
+        doc.setFontSize(10);
+        doc.text("Artikel", 20, yPos + 11);
+        doc.text("Menge", 120, yPos + 11);
+        doc.text("Preis", pageWidth - 40, yPos + 11, null, 'right');
+        yPos += 20;
+    }
+
+    // First page setup
+    addHeader();
+    addItemHeader();
+
+    // Add items with pagination
+    paymentData.items.forEach((item, index) => {
+        // Check page space (max 250mm height)
+        if(yPos > pageHeight - 70) {
+            doc.addPage();
+            currentPage++;
+            yPos = 0;
+            addHeader();
+            addItemHeader();
+        }
+
+        doc.setFillColor(247, 254, 255);
+        doc.rect(15, yPos, pageWidth - 30, 25, 'F');
+        doc.setDrawColor(200, 200, 200);
+        doc.rect(15, yPos, pageWidth - 30, 25, 'S');
+        
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text(item.name.substring(0, 30), 20, yPos + 8);
+        
+        const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
+        doc.text(quantityPrice, 120, yPos + 8);
+        
+        const total = (item.quantity * item.price).toFixed(2);
+        const totalText = `€${total}`;
+        doc.text(totalText, pageWidth - 20, yPos + 8, null, 'right');
+        
+        yPos += 28;
+    });
+
+    // Ensure we have space for total section
+    if(yPos > pageHeight - 100) {
+        doc.addPage();
+        currentPage++;
+        yPos = 0;
+        addHeader();
+    }
+
+    // Total Section
+    doc.setFillColor(212, 239, 223);
+    doc.rect(15, yPos + 5, pageWidth - 30, 30, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(15, yPos + 5, pageWidth - 30, 30, 'S');
+    doc.setFontSize(14);
+    doc.setTextColor(44, 62, 80);
+    doc.text(`Gesamtsumme:`, 20, yPos + 20);
+    doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 20, yPos + 20, null, 'right');
+    yPos += 35;
+
+    // Status Badge
+    doc.setFillColor(status === 'Bestätigt' ? '#27ae60' : '#c0392b');
+    doc.rect(15, yPos, pageWidth - 30, 25, 'F');
+    doc.setFontSize(14);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Status: ${status}`, 20, yPos + 8);
+    yPos += 35;
+
+    // Footer (only on last page)
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, pageHeight - 30, null, 'center');
+    doc.text("ShopName GmbH • www.shopname.de • info@shopname.de", pageWidth/2, pageHeight - 20, null, 'center');
+
+    doc.save(`zahlung_${Date.now()}.pdf`);
+}
+
+        initScanner();
+    </script>
+</body>
+</html>

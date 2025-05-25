@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Payment</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <style>
+        :root { --bg: #ebeded; --surface: #ffffff; --text: #2c3e50; --accent: #6c757d; --success: #27ae60; --danger: #c0392b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .payment-card { background: var(--surface); border-radius: 16px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
+        #qrcode { margin: 40px auto; padding: 20px; background: white; border-radius: 12px; display: inline-block; }
+        .status { padding: 30px 5px; border-radius: 16px; margin: 20px 0; font-size: 1.2em; transition: all 0.3s ease; width: 100%; }
+        .status.pending { background: #fcf3cf; color: #8a6d3b; }
+        .status.confirmed { background: #d4efdf; color: #196f3d; }
+        .status.declined { background: #f2d7d5; color: #922b21; }
+        .item-box { background: #f7feff; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        #amount { font-size: 2em; margin: 20px 0; display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="payment-card">
+            <h1>Zahlung erforderlich</h1>
+            <span id="amount">€0.00</span>
+            <div id="items-list"></div>
+            <div id="qrcode"></div>
+            <div id="status" class="status pending">Zahlung ausstehend</div>
+            <p>Scannen Sie diesen QR-Code mit dem Händlergerät</p>
+        </div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+        const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        const peer = new Peer(paymentId, {
+            debug: 3,
+            config: {'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }]}
+        });
+        let paymentData = null;
+
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const compressedData = urlParams.get('id');
+            if (!compressedData) throw new Error('Keine Zahlungsdaten gefunden');
+            
+            const jsonString = LZString.decompressFromBase64(compressedData);
+            if (!jsonString) throw new Error('Daten-Dekompression fehlgeschlagen');
+            
+            paymentData = JSON.parse(jsonString);
+            if (!paymentData?.items || !paymentData?.total) throw new Error('Ungültige Datenstruktur');
+
+        } catch(e) {
+            alert('Fehler: ' + e.message);
+            throw new Error('Invalid payment data: ' + e.message);
+        }
+
+        function generateQR() {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            
+            const qrData = {
+                peerId: paymentId,
+                items: paymentData.items,
+                total: paymentData.total
+            };
+
+            new QRCode(qrContainer, {
+                text: JSON.stringify(qrData),
+                width: 250,
+                height: 250,
+                colorDark: "#2c3e50",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        peer.on('connection', (conn) => {
+            conn.on('data', (data) => {
+                const statusEl = document.getElementById('status');
+                if (data.type === 'confirm') {
+                    statusEl.className = 'status confirmed';
+                    statusEl.textContent = 'Zahlung bestätigt!';
+                    generateReceipt('Bestätigt');
+                } else if (data.type === 'decline') {
+                    statusEl.className = 'status declined';
+                    statusEl.textContent = 'Zahlung abgelehnt';
+                    generateReceipt('Abgelehnt');
+                }
+            });
+        });
+
+function generateReceipt(status) {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const paymentDate = new Date().toLocaleDateString('de-DE');
+    const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    let yPos = 0;
+    let currentPage = 1;
+
+    function addHeader() {
+        doc.setFillColor(44, 62, 80);
+        doc.rect(0, yPos, pageWidth, 60, 'F');
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.text("ShopName GmbH", 15, yPos + 25);
+        doc.setFontSize(10);
+        doc.text("Musterstraße 1 • 12345 Musterstadt", 15, yPos + 35);
+        doc.text("USt-ID: DE123456789 • Tel: 01234 567890", 15, yPos + 45);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(200, 200, 200);
+        doc.text(`Belegnummer: ${paymentId}`, pageWidth - 15, yPos + 25, null, 'right');
+        doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 15, yPos + 32, null, 'right');
+        yPos += 70;
+    }
+
+    function addItemHeader() {
+        doc.setFillColor(240, 240, 240);
+        doc.rect(15, yPos, pageWidth - 30, 15, 'F');
+        doc.setTextColor(100, 100, 100);
+        doc.setFontSize(10);
+        doc.text("Artikel", 20, yPos + 11);
+        doc.text("Menge", 120, yPos + 11);
+        doc.text("Preis", pageWidth - 40, yPos + 11, null, 'right');
+        yPos += 20;
+    }
+
+    // First page setup
+    addHeader();
+    addItemHeader();
+
+    // Add items with pagination
+    paymentData.items.forEach((item, index) => {
+        // Check page space (max 250mm height)
+        if(yPos > pageHeight - 70) {
+            doc.addPage();
+            currentPage++;
+            yPos = 0;
+            addHeader();
+            addItemHeader();
+        }
+
+        doc.setFillColor(247, 254, 255);
+        doc.rect(15, yPos, pageWidth - 30, 25, 'F');
+        doc.setDrawColor(200, 200, 200);
+        doc.rect(15, yPos, pageWidth - 30, 25, 'S');
+        
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text(item.name.substring(0, 30), 20, yPos + 8);
+        
+        const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
+        doc.text(quantityPrice, 120, yPos + 8);
+        
+        const total = (item.quantity * item.price).toFixed(2);
+        const totalText = `€${total}`;
+        doc.text(totalText, pageWidth - 20, yPos + 8, null, 'right');
+        
+        yPos += 28;
+    });
+
+    // Ensure we have space for total section
+    if(yPos > pageHeight - 100) {
+        doc.addPage();
+        currentPage++;
+        yPos = 0;
+        addHeader();
+    }
+
+    // Total Section
+    doc.setFillColor(212, 239, 223);
+    doc.rect(15, yPos + 5, pageWidth - 30, 30, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(15, yPos + 5, pageWidth - 30, 30, 'S');
+    doc.setFontSize(14);
+    doc.setTextColor(44, 62, 80);
+    doc.text(`Gesamtsumme:`, 20, yPos + 20);
+    doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 20, yPos + 20, null, 'right');
+    yPos += 35;
+
+    // Status Badge
+    doc.setFillColor(status === 'Bestätigt' ? '#27ae60' : '#c0392b');
+    doc.rect(15, yPos, pageWidth - 30, 25, 'F');
+    doc.setFontSize(14);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Status: ${status}`, 20, yPos + 8);
+    yPos += 35;
+
+    // Footer (only on last page)
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, pageHeight - 30, null, 'center');
+    doc.text("ShopName GmbH • www.shopname.de • info@shopname.de", pageWidth/2, pageHeight - 20, null, 'center');
+
+    doc.save(`zahlung_${paymentId}.pdf`);
+}
+
+        document.getElementById('amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
+        const itemsList = document.getElementById('items-list');
+        paymentData.items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item-box';
+            div.innerHTML = `
+                <h3>${item.name}</h3>
+                <p>${item.quantity}x € ${item.price.toFixed(2)}</p>
+                <p>Summe: € ${(item.quantity * item.price).toFixed(2)}</p>
+            `;
+            itemsList.appendChild(div);
+        });
+
+        generateQR();
+    </script>
+</body>
+</html>
