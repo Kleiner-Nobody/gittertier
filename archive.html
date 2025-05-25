@@ -24,7 +24,30 @@
         .no-results { text-align: center; padding: 20px; color: #666; }
         .income-total { margin-top: 20px; padding: 20px; background: var(--surface); border-radius: 16px; text-align: right; font-size: 1.2em; }
         .income-total span { color: var(--accent); font-weight: bold; }
-        
+        .button-group { 
+            background: #e8fcee; 
+            border-radius: 16px; 
+            padding: 20px; 
+            margin-top: 20px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            display: flex; 
+            gap: 10px; 
+        }
+        .button-group button, .button-group label { 
+            flex: 1; 
+            padding: 15px; 
+            border: 2px solid var(--accent); 
+            border-radius: 8px; 
+            background: white; 
+            color: var(--text); 
+            font-size: 16px; 
+            cursor: pointer; 
+            text-align: center; 
+            transition: background 0.2s; 
+        }
+        .button-group button:hover, .button-group label:hover { 
+            background: #f0f0f0; 
+        }
     </style>
 </head>
 <body>
@@ -33,16 +56,69 @@
         <div class="search-box">
             <input type="text" id="search-input" placeholder="🔎 Suche nach Belegnummer oder Datum...">
         </div>
-        <div class="receipt-list" id="receipt-list">
-            <!-- Receipt items will be inserted here -->
-        </div>
+        <div class="receipt-list" id="receipt-list"></div>
         <div class="income-total" id="income-total">
             Gesamteinnahmen: <span id="total-amount">€0.00</span>
+        </div>
+        <div class="button-group">
+            <button id="export-btn">Export als TXT</button>
+            <label for="import-input" class="import-label">Import aus TXT</label>
+            <input type="file" id="import-input" accept=".txt" style="display: none;">
         </div>
     </div>
 
     <script>
         const { jsPDF } = window.jspdf;
+
+        // Export functionality
+        document.getElementById('export-btn').addEventListener('click', function() {
+            const receipts = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('receipt_')) {
+                    receipts.push({
+                        key: key,
+                        value: JSON.parse(localStorage.getItem(key))
+                    });
+                }
+            }
+            
+            const dataStr = JSON.stringify(receipts, null, 2);
+            const blob = new Blob([dataStr], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `belege_export_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+
+        // Import functionality
+        document.getElementById('import-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const receipts = JSON.parse(e.target.result);
+                    let importedCount = 0;
+                    
+                    receipts.forEach(({ key, value }) => {
+                        if (!localStorage.getItem(key)) {
+                            localStorage.setItem(key, JSON.stringify(value));
+                            importedCount++;
+                        }
+                    });
+
+                    alert(`Erfolgreich ${importedCount} Belege importiert.`);
+                    generateReceiptList(loadReceipts());
+                } catch (error) {
+                    alert('Fehler beim Importieren: Ungültiges Dateiformat.');
+                }
+            };
+            reader.readAsText(file);
+        });
 
         function generateArchiveReceipt(receiptData, status) {
             const doc = new jsPDF();
@@ -111,7 +187,7 @@
             yPos += 35;
 
             // Status Badge
-         doc.setFillColor(status === 'Bestätigt' ? '#27ae60' : '#c0392b');
+            doc.setFillColor(status === 'Bestätigt' ? '#27ae60' : '#c0392b');
             doc.rect(15, yPos, pageWidth - 30, 25, 'F');
             doc.setFontSize(14);
             doc.setTextColor(255, 255, 255);
