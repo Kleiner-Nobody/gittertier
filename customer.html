@@ -59,24 +59,6 @@
             throw new Error('Invalid payment data: ' + e.message);
         }
 
-        // Update the saveToArchive function to store full data
-        function saveToArchive(status) {
-            const archiveEntry = {
-                data: LZString.compressToBase64(JSON.stringify({
-                    ...paymentData,
-                    peerId: paymentId,
-                    date: new Date().toISOString()
-                })),
-                date: new Date().toISOString(),
-                total: paymentData.total,
-                status: status
-            };
-            
-            const shortId = paymentId.split('-').pop().substr(0, 8);
-            localStorage.setItem(`receipt_${shortId}`, JSON.stringify(archiveEntry));
-        }
-
-
         function generateQR() {
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
@@ -97,19 +79,16 @@
             });
         }
 
-        // Update the connection handler to include saveToArchive
         peer.on('connection', (conn) => {
             conn.on('data', (data) => {
                 const statusEl = document.getElementById('status');
                 if (data.type === 'confirm') {
                     statusEl.className = 'status confirmed';
                     statusEl.textContent = 'Zahlung bestätigt!';
-                    saveToArchive('Bestätigt');
                     generateReceipt('Bestätigt');
                 } else if (data.type === 'decline') {
                     statusEl.className = 'status declined';
                     statusEl.textContent = 'Zahlung abgelehnt';
-                    saveToArchive('Abgelehnt');
                     generateReceipt('Abgelehnt');
                 }
             });
