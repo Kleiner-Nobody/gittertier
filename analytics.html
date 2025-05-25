@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --text: #2c3e50;
+            --accent: #6c757d;
+            --success: #27ae60;
+            --danger: #c039b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .analytics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .data-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .import-export-btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: 2px solid var(--accent);
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .import-export-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .analytics-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            background: var(--surface);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .import-export-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="analytics-container">
+        <div class="dashboard-header">
+            <h1>Verkaufsanalysen</h1>
+            <div class="data-controls">
+                <input type="date" id="startDate" class="import-export-btn">
+                <input type="date" id="endDate" class="import-export-btn">
+                <button class="import-export-btn" id="exportBtn">Daten exportieren</button>
+                <label class="import-export-btn" for="fileInput">
+                    Daten importieren
+                    <input type="file" id="fileInput" hidden accept=".csv">
+                </label>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div>Gesamtumsatz</div>
+                <div class="stat-value">€4,230</div>
+                <div>+12% vs. Vorperiode</div>
+            </div>
+            <div class="stat-item">
+                <div>Durchschn. Warenkorb</div>
+                <div class="stat-value">€56.90</div>
+                <div>+3.4% vs. Vorjahr</div>
+            </div>
+            <div class="stat-item">
+                <div>Transaktionen</div>
+                <div class="stat-value">89</div>
+                <div>+15% vs. Vorjahr</div>
+            </div>
+            <div class="stat-item">
+                <div>Top Produkt</div>
+                <div class="stat-value">Kaffee</div>
+                <div>132 verkauft</div>
+            </div>
+        </div>
+
+        <div class="grid-container">
+            <div class="analytics-card">
+                <h2>Umsatzentwicklung</h2>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="analytics-card">
+                <h2>Produktverteilung</h2>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="analytics-card">
+                <h2>Top 5 Produkte</h2>
+                <div class="chart-container">
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="analytics-card">
+                <h2>Letzte Transaktionen</h2>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; margin-top: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Betrag</th>
+                                <th>Status</th>
+                                <th>Artikel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionTable">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data - replace with actual data from your system
+        const transactions = [
+            { date: '2024-03-01', amount: 45.90, status: 'Bezahlt', items: 3 },
+            { date: '2024-03-02', amount: 89.50, status: 'Storniert', items: 5 },
+            { date: '2024-03-03', amount: 120.00, status: 'Bezahlt', items: 7 },
+        ];
+
+        // Initialize Charts
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'],
+                datasets: [{
+                    label: 'Umsatz',
+                    data: [6500, 5900, 8000, 8100, 5600, 7500],
+                    borderColor: '#6c757d',
+                    tension: 0.4
+                }]
+            }
+        });
+
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Getränke', 'Snacks', 'Backwaren', 'Andere'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: ['#6c757d', '#27ae60', '#c0392b', '#f1c40f']
+                }]
+            }
+        });
+
+        const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+        new Chart(topProductsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Kaffee', 'Croissant', 'Saft', 'Salat', 'Kuchen'],
+                datasets: [{
+                    label: 'Verkäufe',
+                    data: [132, 89, 75, 60, 45],
+                    backgroundColor: '#6c757d'
+                }]
+            }
+        });
+
+        // Populate transaction table
+        const tableBody = document.getElementById('transactionTable');
+        transactions.forEach(t => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${t.date}</td>
+                <td>€${t.amount}</td>
+                <td><span style="color: ${t.status === 'Bezahlt' ? 'var(--success)' : 'var(--danger)'}">${t.status}</span></td>
+                <td>${t.items} Artikel</td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Export functionality
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "Datum,Betrag,Status,Artikel\n" 
+                + transactions.map(t => 
+                    `${t.date},${t.amount},${t.status},${t.items}`
+                ).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "export.csv");
+            document.body.appendChild(link);
+            link.click();
+        });
+
+        // Import functionality
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const csvData = event.target.result;
+                // Process CSV data here
+                console.log('Imported data:', csvData);
+                alert('Daten erfolgreich importiert!');
+            };
+            
+            reader.readAsText(file);
+        });
+    </script>
+</body>
+</html>
