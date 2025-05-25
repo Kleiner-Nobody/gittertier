@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics Dashboard</title>
+    <title>Verkaufsanalysen</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <style>
         :root {
             --bg: #f8f9fa;
@@ -12,7 +13,7 @@
             --text: #2c3e50;
             --accent: #6c757d;
             --success: #27ae60;
-            --danger: #c039b;
+            --danger: #c0392b;
         }
 
         body {
@@ -129,28 +130,7 @@
             </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div>Gesamtumsatz</div>
-                <div class="stat-value">€4,230</div>
-                <div>+12% vs. Vorperiode</div>
-            </div>
-            <div class="stat-item">
-                <div>Durchschn. Warenkorb</div>
-                <div class="stat-value">€56.90</div>
-                <div>+3.4% vs. Vorjahr</div>
-            </div>
-            <div class="stat-item">
-                <div>Transaktionen</div>
-                <div class="stat-value">89</div>
-                <div>+15% vs. Vorjahr</div>
-            </div>
-            <div class="stat-item">
-                <div>Top Produkt</div>
-                <div class="stat-value">Kaffee</div>
-                <div>132 verkauft</div>
-            </div>
-        </div>
+        <div class="stats-grid" id="statsGrid"></div>
 
         <div class="grid-container">
             <div class="analytics-card">
@@ -161,16 +141,9 @@
             </div>
 
             <div class="analytics-card">
-                <h2>Produktverteilung</h2>
+                <h2>Top Produkte</h2>
                 <div class="chart-container">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-            </div>
-
-            <div class="analytics-card">
-                <h2>Top 5 Produkte</h2>
-                <div class="chart-container">
-                    <canvas id="topProductsChart"></canvas>
+                    <canvas id="productsChart"></canvas>
                 </div>
             </div>
 
@@ -186,9 +159,7 @@
                                 <th>Artikel</th>
                             </tr>
                         </thead>
-                        <tbody id="transactionTable">
-                            <!-- Filled by JS -->
-                        </tbody>
+                        <tbody id="transactionTable"></tbody>
                     </table>
                 </div>
             </div>
@@ -196,78 +167,140 @@
     </div>
 
     <script>
-        // Mock data - replace with actual data from your system
-        const transactions = [
-            { date: '2024-03-01', amount: 45.90, status: 'Bezahlt', items: 3 },
-            { date: '2024-03-02', amount: 89.50, status: 'Storniert', items: 5 },
-            { date: '2024-03-03', amount: 120.00, status: 'Bezahlt', items: 7 },
-        ];
+        // Data processing functions
+        function getTransactionData() {
+            const transactions = [];
+            const productSales = new Map();
+            let totalRevenue = 0;
+            let transactionCount = 0;
 
-        // Initialize Charts
-        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'],
-                datasets: [{
-                    label: 'Umsatz',
-                    data: [6500, 5900, 8000, 8100, 5600, 7500],
-                    borderColor: '#6c757d',
-                    tension: 0.4
-                }]
+            // Parse localStorage data
+            for(let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('receipt_')) {
+                    const entry = JSON.parse(localStorage.getItem(key));
+                    const receipt = JSON.parse(LZString.decompressFromBase64(entry.data));
+                    
+                    const transaction = {
+                        id: receipt.peerId,
+                        date: new Date(receipt.date),
+                        amount: receipt.total,
+                        status: entry.status,
+                        items: receipt.items
+                    };
+
+                    // Update product sales
+                    receipt.items.forEach(item => {
+                        const count = productSales.get(item.name) || 0;
+                        productSales.set(item.name, count + item.quantity);
+                    });
+
+                    totalRevenue += receipt.total;
+                    transactionCount++;
+                    transactions.push(transaction);
+                }
             }
-        });
 
-        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-        new Chart(categoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Getränke', 'Snacks', 'Backwaren', 'Andere'],
-                datasets: [{
-                    data: [45, 30, 15, 10],
-                    backgroundColor: ['#6c757d', '#27ae60', '#c0392b', '#f1c40f']
-                }]
-            }
-        });
+            return {
+                transactions: transactions.sort((a, b) => b.date - a.date),
+                productSales: Array.from(productSales.entries()).sort((a, b) => b[1] - a[1]),
+                totalRevenue,
+                transactionCount,
+                averageOrder: totalRevenue / transactionCount
+            };
+        }
 
-        const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
-        new Chart(topProductsCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Kaffee', 'Croissant', 'Saft', 'Salat', 'Kuchen'],
-                datasets: [{
-                    label: 'Verkäufe',
-                    data: [132, 89, 75, 60, 45],
-                    backgroundColor: '#6c757d'
-                }]
-            }
-        });
+        // Chart initialization
+        function initCharts(data) {
+            // Revenue Chart
+            const revenueDates = data.transactions
+                .map(t => t.date.toISOString().split('T')[0])
+                .filter((v, i, a) => a.indexOf(v) === i)
+                .slice(-30);
 
-        // Populate transaction table
-        const tableBody = document.getElementById('transactionTable');
-        transactions.forEach(t => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${t.date}</td>
-                <td>€${t.amount}</td>
-                <td><span style="color: ${t.status === 'Bezahlt' ? 'var(--success)' : 'var(--danger)'}">${t.status}</span></td>
-                <td>${t.items} Artikel</td>
+            const revenueData = revenueDates.map(date => 
+                data.transactions
+                    .filter(t => t.date.toISOString().startsWith(date))
+                    .reduce((sum, t) => sum + t.amount, 0)
+            );
+
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: revenueDates,
+                    datasets: [{
+                        label: 'Tagesumsatz',
+                        data: revenueData,
+                        borderColor: '#6c757d',
+                        tension: 0.4
+                    }]
+                }
+            });
+
+            // Products Chart
+            const topProducts = data.productSales.slice(0, 5);
+            new Chart(document.getElementById('productsChart'), {
+                type: 'bar',
+                data: {
+                    labels: topProducts.map(p => p[0]),
+                    datasets: [{
+                        label: 'Verkaufte Menge',
+                        data: topProducts.map(p => p[1]),
+                        backgroundColor: '#6c757d'
+                    }]
+                }
+            });
+        }
+
+        // Update stats
+        function updateStats(data) {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-item">
+                    <div>Gesamtumsatz</div>
+                    <div class="stat-value">€${data.totalRevenue.toFixed(2)}</div>
+                </div>
+                <div class="stat-item">
+                    <div>Durchschn. Warenkorb</div>
+                    <div class="stat-value">€${data.averageOrder.toFixed(2)}</div>
+                </div>
+                <div class="stat-item">
+                    <div>Transaktionen</div>
+                    <div class="stat-value">${data.transactionCount}</div>
+                </div>
+                <div class="stat-item">
+                    <div>Top Produkt</div>
+                    <div class="stat-value">${data.productSales[0]?.[0] || '-'}</div>
+                </div>
             `;
-            tableBody.appendChild(row);
-        });
+        }
+
+        // Update transactions table
+        function updateTable(transactions) {
+            const tableBody = document.getElementById('transactionTable');
+            tableBody.innerHTML = transactions.slice(0, 10).map(t => `
+                <tr>
+                    <td>${t.date.toLocaleDateString('de-DE')}</td>
+                    <td>€${t.amount.toFixed(2)}</td>
+                    <td><span style="color: ${t.status === 'Bestätigt' ? 'var(--success)' : 'var(--danger)'}">${t.status}</span></td>
+                    <td>${t.items.length} Artikel</td>
+                </tr>
+            `).join('');
+        }
 
         // Export functionality
         document.getElementById('exportBtn').addEventListener('click', () => {
+            const data = getTransactionData();
             const csvContent = "data:text/csv;charset=utf-8," 
                 + "Datum,Betrag,Status,Artikel\n" 
-                + transactions.map(t => 
-                    `${t.date},${t.amount},${t.status},${t.items}`
+                + data.transactions.map(t => 
+                    `${t.date.toISOString()},${t.amount},${t.status},"${t.items.map(i => i.name).join(', ')}"`
                 ).join("\n");
             
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "export.csv");
+            link.setAttribute("download", "transaktionen_export.csv");
             document.body.appendChild(link);
             link.click();
         });
@@ -278,14 +311,49 @@
             const reader = new FileReader();
             
             reader.onload = function(event) {
-                const csvData = event.target.result;
-                // Process CSV data here
-                console.log('Imported data:', csvData);
+                const csvData = event.target.result.split('\n').slice(1);
+                csvData.forEach(row => {
+                    if(!row) return;
+                    const [date, amount, status, items] = row.split(',');
+                    
+                    // Generate unique ID
+                    const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+                    
+                    // Create receipt entry
+                    const receiptData = {
+                        peerId: paymentId,
+                        date: new Date(date).toISOString(),
+                        total: parseFloat(amount),
+                        items: items.replace(/"/g, '').split(', ').map(name => ({
+                            name,
+                            quantity: 1,
+                            price: 0
+                        }))
+                    };
+
+                    // Save to localStorage
+                    const archiveEntry = {
+                        data: LZString.compressToBase64(JSON.stringify(receiptData)),
+                        date: new Date().toISOString(),
+                        total: receiptData.total,
+                        status: status
+                    };
+
+                    localStorage.setItem(`receipt_${paymentId.split('-').pop().substr(0, 8)}`, JSON.stringify(archiveEntry));
+                });
+
                 alert('Daten erfolgreich importiert!');
+                location.reload();
             };
             
             reader.readAsText(file);
         });
+
+        // Initial load
+        const transactionData = getTransactionData();
+        updateStats(transactionData);
+        initCharts(transactionData);
+        updateTable(transactionData.transactions);
     </script>
 </body>
 </html>
