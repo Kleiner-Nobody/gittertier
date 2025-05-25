@@ -75,28 +75,53 @@
             localStorage.setItem(`receipt_${shortId}`, JSON.stringify(archiveEntry));
         }
 
-        function generateQR() {
+function generateQR() {
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
             
+            // Maintain full data structure but optimize it
             const qrData = {
-                p: paymentId,  // Shortened keys
-                t: paymentData.total
+                p: paymentId,       // Peer ID
+                t: paymentData.total, // Total amount
+                i: paymentData.items.map(item => ({
+                    n: item.name,  // Shortened property names
+                    q: item.quantity,
+                    p: item.price
+                }))
             };
 
             try {
-                const compressedData = LZString.compressToBase64(JSON.stringify(qrData));
-                new QRCode(qrContainer, {
-                    text: compressedData,
-                    width: 250,
-                    height: 250,
-                    colorDark: "#2c3e50",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
+                // Double compression strategy
+                const jsonStr = JSON.stringify(qrData);
+                const compressed = LZString.compressToBase64(jsonStr);
+                
+                // Split data into chunks if needed
+                const maxChunkSize = 1500;
+                const chunks = [];
+                
+                for(let i = 0; i < compressed.length; i += maxChunkSize) {
+                    chunks.push(compressed.slice(i, i + maxChunkSize));
+                }
+
+                // Only show first chunk if within limit
+                if(chunks.length === 1) {
+                    new QRCode(qrContainer, {
+                        text: compressed,
+                        width: 250,
+                        height: 250,
+                        colorDark: "#2c3e50",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                } else {
+                    // Implement multi-QR system or error
+                    qrContainer.innerHTML = '<p>Zu viele Artikel für QR-Code</p>';
+                    console.error('QR data too large:', compressed.length);
+                }
+                
             } catch(e) {
                 console.error('QR Generation Error:', e);
-                qrContainer.innerHTML = '<p>QR-Code konnte nicht generiert werden</p>';
+                qrContainer.innerHTML = '<p>QR-Code generation fehlgeschlagen</p>';
             }
         }
 
