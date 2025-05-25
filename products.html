@@ -35,7 +35,7 @@
             margin: 0 auto;
         }
 
-        .scanner-section {
+        .product-form {
             background: var(--surface);
             border-radius: 12px;
             padding: 2rem;
@@ -43,79 +43,88 @@
             margin-bottom: 2rem;
         }
 
-        #scanner-container {
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        input {
             width: 100%;
-            height: 400px;
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            margin: 1.5rem 0;
-        }
-
-        #scanner-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .product-list {
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-top: 2rem;
-        }
-
-        .product-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--surface);
-            padding: 2rem;
-            border-radius: 12px;
-            width: 95%;
-            max-width: 500px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 0.9rem;
-            margin: 0.8rem 0;
+            padding: 0.8rem;
             border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 1rem;
         }
 
         button {
-            padding: 0.5rem 1rem;
+            padding: 0.8rem 1.5rem;
             border: none;
             border-radius: 6px;
-            background: var(--primary);
+            background: var(--accent);
             color: white;
             cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .product-list {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: var(--bg);
+            border-radius: 6px;
+        }
+
+        .scanner-container {
+            position: relative;
+            margin: 1rem 0;
+        }
+
+        #barcode-scanner {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="scanner-section">
-            <h1>Produktverwaltung</h1>
-            <div id="scanner-container">
-                <video id="scanner-video" playsinline></video>
+        <h1>Produktverwaltung</h1>
+        
+        <div class="product-form">
+            <h2>Neues Produkt</h2>
+            <div class="form-group">
+                <input type="text" id="product-name" placeholder="Produktname">
             </div>
-            <button id="toggle-scanner">Scanner starten</button>
+            <div class="form-group">
+                <input type="number" id="product-price" placeholder="Preis (€)" step="0.01">
+            </div>
+            <div class="form-group">
+                <input type="text" id="product-barcode" placeholder="Barcode" readonly>
+            </div>
+            <div class="scanner-container">
+                <div id="barcode-scanner">
+                    <video id="scanner-video" playsinline></video>
+                </div>
+                <button onclick="toggleScanner()" style="margin-top: 1rem;">Scanner umschalten</button>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button onclick="saveProduct()">Produkt speichern</button>
+                <button onclick="clearForm()" style="background: var(--primary);">Formular leeren</button>
+            </div>
         </div>
 
         <div class="product-list">
@@ -124,132 +133,157 @@
         </div>
     </div>
 
-    <!-- Product Modal -->
-    <div id="product-modal" class="modal">
-        <h3>Neues Produkt</h3>
-        <input type="text" id="product-name" class="modal-input" placeholder="Produktname">
-        <input type="number" id="product-price" class="modal-input" placeholder="Preis (€)">
-        <input type="text" id="product-barcode" class="modal-input" placeholder="Barcode" readonly>
-        <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-            <button onclick="saveProduct()">Speichern</button>
-            <button onclick="closeModal()" style="background: var(--error)">Abbrechen</button>
-        </div>
-    </div>
-
     <script>
         let scannerActive = false;
         let mediaStream = null;
-        let products = JSON.parse(localStorage.getItem('products') || '{}');
+        let currentEditBarcode = null;
 
-        // Scanner Configuration
-        const scannerConfig = {
-            inputStream: {
-                name: "Live",
-                type: "LiveStream",
-                target: document.querySelector('#scanner-video'),
-                constraints: {
-                    facingMode: "environment",
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
-            },
-            decoder: {
-                readers: ['ean_reader', 'code_128_reader']
+        // Load products from localStorage
+        function loadProducts() {
+            return JSON.parse(localStorage.getItem('products')) || {};
+        }
+
+        // Save products to localStorage
+        function saveProducts(products) {
+            localStorage.setItem('products', JSON.stringify(products));
+            renderProducts();
+        }
+
+        // Render product list
+        function renderProducts() {
+            const products = loadProducts();
+            const container = document.getElementById('products');
+            container.innerHTML = '';
+
+            Object.keys(products).forEach(barcode => {
+                const product = products[barcode];
+                const div = document.createElement('div');
+                div.className = 'product-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${product.name}</strong><br>
+                        €${product.price.toFixed(2)} | Barcode: ${barcode}
+                    </div>
+                    <div>
+                        <button onclick="editProduct('${barcode}')">Bearbeiten</button>
+                        <button onclick="deleteProduct('${barcode}')" style="background: var(--error); margin-left: 0.5rem;">Löschen</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Save/Update product
+        function saveProduct() {
+            const name = document.getElementById('product-name').value.trim();
+            const price = parseFloat(document.getElementById('product-price').value);
+            const barcode = document.getElementById('product-barcode').value;
+
+            if (!name || isNaN(price) {
+                alert('Bitte alle Felder ausfüllen!');
+                return;
             }
-        };
 
-        // Initialize Scanner
-        async function initScanner() {
-            Quagga.init(scannerConfig, err => {
+            const products = loadProducts();
+            
+            if (currentEditBarcode) {
+                delete products[currentEditBarcode];
+            }
+
+            products[barcode] = { name, price };
+            saveProducts(products);
+            clearForm();
+        }
+
+        // Edit product
+        function editProduct(barcode) {
+            const products = loadProducts();
+            const product = products[barcode];
+            
+            document.getElementById('product-name').value = product.name;
+            document.getElementById('product-price').value = product.price;
+            document.getElementById('product-barcode').value = barcode;
+            currentEditBarcode = barcode;
+        }
+
+        // Delete product
+        function deleteProduct(barcode) {
+            if (confirm('Produkt wirklich löschen?')) {
+                const products = loadProducts();
+                delete products[barcode];
+                saveProducts(products);
+            }
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-price').value = '';
+            document.getElementById('product-barcode').value = '';
+            currentEditBarcode = null;
+        }
+
+        // Barcode Scanner
+        async function toggleScanner() {
+            const video = document.getElementById('scanner-video');
+            
+            try {
+                if (!scannerActive) {
+                    mediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: "environment",
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    });
+                    
+                    video.srcObject = mediaStream;
+                    await video.play();
+                    initScanner();
+                    scannerActive = true;
+                } else {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                    scannerActive = false;
+                }
+            } catch (error) {
+                alert(`Kamerafehler: ${error.message}`);
+            }
+        }
+
+        // Initialize scanner
+        function initScanner() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: video,
+                    constraints: {
+                        width: 1280,
+                        height: 720,
+                        facingMode: "environment"
+                    }
+                },
+                decoder: {
+                    readers: ['ean_reader', 'code_128_reader']
+                }
+            }, err => {
                 if (err) {
                     console.error('Scanner error:', err);
                     return;
                 }
-                Quagga.onDetected(handleDetection);
                 Quagga.start();
+            });
+
+            Quagga.onDetected(result => {
+                const barcode = result.codeResult.code;
+                document.getElementById('product-barcode').value = barcode;
+                toggleScanner();
             });
         }
 
-        function handleDetection(result) {
-            const barcode = result.codeResult.code;
-            if (!products[barcode]) {
-                document.getElementById('product-barcode').value = barcode;
-                document.getElementById('product-modal').style.display = 'block';
-            }
-        }
-
-        // Product Management
-        function saveProduct() {
-            const barcode = document.getElementById('product-barcode').value;
-            const name = document.getElementById('product-name').value;
-            const price = parseFloat(document.getElementById('product-price').value);
-
-            if (name && price && barcode) {
-                products[barcode] = { name, price, barcode };
-                localStorage.setItem('products', JSON.stringify(products));
-                updateProductList();
-                closeModal();
-            }
-        }
-
-        function updateProductList() {
-            const container = document.getElementById('products');
-            container.innerHTML = Object.values(products).map(product => `
-                <div class="product-item">
-                    <div>
-                        <strong>${product.name}</strong><br>
-                        Barcode: ${product.barcode}<br>
-                        Preis: €${product.price.toFixed(2)}
-                    </div>
-                    <div>
-                        <button onclick="editProduct('${product.barcode}')">Bearbeiten</button>
-                        <button onclick="deleteProduct('${product.barcode}')" style="background: var(--error)">Löschen</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function editProduct(barcode) {
-            const product = products[barcode];
-            document.getElementById('product-barcode').value = barcode;
-            document.getElementById('product-name').value = product.name;
-            document.getElementById('product-price').value = product.price;
-            document.getElementById('product-modal').style.display = 'block';
-        }
-
-        function deleteProduct(barcode) {
-            if (confirm('Produkt wirklich löschen?')) {
-                delete products[barcode];
-                localStorage.setItem('products', JSON.stringify(products));
-                updateProductList();
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('product-modal').style.display = 'none';
-            document.getElementById('product-name').value = '';
-            document.getElementById('product-price').value = '';
-            document.getElementById('product-barcode').value = '';
-        }
-
-        // Scanner Control
-        document.getElementById('toggle-scanner').addEventListener('click', async () => {
-            if (!scannerActive) {
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" }
-                });
-                document.getElementById('scanner-video').srcObject = mediaStream;
-                await initScanner();
-                scannerActive = true;
-            } else {
-                mediaStream.getTracks().forEach(track => track.stop());
-                Quagga.stop();
-                scannerActive = false;
-            }
-        });
-
-        // Initial load
-        updateProductList();
+        // Initial render
+        renderProducts();
     </script>
 </body>
 </html>
