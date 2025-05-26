@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <style>
-        :root { --bg: #ebeded; --surface: #ffffff; --text: #2c3e50; --accent: #6c757d; --success: #27ae60; --danger: #c0392b; }
+        :root { --bg: #ebeded; --surface: #ffffff; --text: #2c3e50; --success: #27ae60; --danger: #c0392b; --primary: ${settings.display.primaryColor}; --accent: ${settings.display.primaryColor}; --font-size: ${settings.display.fontSize}%;}
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
         .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
         .payment-card { background: var(--surface); border-radius: 16px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
@@ -35,6 +35,47 @@
     </div>
 
     <script>
+                const defaultSettings = {
+            general: {
+                shopName: "Gittertier Pro",
+                currency: "EUR",
+                taxId: "DE123456789",
+                timezone: "Europe/Berlin",
+                dateFormat: "dd.MM.yyyy",
+                notificationDuration: 3000
+            },
+            payment: {
+                methods: ["cash", "ec-card"],
+                autoPrint: true,
+                tipsEnabled: false,
+                minCardAmount: 5,
+                contactlessLimit: 50,
+                paymentTimeout: 120
+            },
+            display: {
+                primaryColor: "#2b3035",
+                fontSize: 100,
+                language: "de",
+                showImages: true,
+                animationsEnabled: true
+            },
+            receipts: {
+                header: "Vielen Dank für Ihren Einkauf!",
+                printLogo: true,
+                customerCopy: true,
+                width: 80,
+                detailedItems: false
+            },
+            security: {
+                loginTimeout: 15,
+                passwordComplexity: "medium",
+                autoLogout: true,
+                maxLoginAttempts: 3
+            }
+        };
+
+        // Load or initialize settings
+        let settings = JSON.parse(localStorage.getItem('posSettings')) || defaultSettings;
         const { jsPDF } = window.jspdf;
         const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         const peer = new Peer(paymentId, {
