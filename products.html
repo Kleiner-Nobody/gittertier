@@ -20,37 +20,78 @@
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            padding: 2rem;
+            padding: 40px 20px;
+            margin: 0;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
         }
 
         .product-list {
             background: var(--surface);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-top: 2rem;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .product-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
-            margin: 0.5rem 0;
+            padding: 25px;
+            margin: 15px 0;
             background: #f7feff;
-            border-radius: 8px;
+            border-radius: 16px;
             border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+
+        .product-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .product-info {
+            flex-grow: 1;
+            margin-right: 25px;
         }
 
         .product-actions {
             display: flex;
-            gap: 1rem;
+            gap: 15px;
             align-items: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .primary-btn {
+            background: var(--accent);
+            color: white;
+        }
+
+        .secondary-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .danger-btn {
+            background: var(--error);
+            color: white;
         }
 
         .modal {
@@ -60,80 +101,120 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: var(--surface);
-            padding: 2rem;
-            border-radius: 12px;
-            width: 95%;
-            max-width: 400px;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             z-index: 1000;
         }
 
-        button {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: filter 0.2s;
+        .modal h2 {
+            margin: 0 0 25px 0;
+            font-size: 1.5rem;
         }
 
-        .add-btn {
-            background: var(--accent);
-            color: white;
-        }
-
-        .delete-btn {
-            background: var(--error);
-            color: white;
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
         }
 
         .file-input {
-            margin: 1rem 0;
+            margin: 25px 0;
         }
 
-        .import-export {
+        .cloud-status {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--surface);
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            align-items: center;
+            gap: 12px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Produktverwaltung</h1>
-        
-        <div class="import-export">
-            <button onclick="document.getElementById('file-input').click()" class="add-btn">Importieren</button>
-            <button onclick="exportProducts()" class="add-btn">Exportieren</button>
-            <input type="file" id="file-input" accept=".txt" style="display: none;">
+        <div class="header">
+            <h1>Produktverwaltung</h1>
+            <div class="product-actions">
+                <button class="primary-btn" onclick="showAddModal()">Neues Produkt</button>
+            </div>
         </div>
 
-        <button onclick="showAddModal()" class="add-btn">+ Neues Produkt</button>
+        <div class="product-list" id="product-list">
+            <!-- Products will be loaded here -->
+        </div>
 
-        <div class="product-list" id="product-list"></div>
-
-        <!-- Add Product Modal -->
-        <div id="add-modal" class="modal">
-            <h2>Neues Produkt</h2>
+        <!-- Add/Edit Product Modal -->
+        <div id="product-modal" class="modal">
+            <h2 id="modal-title">Neues Produkt</h2>
             <input type="text" id="product-name" placeholder="Produktname" class="modal-input">
-            <input type="number" step="0.01" id="product-price" placeholder="Preis" class="modal-input">
+            <input type="number" step="0.01" id="product-price" placeholder="Preis (€)" class="modal-input">
             <input type="text" id="product-barcode" placeholder="Barcode" class="modal-input">
             
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button onclick="saveProduct()" class="add-btn">Speichern</button>
-                <button onclick="closeModal()" style="background: var(--primary); color: white;">Abbrechen</button>
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button class="primary-btn" onclick="saveProduct()">Speichern</button>
+                <button class="secondary-btn" onclick="closeModal()">Abbrechen</button>
             </div>
+        </div>
+
+        <!-- Cloud Sync Modal -->
+        <div id="cloud-modal" class="modal">
+            <h2>Cloud-Synchronisation</h2>
+            <input type="text" id="github-token" placeholder="GitHub Personal Access Token" class="modal-input">
+            <input type="text" id="gist-id" placeholder="Gist ID (optional)" class="modal-input">
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button class="primary-btn" onclick="saveCloudConfig()">Speichern</button>
+                <button class="secondary-btn" onclick="closeModal()">Abbrechen</button>
+            </div>
+        </div>
+
+        <div class="cloud-status" id="cloud-status">
+            <span>Cloud: Verbunden</span>
+            <button class="secondary-btn" onclick="syncWithCloud()" style="padding: 8px 16px;">Sync</button>
         </div>
     </div>
 
     <script>
         let products = JSON.parse(localStorage.getItem('products')) || {};
+        let editingProduct = null;
+        let cloudConfig = JSON.parse(localStorage.getItem('cloudConfig')) || {};
+
+        // Initial check for cloud config
+        if (!cloudConfig.token) {
+            document.getElementById('cloud-modal').style.display = 'block';
+        }
 
         function showAddModal() {
-            document.getElementById('add-modal').style.display = 'block';
+            editingProduct = null;
+            document.getElementById('modal-title').textContent = 'Neues Produkt';
+            clearInputs();
+            document.getElementById('product-modal').style.display = 'block';
+        }
+
+        function showEditModal(product) {
+            editingProduct = product.barcode;
+            document.getElementById('modal-title').textContent = 'Produkt bearbeiten';
+            document.getElementById('product-name').value = product.name;
+            document.getElementById('product-price').value = product.price;
+            document.getElementById('product-barcode').value = product.barcode;
+            document.getElementById('product-modal').style.display = 'block';
         }
 
         function closeModal() {
-            document.getElementById('add-modal').style.display = 'none';
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
             clearInputs();
         }
 
@@ -148,22 +229,28 @@
             const price = parseFloat(document.getElementById('product-price').value);
             const barcode = document.getElementById('product-barcode').value.trim();
 
-            if (!name || isNaN(price) ){
-                alert('Bitte alle Felder ausfüllen');
+            if (!name || isNaN(price) || !barcode) {
+                alert('Bitte alle Felder korrekt ausfüllen');
                 return;
+            }
+
+            if (editingProduct && editingProduct !== barcode) {
+                delete products[editingProduct];
             }
 
             products[barcode] = { name, price, barcode };
             localStorage.setItem('products', JSON.stringify(products));
             renderProducts();
             closeModal();
+            syncWithCloud();
         }
 
         function deleteProduct(barcode) {
-            if (confirm('Produkt wirklich löschen?')) {
+            if (confirm('Produkt unwiderruflich löschen?')) {
                 delete products[barcode];
                 localStorage.setItem('products', JSON.stringify(products));
                 renderProducts();
+                syncWithCloud();
             }
         }
 
@@ -171,46 +258,69 @@
             const list = document.getElementById('product-list');
             list.innerHTML = Object.values(products).map(product => `
                 <div class="product-item">
-                    <div>
-                        <strong>${product.name}</strong><br>
-                        <span>Barcode: ${product.barcode}</span><br>
-                        <span>Preis: €${product.price.toFixed(2)}</span>
+                    <div class="product-info">
+                        <div style="font-size: 1.1rem; margin-bottom: 8px;">${product.name}</div>
+                        <div style="color: #666; font-size: 0.9rem;">
+                            <span style="margin-right: 15px;">Barcode: ${product.barcode}</span>
+                            <span>Preis: €${product.price.toFixed(2)}</span>
+                        </div>
                     </div>
                     <div class="product-actions">
-                        <button onclick="deleteProduct('${product.barcode}')" class="delete-btn">🗑️</button>
+                        <button class="secondary-btn" onclick="showEditModal(${JSON.stringify(product).replace(/"/g, '&quot;')})">Bearbeiten</button>
+                        <button class="danger-btn" onclick="deleteProduct('${product.barcode}')">Löschen</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function exportProducts() {
-            const data = JSON.stringify(products);
-            const blob = new Blob([data], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `produkte_${new Date().toISOString().split('T')[0]}.txt`;
-            a.click();
+        async function syncWithCloud() {
+            if (!cloudConfig.token) return;
+            
+            try {
+                const response = await fetch('https://api.github.com/gists' + (cloudConfig.gistId ? `/${cloudConfig.gistId}` : ''), {
+                    method: cloudConfig.gistId ? 'PATCH' : 'POST',
+                    headers: {
+                        'Authorization': `token ${cloudConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify({
+                        description: 'Product Database Backup',
+                        public: false,
+                        files: {
+                            'products.json': {
+                                content: JSON.stringify(products)
+                            }
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                if (!cloudConfig.gistId) {
+                    cloudConfig.gistId = data.id;
+                    localStorage.setItem('cloudConfig', JSON.stringify(cloudConfig));
+                }
+                updateCloudStatus(true);
+            } catch (error) {
+                console.error('Cloud sync failed:', error);
+                updateCloudStatus(false);
+            }
         }
 
-        document.getElementById('file-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    products = { ...products, ...imported };
-                    localStorage.setItem('products', JSON.stringify(products));
-                    renderProducts();
-                    alert('Produkte erfolgreich importiert!');
-                } catch (error) {
-                    alert('Ungültige Datei');
-                }
+        function saveCloudConfig() {
+            cloudConfig = {
+                token: document.getElementById('github-token').value.trim(),
+                gistId: document.getElementById('gist-id').value.trim()
             };
-            reader.readAsText(file);
-        });
+            localStorage.setItem('cloudConfig', JSON.stringify(cloudConfig));
+            closeModal();
+            syncWithCloud();
+        }
+
+        function updateCloudStatus(connected) {
+            const status = document.getElementById('cloud-status');
+            status.style.background = connected ? '#d4edda' : '#f8d7da';
+            status.querySelector('span').textContent = `Cloud: ${connected ? 'Verbunden' : 'Fehler'}`;
+        }
 
         // Initial render
         renderProducts();
