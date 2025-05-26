@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Einstellungen</title>
+    <title>Systemeinstellungen</title>
     <style>
         :root {
             --bg: #f8f9fa;
             --surface: #ffffff;
             --primary: #2b3035;
             --accent: #218838;
+            --error: #dc3545;
             --text: #212529;
             --border: #dee2e6;
         }
@@ -27,7 +28,7 @@
             margin: 0 auto;
         }
 
-        .settings-section {
+        .settings-category {
             background: var(--surface);
             border-radius: 12px;
             padding: 2rem;
@@ -35,170 +36,258 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        .settings-group {
-            margin: 1.5rem 0;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 1rem;
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
         }
 
         .color-picker {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .color-option {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border-radius: 8px;
             cursor: pointer;
-            border: 2px solid transparent;
         }
 
-        .color-option.selected {
-            border-color: var(--primary);
+        input[type="number"], select {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            width: 200px;
         }
 
         button {
-            padding: 0.8rem 1.5rem;
+            padding: 0.5rem 1rem;
             border: none;
             border-radius: 6px;
+            cursor: pointer;
             background: var(--accent);
             color: white;
-            cursor: pointer;
-            transition: filter 0.2s;
-        }
-
-        button:hover {
-            filter: brightness(1.1);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Einstellungen</h1>
+        <h1>Systemeinstellungen ⚙️</h1>
 
-        <div class="settings-section">
-            <h2>Unternehmensdaten</h2>
-            <div class="settings-group">
-                <label class="form-label">Firmenname</label>
-                <input type="text" id="company-name" class="form-input">
-                
-                <label class="form-label">Adresse</label>
-                <input type="text" id="company-address" class="form-input">
-                
-                <label class="form-label">USt-ID</label>
-                <input type="text" id="tax-id" class="form-input">
-                
-                <label class="form-label">Telefonnummer</label>
-                <input type="tel" id="company-phone" class="form-input">
+        <!-- Appearance Settings -->
+        <div class="settings-category">
+            <h2>Darstellung</h2>
+            <div class="setting-item">
+                <span>Farbschema</span>
+                <select id="theme-select">
+                    <option value="light">Hell</option>
+                    <option value="dark">Dunkel</option>
+                    <option value="custom">Benutzerdefiniert</option>
+                </select>
             </div>
-        </div>
-
-        <div class="settings-section">
-            <h2>Scanner-Einstellungen</h2>
-            <div class="settings-group">
-                <label class="form-label">Barcode-Typen</label>
-                <div>
-                    <label><input type="checkbox" name="barcode-type" value="ean_reader"> EAN</label>
-                    <label><input type="checkbox" name="barcode-type" value="code_128_reader"> Code 128</label>
-                    <label><input type="checkbox" name="barcode-type" value="code_39_reader"> Code 39</label>
+            <div class="setting-item" id="custom-colors" style="display: none;">
+                <span>Farbauswahl</span>
+                <div style="display: flex; gap: 1rem;">
+                    <input type="color" id="primary-color" class="color-picker">
+                    <input type="color" id="accent-color" class="color-picker">
                 </div>
             </div>
-        </div>
-
-        <div class="settings-section">
-            <h2>Beleg-Einstellungen</h2>
-            <div class="settings-group">
-                <label class="form-label">Standard-Steuersatz (%)</label>
-                <input type="number" id="tax-rate" class="form-input" step="0.1">
-                
-                <label class="form-label">Währungssymbol</label>
-                <input type="text" id="currency-symbol" class="form-input" maxlength="3">
+            <div class="setting-item">
+                <span>Schriftgröße</span>
+                <input type="number" id="font-size" min="12" max="24" step="1">
             </div>
         </div>
 
-        <div class="settings-section">
-            <h2>Design</h2>
-            <div class="color-picker">
-                <div class="color-option" style="background: #2b3035" data-color="default"></div>
-                <div class="color-option" style="background: #1a365d" data-color="blue"></div>
-                <div class="color-option" style="background: #216e39" data-color="green"></div>
-                <div class="color-option" style="background: #5f370e" data-color="brown"></div>
+        <!-- Business Settings -->
+        <div class="settings-category">
+            <h2>Geschäftseinstellungen</h2>
+            <div class="setting-item">
+                <span>Standardsteuersatz (%)</span>
+                <input type="number" id="tax-rate" step="0.1" min="0" max="30">
+            </div>
+            <div class="setting-item">
+                <span>Währung</span>
+                <select id="currency">
+                    <option value="EUR">Euro (€)</option>
+                    <option value="USD">US-Dollar ($)</option>
+                    <option value="CHF">Schweizer Franken (CHF)</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <span>Belegkopftext</span>
+                <textarea id="receipt-header" rows="2"></textarea>
             </div>
         </div>
 
-        <button onclick="saveSettings()">Einstellungen speichern</button>
+        <!-- Hardware Settings -->
+        <div class="settings-category">
+            <h2>Hardware-Einstellungen</h2>
+            <div class="setting-item">
+                <span>Druckertyp</span>
+                <select id="printer-type">
+                    <option value="thermal">Thermodrucker</option>
+                    <option value="laser">Laserdrucker</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <span>Scanner-Empfindlichkeit</span>
+                <input type="range" id="scanner-sensitivity" min="1" max="10">
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="settings-category">
+            <h2>Sicherheit</h2>
+            <div class="setting-item">
+                <span>Automatischer Logout (Minuten)</span>
+                <input type="number" id="logout-timer" min="1" max="120">
+            </div>
+            <div class="setting-item">
+                <span>PIN-Schutz</span>
+                <button onclick="setupPIN()">PIN einrichten</button>
+            </div>
+            <div class="setting-item">
+                <span>Datenbackup</span>
+                <select id="backup-frequency">
+                    <option value="daily">Täglich</option>
+                    <option value="weekly">Wöchentlich</option>
+                    <option value="monthly">Monatlich</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Advanced Settings -->
+        <div class="settings-category">
+            <h2>Erweiterte Einstellungen</h2>
+            <div class="setting-item">
+                <span>Barcode-Präfix</span>
+                <input type="text" id="barcode-prefix" maxlength="3">
+            </div>
+            <div class="setting-item">
+                <span>Automatische Rabatte (%)</span>
+                <input type="number" id="auto-discount" min="0" max="20">
+            </div>
+            <div class="setting-item">
+                <span>Sprachausgabe</span>
+                <select id="voice-feedback">
+                    <option value="on">Ein</option>
+                    <option value="off">Aus</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button onclick="saveSettings()" style="padding: 1rem 2rem;">Einstellungen speichern</button>
+        </div>
+    </div>
+
+    <!-- PIN Setup Modal -->
+    <div id="pin-modal" class="modal" style="display: none;">
+        <h2>PIN einrichten</h2>
+        <input type="password" id="new-pin" placeholder="Neue PIN (4 Ziffern)" maxlength="4">
+        <input type="password" id="confirm-pin" placeholder="PIN bestätigen" maxlength="4">
+        <button onclick="confirmPIN()" style="margin-top: 1rem;">Bestätigen</button>
     </div>
 
     <script>
-        // Load saved settings
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+        // Load existing settings
+        const settings = JSON.parse(localStorage.getItem('settings')) || {};
+
+        function initSettings() {
+            // Appearance
+            document.getElementById('theme-select').value = settings.theme || 'light';
+            document.getElementById('font-size').value = settings.fontSize || 16;
             
-            // Company Info
-            document.getElementById('company-name').value = settings.companyName || '';
-            document.getElementById('company-address').value = settings.companyAddress || '';
-            document.getElementById('tax-id').value = settings.taxId || '';
-            document.getElementById('company-phone').value = settings.companyPhone || '';
+            // Business
+            document.getElementById('tax-rate').value = settings.taxRate || 19.0;
+            document.getElementById('currency').value = settings.currency || 'EUR';
+            document.getElementById('receipt-header').value = settings.receiptHeader || '';
 
-            // Scanner Settings
-            const barcodeTypes = settings.barcodeTypes || ['ean_reader', 'code_128_reader'];
-            document.querySelectorAll('input[name="barcode-type"]').forEach(checkbox => {
-                checkbox.checked = barcodeTypes.includes(checkbox.value);
-            });
+            // Hardware
+            document.getElementById('printer-type').value = settings.printerType || 'thermal';
+            document.getElementById('scanner-sensitivity').value = settings.scannerSensitivity || 5;
 
-            // Receipt Settings
-            document.getElementById('tax-rate').value = settings.taxRate || 19;
-            document.getElementById('currency-symbol').value = settings.currencySymbol || '€';
+            // Security
+            document.getElementById('logout-timer').value = settings.logoutTimer || 30;
+            document.getElementById('backup-frequency').value = settings.backupFrequency || 'weekly';
 
-            // Theme
-            const themeColor = settings.themeColor || 'default';
-            document.querySelectorAll('.color-option').forEach(option => {
-                option.classList.toggle('selected', option.dataset.color === themeColor);
+            // Advanced
+            document.getElementById('barcode-prefix').value = settings.barcodePrefix || '';
+            document.getElementById('auto-discount').value = settings.autoDiscount || 0;
+            document.getElementById('voice-feedback').value = settings.voiceFeedback || 'off';
+
+            // Theme customization
+            document.getElementById('theme-select').addEventListener('change', function() {
+                document.getElementById('custom-colors').style.display = 
+                    this.value === 'custom' ? 'flex' : 'none';
             });
         }
 
-        // Save settings
         function saveSettings() {
-            const settings = {
-                companyName: document.getElementById('company-name').value,
-                companyAddress: document.getElementById('company-address').value,
-                taxId: document.getElementById('tax-id').value,
-                companyPhone: document.getElementById('company-phone').value,
-                barcodeTypes: Array.from(document.querySelectorAll('input[name="barcode-type"]:checked'))
-                                 .map(cb => cb.value),
-                taxRate: parseFloat(document.getElementById('tax-rate').value),
-                currencySymbol: document.getElementById('currency-symbol').value,
-                themeColor: document.querySelector('.color-option.selected').dataset.color
-            };
+            // Save all settings
+            settings.theme = document.getElementById('theme-select').value;
+            settings.fontSize = parseInt(document.getElementById('font-size').value);
+            
+            settings.taxRate = parseFloat(document.getElementById('tax-rate').value);
+            settings.currency = document.getElementById('currency').value;
+            settings.receiptHeader = document.getElementById('receipt-header').value;
 
-            localStorage.setItem('appSettings', JSON.stringify(settings));
-            alert('Einstellungen erfolgreich gespeichert!');
+            settings.printerType = document.getElementById('printer-type').value;
+            settings.scannerSensitivity = parseInt(document.getElementById('scanner-sensitivity').value);
+
+            settings.logoutTimer = parseInt(document.getElementById('logout-timer').value);
+            settings.backupFrequency = document.getElementById('backup-frequency').value;
+
+            settings.barcodePrefix = document.getElementById('barcode-prefix').value;
+            settings.autoDiscount = parseInt(document.getElementById('auto-discount').value);
+            settings.voiceFeedback = document.getElementById('voice-feedback').value;
+
+            localStorage.setItem('settings', JSON.stringify(settings));
+            alert('Einstellungen gespeichert!');
+            applySettings();
         }
 
-        // Theme selection
-        document.querySelectorAll('.color-option').forEach(option => {
-            option.addEventListener('click', () => {
-                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-                option.classList.add('selected');
-            });
-        });
+        function applySettings() {
+            // Apply visual settings
+            document.documentElement.style.fontSize = settings.fontSize + 'px';
+            
+            if(settings.theme === 'dark') {
+                document.documentElement.style.setProperty('--bg', '#1a1a1a');
+                document.documentElement.style.setProperty('--surface', '#2d2d2d');
+                document.documentElement.style.setProperty('--text', '#ffffff');
+            } else if(settings.theme === 'light') {
+                document.documentElement.style.setProperty('--bg', '#f8f9fa');
+                document.documentElement.style.setProperty('--surface', '#ffffff');
+                document.documentElement.style.setProperty('--text', '#212529');
+            }
+        }
+
+        // PIN Handling
+        function setupPIN() {
+            document.getElementById('pin-modal').style.display = 'block';
+        }
+
+        function confirmPIN() {
+            const newPIN = document.getElementById('new-pin').value;
+            const confirmPIN = document.getElementById('confirm-pin').value;
+
+            if(newPIN.length !== 4 || !/^\d+$/.test(newPIN)) {
+                alert('Ungültige PIN - muss 4 Ziffern sein');
+                return;
+            }
+
+            if(newPIN !== confirmPIN) {
+                alert('PINs stimmen nicht überein');
+                return;
+            }
+
+            settings.pin = newPIN;
+            localStorage.setItem('settings', JSON.stringify(settings));
+            alert('PIN erfolgreich gespeichert');
+            document.getElementById('pin-modal').style.display = 'none';
+        }
 
         // Initialize on load
-        loadSettings();
+        initSettings();
+        applySettings();
     </script>
 </body>
 </html>
