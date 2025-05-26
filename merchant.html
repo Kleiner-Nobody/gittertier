@@ -65,6 +65,22 @@
     </div>
 
     <script>
+         (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = decodeURIComponent(urlParams.get('token') || '');
+            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
+            const tokenIndex = validTokens.indexOf(urlToken);
+
+            if(tokenIndex === -1) {
+                const redirect = encodeURIComponent(window.location.href);
+                window.location.href = `login.html?redirect=${redirect}`;
+            } else {
+                // Remove used token and clean URL
+                validTokens.splice(tokenIndex, 1);
+                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
+                history.replaceState(null, null, window.location.pathname);
+            }
+        })();
         const { jsPDF } = window.jspdf;
         let currentPayment = null;
         let mediaStream = null;

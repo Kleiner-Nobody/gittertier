@@ -214,24 +214,20 @@
             return token;
         }
 
-    loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if(passwordInput.value === PASSWORD) {
-            const token = generateToken();
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirectUrl = urlParams.get('redirect') || 'admin.html';
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Base64 encode both token and redirect URL
-            const encodedToken = btoa(token);
-            const targetUrl = new URL(redirectUrl, window.location.origin);
-            
-            // Double encode for URL safety
-            targetUrl.searchParams.set('t', encodeURIComponent(encodedToken));
-            
-            // Encode final URL
-            window.location.href = encodeURI(targetUrl.toString());
-        }  else {
+            if(passwordInput.value === PASSWORD) {
+                const token = generateToken();
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect') || '/admin.html';
+                
+                // Handle URL construction with existing query parameters
+                const targetUrl = new URL(redirectUrl, window.location.origin);
+                targetUrl.searchParams.set('token', token);
+                
+                window.location.href = targetUrl.toString();
+            } else {
                 errorMessage.style.display = 'block';
                 passwordInput.value = '';
                 setTimeout(() => errorMessage.style.display = 'none', 2000);
