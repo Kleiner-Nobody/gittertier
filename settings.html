@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einstellungen</title>
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --primary: #2b3035;
+            --accent: #218838;
+            --text: #212529;
+            --border: #dee2e6;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .settings-section {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .settings-group {
+            margin: 1.5rem 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-option.selected {
+            border-color: var(--primary);
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Einstellungen</h1>
+
+        <div class="settings-section">
+            <h2>Unternehmensdaten</h2>
+            <div class="settings-group">
+                <label class="form-label">Firmenname</label>
+                <input type="text" id="company-name" class="form-input">
+                
+                <label class="form-label">Adresse</label>
+                <input type="text" id="company-address" class="form-input">
+                
+                <label class="form-label">USt-ID</label>
+                <input type="text" id="tax-id" class="form-input">
+                
+                <label class="form-label">Telefonnummer</label>
+                <input type="tel" id="company-phone" class="form-input">
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>Scanner-Einstellungen</h2>
+            <div class="settings-group">
+                <label class="form-label">Barcode-Typen</label>
+                <div>
+                    <label><input type="checkbox" name="barcode-type" value="ean_reader"> EAN</label>
+                    <label><input type="checkbox" name="barcode-type" value="code_128_reader"> Code 128</label>
+                    <label><input type="checkbox" name="barcode-type" value="code_39_reader"> Code 39</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>Beleg-Einstellungen</h2>
+            <div class="settings-group">
+                <label class="form-label">Standard-Steuersatz (%)</label>
+                <input type="number" id="tax-rate" class="form-input" step="0.1">
+                
+                <label class="form-label">Währungssymbol</label>
+                <input type="text" id="currency-symbol" class="form-input" maxlength="3">
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>Design</h2>
+            <div class="color-picker">
+                <div class="color-option" style="background: #2b3035" data-color="default"></div>
+                <div class="color-option" style="background: #1a365d" data-color="blue"></div>
+                <div class="color-option" style="background: #216e39" data-color="green"></div>
+                <div class="color-option" style="background: #5f370e" data-color="brown"></div>
+            </div>
+        </div>
+
+        <button onclick="saveSettings()">Einstellungen speichern</button>
+    </div>
+
+    <script>
+        // Load saved settings
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            // Company Info
+            document.getElementById('company-name').value = settings.companyName || '';
+            document.getElementById('company-address').value = settings.companyAddress || '';
+            document.getElementById('tax-id').value = settings.taxId || '';
+            document.getElementById('company-phone').value = settings.companyPhone || '';
+
+            // Scanner Settings
+            const barcodeTypes = settings.barcodeTypes || ['ean_reader', 'code_128_reader'];
+            document.querySelectorAll('input[name="barcode-type"]').forEach(checkbox => {
+                checkbox.checked = barcodeTypes.includes(checkbox.value);
+            });
+
+            // Receipt Settings
+            document.getElementById('tax-rate').value = settings.taxRate || 19;
+            document.getElementById('currency-symbol').value = settings.currencySymbol || '€';
+
+            // Theme
+            const themeColor = settings.themeColor || 'default';
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.toggle('selected', option.dataset.color === themeColor);
+            });
+        }
+
+        // Save settings
+        function saveSettings() {
+            const settings = {
+                companyName: document.getElementById('company-name').value,
+                companyAddress: document.getElementById('company-address').value,
+                taxId: document.getElementById('tax-id').value,
+                companyPhone: document.getElementById('company-phone').value,
+                barcodeTypes: Array.from(document.querySelectorAll('input[name="barcode-type"]:checked'))
+                                 .map(cb => cb.value),
+                taxRate: parseFloat(document.getElementById('tax-rate').value),
+                currencySymbol: document.getElementById('currency-symbol').value,
+                themeColor: document.querySelector('.color-option.selected').dataset.color
+            };
+
+            localStorage.setItem('appSettings', JSON.stringify(settings));
+            alert('Einstellungen erfolgreich gespeichert!');
+        }
+
+        // Theme selection
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // Initialize on load
+        loadSettings();
+    </script>
+</body>
+</html>
