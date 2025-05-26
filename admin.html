@@ -167,14 +167,24 @@
     </div>
 
     <script>
-        // Authentication check
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlToken = urlParams.get('token');
-        const storedToken = sessionStorage.getItem('authToken');
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = decodeURIComponent(urlParams.get('token') || '');
+            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
+            const tokenIndex = validTokens.indexOf(urlToken);
 
-        if(!urlToken || urlToken !== storedToken) {
-            window.location.href = 'login.html';
-        }
+            if(tokenIndex === -1) {
+                sessionStorage.removeItem('validTokens');
+                window.location.href = 'login.html';
+            } else {
+                // Remove used token
+                validTokens.splice(tokenIndex, 1);
+                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
+                
+                // Clear URL token
+                history.replaceState(null, null, window.location.pathname);
+            }
+        })();
 
         // Transaction data
         const transactions = [

@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin Login</title>
     <style>
         :root { 
@@ -21,13 +21,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .login-container {
             background: var(--surface);
             padding: 2rem;
             border-radius: 16px;
-            width: 90%;
+            width: 100%;
             max-width: 400px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
@@ -44,6 +45,7 @@
             border-radius: 8px;
             font-size: 16px;
             width: 100%;
+            -webkit-appearance: none;
         }
 
         .login-button {
@@ -55,10 +57,11 @@
             cursor: pointer;
             font-size: 16px;
             transition: opacity 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .login-button:hover {
-            opacity: 0.9;
+        .login-button:active {
+            opacity: 0.8;
         }
 
         .error-message {
@@ -66,6 +69,24 @@
             display: none;
             text-align: center;
             margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.5rem;
+                border-radius: 12px;
+            }
+            
+            .login-input {
+                padding: 20px;
+                font-size: 1rem;
+            }
+            
+            .login-button {
+                padding: 18px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -76,7 +97,8 @@
                    class="login-input" 
                    placeholder="Passwort eingeben"
                    id="passwordInput"
-                   required>
+                   required
+                   autocomplete="current-password">
             <button type="submit" class="login-button">Einloggen</button>
             <div class="error-message" id="errorMessage">
                 Falsches Passwort!
@@ -91,11 +113,19 @@
         const errorMessage = document.getElementById('errorMessage');
 
         function generateToken() {
+            const tokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let token = '';
-            for(let i = 0; i < 32; i++) {
-                token += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+            let token;
+            
+            do {
+                token = '';
+                for(let i = 0; i < 64; i++) {
+                    token += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+            } while(tokens.includes(token));
+
+            tokens.push(token);
+            sessionStorage.setItem('validTokens', JSON.stringify(tokens));
             return token;
         }
 
@@ -104,12 +134,18 @@
             
             if(passwordInput.value === PASSWORD) {
                 const token = generateToken();
-                sessionStorage.setItem('authToken', token);
-                window.location.href = `admin.html?token=${token}`;
+                window.location.href = `admin.html?token=${encodeURIComponent(token)}`;
             } else {
                 errorMessage.style.display = 'block';
                 passwordInput.value = '';
+                setTimeout(() => errorMessage.style.display = 'none', 2000);
             }
+        });
+
+        // Mobile input optimization
+        passwordInput.addEventListener('focus', () => {
+            window.scrollTo(0, 0);
+            document.body.style.height = '100vh';
         });
     </script>
 </body>
