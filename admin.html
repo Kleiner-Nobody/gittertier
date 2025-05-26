@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <style>
+        #content { display: none; }
         :root {
             --bg: #f8f9fa;
             --surface: #ffffff;
@@ -126,103 +127,112 @@
             }
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const password = prompt("Bitte geben Sie das Passwort ein:");
+            if (password === "GITTERTIER") {
+                document.getElementById('content').style.display = 'block';
+            } else {
+                alert("Falsches Passwort!");
+                window.location.href = "about:blank";
+            }
+        });
+    </script>
 </head>
 <body>
-    <div class="admin-container">
-        <h1>Admin Dashboard</h1>
-        
-        <div class="nav-container">
-            <a href="products.html" class="nav-link">Produktverwaltung</a>
-            <a href="index.html" class="nav-link">Kassenansicht</a>
-            <a href="archive.html" class="nav-link">Archiv</a>
-            <a href="merchant.html" class="nav-link">Händleransicht</a>
-            <a href="analytics.html" class="nav-link">Analysen</a>
-            <a href="settings.html" class="nav-link">Einstellungen</a>
-        </div>
+    <div id="content">
+        <div class="admin-container">
+            <h1>Admin Dashboard</h1>
+            
+            <div class="nav-container">
+                <a href="products.html" class="nav-link">Produktverwaltung</a>
+                <a href="index.html" class="nav-link">Kassenansicht</a>
+                <a href="archive.html" class="nav-link">Archiv</a>
+                <a href="merchant.html" class="nav-link">Händleransicht</a>
+                <a href="analytics.html" class="nav-link">Analysen</a>
+                <a href="settings.html" class="nav-link">Einstellungen</a>
+            </div>
 
-        <input type="text" 
-               class="search-bar" 
-               placeholder="Suche nach Belegen, Produkten oder Kunden..."
-               id="searchInput">
+            <input type="text" 
+                   class="search-bar" 
+                   placeholder="Suche nach Belegen, Produkten oder Kunden..."
+                   id="searchInput">
 
-        <div class="dashboard-section">
-            <h2>Letzte Transaktionen</h2>
-            <div class="receipt-list" id="receiptList">
-                <div class="receipt-item">
-                    <div>
-                        <h3>Beleg #PAY-12345</h3>
-                        <p>Datum: 01.01.2024 14:30</p>
+            <div class="dashboard-section">
+                <h2>Letzte Transaktionen</h2>
+                <div class="receipt-list" id="receiptList">
+                    <div class="receipt-item">
+                        <div>
+                            <h3>Beleg #PAY-12345</h3>
+                            <p>Datum: 01.01.2024 14:30</p>
+                        </div>
+                        <div>
+                            <p>Gesamtbetrag: €49.99</p>
+                            <p>Status: Abgeschlossen</p>
+                        </div>
                     </div>
-                    <div>
-                        <p>Gesamtbetrag: €49.99</p>
-                        <p>Status: Abgeschlossen</p>
-                    </div>
-                </div>
 
-                <div class="receipt-item">
-                    <div>
-                        <h3>Beleg #PAY-12346</h3>
-                        <p>Datum: 01.01.2024 15:45</p>
-                    </div>
-                    <div>
-                        <p>Gesamtbetrag: €89.99</p>
-                        <p>Status: Storniert</p>
+                    <div class="receipt-item">
+                        <div>
+                            <h3>Beleg #PAY-12346</h3>
+                            <p>Datum: 01.01.2024 15:45</p>
+                        </div>
+                        <div>
+                            <p>Gesamtbetrag: €89.99</p>
+                            <p>Status: Storniert</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <script>
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const items = document.querySelectorAll('.receipt-item');
+                
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(searchTerm) ? 'flex' : 'none';
+                });
+            });
+
+            function loadRecentTransactions() {
+                const transactions = [
+                    {
+                        id: 'PAY-12347',
+                        date: '02.01.2024 10:15',
+                        amount: 120.50,
+                        status: 'Abgeschlossen'
+                    },
+                    {
+                        id: 'PAY-12348',
+                        date: '02.01.2024 11:30',
+                        amount: 65.99,
+                        status: 'In Bearbeitung'
+                    }
+                ];
+
+                const list = document.getElementById('receiptList');
+                transactions.forEach(transaction => {
+                    const item = document.createElement('div');
+                    item.className = 'receipt-item';
+                    item.innerHTML = `
+                        <div>
+                            <h3>Beleg #${transaction.id}</h3>
+                            <p>Datum: ${transaction.date}</p>
+                        </div>
+                        <div>
+                            <p>Gesamtbetrag: €${transaction.amount.toFixed(2)}</p>
+                            <p>Status: ${transaction.status}</p>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+
+            loadRecentTransactions();
+        </script>
     </div>
-
-    <script>
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const items = document.querySelectorAll('.receipt-item');
-            
-            items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(searchTerm) ? 'flex' : 'none';
-            });
-        });
-
-        // Mock data loading
-        function loadRecentTransactions() {
-            // In real implementation, fetch from API
-            const transactions = [
-                {
-                    id: 'PAY-12347',
-                    date: '02.01.2024 10:15',
-                    amount: 120.50,
-                    status: 'Abgeschlossen'
-                },
-                {
-                    id: 'PAY-12348',
-                    date: '02.01.2024 11:30',
-                    amount: 65.99,
-                    status: 'In Bearbeitung'
-                }
-            ];
-
-            const list = document.getElementById('receiptList');
-            transactions.forEach(transaction => {
-                const item = document.createElement('div');
-                item.className = 'receipt-item';
-                item.innerHTML = `
-                    <div>
-                        <h3>Beleg #${transaction.id}</h3>
-                        <p>Datum: ${transaction.date}</p>
-                    </div>
-                    <div>
-                        <p>Gesamtbetrag: €${transaction.amount.toFixed(2)}</p>
-                        <p>Status: ${transaction.status}</p>
-                    </div>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        // Load mock data on startup
-        loadRecentTransactions();
-    </script>
 </body>
 </html>
