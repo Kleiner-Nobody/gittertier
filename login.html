@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --text: #2c3e50;
+            --accent: #6c757d;
+            --success: #27ae60;
+            --danger: #c0392b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .login-button {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .login-button:hover {
+            opacity: 0.9;
+        }
+
+        .error-message {
+            color: var(--danger);
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Gittertier Pro Login</h1>
+        <form id="loginForm">
+            <input type="password" 
+                   class="password-input" 
+                   placeholder="Passwort eingeben" 
+                   id="passwordInput"
+                   required>
+            <button type="submit" class="login-button">Anmelden</button>
+        </form>
+        <div class="error-message" id="errorMessage">Falsches Passwort!</div>
+    </div>
+
+    <script>
+        const CORRECT_PASSWORD = "GITTERTIER";
+        const loginForm = document.getElementById('loginForm');
+        const passwordInput = document.getElementById('passwordInput');
+        const errorMessage = document.getElementById('errorMessage');
+
+        function checkAuth() {
+            return sessionStorage.getItem('authenticated') === 'true';
+        }
+
+        function redirectIfAuthenticated() {
+            if(checkAuth()) {
+                window.location.href = "admin-dashboard.html";
+            }
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if(passwordInput.value.toUpperCase() === CORRECT_PASSWORD) {
+                sessionStorage.setItem('authenticated', 'true');
+                window.location.href = "admin-dashboard.html";
+            } else {
+                errorMessage.style.display = 'block';
+                passwordInput.value = '';
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 2000);
+            }
+        });
+
+        // Check if already authenticated
+        redirectIfAuthenticated();
+    </script>
+</body>
+</html>
