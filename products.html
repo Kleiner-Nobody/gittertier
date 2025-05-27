@@ -278,65 +278,122 @@
             `).join('');
         }
 
+function findConflicts(mergedData) {
+    const conflicts = [];
+    for (const barcode in mergedData) {
+        if (products[barcode] && 
+            mergedData[barcode].updatedAt !== products[barcode].updatedAt) {
+            conflicts.push(barcode);
+        }
+    }
+    return conflicts;
+}
+
+async function handleConflicts(conflictKeys) {
+    // Einfache automatische Konfliktlösung (kann angepasst werden)
+    conflictKeys.forEach(barcode => {
+        const local = products[barcode];
+        const remote = mergedData[barcode];
+        if (new Date(remote.updatedAt) > new Date(local.updatedAt)) {
+            products[barcode] = remote;
+            addActivity(`Konflikt gelöst für ${barcode} (Remote übernommen)`, 'warning');
+        }
+    });
+}
+
         // Cloud Sync
-        async function syncWithCloud() {
-            try {
-                showSyncStatus('Syncing...', true);
-                
-                if(!cloudConfig.gistId) {
-                    await createNewGist();
-                }
-                
-                const remoteData = await fetchRemoteData();
-                const mergedData = mergeData(products, remoteData);
-                
-                products = mergedData;
-                await saveToCloud();
-                saveProducts();
-                renderProducts();
-                
-                addActivity('Cloud-Sync erfolgreich', 'success');
-            } catch(error) {
-                addActivity(`Sync fehlgeschlagen: ${error.message}`, 'error');
-            } finally {
-                showSyncStatus('Sync abgeschlossen', false);
-            }
+async function syncWithCloud() {
+    try {
+        showSyncStatus('Synchronisiere...', true);
+        
+        if (!cloudConfig.gistId) {
+            await createNewGist();
         }
 
-        async function createNewGist() {
-            const response = await fetch('https://api.github.com/gists', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${cloudConfig.token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                },
-                body: JSON.stringify({
-                    description: 'Product Database',
-                    public: false,
-                    files: {
-                        'products.json': {
-                            content: JSON.stringify({})
-                        }
+        const remoteData = await fetchRemoteData();
+        const mergedData = mergeData(products, remoteData);
+        
+        // Korrekte Aufrufe ohne this
+        const conflictKeys = findConflicts(mergedData);
+        if (conflictKeys.length > 0) {
+            await handleConflicts(conflictKeys);
+        }
+
+        products = mergedData;
+        await saveToCloud();
+        saveProducts();
+        renderProducts();
+        
+        addActivity('Cloud-Sync erfolgreich', 'success');
+        return true;
+
+    } catch (error) {
+        addActivity(`Sync fehlgeschlagen: ${error.message}`, 'error');
+        return false;
+    } finally {
+        showSyncStatus('Sync abgeschlossen', false);
+    }
+}
+async function createNewGist() {
+    try {
+        const response = await fetch('https://api.github.com/gists', {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${cloudConfig.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify({
+                description: 'Product Database',
+                public: false,
+                files: {
+                    'products.json': {
+                        content: JSON.stringify(products) // Initial mit aktuellen Produkten
                     }
-                })
-            });
-            
-            const data = await response.json();
-            cloudConfig.gistId = data.id;
-            localStorage.setItem('cloudConfig', JSON.stringify(cloudConfig));
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Gist Creation Failed: ${errorData.message}`);
         }
 
-        async function fetchRemoteData() {
-            const response = await fetch(`https://api.github.com/gists/${cloudConfig.gistId}`, {
-                headers: {
-                    'Authorization': `token ${cloudConfig.token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            const gist = await response.json();
-            return JSON.parse(gist.files['products.json'].content);
+        const data = await response.json();
+        cloudConfig.gistId = data.id;
+        localStorage.setItem('cloudConfig', JSON.stringify(cloudConfig));
+        addActivity('Neue Gist erstellt', 'success');
+
+    } catch (error) {
+        addActivity(`Gist-Erstellung fehlgeschlagen: ${error.message}`, 'error');
+        throw error;
+    }
+}
+async function fetchRemoteData() {
+    try {
+        const response = await fetch(`https://api.github.com/gists/${cloudConfig.gistId}`, {
+            headers: {
+                'Authorization': `token ${cloudConfig.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`GitHub API Error: ${response.status} ${response.statusText}`);
         }
+
+        const gist = await response.json();
+        
+        if (!gist.files['products.json']) {
+            return {};
+        }
+
+        return JSON.parse(gist.files['products.json'].content);
+
+    } catch (error) {
+        addActivity(`Fehler beim Abrufen der Daten: ${error.message}`, 'error');
+        return {};
+    }
+}
 
         async function saveToCloud() {
             await fetch(`https://api.github.com/gists/${cloudConfig.gistId}`, {
@@ -355,9 +412,23 @@
             });
         }
 
-        function mergeData(local, remote) {
-            return {...remote, ...local};
+function mergeData(local, remote) {
+    // Verbesserte Merge-Logik mit Zeitstempeln
+    const merged = {...remote};
+    
+    Object.entries(local).forEach(([key, localProduct]) => {
+        const remoteProduct = remote[key];
+        
+        if (!remoteProduct || new Date(localProduct.updatedAt) > new Date(remoteProduct.updatedAt)) {
+            merged[key] = {
+                ...localProduct,
+                updatedAt: new Date().toISOString()
+            };
         }
+    });
+    
+    return merged;
+}
 
         // UI Functions
         function showProductModal(barcode = null) {
