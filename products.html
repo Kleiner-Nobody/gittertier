@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produktverwaltung</title>
+    <title>Profi Produktmanager</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --bg: #f8f9fa;
@@ -13,6 +14,8 @@
             --error: #dc3545;
             --text: #212529;
             --border: #dee2e6;
+            --radius: 20px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.05);
         }
 
         body {
@@ -25,7 +28,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -34,13 +37,18 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 40px;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
 
         .product-list {
             background: var(--surface);
-            border-radius: 20px;
+            border-radius: var(--radius);
             padding: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow);
+            margin: 30px 0;
         }
 
         .product-item {
@@ -52,11 +60,12 @@
             background: #f7feff;
             border-radius: 16px;
             border: 1px solid var(--border);
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .product-item:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         .product-info {
@@ -77,6 +86,9 @@
             cursor: pointer;
             transition: all 0.2s;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .primary-btn {
@@ -102,30 +114,11 @@
             transform: translate(-50%, -50%);
             background: var(--surface);
             padding: 30px;
-            border-radius: 20px;
+            border-radius: var(--radius);
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
             z-index: 1000;
-        }
-
-        .modal h2 {
-            margin: 0 0 25px 0;
-            font-size: 1.5rem;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 15px;
-            margin: 15px 0;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-
-        .file-input {
-            margin: 25px 0;
         }
 
         .cloud-status {
@@ -134,124 +127,135 @@
             right: 30px;
             background: var(--surface);
             padding: 15px 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             display: flex;
             align-items: center;
             gap: 12px;
+            transition: opacity 0.3s;
+        }
+
+        .sync-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .activity-log {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Produktverwaltung</h1>
+            <h1 style="margin: 0;">🏷️ Produktmanager</h1>
             <div class="product-actions">
-                <button class="primary-btn" onclick="showAddModal()">Neues Produkt</button>
+                <button class="primary-btn" onclick="showProductModal()">
+                    ＋ Neues Produkt
+                </button>
+                <button class="secondary-btn" onclick="showCloudModal()">
+                    ☁️ Cloud
+                </button>
             </div>
         </div>
 
-        <div class="product-list" id="product-list">
-            <!-- Products will be loaded here -->
+        <div class="bulk-actions" id="bulk-actions" style="display: none;">
+            <button class="danger-btn" onclick="deleteSelected()">🗑️ Löschen</button>
+            <button class="secondary-btn" onclick="exportSelected()">📤 Export</button>
+            <button class="secondary-btn" onclick="clearSelection()">✖️ Abbrechen</button>
         </div>
 
-        <!-- Add/Edit Product Modal -->
+        <div class="product-list" id="product-list"></div>
+
+        <div class="activity-log">
+            <h3>📝 Aktivitäten</h3>
+            <div id="activity-list" style="max-height: 200px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- Product Modal -->
         <div id="product-modal" class="modal">
             <h2 id="modal-title">Neues Produkt</h2>
             <input type="text" id="product-name" placeholder="Produktname" class="modal-input">
             <input type="number" step="0.01" id="product-price" placeholder="Preis (€)" class="modal-input">
             <input type="text" id="product-barcode" placeholder="Barcode" class="modal-input">
-            
             <div style="display: flex; gap: 15px; margin-top: 25px;">
-                <button class="primary-btn" onclick="saveProduct()">Speichern</button>
-                <button class="secondary-btn" onclick="closeModal()">Abbrechen</button>
+                <button class="primary-btn" onclick="saveProduct()">💾 Speichern</button>
+                <button class="secondary-btn" onclick="closeModal()">✖️ Abbrechen</button>
             </div>
         </div>
 
-        <!-- Cloud Sync Modal -->
+        <!-- Cloud Modal -->
         <div id="cloud-modal" class="modal">
-            <h2>Cloud-Synchronisation</h2>
-            <input type="text" id="github-token" placeholder="GitHub Personal Access Token" class="modal-input">
+            <h2>☁️ Cloud-Einstellungen</h2>
+            <input type="password" id="github-token" placeholder="GitHub Token" class="modal-input">
             <input type="text" id="gist-id" placeholder="Gist ID (optional)" class="modal-input">
             <div style="display: flex; gap: 15px; margin-top: 25px;">
-                <button class="primary-btn" onclick="saveCloudConfig()">Speichern</button>
-                <button class="secondary-btn" onclick="closeModal()">Abbrechen</button>
+                <button class="primary-btn" onclick="saveCloudConfig()">💾 Speichern</button>
+                <button class="secondary-btn" onclick="closeModal()">✖️ Abbrechen</button>
+            </div>
+        </div>
+
+        <!-- QR Modal -->
+        <div id="qr-modal" class="modal">
+            <h2>📲 QR-Code</h2>
+            <div id="qr-container" style="text-align: center;"></div>
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button class="secondary-btn" onclick="closeModal()">✖️ Schließen</button>
             </div>
         </div>
 
         <div class="cloud-status" id="cloud-status">
-            <span>Cloud: Verbunden</span>
-            <button class="secondary-btn" onclick="syncWithCloud()" style="padding: 8px 16px;">Sync</button>
+            <div class="sync-spinner" id="sync-spinner"></div>
+            <span id="sync-status">Mit Cloud verbunden</span>
         </div>
     </div>
 
     <script>
-        let products = JSON.parse(localStorage.getItem('products')) || {};
-        let editingProduct = null;
+        let products = {};
         let cloudConfig = JSON.parse(localStorage.getItem('cloudConfig')) || {};
+        let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
+        let selectedProducts = new Set();
+        let currentEditBarcode = null;
 
-        // Initial check for cloud config
-        if (!cloudConfig.token) {
-            document.getElementById('cloud-modal').style.display = 'block';
-        }
-
-        function showAddModal() {
-            editingProduct = null;
-            document.getElementById('modal-title').textContent = 'Neues Produkt';
-            clearInputs();
-            document.getElementById('product-modal').style.display = 'block';
-        }
-
-        function showEditModal(product) {
-            editingProduct = product.barcode;
-            document.getElementById('modal-title').textContent = 'Produkt bearbeiten';
-            document.getElementById('product-name').value = product.name;
-            document.getElementById('product-price').value = product.price;
-            document.getElementById('product-barcode').value = product.barcode;
-            document.getElementById('product-modal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.style.display = 'none';
-            });
-            clearInputs();
-        }
-
-        function clearInputs() {
-            document.getElementById('product-name').value = '';
-            document.getElementById('product-price').value = '';
-            document.getElementById('product-barcode').value = '';
-        }
-
-        function saveProduct() {
-            const name = document.getElementById('product-name').value.trim();
-            const price = parseFloat(document.getElementById('product-price').value);
-            const barcode = document.getElementById('product-barcode').value.trim();
-
-            if (!name || isNaN(price) || !barcode) {
-                alert('Bitte alle Felder korrekt ausfüllen');
-                return;
-            }
-
-            if (editingProduct && editingProduct !== barcode) {
-                delete products[editingProduct];
-            }
-
-            products[barcode] = { name, price, barcode };
-            localStorage.setItem('products', JSON.stringify(products));
+        // Initialization
+        async function initialize() {
+            await loadProducts();
             renderProducts();
-            closeModal();
-            syncWithCloud();
+            renderActivityLog();
+            setupEventListeners();
+            
+            if(cloudConfig.token) {
+                await syncWithCloud();
+                setInterval(syncWithCloud, 300000); // Auto-sync every 5 minutes
+            }
         }
 
-        function deleteProduct(barcode) {
-            if (confirm('Produkt unwiderruflich löschen?')) {
-                delete products[barcode];
-                localStorage.setItem('products', JSON.stringify(products));
-                renderProducts();
-                syncWithCloud();
-            }
+        // Product Management
+        async function loadProducts() {
+            products = JSON.parse(localStorage.getItem('products')) || {};
+        }
+
+        function saveProducts() {
+            localStorage.setItem('products', JSON.stringify(products));
+            addActivity('Lokale Änderungen gespeichert');
         }
 
         function renderProducts() {
@@ -261,49 +265,213 @@
                     <div class="product-info">
                         <div style="font-size: 1.1rem; margin-bottom: 8px;">${product.name}</div>
                         <div style="color: #666; font-size: 0.9rem;">
-                            <span style="margin-right: 15px;">Barcode: ${product.barcode}</span>
-                            <span>Preis: €${product.price.toFixed(2)}</span>
+                            <span style="margin-right: 15px;">📦 Barcode: ${product.barcode}</span>
+                            <span>💶 Preis: €${product.price.toFixed(2)}</span>
                         </div>
                     </div>
                     <div class="product-actions">
-                        <button class="secondary-btn" onclick="showEditModal(${JSON.stringify(product).replace(/"/g, '&quot;')})">Bearbeiten</button>
-                        <button class="danger-btn" onclick="deleteProduct('${product.barcode}')">Löschen</button>
+                        <button class="secondary-btn" onclick="editProduct('${product.barcode}')">✏️ Bearbeiten</button>
+                        <button class="danger-btn" onclick="deleteProduct('${product.barcode}')">🗑️ Löschen</button>
+                        <button class="primary-btn" onclick="showQR('${product.barcode}')">📲 QR</button>
                     </div>
                 </div>
             `).join('');
         }
 
+        // Cloud Sync
         async function syncWithCloud() {
-            if (!cloudConfig.token) return;
-            
             try {
-                const response = await fetch('https://api.github.com/gists' + (cloudConfig.gistId ? `/${cloudConfig.gistId}` : ''), {
-                    method: cloudConfig.gistId ? 'PATCH' : 'POST',
-                    headers: {
-                        'Authorization': `token ${cloudConfig.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify({
-                        description: 'Product Database Backup',
-                        public: false,
-                        files: {
-                            'products.json': {
-                                content: JSON.stringify(products)
-                            }
-                        }
-                    })
-                });
-
-                const data = await response.json();
-                if (!cloudConfig.gistId) {
-                    cloudConfig.gistId = data.id;
-                    localStorage.setItem('cloudConfig', JSON.stringify(cloudConfig));
+                showSyncStatus('Syncing...', true);
+                
+                if(!cloudConfig.gistId) {
+                    await createNewGist();
                 }
-                updateCloudStatus(true);
-            } catch (error) {
-                console.error('Cloud sync failed:', error);
-                updateCloudStatus(false);
+                
+                const remoteData = await fetchRemoteData();
+                const mergedData = mergeData(products, remoteData);
+                
+                products = mergedData;
+                await saveToCloud();
+                saveProducts();
+                renderProducts();
+                
+                addActivity('Cloud-Sync erfolgreich', 'success');
+            } catch(error) {
+                addActivity(`Sync fehlgeschlagen: ${error.message}`, 'error');
+            } finally {
+                showSyncStatus('Sync abgeschlossen', false);
             }
+        }
+
+        async function createNewGist() {
+            const response = await fetch('https://api.github.com/gists', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `token ${cloudConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({
+                    description: 'Product Database',
+                    public: false,
+                    files: {
+                        'products.json': {
+                            content: JSON.stringify({})
+                        }
+                    }
+                })
+            });
+            
+            const data = await response.json();
+            cloudConfig.gistId = data.id;
+            localStorage.setItem('cloudConfig', JSON.stringify(cloudConfig));
+        }
+
+        async function fetchRemoteData() {
+            const response = await fetch(`https://api.github.com/gists/${cloudConfig.gistId}`, {
+                headers: {
+                    'Authorization': `token ${cloudConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            const gist = await response.json();
+            return JSON.parse(gist.files['products.json'].content);
+        }
+
+        async function saveToCloud() {
+            await fetch(`https://api.github.com/gists/${cloudConfig.gistId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `token ${cloudConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({
+                    files: {
+                        'products.json': {
+                            content: JSON.stringify(products)
+                        }
+                    }
+                })
+            });
+        }
+
+        function mergeData(local, remote) {
+            return {...remote, ...local};
+        }
+
+        // UI Functions
+        function showProductModal(barcode = null) {
+            currentEditBarcode = barcode;
+            const modal = document.getElementById('product-modal');
+            
+            if(barcode) {
+                document.getElementById('modal-title').textContent = 'Produkt bearbeiten';
+                const product = products[barcode];
+                document.getElementById('product-name').value = product.name;
+                document.getElementById('product-price').value = product.price;
+                document.getElementById('product-barcode').value = product.barcode;
+            } else {
+                document.getElementById('modal-title').textContent = 'Neues Produkt';
+                document.getElementById('product-name').value = '';
+                document.getElementById('product-price').value = '';
+                document.getElementById('product-barcode').value = '';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function showCloudModal() {
+            const modal = document.getElementById('cloud-modal');
+            document.getElementById('github-token').value = cloudConfig.token || '';
+            document.getElementById('gist-id').value = cloudConfig.gistId || '';
+            modal.style.display = 'block';
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('product-name').value.trim();
+            const price = parseFloat(document.getElementById('product-price').value);
+            const barcode = document.getElementById('product-barcode').value.trim();
+
+            if(!name || isNaN(price) || !barcode) {
+                alert('Bitte alle Felder korrekt ausfüllen');
+                return;
+            }
+
+            if(currentEditBarcode && currentEditBarcode !== barcode) {
+                delete products[currentEditBarcode];
+            }
+
+            products[barcode] = { name, price, barcode };
+            saveProducts();
+            syncWithCloud();
+            closeModal();
+            renderProducts();
+        }
+
+        function deleteProduct(barcode) {
+            if(confirm('Produkt wirklich löschen?')) {
+                delete products[barcode];
+                saveProducts();
+                syncWithCloud();
+                renderProducts();
+                addActivity(`Produkt ${barcode} gelöscht`);
+            }
+        }
+
+        function showQR(barcode) {
+            const modal = document.getElementById('qr-modal');
+            const container = document.getElementById('qr-container');
+            container.innerHTML = '';
+            new QRCode(container, {
+                text: barcode,
+                width: 200,
+                height: 200,
+                colorDark: "#2b3035",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            modal.style.display = 'block';
+        }
+
+        // Activity Log
+        function addActivity(message, type = 'info') {
+            activityLog.push({
+                timestamp: new Date().toISOString(),
+                message,
+                type
+            });
+            localStorage.setItem('activityLog', JSON.stringify(activityLog));
+            renderActivityLog();
+        }
+
+        function renderActivityLog() {
+            const list = document.getElementById('activity-list');
+            list.innerHTML = activityLog.reverse().map(entry => `
+                <div style="padding: 10px; border-bottom: 1px solid #eee; color: ${getActivityColor(entry.type)}">
+                    [${new Date(entry.timestamp).toLocaleString()}] ${entry.message}
+                </div>
+            `).join('');
+        }
+
+        function getActivityColor(type) {
+            return {
+                error: '#dc3545',
+                success: '#28a745',
+                info: '#17a2b8'
+            }[type] || '#6c757d';
+        }
+
+        // Helper Functions
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+            currentEditBarcode = null;
+        }
+
+        function showSyncStatus(text, spinning) {
+            document.getElementById('sync-status').textContent = text;
+            document.getElementById('sync-spinner').style.display = spinning ? 'block' : 'none';
         }
 
         function saveCloudConfig() {
@@ -316,14 +484,18 @@
             syncWithCloud();
         }
 
-        function updateCloudStatus(connected) {
-            const status = document.getElementById('cloud-status');
-            status.style.background = connected ? '#d4edda' : '#f8d7da';
-            status.querySelector('span').textContent = `Cloud: ${connected ? 'Verbunden' : 'Fehler'}`;
+        function setupEventListeners() {
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape') closeModal();
+                if(e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    syncWithCloud();
+                }
+            });
         }
 
-        // Initial render
-        renderProducts();
+        // Start the application
+        initialize();
     </script>
 </body>
 </html>
