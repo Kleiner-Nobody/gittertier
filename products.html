@@ -161,6 +161,18 @@
             gap: 15px;
             margin: 20px 0;
         }
+
+        .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.toolbar button {
+    flex: 1 1 auto;
+    min-width: 120px;
+}
     </style>
 </head>
 <body>
@@ -168,13 +180,17 @@
         <div class="header">
             <h1 style="margin: 0;">🏷️ Produktmanager</h1>
             <div class="product-actions">
-                <button class="primary-btn" onclick="showProductModal()">
-                    ＋ Neues Produkt
-                </button>
-                <button class="secondary-btn" onclick="showCloudModal()">
-                    ☁️ Cloud
-                </button>
+<div class="toolbar">
+    <button class="primary-btn" onclick="showProductModal()">＋ Neues Produkt</button>
+    <button class="secondary-btn" onclick="exportProducts()">📤 Export</button>
+    <button class="secondary-btn" onclick="importProducts()">📥 Import</button>
+    <button class="secondary-btn" onclick="showCloudModal()">☁️ Cloud</button>
+    <input type="file" id="file-input" accept=".json" style="display: none;">
+</div>
+
             </div>
+
+            
         </div>
 
         <div class="bulk-actions" id="bulk-actions" style="display: none;">
@@ -257,6 +273,76 @@
             localStorage.setItem('products', JSON.stringify(products));
             addActivity('Lokale Änderungen gespeichert');
         }
+
+        // Export-Funktion
+function exportProducts() {
+    try {
+        const data = JSON.stringify(products, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `produkte_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        addActivity('Produkte exportiert', 'success');
+    } catch (error) {
+        addActivity(`Export fehlgeschlagen: ${error.message}`, 'error');
+    }
+}
+
+// Import-Funktion
+function importProducts() {
+    document.getElementById('file-input').click();
+}
+
+document.getElementById('file-input').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            
+            if (!isValidProductStructure(imported)) {
+                throw new Error('Ungültiges Dateiformat');
+            }
+
+            // Bestätigung für Überschreiben
+            if (!confirm(`${Object.keys(imported).length} Produkte importieren? Bestehende Barcodes werden überschrieben!`)) return;
+
+            Object.entries(imported).forEach(([barcode, product]) => {
+                products[barcode] = {
+                    ...product,
+                    updatedAt: new Date().toISOString()
+                };
+            });
+
+            saveProducts();
+            await syncWithCloud();
+            renderProducts();
+            addActivity(`${Object.keys(imported).length} Produkte importiert`, 'success');
+        } catch (error) {
+            addActivity(`Import fehlgeschlagen: ${error.message}`, 'error');
+        }
+    };
+    reader.readAsText(file);
+});
+
+// Validierungsfunktion
+function isValidProductStructure(data) {
+    return typeof data === 'object' && 
+           !Array.isArray(data) &&
+           Object.values(data).every(item => 
+               item.hasOwnProperty('name') &&
+               item.hasOwnProperty('price') &&
+               item.hasOwnProperty('barcode')
+           );
+}
+
 
         function renderProducts() {
             const list = document.getElementById('product-list');
