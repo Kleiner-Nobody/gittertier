@@ -289,14 +289,13 @@ function findConflicts(mergedData) {
     return conflicts;
 }
 
-async function handleConflicts(conflictKeys) {
-    // Einfache automatische Konfliktlösung (kann angepasst werden)
+async function handleConflicts(conflictKeys, mergedData) { // mergedData als Parameter hinzugefügt
     conflictKeys.forEach(barcode => {
         const local = products[barcode];
-        const remote = mergedData[barcode];
+        const remote = mergedData[barcode]; // Jetzt korrekt definiert
         if (new Date(remote.updatedAt) > new Date(local.updatedAt)) {
             products[barcode] = remote;
-            addActivity(`Konflikt gelöst für ${barcode} (Remote übernommen)`, 'warning');
+            addActivity(`Konflikt gelöst für ${barcode}`, 'warning');
         }
     });
 }
@@ -305,28 +304,18 @@ async function handleConflicts(conflictKeys) {
 async function syncWithCloud() {
     try {
         showSyncStatus('Synchronisiere...', true);
-        
-        if (!cloudConfig.gistId) {
-            await createNewGist();
-        }
-
         const remoteData = await fetchRemoteData();
-        const mergedData = mergeData(products, remoteData);
         
-        // Korrekte Aufrufe ohne this
-        const conflictKeys = findConflicts(mergedData);
-        if (conflictKeys.length > 0) {
-            await handleConflicts(conflictKeys);
+        // Validierung der Remote-Daten
+        if (!remoteData || typeof remoteData !== 'object') {
+            throw new Error('Ungültige Remote-Daten empfangen');
         }
 
-        products = mergedData;
-        await saveToCloud();
-        saveProducts();
-        renderProducts();
+        products = mergeData(products, remoteData);
+        localStorage.setItem('products', JSON.stringify(products));
         
-        addActivity('Cloud-Sync erfolgreich', 'success');
+        addActivity('Sync erfolgreich', 'success');
         return true;
-
     } catch (error) {
         addActivity(`Sync fehlgeschlagen: ${error.message}`, 'error');
         return false;
@@ -334,6 +323,7 @@ async function syncWithCloud() {
         showSyncStatus('Sync abgeschlossen', false);
     }
 }
+
 async function createNewGist() {
     try {
         const response = await fetch('https://api.github.com/gists', {
@@ -412,21 +402,26 @@ async function fetchRemoteData() {
             });
         }
 
-function mergeData(local, remote) {
-    // Verbesserte Merge-Logik mit Zeitstempeln
-    const merged = {...remote};
+function mergeData(localProducts, remoteProducts) {
+    // Sicherstellen, dass wir immer mit Objekten arbeiten
+    const local = localProducts || {};
+    const remote = remoteProducts || {};
     
-    Object.entries(local).forEach(([key, localProduct]) => {
-        const remoteProduct = remote[key];
+    const merged = {...remote};
+
+    // Lokale Produkte mergen
+    Object.entries(local).forEach(([barcode, localProduct]) => {
+        const remoteProduct = remote[barcode];
         
-        if (!remoteProduct || new Date(localProduct.updatedAt) > new Date(remoteProduct.updatedAt)) {
-            merged[key] = {
+        if (!remoteProduct || 
+            new Date(localProduct.updatedAt) > new Date(remoteProduct.updatedAt)) {
+            merged[barcode] = {
                 ...localProduct,
                 updatedAt: new Date().toISOString()
             };
         }
     });
-    
+
     return merged;
 }
 
