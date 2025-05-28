@@ -1,24 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gittertier Pro</title>
+    <title>Gittertier Pro - Chess.com Style</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #f8f9fa;
-            --surface: #ffffff;
-            --primary: #2b3035;
-            --accent: #218838;
-            --error: #dc3545;
-            --text: #212529;
-            --border: #dee2e6;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -27,39 +17,124 @@
 
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: #f0f2f5;
+            color: #2d2f33;
             line-height: 1.6;
-            padding: 2rem;
+            padding: 0;
+            min-height: 100vh;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
 
-        .scanner-section {
-            background: var(--surface);
+        /* Chess.com style header */
+        header {
+            background: linear-gradient(to right, #1a6d38, #2c9b47);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9f5ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #1a6d38;
+        }
+
+        /* Card styles like chess.com */
+        .card {
+            background: white;
             border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            border: 1px solid #e8e8e8;
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2d2f33;
         }
 
         #scanner-container {
             width: 100%;
             height: 400px;
-            background: #000;
+            background: #f8f9fa;
             border-radius: 8px;
             overflow: hidden;
             position: relative;
-            margin: 1.5rem 0;
+            margin: 15px 0;
+            border: 1px solid #e0e0e0;
         }
 
         #scanner-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        #barcode-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        #barcode-box {
+            position: absolute;
+            border: 3px solid #2c9b47;
+            box-shadow: 0 0 15px rgba(44, 155, 71, 0.4);
+            display: none;
+            z-index: 10;
+            transition: all 0.2s ease;
         }
 
         .scanner-overlay {
@@ -76,56 +151,109 @@
         .controls {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
+            gap: 15px;
+            margin-top: 20px;
         }
 
+        /* Chess.com style buttons */
         button {
-            padding: 30px;
+            padding: 16px;
             border: none;
             border-radius: 8px;
-            background: var(--primary);
-            color: white;
             font-size: 1rem;
             cursor: pointer;
-            transition: filter 0.2s;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 10px;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        button:hover {
-            filter: brightness(1.1);
+        .btn-primary {
+            background: #2c9b47;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #24853c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-secondary {
+            background: #f0f2f5;
+            color: #2d2f33;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e4e6e9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         button:disabled {
-            opacity: 0.7;
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none !important;
+        }
+
+        button i {
+            font-size: 1.2rem;
         }
 
         .cart-section {
-            background: var(--surface);
+            background: white;
             border-radius: 12px;
-            padding: 2rem;
-            margin-top: 2rem;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e8e8e8;
         }
 
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.2rem 0;
-            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .quantity-controls {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
-            background: var(--bg);
+            gap: 12px;
+            background: #f8f9fa;
             border-radius: 6px;
-            padding: 0.4rem;
+            padding: 6px 12px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .quantity-controls button {
+            background: none;
+            border: none;
+            padding: 4px 10px;
+            font-size: 1.2rem;
+            color: #2d2f33;
+            box-shadow: none;
+        }
+
+        .quantity-controls button:hover {
+            background: #e9ecef;
+            transform: none;
         }
 
         .modal {
@@ -134,128 +262,225 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: var(--surface);
-            padding: 2rem;
+            background: white;
+            padding: 30px;
             border-radius: 12px;
             width: 95%;
             max-width: 500px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
             z-index: 1000;
+            border: 1px solid #e0e0e0;
         }
 
-        .modal h2 {
-            margin-bottom: 1.5rem;
-            color: var(--primary);
+        .modal h3 {
+            margin: 0 0 20px 0;
+            font-size: 1.4rem;
+            color: #2d2f33;
+            font-weight: 600;
         }
 
         .modal-input {
             width: 100%;
-            padding: 0.9rem;
-            margin: 0.8rem 0;
-            border: 1px solid var(--border);
-            border-radius: 6px;
+            padding: 14px;
+            margin: 12px 0;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
             font-size: 1rem;
-            transition: border-color 0.2s;
+            transition: all 0.2s ease;
+            background: #f8f9fa;
         }
 
         .modal-input:focus {
-            border-color: var(--primary);
+            border-color: #2c9b47;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(44, 155, 71, 0.1);
         }
 
         .notification {
             position: fixed;
-            bottom: 2rem;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--primary);
+            background: #2d2f33;
             color: white;
-            padding: 1rem 2rem;
+            padding: 15px 30px;
             border-radius: 8px;
             display: none;
             animation: slideUp 0.3s ease-out;
+            z-index: 1001;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
 
         @keyframes slideUp {
             from { bottom: -100px; }
-            to { bottom: 2rem; }
+            to { bottom: 30px; }
         }
 
-        #qrcode {
-            margin: 2rem auto;
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
+        #cart-total {
+            font-weight: 600;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 1.2rem;
+            color: #2d2f33;
         }
 
-        .file-controls {
-            margin: 2rem 0;
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+        .info-box {
+            background: #e9f5ef;
+            border-left: 4px solid #2c9b47;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            color: #2d2f33;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            background: #e9f5ef;
+            color: #2c9b47;
+        }
+
+        .status-indicator .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2c9b47;
+        }
+
+        .status-indicator.inactive .dot {
+            background: #e74c3c;
+        }
+
+        .status-indicator.inactive {
+            background: #fce8e6;
+            color: #e74c3c;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 25px 0;
+            margin-top: 30px;
+            color: #7a7f85;
+            font-size: 0.9rem;
+            border-top: 1px solid #e0e0e0;
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-shopping-cart"></i>
+            <h1>Gittertier Pro</h1>
+        </div>
+        <div class="user-info">
+            <span>Willkommen, Verkäufer</span>
+            <div class="user-icon">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+
     <div class="container">
-        <div class="scanner-section">
-            <h1 style="margin: 0 0 2rem 0; text-align: center;">Gittertier Pro</h1>
+        <div class="card">
+            <div class="card-header">
+                <h2>Produktscanner</h2>
+                <div class="status-indicator" id="scanner-status">
+                    <span class="dot"></span>
+                    <span>Scanner bereit</span>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i> Scannen Sie den Barcode eines Produkts. Wenn das Produkt nicht erkannt wird, können Sie es manuell hinzufügen.
+            </div>
             
             <div id="scanner-container">
                 <video id="scanner-video" playsinline></video>
-                <div id="scanner-status" style="color: white; position: absolute; top: 10px; left: 10px;"></div>
+                <div id="barcode-overlay">
+                    <div id="barcode-box"></div>
+                </div>
             </div>
-            
 
-<div class="controls">
-    <button id="toggle-scanner">Scanner starten</button>
-    <button id="show-qr" onclick="generateQR()">QR Zahlung</button>
-    <button id="manual-add">Manuell</button>
-    <button id="clear-cart">Leeren</button>
-    <button onclick="window.location.href='admin.html'" style="background: var(--error);">Admin</button>
-</div>
+            <div class="controls">
+                <button id="toggle-scanner" class="btn-primary">
+                    <i class="fas fa-camera"></i> Scanner starten
+                </button>
+                <button id="show-qr" class="btn-primary">
+                    <i class="fas fa-qrcode"></i> QR Zahlung
+                </button>
+                <button id="manual-add" class="btn-secondary">
+                    <i class="fas fa-pencil-alt"></i> Manuell
+                </button>
+                <button id="clear-cart" class="btn-secondary">
+                    <i class="fas fa-trash-alt"></i> Leeren
+                </button>
+                <button onclick="window.location.href='admin.html'" class="btn-danger">
+                    <i class="fas fa-cog"></i> Admin
+                </button>
+            </div>
         </div>
 
-        <div class="cart-section">
-            <h2 style="margin: 0 0 1.5rem 0;">Warenkorb</h2>
+        <div class="card cart-section">
+            <div class="card-header">
+                <h2>Warenkorb</h2>
+                <div id="cart-count">0 Artikel</div>
+            </div>
             <div id="cart-items"></div>
-            <div id="cart-total" style="font-weight: 600; margin-top: 1.5rem;"></div>
+            <div id="cart-total">Gesamt: 0,00€</div>
         </div>
     </div>
 
     <!-- Product Modal -->
     <div id="product-modal" class="modal">
-        <h3 style="margin: 0 0 1.5rem 0;">Produkt erfassen</h3>
+        <h3><i class="fas fa-plus-circle"></i> Produkt erfassen</h3>
         <input type="text" id="product-name" class="modal-input" placeholder="Produktname">
         <input type="number" id="product-price" class="modal-input" placeholder="Preis (€)">
         <input type="text" id="product-barcode" class="modal-input" placeholder="Barcode" readonly>
-        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button onclick="saveProduct()" style="flex: 1;">Speichern</button>
-            <button onclick="closeModal()" style="flex: 1; background: #6c757d;">Abbrechen</button>
+        <div style="display: flex; gap: 15px; margin-top: 20px;">
+            <button onclick="saveProduct()" class="btn-primary" style="flex: 1;">
+                <i class="fas fa-save"></i> Speichern
+            </button>
+            <button onclick="closeModal()" class="btn-secondary" style="flex: 1;">
+                <i class="fas fa-times"></i> Abbrechen
+            </button>
         </div>
     </div>
 
     <!-- QR Modal -->
     <div id="qr-modal" class="modal">
-        <h3 style="margin: 0 0 1.5rem 0; text-align: center;">Bezahlung initiieren</h3>
-        <div style="text-align: center;">
-            <button onclick="generateQR()" style="padding: 1rem 2rem; background: #218838;">
-                QR-Code generieren
+        <h3 style="text-align: center;"><i class="fas fa-qrcode"></i> Bezahlung initiieren</h3>
+        <div style="text-align: center; margin: 25px 0;">
+            <button onclick="generateQR()" class="btn-primary" style="padding: 15px 30px;">
+                <i class="fas fa-sync-alt"></i> QR-Code generieren
             </button>
         </div>
-        <p style="text-align: center; margin-top: 1.5rem;">Scannen Sie den generierten Code beim Kunden</p>
+        <p style="text-align: center; margin-top: 20px; color: #7a7f85;">
+            Scannen Sie den generierten Code beim Kunden
+        </p>
     </div>
 
     <div class="notification" id="notification"></div>
 
+    <footer>
+        <p>Gittertier Pro Verkaufssystem &copy; 2023</p>
+    </footer>
+
     <script>
         let cart = [];
-        let products = JSON.parse(localStorage.getItem('products')) || {}; // MODIFY THIS
+        let products = JSON.parse(localStorage.getItem('products')) || {};
         let scannerActive = false;
         let mediaStream = null;
         let currentBarcode = null;
         let scannedBarcodes = new Set();
         let qrCode = null;
+        let lastBoxPosition = null;
 
         // Barcode Scanner Configuration
         const scannerConfig = {
@@ -273,7 +498,7 @@
                 readers: [
                     'ean_reader', 
                     'code_128_reader',
-                    'ean_8_reader,'//'code_39_reader','code_39_vin_reader','codabar_reader','upc_reader','upc_e_reader'
+                    'ean_8_reader'
                 ],
                 multiple: false
             },
@@ -285,15 +510,100 @@
         async function initScanner() {
             return new Promise((resolve, reject) => {
                 Quagga.init(scannerConfig, err => {
-                if (err) {
-                    showNotification('Scanner-Fehler: ' + err.message, 'error');
-                    return reject(err);
-                }
+                    if (err) return reject(err);
+                    
+                    // Add processed event for visual feedback
+                    Quagga.onProcessed(onProcessed);
+                    
                     Quagga.onDetected(handleDetection);
                     Quagga.start();
                     resolve();
                 });
             });
+        }
+        
+        // Visual feedback for barcode detection
+        function onProcessed(result) {
+            const box = document.getElementById('barcode-box');
+            
+            if (!result || !result.boxes) {
+                box.style.display = 'none';
+                lastBoxPosition = null;
+                return;
+            }
+            
+            const boxes = result.boxes;
+            const video = document.getElementById('scanner-video');
+            const container = document.getElementById('scanner-container');
+            
+            // Skip if video hasn't loaded dimensions yet
+            if (!video.videoWidth || !video.videoHeight) {
+                box.style.display = 'none';
+                return;
+            }
+            
+            // Find the first valid box
+            let validBox = null;
+            for (let i = 0; i < Math.min(boxes.length, 1); i++) {
+                if (boxes[i] && boxes[i].length === 4) {
+                    validBox = boxes[i];
+                    break;
+                }
+            }
+            
+            if (!validBox) {
+                box.style.display = 'none';
+                lastBoxPosition = null;
+                return;
+            }
+            
+            // Calculate video aspect ratio and scaling
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+            
+            const videoAspect = videoWidth / videoHeight;
+            const containerAspect = containerWidth / containerHeight;
+            
+            let scale, offsetX, offsetY;
+            
+            // Calculate scaling and offsets based on object-fit: cover
+            if (videoAspect > containerAspect) {
+                // Video is wider than container
+                scale = containerHeight / videoHeight;
+                offsetX = (containerWidth - videoWidth * scale) / 2;
+                offsetY = 0;
+            } else {
+                // Video is taller than container
+                scale = containerWidth / videoWidth;
+                offsetX = 0;
+                offsetY = (containerHeight - videoHeight * scale) / 2;
+            }
+            
+            // Calculate box coordinates
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            
+            for (const point of validBox) {
+                if (point.x < minX) minX = point.x;
+                if (point.x > maxX) maxX = point.x;
+                if (point.y < minY) minY = point.y;
+                if (point.y > maxY) maxY = point.y;
+            }
+            
+            const x = offsetX + minX * scale;
+            const y = offsetY + minY * scale;
+            const width = (maxX - minX) * scale;
+            const height = (maxY - minY) * scale;
+            
+            // Update box position with smooth transition
+            box.style.display = 'block';
+            box.style.left = `${x}px`;
+            box.style.top = `${y}px`;
+            box.style.width = `${width}px`;
+            box.style.height = `${height}px`;
+            
+            lastBoxPosition = { x, y, width, height };
         }
 
         function handleDetection(result) {
@@ -307,7 +617,6 @@
 
         // Barcode Handling
         function handleBarcode(barcode) {
-            //const products = JSON.parse(localStorage.getItem('products')) || {};
             currentBarcode = barcode;
             
             if (products[barcode]) {
@@ -332,22 +641,24 @@
         function updateCartDisplay() {
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const cartItems = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
             
             cartItems.innerHTML = cart.map(item => `
                 <div class="cart-item">
                     <div>
-                        <div style="font-weight: 500;">${item.name}</div>
+                        <div style="font-weight: 500; margin-bottom: 8px;">${item.name}</div>
                         <div class="quantity-controls">
                             <button onclick="adjustQuantity('${item.barcode}', -1)">−</button>
-                            <span>${item.quantity}x</span>
+                            <span style="min-width: 30px; text-align: center;">${item.quantity}x</span>
                             <button onclick="adjustQuantity('${item.barcode}', 1)">+</button>
                         </div>
                     </div>
-                    <div>${(item.price * item.quantity).toFixed(2)}€</div>
+                    <div style="font-weight: 600; color: #2d2f33;">${(item.price * item.quantity).toFixed(2)}€</div>
                 </div>
             `).join('');
             
             document.getElementById('cart-total').textContent = `Gesamt: ${total.toFixed(2)}€`;
+            cartCount.textContent = `${cart.reduce((sum, item) => sum + item.quantity, 0)} Artikel`;
         }
 
         function adjustQuantity(barcode, delta) {
@@ -376,12 +687,17 @@
                 showNotification('Ungültige Eingabe', 'error');
                 return;
             }
+            
+            if (price <= 0) {
+                showNotification('Preis muss größer als 0 sein', 'error');
+                return;
+            }
 
             products[barcode] = { name, price, barcode };
+            localStorage.setItem('products', JSON.stringify(products));
             addToCart(products[barcode]);
             closeModal();
             showNotification('Produkt gespeichert');
-            localStorage.setItem('products', JSON.stringify(products)); 
         }
 
         // QR Generation
@@ -416,6 +732,7 @@
         async function toggleScanner() {
             const video = document.getElementById('scanner-video');
             const status = document.getElementById('scanner-status');
+            const box = document.getElementById('barcode-box');
             
             try {
                 if (!scannerActive) {
@@ -430,14 +747,18 @@
                     video.srcObject = mediaStream;
                     await video.play();
                     
-                    status.textContent = "Scannt...";
+                    status.innerHTML = '<span class="dot"></span><span>Scannt...</span>';
+                    status.classList.remove('inactive');
                     scannerActive = true;
-                    initScanner();
+                    await initScanner();
                 } else {
                     mediaStream.getTracks().forEach(track => track.stop());
                     video.srcObject = null;
-                    status.textContent = "";
+                    status.innerHTML = '<span class="dot"></span><span>Scanner bereit</span>';
+                    status.classList.add('inactive');
                     scannerActive = false;
+                    box.style.display = 'none';
+                    Quagga.stop();
                 }
             } catch (error) {
                 scannerActive = false;
@@ -450,7 +771,7 @@
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.style.display = 'block';
-            notification.style.backgroundColor = type === 'error' ? '#dc3545' : '#2c3e50';
+            notification.style.backgroundColor = type === 'error' ? '#e74c3c' : '#2c9b47';
             setTimeout(() => notification.style.display = 'none', 3000);
         }
 
@@ -473,6 +794,13 @@
             cart = [];
             updateCartDisplay();
             showNotification('Warenkorb geleert');
+        });
+        
+        // Initialize products from localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            products = JSON.parse(localStorage.getItem('products')) || {};
+            const status = document.getElementById('scanner-status');
+            status.classList.add('inactive');
         });
     </script>
 </body>
