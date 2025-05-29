@@ -110,6 +110,23 @@
             }
         }
 
+        function saveToArchive(status) {
+            const archiveEntry = {
+                data: LZString.compressToBase64(JSON.stringify({
+                    ...paymentData,
+                    peerId: paymentId,
+                    date: new Date().toISOString()
+                })),
+                date: new Date().toISOString(),
+                total: paymentData.total,
+                status: status
+            };
+            
+            const shortId = paymentId.split('-').pop().substr(0, 8);
+            localStorage.setItem(`receipt_${shortId}`, JSON.stringify(archiveEntry));
+        }
+
+
         async function initScanner() {
             try {
                 mediaStream = await navigator.mediaDevices.getUserMedia({ 
@@ -208,6 +225,7 @@
             if(currentPayment?.connection?.open) {
                 currentPayment.connection.send({ type: 'confirm' });
                 generateReceipt(currentPayment, 'Bestätigt');
+                saveToArchive('Bestätigt');
                 document.getElementById('confirmation-modal').style.display = 'none';
                 initScanner();
             } else {
@@ -219,6 +237,7 @@
             if(currentPayment?.connection?.open) {
                 currentPayment.connection.send({ type: 'decline' });
                 generateReceipt(currentPayment, 'Abgelehnt');
+                saveToArchive('Abgelehnt');
                 document.getElementById('confirmation-modal').style.display = 'none';
                 initScanner();
             } else {
