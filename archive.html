@@ -48,11 +48,34 @@
         .button-group button:hover, .button-group label:hover { 
             background: #f0f0f0; 
         }
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .debug-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow: auto;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Archivierte Zahlungsbelege</h1>
+        
+        <div id="error-container" style="display: none;" class="error-message"></div>
+        <div id="debug-container" style="display: none;" class="debug-info"></div>
+        
         <div class="search-box">
             <input type="text" id="search-input" placeholder="🔎 Suche nach Belegnummer oder Datum...">
         </div>
@@ -64,11 +87,113 @@
             <button id="export-btn">Export als TXT</button>
             <label for="import-input" class="import-label">Import aus TXT</label>
             <input type="file" id="import-input" accept=".txt" style="display: none;">
+            <button id="debug-btn">Debug-Info</button>
+            <button id="clear-btn">Daten löschen</button>
         </div>
     </div>
 
     <script>
         const { jsPDF } = window.jspdf;
+        
+        // Enhanced error reporting
+        function showError(message) {
+            const container = document.getElementById('error-container');
+            container.textContent = message;
+            container.style.display = 'block';
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Enhanced debug information
+        function showDebugInfo() {
+            const container = document.getElementById('debug-container');
+            let debugInfo = "=== LocalStorage Debug Info ===\n";
+            debugInfo += `Total items in localStorage: ${localStorage.length}\n\n`;
+            
+            let hasReceipts = false;
+            
+            for(let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('receipt_')) {
+                    hasReceipts = true;
+                    debugInfo += `Key: ${key}\n`;
+                    
+                    try {
+                        const storedValue = localStorage.getItem(key);
+                        if (!storedValue) {
+                            debugInfo += "  Error: Value is null or undefined\n\n";
+                            continue;
+                        }
+                        
+                        let stored;
+                        try {
+                            stored = JSON.parse(storedValue);
+                        } catch (parseError) {
+                            debugInfo += `  JSON Parse Error: ${parseError.message}\n`;
+                            debugInfo += `  Raw Value: ${storedValue.substring(0, 100)}...\n\n`;
+                            continue;
+                        }
+                        
+                        debugInfo += `  Stored: ${JSON.stringify(stored, null, 2)}\n`;
+                        
+                        // Attempt decompression if data exists
+                        if (stored && stored.data) {
+                            const decompressed = LZString.decompressFromBase64(stored.data);
+                            if (decompressed) {
+                                debugInfo += `  Decompressed: ${decompressed.substring(0, 100)}...\n`;
+                                
+                                try {
+                                    const parsed = JSON.parse(decompressed);
+                                    debugInfo += `  Parsed: ${JSON.stringify(parsed, null, 2).substring(0, 100)}...\n`;
+                                } catch (parseError) {
+                                    debugInfo += `  Parse Error: ${parseError.message}\n`;
+                                }
+                            } else {
+                                debugInfo += "  Decompression returned null!\n";
+                            }
+                        } else {
+                            debugInfo += "  Missing 'data' field in stored object!\n";
+                        }
+                        
+                        debugInfo += "\n";
+                    } catch (e) {
+                        debugInfo += `  Error: ${e.message}\n\n`;
+                    }
+                }
+            }
+            
+            if (!hasReceipts) {
+                debugInfo += "No receipt_* keys found in localStorage!\n";
+                debugInfo += "Possible reasons:\n";
+                debugInfo += "1. No receipts have been saved yet\n";
+                debugInfo += "2. Receipts are saved with different key format\n";
+                debugInfo += "3. LocalStorage has been cleared\n\n";
+                debugInfo += "Try adding a sample receipt to test functionality.\n";
+            }
+            
+            container.textContent = debugInfo;
+            container.style.display = 'block';
+        }
+        
+        document.getElementById('debug-btn').addEventListener('click', showDebugInfo);
+        
+        // Clear data button
+        document.getElementById('clear-btn').addEventListener('click', function() {
+            if(confirm('Möchten Sie wirklich alle gespeicherten Belege löschen?')) {
+                const keysToRemove = [];
+                for(let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if(key.startsWith('receipt_')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                alert(`${keysToRemove.length} Belege wurden gelöscht.`);
+                generateReceiptList(loadReceipts());
+            }
+        });
 
         // Export functionality
         document.getElementById('export-btn').addEventListener('click', function() {
@@ -81,6 +206,11 @@
                         value: JSON.parse(localStorage.getItem(key))
                     });
                 }
+            }
+            
+            if(receipts.length === 0) {
+                showError("Keine Belege zum Exportieren gefunden!");
+                return;
             }
             
             const dataStr = JSON.stringify(receipts, null, 2);
@@ -196,20 +326,56 @@
             doc.output('dataurlnewwindow');
         }
 
+        // Fixed loadReceipts with better error handling
         function loadReceipts() {
             const receipts = [];
             for(let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if(key.startsWith('receipt_')) {
-                    const stored = JSON.parse(localStorage.getItem(key));
-                    const originalData = JSON.parse(LZString.decompressFromBase64(stored.data));
-                    receipts.push({
-                        id: key.replace('receipt_', ''),
-                        data: originalData,
-                        date: stored.date,
-                        total: stored.total,
-                        status: stored.status
-                    });
+                    try {
+                        const storedValue = localStorage.getItem(key);
+                        if (!storedValue) {
+                            console.warn(`Empty value for key: ${key}`);
+                            continue;
+                        }
+                        
+                        const stored = JSON.parse(storedValue);
+                        
+                        // Attempt decompression
+                        let originalData = null;
+                        if (stored.data) {
+                            const decompressed = LZString.decompressFromBase64(stored.data);
+                            
+                            if (decompressed) {
+                                try {
+                                    originalData = JSON.parse(decompressed);
+                                } catch (parseError) {
+                                    console.error('Error parsing decompressed data:', parseError);
+                                    showError(`Fehler beim Parsen der Daten für ${key}`);
+                                    continue;
+                                }
+                            } else {
+                                console.error('Decompression failed for key:', key);
+                                showError(`Dekompression fehlgeschlagen für ${key}`);
+                                continue;
+                            }
+                        } else {
+                            console.error('Missing data field for key:', key);
+                            showError(`Datenfeld fehlt für ${key}`);
+                            continue;
+                        }
+                        
+                        receipts.push({
+                            id: key.replace('receipt_', ''),
+                            data: originalData,
+                            date: stored.date,
+                            total: stored.total,
+                            status: stored.status
+                        });
+                    } catch (e) {
+                        console.error('Error processing receipt:', e);
+                        showError(`Fehler beim Verarbeiten von ${key}: ${e.message}`);
+                    }
                 }
             }
             return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -227,7 +393,22 @@
             list.innerHTML = '';
 
             if(receipts.length === 0) {
-                list.innerHTML = '<div class="no-results">Keine gespeicherten Belege gefunden</div>';
+                list.innerHTML = `
+                    <div class="no-results">
+                        Keine gespeicherten Belege gefunden
+                        <p><small>Mögliche Ursachen:</small></p>
+                        <ul>
+                            <li>Es wurden noch keine Belege gespeichert</li>
+                            <li>Belege wurden mit einem anderen Schlüsselformat gespeichert</li>
+                            <li>LocalStorage wurde geleert</li>
+                        </ul>
+                        <button id="add-sample" style="margin-top: 10px; padding: 20px 30px; background: #6c757d; color: white; border: none; border-radius: 2225px; cursor: pointer; font-size:16px;">
+                            Testbeleg hinzufügen
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('add-sample')?.addEventListener('click', addSampleReceipt);
                 return;
             }
 
@@ -238,7 +419,7 @@
                 item.innerHTML = `
                     <div>
                         <div class="receipt-id">${receipt.id}</div>
-                        <div class="receipt-date">${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE')}</div>
+                        <div class="receipt-date">${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}</div>
                     </div>
                     <div style="text-align: right;">
                         <div class="receipt-total">€ ${receipt.total.toFixed(2)}</div>
@@ -255,13 +436,56 @@
 
             updateIncomeTotal(receipts);
         }
+        
+        // Add sample receipt for testing - fixed compression
+        function addSampleReceipt() {
+            try {
+                const sampleData = {
+                    items: [
+                        { name: 'Testprodukt 1', price: 12.99, quantity: 2 },
+                        { name: 'Testprodukt 2', price: 5.49, quantity: 1 },
+                        { name: 'Rabatt', price: -3.00, quantity: 1 }
+                    ],
+                    total: 12.99*2 + 5.49 - 3.00,
+                    peerId: 'test-12345',
+                    date: new Date().toISOString(),
+                    id: 'test123'
+                };
+                
+                const sampleEntry = {
+                    data: LZString.compressToBase64(JSON.stringify(sampleData)),
+                    date: new Date().toISOString(),
+                    total: sampleData.total,
+                    status: 'Bestätigt'
+                };
+                
+                localStorage.setItem(`receipt_test123`, JSON.stringify(sampleEntry));
+                
+                // Show success message
+                const errorContainer = document.getElementById('error-container');
+                errorContainer.textContent = "Testbeleg wurde erfolgreich hinzugefügt!";
+                errorContainer.style.backgroundColor = "#e8f5e9";
+                errorContainer.style.color = "#2e7d32";
+                errorContainer.style.display = "block";
+                
+                setTimeout(() => {
+                    errorContainer.style.display = "none";
+                }, 3000);
+                
+                generateReceiptList(loadReceipts());
+            } catch (e) {
+                showError(`Fehler beim Hinzufügen des Testbelegs: ${e.message}`);
+            }
+        }
 
         document.getElementById('search-input').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const allReceipts = loadReceipts();
             const filtered = allReceipts.filter(r => 
-                r.id.includes(searchTerm) || 
-                r.date.toLowerCase().includes(searchTerm)
+                r.id.toLowerCase().includes(searchTerm) || 
+                r.date.toLowerCase().includes(searchTerm) ||
+                r.status.toLowerCase().includes(searchTerm) ||
+                r.total.toString().includes(searchTerm)
             );
             generateReceiptList(filtered);
         });
