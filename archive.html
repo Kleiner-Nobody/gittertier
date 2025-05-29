@@ -6,68 +6,475 @@
     <title>Archivierte Belege</title>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        :root { --bg: #ebeded; --surface: #ffffff; --text: #2c3e50; --accent: #6c757d; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
-        .container { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
-        .search-box { background: #e8fcee; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        #search-input { width: 89%; padding: 40px; border: 2px solid var(--accent); border-radius: 8px; font-size: 16px;}
-        .receipt-list { background: var(--surface); border-radius: 16px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .receipt-item { display: flex; justify-content: space-between; align-items: center; padding: 30px; margin: 10px 0; background: #e1f2fe; border-radius: 12px; transition: transform 0.2s; cursor: pointer; }
-        .receipt-item:hover { transform: translateX(5px); }
-        .receipt-id { font-family: monospace; color: var(--accent); }
-        .receipt-date { font-size: 0.9em; color: #666; }
-        .receipt-total { font-weight: bold; }
-        .status-badge { padding: 7px 20px; border-radius: 20px; color: white; font-size: 0.8em; }
-        .confirmed { background: #27ae60; }
-        .declined { background: #c0392b; }
-        .no-results { text-align: center; padding: 20px; color: #666; }
-        .income-total { margin-top: 20px; padding: 20px; background: var(--surface); border-radius: 16px; text-align: right; font-size: 1.2em; }
-        .income-total span { color: var(--accent); font-weight: bold; }
-        .button-group { 
-            background: #e8fcee; 
-            border-radius: 16px; 
-            padding: 20px; 
-            margin-top: 20px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-            display: flex; 
-            gap: 10px; 
-        }
-        .button-group button, .button-group label { 
-            flex: 1; 
-            padding: 15px; 
-            border: 2px solid var(--accent); 
-            border-radius: 8px; 
-            background: white; 
-            color: var(--text); 
-            font-size: 16px; 
-            cursor: pointer; 
-            text-align: center; 
-            transition: background 0.2s; 
-        }
-        .button-group button:hover, .button-group label:hover { 
-            background: #f0f0f0; 
-        }
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-weight: bold;
-        }
-        .debug-info {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-family: monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
-            max-height: 300px;
-            overflow: auto;
-        }
-    </style>
+<style>
+    :root {
+  --bg: #ebeded;
+  --surface: #ffffff;
+  --text: #2c3e50;
+  --accent: #6c757d;
+  --accent-dark: #5a6268;
+  --accent-light: #d6d8db;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  --border-radius: 16px;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+
+.header-subtitle {
+  color: #666;
+  margin-bottom: 40px;
+  font-weight: 400;
+  font-size: 1.1rem;
+}
+
+.search-box {
+  background: #e8fcee;
+  border-radius: var(--border-radius);
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.search-container {
+  display: flex;
+  gap: 15px;
+}
+
+#search-input {
+  flex: 1;
+  padding: 30px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  font-size: 1.1rem;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+#search-input:focus {
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.2);
+  background: #fff;
+  outline: none;
+}
+
+.search-button {
+  background: var(--accent);
+  color: white;
+  padding: 0 40px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  letter-spacing: 0.5px;
+}
+
+.search-button:hover {
+  background: var(--accent-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.search-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.receipt-list {
+  background: var(--surface);
+  border-radius: var(--border-radius);
+  padding: 40px;
+  box-shadow: var(--shadow);
+  margin-bottom: 30px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.receipt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--accent-light);
+}
+
+.receipt-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.receipt-count {
+  font-size: 1.1rem;
+  color: var(--accent);
+  background: rgba(108, 117, 125, 0.1);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.receipt-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px;
+  margin: 20px 0;
+  background: #e1f2fe;
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.receipt-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.receipt-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.receipt-id {
+  font-family: monospace;
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.receipt-date {
+  font-size: 1rem;
+  color: #666;
+}
+
+.receipt-total {
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.receipt-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
+}
+
+.status-badge {
+  padding: 10px 25px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.confirmed {
+  background: var(--success);
+}
+
+.declined {
+  background: var(--danger);
+}
+
+.pending {
+  background: var(--warning);
+  color: #333;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 1.2rem;
+  background: rgba(233, 236, 239, 0.5);
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.income-total {
+  margin-top: 30px;
+  padding: 30px;
+  background: var(--surface);
+  border-radius: var(--border-radius);
+  text-align: right;
+  font-size: 1.4rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.income-label {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.income-total span {
+  color: var(--success);
+  font-weight: bold;
+  font-size: 1.8rem;
+}
+
+.button-group {
+  background: #e8fcee;
+  border-radius: var(--border-radius);
+  padding: 30px;
+  margin-top: 30px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 15px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.button-group button, 
+.button-group label {
+  flex: 1;
+  padding: 25px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  background: white;
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.button-group button:hover, 
+.button-group label:hover {
+  background: #f0f0f0;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.button-group button.primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.button-group button.primary:hover {
+  background: var(--accent-dark);
+}
+
+.button-group button.success {
+  background: var(--success);
+  color: white;
+  border-color: var(--success);
+}
+
+.button-group button.success:hover {
+  background: #218838;
+}
+
+.button-group button.danger {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+.button-group button.danger:hover {
+  background: #bd2130;
+}
+
+.error-message {
+  background: #ffebee;
+  color: var(--danger);
+  padding: 25px;
+  border-radius: 8px;
+  margin: 30px 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.debug-info {
+  background: #e3f2fd;
+  padding: 30px;
+  border-radius: var(--border-radius);
+  margin: 30px 0;
+  font-family: monospace;
+  font-size: 1rem;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow: auto;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 40px 20px;
+  }
+  
+  .header-title {
+    font-size: 2rem;
+  }
+  
+  .search-container {
+    flex-direction: column;
+  }
+  
+  #search-input {
+    padding: 25px;
+  }
+  
+  .search-button {
+    padding: 25px;
+  }
+  
+  .receipt-list {
+    padding: 30px;
+  }
+  
+  .receipt-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .receipt-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .receipt-details {
+    align-items: flex-start;
+    width: 100%;
+  }
+  
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .income-total {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 30px 15px;
+  }
+  
+  .header-title {
+    font-size: 1.8rem;
+  }
+  
+  .search-box {
+    padding: 20px;
+  }
+  
+  #search-input {
+    padding: 20px;
+    font-size: 1rem;
+  }
+  
+  .receipt-list {
+    padding: 20px;
+  }
+  
+  .receipt-item {
+    padding: 20px;
+  }
+  
+  .receipt-id {
+    font-size: 1.1rem;
+  }
+  
+  .receipt-total {
+    font-size: 1.1rem;
+  }
+  
+  .status-badge {
+    padding: 8px 20px;
+  }
+  
+  .income-total {
+    padding: 20px;
+    font-size: 1.2rem;
+  }
+  
+  .income-total span {
+    font-size: 1.5rem;
+  }
+  
+  .button-group {
+    padding: 20px;
+  }
+  
+  .button-group button, 
+  .button-group label {
+    padding: 20px;
+    font-size: 1rem;
+  }
+  
+  .error-message {
+    padding: 20px;
+    font-size: 1rem;
+  }
+  
+  .debug-info {
+    padding: 20px;
+  }
+}
+</style>
 </head>
 <body>
     <div class="container">
