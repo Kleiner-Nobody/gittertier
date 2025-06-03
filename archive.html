@@ -3,523 +3,1031 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archivierte Belege</title>
+    <title>Belegarchiv</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
-    :root {
-  --bg: #ebeded;
-  --surface: #ffffff;
-  --text: #2c3e50;
-  --accent: #6c757d;
-  --accent-dark: #5a6268;
-  --accent-light: #d6d8db;
-  --success: #28a745;
-  --danger: #dc3545;
-  --warning: #ffc107;
-  --info: #17a2b8;
-  --border-radius: 16px;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --text: #212529;
+            --text-secondary: #6c757d;
+            --accent: #0d6efd;
+            --accent-dark: #0b5ed7;
+            --accent-light: #e7f1ff;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #0dcaf0;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --card-padding: 24px;
+        }
 
-body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
+        .dark-mode {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --text: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent: #3a86ff;
+            --accent-dark: #2a75e0;
+            --accent-light: #1a3650;
+            --success: #28a745;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
 
-.container {
-  max-width: 800px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 60px 20px;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-.header {
-  text-align: center;
-  margin-bottom: 40px;
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
 
-.header-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: var(--text);
-  letter-spacing: 0.5px;
-}
+        header {
+            background: var(--surface);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-.header-subtitle {
-  color: #666;
-  margin-bottom: 40px;
-  font-weight: 400;
-  font-size: 1.1rem;
-}
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-.search-box {
-  background: #e8fcee;
-  border-radius: var(--border-radius);
-  padding: 30px;
-  margin-bottom: 30px;
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
 
-.search-container {
-  display: flex;
-  gap: 15px;
-}
+        .logo i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
 
-#search-input {
-  flex: 1;
-  padding: 30px;
-  border: 2px solid var(--accent);
-  border-radius: 8px;
-  font-size: 1.1rem;
-  background: #f8f9fa;
-  transition: all 0.3s ease;
-}
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
 
-#search-input:focus {
-  border-color: var(--accent-dark);
-  box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.2);
-  background: #fff;
-  outline: none;
-}
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
 
-.search-button {
-  background: var(--accent);
-  color: white;
-  padding: 0 40px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow);
-  letter-spacing: 0.5px;
-}
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
 
-.search-button:hover {
-  background: var(--accent-dark);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-}
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+        }
 
-.search-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-}
+        .mobile-menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text);
+            cursor: pointer;
+        }
 
-.receipt-list {
-  background: var(--surface);
-  border-radius: var(--border-radius);
-  padding: 40px;
-  box-shadow: var(--shadow);
-  margin-bottom: 30px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
+        .card {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: var(--card-padding);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
 
-.receipt-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid var(--accent-light);
-}
+        .card-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.receipt-title {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: var(--text);
-}
+        .card-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.receipt-count {
-  font-size: 1.1rem;
-  color: var(--accent);
-  background: rgba(108, 117, 125, 0.1);
-  padding: 8px 20px;
-  border-radius: 20px;
-  font-weight: 500;
-}
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+        }
 
-.receipt-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30px;
-  margin: 20px 0;
-  background: #e1f2fe;
-  border-radius: 12px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-  border: 1px solid rgba(0,0,0,0.05);
-}
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
 
-.receipt-item:hover {
-  transform: translateX(5px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-}
+        .btn-primary:hover {
+            background: var(--accent-dark);
+        }
 
-.receipt-info {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
 
-.receipt-id {
-  font-family: monospace;
-  color: var(--accent);
-  font-size: 1.2rem;
-  font-weight: 600;
-}
+        .btn-secondary:hover {
+            background: rgba(0,0,0,0.03);
+        }
 
-.receipt-date {
-  font-size: 1rem;
-  color: #666;
-}
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
 
-.receipt-total {
-  font-weight: bold;
-  font-size: 1.3rem;
-}
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
 
-.receipt-details {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 15px;
-}
+        .btn-warning {
+            background: var(--warning);
+            color: var(--text);
+        }
 
-.status-badge {
-  padding: 10px 25px;
-  border-radius: 20px;
-  color: white;
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
 
-.confirmed {
-  background: var(--success);
-}
+        #search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--surface);
+            color: var(--text);
+        }
 
-.declined {
-  background: var(--danger);
-}
+        #search-input:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+        }
 
-.pending {
-  background: var(--warning);
-  color: #333;
-}
+        .filter-section {
+            margin-bottom: 20px;
+        }
 
-.no-results {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-size: 1.2rem;
-  background: rgba(233, 236, 239, 0.5);
-  border-radius: 12px;
-  margin: 20px 0;
-}
+        .filter-title {
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+        }
 
-.income-total {
-  margin-top: 30px;
-  padding: 30px;
-  background: var(--surface);
-  border-radius: var(--border-radius);
-  text-align: right;
-  font-size: 1.4rem;
-  box-shadow: var(--shadow);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
+        .filter-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
 
-.income-label {
-  font-weight: 500;
-  color: var(--text);
-}
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+        }
 
-.income-total span {
-  color: var(--success);
-  font-weight: bold;
-  font-size: 1.8rem;
-}
+        .filter-option:hover {
+            background: rgba(0,0,0,0.03);
+        }
 
-.button-group {
-  background: #e8fcee;
-  border-radius: var(--border-radius);
-  padding: 30px;
-  margin-top: 30px;
-  box-shadow: var(--shadow);
-  display: flex;
-  gap: 15px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
+        .date-filter {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-.button-group button, 
-.button-group label {
-  flex: 1;
-  padding: 25px;
-  border: 2px solid var(--accent);
-  border-radius: 8px;
-  background: white;
-  color: var(--text);
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
+        .date-input {
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: var(--surface);
+            color: var(--text);
+        }
 
-.button-group button:hover, 
-.button-group label:hover {
-  background: #f0f0f0;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+        .bulk-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
 
-.button-group button.primary {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
-}
+        .bulk-actions button {
+            flex: 1;
+        }
 
-.button-group button.primary:hover {
-  background: var(--accent-dark);
-}
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin: 12px 0;
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
 
-.button-group button.success {
-  background: var(--success);
-  color: white;
-  border-color: var(--success);
-}
+        .receipt-item:hover {
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
 
-.button-group button.success:hover {
-  background: #218838;
-}
+        .receipt-item.selected {
+            border: 1px solid var(--accent);
+            background: var(--accent-light);
+        }
 
-.button-group button.danger {
-  background: var(--danger);
-  color: white;
-  border-color: var(--danger);
-}
+        .receipt-checkbox {
+            margin-right: 16px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
 
-.button-group button.danger:hover {
-  background: #bd2130;
-}
+        .receipt-actions {
+            display: flex;
+            gap: 8px;
+        }
 
-.error-message {
-  background: #ffebee;
-  color: var(--danger);
-  padding: 25px;
-  border-radius: 8px;
-  margin: 30px 0;
-  font-weight: 600;
-  font-size: 1.1rem;
-  text-align: center;
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(220, 53, 69, 0.3);
-}
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-.debug-info {
-  background: #e3f2fd;
-  padding: 30px;
-  border-radius: var(--border-radius);
-  margin: 30px 0;
-  font-family: monospace;
-  font-size: 1rem;
-  white-space: pre-wrap;
-  max-height: 300px;
-  overflow: auto;
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
+        .action-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .container {
-    padding: 40px 20px;
-  }
-  
-  .header-title {
-    font-size: 2rem;
-  }
-  
-  .search-container {
-    flex-direction: column;
-  }
-  
-  #search-input {
-    padding: 25px;
-  }
-  
-  .search-button {
-    padding: 25px;
-  }
-  
-  .receipt-list {
-    padding: 30px;
-  }
-  
-  .receipt-header {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-  
-  .receipt-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-  
-  .receipt-details {
-    align-items: flex-start;
-    width: 100%;
-  }
-  
-  .button-group {
-    flex-direction: column;
-  }
-  
-  .income-total {
-    flex-direction: column;
-    gap: 20px;
-    text-align: center;
-  }
-}
+        .receipt-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
-@media (max-width: 480px) {
-  .container {
-    padding: 30px 15px;
-  }
-  
-  .header-title {
-    font-size: 1.8rem;
-  }
-  
-  .search-box {
-    padding: 20px;
-  }
-  
-  #search-input {
-    padding: 20px;
-    font-size: 1rem;
-  }
-  
-  .receipt-list {
-    padding: 20px;
-  }
-  
-  .receipt-item {
-    padding: 20px;
-  }
-  
-  .receipt-id {
-    font-size: 1.1rem;
-  }
-  
-  .receipt-total {
-    font-size: 1.1rem;
-  }
-  
-  .status-badge {
-    padding: 8px 20px;
-  }
-  
-  .income-total {
-    padding: 20px;
-    font-size: 1.2rem;
-  }
-  
-  .income-total span {
-    font-size: 1.5rem;
-  }
-  
-  .button-group {
-    padding: 20px;
-  }
-  
-  .button-group button, 
-  .button-group label {
-    padding: 20px;
-    font-size: 1rem;
-  }
-  
-  .error-message {
-    padding: 20px;
-    font-size: 1rem;
-  }
-  
-  .debug-info {
-    padding: 20px;
-  }
-}
-</style>
+        .receipt-id {
+            font-family: monospace;
+            color: var(--accent);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .receipt-date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .receipt-note {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .receipt-total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-left: 16px;
+        }
+
+        .receipt-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .confirmed {
+            background: var(--success);
+        }
+
+        .declined {
+            background: var(--danger);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .income-total {
+            padding: 20px;
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            text-align: right;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .income-label {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .income-total span {
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .button-group button, 
+        .button-group label {
+            flex: 1;
+            min-width: 180px;
+            padding: 14px;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-weight: 500;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+
+        .success-message {
+            background: rgba(25, 135, 84, 0.1);
+            color: var(--success);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-weight: 500;
+            border: 1px solid rgba(25, 135, 84, 0.2);
+        }
+
+        .debug-info {
+            background: rgba(13, 110, 253, 0.1);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow: auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.4rem;
+            color: var(--text);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .receipt-detail-row {
+            display: flex;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+
+        .detail-col {
+            flex: 1;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        .items-table th {
+            background: rgba(0,0,0,0.03);
+            padding: 12px;
+            text-align: left;
+            color: var(--text);
+            font-weight: 500;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            color: var(--text);
+        }
+
+        .note-section {
+            margin-top: 24px;
+        }
+
+        #note-input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--surface);
+            color: var(--text);
+            min-height: 120px;
+            margin-top: 8px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .backup-reminder {
+            background: rgba(255, 193, 7, 0.1);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 3px solid var(--warning);
+        }
+
+        .backup-content {
+            flex: 1;
+        }
+
+        .backup-reminder h4 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .backup-reminder p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .close-reminder {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px 0;
+            margin-top: 40px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+
+        /* Mobile sidebar toggle */
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-hidden {
+            transform: translateX(-100%);
+            position: absolute;
+            z-index: 99;
+            background: var(--surface);
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 98;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 16px;
+            }
+            
+            .container {
+                padding: 16px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .receipt-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .receipt-details {
+                align-items: flex-start;
+                width: 100%;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid rgba(0,0,0,0.05);
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .income-total {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 72px;
+                left: 0;
+                width: 280px;
+                height: calc(100vh - 72px);
+                z-index: 100;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                overflow-y: auto;
+                background: var(--surface);
+                padding: 16px;
+                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            }
+            
+            .sidebar-visible {
+                transform: translateX(0);
+            }
+            
+            .mobile-overlay-visible {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px 24px;
+            }
+            
+            .logo h1 {
+                font-size: 1.3rem;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .modal-header, .modal-body, .modal-footer {
+                padding: 16px;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-receipt"></i>
+            <h1>Belegarchiv</h1>
+        </div>
+        <div class="header-controls">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="theme-toggle" id="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="user-info">
+                <div class="user-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
     <div class="container">
-        <h1>Archivierte Zahlungsbelege</h1>
-        
-        <div id="error-container" style="display: none;" class="error-message"></div>
-        <div id="debug-container" style="display: none;" class="debug-info"></div>
-        
-        <div class="search-box">
-            <input type="text" id="search-input" placeholder="🔎 Suche nach Belegnummer oder Datum...">
+        <div class="sidebar" id="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-filter"></i> Filter</h2>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Status</span>
+                    </div>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" id="filter-confirmed" checked> 
+                            <span>Bestätigt</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="filter-declined" checked> 
+                            <span>Abgelehnt</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-calendar"></i>
+                        <span>Zeitraum</span>
+                    </div>
+                    <div class="date-filter">
+                        <input type="date" id="start-date" class="date-input">
+                        <input type="date" id="end-date" class="date-input">
+                        <button class="btn-secondary" id="apply-date-filter">
+                            <i class="fas fa-check"></i> Anwenden
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-search"></i>
+                        <span>Notizen suchen</span>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="note-search" placeholder="Suche in Notizen...">
+                    </div>
+                </div>
+                
+                <div class="bulk-actions">
+                    <button id="bulk-delete" class="btn-danger">
+                        <i class="fas fa-trash"></i> Löschen
+                    </button>
+                    <button id="bulk-export" class="btn-success">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                </div>
+                
+                <div class="backup-reminder" id="backup-reminder">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="backup-content">
+                        <h4>Backup empfohlen</h4>
+                        <p>Ihr letztes Backup war vor 12 Tagen</p>
+                    </div>
+                    <button class="close-reminder" id="close-reminder">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-tools"></i> Verwaltung</h2>
+                </div>
+                
+                <div class="button-group">
+                    <button id="auto-delete" class="btn-warning">
+                        <i class="fas fa-clock"></i> Alte Belege
+                    </button>
+                    <button id="export-all" class="btn-success">
+                        <i class="fas fa-file-export"></i> Alle exportieren
+                    </button>
+                    <label for="import-input" class="btn-primary">
+                        <i class="fas fa-file-import"></i> Import
+                    </label>
+                    <input type="file" id="import-input" accept=".txt" style="display: none;">
+                    <button id="debug-btn" class="btn-secondary">
+                        <i class="fas fa-bug"></i> Debug
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="receipt-list" id="receipt-list"></div>
-        <div class="income-total" id="income-total">
-            Gesamteinnahmen: <span id="total-amount">€0.00</span>
+        
+        <div class="main-content">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="🔎 Suche nach Belegnummer, Datum oder Status...">
+                <button id="mobile-filter-toggle" class="btn-primary mobile-only">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+            </div>
+            
+            <div id="error-container" style="display: none;" class="error-message"></div>
+            <div id="success-container" style="display: none;" class="success-message"></div>
+            <div id="debug-container" style="display: none;" class="debug-info"></div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-receipt"></i> Archivierte Belege</h2>
+                    <div class="receipt-count" id="receipt-count">0 Belege</div>
+                </div>
+                <div class="receipt-list" id="receipt-list"></div>
+            </div>
+            
+            <div class="income-total" id="income-total">
+                <div class="income-label">Gesamteinnahmen:</div>
+                <span id="total-amount">€0.00</span>
+            </div>
         </div>
-        <div class="button-group">
-            <button id="export-btn">Export als TXT</button>
-            <label for="import-input" class="import-label">Import aus TXT</label>
-            <input type="file" id="import-input" accept=".txt" style="display: none;">
-            <button id="debug-btn">Debug-Info</button>
-            <button id="clear-btn">Daten löschen</button>
+    </div>
+    
+    <div class="modal" id="receipt-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Beleg Details</h3>
+                <button class="close-modal" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="receipt-detail-row">
+                    <div class="detail-col">
+                        <div class="detail-label">Belegnummer</div>
+                        <div class="detail-value" id="detail-id">-</div>
+                    </div>
+                    <div class="detail-col">
+                        <div class="detail-label">Datum</div>
+                        <div class="detail-value" id="detail-date">-</div>
+                    </div>
+                </div>
+                
+                <div class="receipt-detail-row">
+                    <div class="detail-col">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span id="detail-status" class="status-badge">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-col">
+                        <div class="detail-label">Gesamtbetrag</div>
+                        <div class="detail-value" id="detail-total">-</div>
+                    </div>
+                </div>
+                
+                <h4>Artikel</h4>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Artikel</th>
+                            <th>Menge</th>
+                            <th>Preis</th>
+                            <th>Gesamt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-list">
+                        <!-- Items will be populated here -->
+                    </tbody>
+                </table>
+                
+                <div class="note-section">
+                    <div class="detail-label">Notizen</div>
+                    <textarea id="note-input" placeholder="Notizen zu diesem Beleg hinzufügen..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="toggle-status" class="btn-secondary">
+                    <i class="fas fa-sync"></i> Status ändern
+                </button>
+                <button id="save-note" class="btn-success">
+                    <i class="fas fa-save"></i> Speichern
+                </button>
+                <button id="print-receipt" class="btn-primary">
+                    <i class="fas fa-print"></i> Drucken
+                </button>
+            </div>
         </div>
     </div>
 
+    <footer>
+        <p>© 2023 Gittertier GmbH. Alle Rechte vorbehalten.</p>
+        <p>Version 3.0 | Zuletzt aktualisiert: 15.11.2023</p>
+    </footer>
+
     <script>
-         (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlToken = decodeURIComponent(urlParams.get('token') || '');
-            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
-            const tokenIndex = validTokens.indexOf(urlToken);
-
-            if(tokenIndex === -1) {
-                const redirect = encodeURIComponent(window.location.href);
-                window.location.href = `login.html?redirect=${redirect}`;
-            } else {
-                // Remove used token and clean URL
-                validTokens.splice(tokenIndex, 1);
-                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
-                history.replaceState(null, null, window.location.pathname);
-            }
-        })
-
+        // Initialize jsPDF
         const { jsPDF } = window.jspdf;
         
-        // Enhanced error reporting
+        let currentReceipt = null;
+        let selectedReceipts = new Set();
+        
+        // Initialize theme
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+        
+        // Toggle theme
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                this.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                localStorage.removeItem('theme');
+                this.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        });
+        
+        // Mobile sidebar toggle
+        document.getElementById('mobile-menu-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('sidebar-visible');
+            document.getElementById('mobile-overlay').classList.toggle('mobile-overlay-visible');
+        });
+        
+        document.getElementById('mobile-overlay').addEventListener('click', function() {
+            this.classList.remove('mobile-overlay-visible');
+            document.getElementById('sidebar').classList.remove('sidebar-visible');
+        });
+        
+        // Show success message
+        function showSuccess(message) {
+            const container = document.getElementById('success-container');
+            container.textContent = message;
+            container.style.display = 'block';
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Show error message
         function showError(message) {
             const container = document.getElementById('error-container');
             container.textContent = message;
@@ -532,69 +1040,41 @@ body {
         // Enhanced debug information
         function showDebugInfo() {
             const container = document.getElementById('debug-container');
-            let debugInfo = "=== LocalStorage Debug Info ===\n";
-            debugInfo += `Total items in localStorage: ${localStorage.length}\n\n`;
+            let debugInfo = "LocalStorage Debug Info\n";
+            debugInfo += `Total items: ${localStorage.length}\n`;
+            debugInfo += `Theme: ${localStorage.getItem('theme') || 'light'}\n\n`;
             
-            let hasReceipts = false;
+            let receiptCount = 0;
             
             for(let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if(key.startsWith('receipt_')) {
-                    hasReceipts = true;
+                    receiptCount++;
                     debugInfo += `Key: ${key}\n`;
                     
                     try {
                         const storedValue = localStorage.getItem(key);
                         if (!storedValue) {
-                            debugInfo += "  Error: Value is null or undefined\n\n";
+                            debugInfo += "  Error: Empty value\n\n";
                             continue;
                         }
                         
-                        let stored;
-                        try {
-                            stored = JSON.parse(storedValue);
-                        } catch (parseError) {
-                            debugInfo += `  JSON Parse Error: ${parseError.message}\n`;
-                            debugInfo += `  Raw Value: ${storedValue.substring(0, 100)}...\n\n`;
-                            continue;
+                        const stored = JSON.parse(storedValue);
+                        debugInfo += `  Date: ${stored.date}\n`;
+                        debugInfo += `  Total: €${stored.total}\n`;
+                        debugInfo += `  Status: ${stored.status}\n`;
+                        
+                        if (stored.note) {
+                            debugInfo += `  Note: ${stored.note.substring(0, 50)}...\n`;
                         }
-                        
-                        debugInfo += `  Stored: ${JSON.stringify(stored, null, 2)}\n`;
-                        
-                        // Attempt decompression if data exists
-                        if (stored && stored.data) {
-                            const decompressed = LZString.decompressFromBase64(stored.data);
-                            if (decompressed) {
-                                debugInfo += `  Decompressed: ${decompressed.substring(0, 100)}...\n`;
-                                
-                                try {
-                                    const parsed = JSON.parse(decompressed);
-                                    debugInfo += `  Parsed: ${JSON.stringify(parsed, null, 2).substring(0, 100)}...\n`;
-                                } catch (parseError) {
-                                    debugInfo += `  Parse Error: ${parseError.message}\n`;
-                                }
-                            } else {
-                                debugInfo += "  Decompression returned null!\n";
-                            }
-                        } else {
-                            debugInfo += "  Missing 'data' field in stored object!\n";
-                        }
-                        
-                        debugInfo += "\n";
                     } catch (e) {
                         debugInfo += `  Error: ${e.message}\n\n`;
                     }
                 }
             }
             
-            if (!hasReceipts) {
-                debugInfo += "No receipt_* keys found in localStorage!\n";
-                debugInfo += "Possible reasons:\n";
-                debugInfo += "1. No receipts have been saved yet\n";
-                debugInfo += "2. Receipts are saved with different key format\n";
-                debugInfo += "3. LocalStorage has been cleared\n\n";
-                debugInfo += "Try adding a sample receipt to test functionality.\n";
-            }
+            debugInfo += `\nTotal receipts: ${receiptCount}\n`;
+            debugInfo += `Last backup: ${localStorage.getItem('lastBackupReminder') || 'Never'}`;
             
             container.textContent = debugInfo;
             container.style.display = 'block';
@@ -602,42 +1082,74 @@ body {
         
         document.getElementById('debug-btn').addEventListener('click', showDebugInfo);
         
-        // Clear data button
-        document.getElementById('clear-btn').addEventListener('click', function() {
-            if(confirm('Möchten Sie wirklich alle gespeicherten Belege löschen?')) {
+        // Close backup reminder
+        document.getElementById('close-reminder').addEventListener('click', function() {
+            document.getElementById('backup-reminder').style.display = 'none';
+            localStorage.setItem('lastBackupReminder', new Date().toISOString());
+        });
+        
+        // Clear old receipts
+        document.getElementById('auto-delete').addEventListener('click', function() {
+            if(confirm('Belege älter als 100 Tage löschen?')) {
+                const hundredDaysAgo = new Date();
+                hundredDaysAgo.setDate(hundredDaysAgo.getDate() - 100);
+                
                 const keysToRemove = [];
                 for(let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     if(key.startsWith('receipt_')) {
-                        keysToRemove.push(key);
+                        const stored = JSON.parse(localStorage.getItem(key));
+                        const receiptDate = new Date(stored.date);
+                        
+                        if (receiptDate < hundredDaysAgo) {
+                            keysToRemove.push(key);
+                        }
                     }
                 }
                 
+                if (keysToRemove.length === 0) {
+                    showSuccess("Keine alten Belege gefunden");
+                    return;
+                }
+                
                 keysToRemove.forEach(key => localStorage.removeItem(key));
-                alert(`${keysToRemove.length} Belege wurden gelöscht.`);
+                showSuccess(`${keysToRemove.length} Belege gelöscht`);
                 generateReceiptList(loadReceipts());
             }
         });
 
-        // Export functionality
-        document.getElementById('export-btn').addEventListener('click', function() {
-            const receipts = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('receipt_')) {
-                    receipts.push({
-                        key: key,
-                        value: JSON.parse(localStorage.getItem(key))
-                    });
-                }
-            }
-            
-            if(receipts.length === 0) {
-                showError("Keine Belege zum Exportieren gefunden!");
+        // Export all functionality
+        document.getElementById('export-all').addEventListener('click', function() {
+            exportReceipts(loadReceipts());
+        });
+        
+        // Export selected receipts
+        document.getElementById('bulk-export').addEventListener('click', function() {
+            if (selectedReceipts.size === 0) {
+                showError("Keine Belege ausgewählt");
                 return;
             }
             
-            const dataStr = JSON.stringify(receipts, null, 2);
+            const receipts = loadReceipts().filter(r => selectedReceipts.has(r.id));
+            exportReceipts(receipts);
+        });
+        
+        // Export receipts
+        function exportReceipts(receipts) {
+            if(receipts.length === 0) {
+                showError("Keine Belege zum Exportieren");
+                return;
+            }
+            
+            const exportData = receipts.map(receipt => {
+                const stored = JSON.parse(localStorage.getItem(`receipt_${receipt.id}`));
+                return {
+                    key: `receipt_${receipt.id}`,
+                    value: stored
+                };
+            });
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
             const blob = new Blob([dataStr], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -645,7 +1157,7 @@ body {
             a.download = `belege_export_${new Date().toISOString().split('T')[0]}.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
-        });
+        }
 
         // Import functionality
         document.getElementById('import-input').addEventListener('change', function(e) {
@@ -659,149 +1171,20 @@ body {
                     let importedCount = 0;
                     
                     receipts.forEach(({ key, value }) => {
-                        if (!localStorage.getItem(key)) {
-                            localStorage.setItem(key, JSON.stringify(value));
-                            importedCount++;
-                        }
+                        localStorage.setItem(key, JSON.stringify(value));
+                        importedCount++;
                     });
 
-                    alert(`Erfolgreich ${importedCount} Belege importiert.`);
+                    showSuccess(`${importedCount} Belege importiert`);
                     generateReceiptList(loadReceipts());
                 } catch (error) {
-                    alert('Fehler beim Importieren: Ungültiges Dateiformat.');
+                    showError('Ungültiges Dateiformat');
                 }
             };
             reader.readAsText(file);
         });
 
-
-        function generateArchiveReceipt(receiptData, status) {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    const paymentDate = new Date(receiptData.date).toLocaleDateString('de-DE');
-    const paymentTime = new Date(receiptData.date).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-    let yPos = 20;
-    
-    // Set color scheme to match admin login
-    const primaryColor = [44, 62, 80];        // #2c3e50
-    const bgColor = [235, 237, 237];          // #ebeded
-    const surfaceColor = [255, 255, 255];     // #ffffff
-    const accentColor = [108, 117, 125];      // #6c757d
-    const successColor = [40, 167, 69];       // #28a745
-    const dangerColor = [220, 53, 69];        // #dc3545
-    const infoColor = [225, 242, 254];        // #e1f2fe
-    
-    // Set background color
-    doc.setFillColor(...bgColor);
-    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-    
-    // Header with admin-style design
-    doc.setFillColor(...surfaceColor);
-    doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'F');
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'S');
-    
-    doc.setFontSize(28);
-    doc.setTextColor(...primaryColor);
-    doc.setFont(undefined, 'bold');
-    doc.text("Gittertier", pageWidth/2, yPos + 25, null, 'center');
-    
-    doc.setFontSize(12);
-    doc.setTextColor(...accentColor);
-    doc.text(`Belegnummer: ${receiptData.id}`, pageWidth/2, yPos + 40, null, 'center');
-    
-    yPos += 70;
-    
-    // Receipt details
-    doc.setFontSize(16);
-    doc.setTextColor(...primaryColor);
-    doc.text(`Datum: ${paymentDate}`, 30, yPos);
-    doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos, null, 'right');
-    yPos += 25;
-    
-    // Items header
-    doc.setFillColor(...infoColor);
-    doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'F');
-    doc.setDrawColor(...accentColor);
-    doc.setLineWidth(0.2);
-    doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'S');
-    
-    doc.setFontSize(12);
-    doc.setTextColor(...accentColor);
-    doc.text("Artikel", 35, yPos + 13);
-    doc.text("Menge", 130, yPos + 13);
-    doc.text("Preis", pageWidth - 35, yPos + 13, null, 'right');
-    
-    yPos += 25;
-    
-    // Items
-    receiptData.items.forEach((item, index) => {
-        if(yPos > pageHeight - 100) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        // Alternate row colors
-        const rowColor = index % 2 === 0 ? surfaceColor : [248, 249, 250];
-        doc.setFillColor(...rowColor);
-        doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'F');
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.1);
-        doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'S');
-        
-        doc.setFontSize(12);
-        doc.setTextColor(...primaryColor);
-        doc.text(item.name.substring(0, 40), 35, yPos + 10);
-        
-        const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
-        doc.text(quantityPrice, 130, yPos + 10);
-        
-        const total = (item.quantity * item.price).toFixed(2);
-        doc.text(`€${total}`, pageWidth - 35, yPos + 10, null, 'right');
-        
-        yPos += 30;
-    });
-    
-    yPos += 15;
-    
-    // Total section
-    doc.setFillColor(232, 252, 238); // Light green
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-    doc.setDrawColor(200, 200, 200);
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
-    
-    doc.setFontSize(18);
-    doc.setTextColor(...primaryColor);
-    doc.text(`Gesamtsumme:`, 40, yPos + 12);
-    doc.text(`€ ${receiptData.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
-    
-    yPos += 45;
-    
-    // Status section
-    const statusColor = status === 'Bestätigt' ? successColor : dangerColor;
-    doc.setFillColor(...statusColor);
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-    doc.setDrawColor(...statusColor);
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
-    
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`Status: ${status}`, pageWidth/2, yPos + 12, null, 'center');
-    
-    yPos += 45;
-    
-    // Thank you message and receipt number
-    doc.setFontSize(12);
-    doc.setTextColor(...accentColor);
-    doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
-    
-    // Keep the archive behavior (open in new window)
-    doc.save(`gittertier_beleg_${receiptData.id}.pdf`);
-}
-
-        // Fixed loadReceipts with better error handling
+        // Fixed loadReceipts function
         function loadReceipts() {
             const receipts = [];
             for(let i = 0; i < localStorage.length; i++) {
@@ -809,10 +1192,7 @@ body {
                 if(key.startsWith('receipt_')) {
                     try {
                         const storedValue = localStorage.getItem(key);
-                        if (!storedValue) {
-                            console.warn(`Empty value for key: ${key}`);
-                            continue;
-                        }
+                        if (!storedValue) continue;
                         
                         const stored = JSON.parse(storedValue);
                         
@@ -826,18 +1206,23 @@ body {
                                     originalData = JSON.parse(decompressed);
                                 } catch (parseError) {
                                     console.error('Error parsing decompressed data:', parseError);
-                                    showError(`Fehler beim Parsen der Daten für ${key}`);
-                                    continue;
+                                    // Fallback to extract items directly
+                                    try {
+                                        const itemsMatch = decompressed.match(/"items":\[(.*?)\]/);
+                                        if (itemsMatch && itemsMatch[1]) {
+                                            const items = JSON.parse(`[${itemsMatch[1]}]`);
+                                            originalData = {
+                                                items: items,
+                                                peerId: stored.peerId,
+                                                total: stored.total,
+                                                date: stored.date
+                                            };
+                                        }
+                                    } catch (fallbackError) {
+                                        console.error('Fallback parsing failed:', fallbackError);
+                                    }
                                 }
-                            } else {
-                                console.error('Decompression failed for key:', key);
-                                showError(`Dekompression fehlgeschlagen für ${key}`);
-                                continue;
                             }
-                        } else {
-                            console.error('Missing data field for key:', key);
-                            showError(`Datenfeld fehlt für ${key}`);
-                            continue;
                         }
                         
                         receipts.push({
@@ -845,17 +1230,18 @@ body {
                             data: originalData,
                             date: stored.date,
                             total: stored.total,
-                            status: stored.status
+                            status: stored.status || 'Bestätigt',
+                            note: stored.note || ''
                         });
                     } catch (e) {
                         console.error('Error processing receipt:', e);
-                        showError(`Fehler beim Verarbeiten von ${key}: ${e.message}`);
                     }
                 }
             }
             return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
+        // Update income total display
         function updateIncomeTotal(receipts) {
             const total = receipts
                 .filter(r => r.status === 'Bestätigt')
@@ -863,27 +1249,27 @@ body {
             document.getElementById('total-amount').textContent = `€${total.toFixed(2)}`;
         }
 
+        // Generate receipt list UI
         function generateReceiptList(receipts) {
             const list = document.getElementById('receipt-list');
             list.innerHTML = '';
+            
+            // Update receipt count
+            document.getElementById('receipt-count').textContent = `${receipts.length} Belege`;
 
             if(receipts.length === 0) {
                 list.innerHTML = `
                     <div class="no-results">
-                        Keine gespeicherten Belege gefunden
-                        <p><small>Mögliche Ursachen:</small></p>
-                        <ul>
-                            <li>Es wurden noch keine Belege gespeichert</li>
-                            <li>Belege wurden mit einem anderen Schlüsselformat gespeichert</li>
-                            <li>LocalStorage wurde geleert</li>
-                        </ul>
-                        <button id="add-sample" style="margin-top: 10px; padding: 20px 30px; background: #6c757d; color: white; border: none; border-radius: 2225px; cursor: pointer; font-size:16px;">
-                            Testbeleg hinzufügen
+                        <i class="fas fa-inbox"></i>
+                        <p>Keine gespeicherten Belege</p>
+                        <button id="add-sample" class="btn-primary" style="margin-top: 20px; padding: 14px 20px;">
+                            <i class="fas fa-plus-circle"></i> Testbeleg hinzufügen
                         </button>
                     </div>
                 `;
                 
                 document.getElementById('add-sample')?.addEventListener('click', addSampleReceipt);
+                updateIncomeTotal([]);
                 return;
             }
 
@@ -891,19 +1277,60 @@ body {
                 const date = new Date(receipt.date);
                 const item = document.createElement('div');
                 item.className = 'receipt-item';
+                item.dataset.id = receipt.id;
+                
                 item.innerHTML = `
-                    <div>
-                        <div class="receipt-id">${receipt.id}</div>
-                        <div class="receipt-date">${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}</div>
+                    <div class="receipt-info">
+                        <input type="checkbox" class="receipt-checkbox" data-id="${receipt.id}">
+                        <div>
+                            <div class="receipt-id">${receipt.id}</div>
+                            <div class="receipt-date">${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}</div>
+                            ${receipt.note ? `<div class="receipt-note">${receipt.note}</div>` : ''}
+                        </div>
                     </div>
-                    <div style="text-align: right;">
+                    <div class="receipt-details">
                         <div class="receipt-total">€ ${receipt.total.toFixed(2)}</div>
                         <div class="status-badge ${receipt.status === 'Bestätigt' ? 'confirmed' : 'declined'}">${receipt.status}</div>
                     </div>
+                    <div class="receipt-actions">
+                        <div class="action-btn delete-btn" title="Beleg löschen">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                    </div>
                 `;
                 
-                item.addEventListener('click', () => {
-                    generateArchiveReceipt(receipt.data, receipt.status);
+                // Click handler for the entire receipt
+                item.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('receipt-checkbox') && 
+                        !e.target.classList.contains('delete-btn') &&
+                        !e.target.closest('.delete-btn')) {
+                        
+                        // PDF generation with Alt+Click
+                        if (e.altKey) {
+                            generateArchiveReceipt(receipt.data, receipt.status);
+                        } else {
+                            showReceiptDetails(receipt);
+                        }
+                    }
+                });
+                
+                // Delete button handler
+                item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteReceipt(receipt.id);
+                });
+                
+                // Checkbox handler
+                const checkbox = item.querySelector('.receipt-checkbox');
+                checkbox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (checkbox.checked) {
+                        selectedReceipts.add(receipt.id);
+                        item.classList.add('selected');
+                    } else {
+                        selectedReceipts.delete(receipt.id);
+                        item.classList.remove('selected');
+                    }
                 });
 
                 list.appendChild(item);
@@ -912,61 +1339,430 @@ body {
             updateIncomeTotal(receipts);
         }
         
-        // Add sample receipt for testing - fixed compression
+        // Delete a single receipt
+        function deleteReceipt(id) {
+            if(confirm('Diesen Beleg löschen?')) {
+                localStorage.removeItem(`receipt_${id}`);
+                selectedReceipts.delete(id);
+                showSuccess(`Beleg ${id} gelöscht`);
+                generateReceiptList(loadReceipts());
+            }
+        }
+        
+        // Delete selected receipts
+        document.getElementById('bulk-delete').addEventListener('click', function() {
+            if (selectedReceipts.size === 0) {
+                showError("Keine Belege ausgewählt");
+                return;
+            }
+            
+            if(confirm(`${selectedReceipts.size} Belege löschen?`)) {
+                selectedReceipts.forEach(id => {
+                    localStorage.removeItem(`receipt_${id}`);
+                });
+                
+                const count = selectedReceipts.size;
+                selectedReceipts.clear();
+                showSuccess(`${count} Belege gelöscht`);
+                generateReceiptList(loadReceipts());
+            }
+        });
+        
+        // Show receipt details in modal
+        function showReceiptDetails(receipt) {
+            currentReceipt = receipt;
+            const modal = document.getElementById('receipt-modal');
+            
+            // Populate details
+            document.getElementById('detail-id').textContent = receipt.id;
+            
+            const date = new Date(receipt.date);
+            document.getElementById('detail-date').textContent = 
+                `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
+            
+            document.getElementById('detail-total').textContent = `€ ${receipt.total.toFixed(2)}`;
+            
+            const statusBadge = document.getElementById('detail-status');
+            statusBadge.textContent = receipt.status;
+            statusBadge.className = 'status-badge ' + (receipt.status === 'Bestätigt' ? 'confirmed' : 'declined');
+            
+            // Populate items
+            const itemsList = document.getElementById('items-list');
+            itemsList.innerHTML = '';
+            
+            if (receipt.data && receipt.data.items) {
+                receipt.data.items.forEach(item => {
+                    const row = document.createElement('tr');
+                    const total = (item.quantity * item.price).toFixed(2);
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>€ ${item.price.toFixed(2)}</td>
+                        <td>€ ${total}</td>
+                    `;
+                    itemsList.appendChild(row);
+                });
+            } else {
+                // Show message if items are missing
+                itemsList.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                            <i class="fas fa-exclamation-circle"></i> Artikelinformationen nicht verfügbar
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // Set note
+            document.getElementById('note-input').value = receipt.note || '';
+            
+            // Show modal
+            modal.style.display = 'flex';
+        }
+        
+        // Close modal
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('receipt-modal').style.display = 'none';
+        });
+        
+        // Toggle receipt status
+        document.getElementById('toggle-status').addEventListener('click', function() {
+            if (!currentReceipt) return;
+            
+            currentReceipt.status = currentReceipt.status === 'Bestätigt' ? 'Abgelehnt' : 'Bestätigt';
+            
+            // Update in localStorage
+            const stored = JSON.parse(localStorage.getItem(`receipt_${currentReceipt.id}`));
+            stored.status = currentReceipt.status;
+            localStorage.setItem(`receipt_${currentReceipt.id}`, JSON.stringify(stored));
+            
+            // Update UI
+            const statusBadge = document.getElementById('detail-status');
+            statusBadge.textContent = currentReceipt.status;
+            statusBadge.className = 'status-badge ' + (currentReceipt.status === 'Bestätigt' ? 'confirmed' : 'declined');
+            
+            showSuccess(`Status geändert zu "${currentReceipt.status}"`);
+            generateReceiptList(loadReceipts());
+        });
+        
+        // Save note
+        document.getElementById('save-note').addEventListener('click', function() {
+            if (!currentReceipt) return;
+            
+            const note = document.getElementById('note-input').value;
+            currentReceipt.note = note;
+            
+            // Update in localStorage
+            const stored = JSON.parse(localStorage.getItem(`receipt_${currentReceipt.id}`));
+            stored.note = note;
+            localStorage.setItem(`receipt_${currentReceipt.id}`, JSON.stringify(stored));
+            
+            showSuccess("Notiz gespeichert");
+            generateReceiptList(loadReceipts());
+        });
+        
+        // Print receipt
+        document.getElementById('print-receipt').addEventListener('click', function() {
+            if (!currentReceipt) return;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Beleg ${currentReceipt.id}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; }
+                        .total { font-weight: bold; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>Beleg ${currentReceipt.id}</h2>
+                    </div>
+                    
+                    <div>
+                        <strong>Datum:</strong> ${new Date(currentReceipt.date).toLocaleString('de-DE')}<br>
+                        <strong>Status:</strong> ${currentReceipt.status}
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Artikel</th>
+                                <th>Menge</th>
+                                <th>Preis</th>
+                                <th>Gesamt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${currentReceipt.data && currentReceipt.data.items ? currentReceipt.data.items.map(item => `
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>€ ${item.price.toFixed(2)}</td>
+                                    <td>€ ${(item.quantity * item.price).toFixed(2)}</td>
+                                </tr>
+                            `).join('') : ''}
+                        </tbody>
+                    </table>
+                    
+                    <div class="total">
+                        Gesamtsumme: € ${currentReceipt.total.toFixed(2)}
+                    </div>
+                    
+                    ${currentReceipt.note ? `
+                        <div>
+                            <strong>Notizen:</strong>
+                            <p>${currentReceipt.note}</p>
+                        </div>
+                    ` : ''}
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.print();
+        });
+        
+        // Add sample receipt for testing
         function addSampleReceipt() {
             try {
+                const id = 'TEST' + Math.floor(1000 + Math.random() * 9000);
                 const sampleData = {
                     items: [
-                        { name: 'Testprodukt 1', price: 12.99, quantity: 2 },
-                        { name: 'Testprodukt 2', price: 5.49, quantity: 1 },
+                        { name: 'Premium Futter', price: 12.99, quantity: 2 },
+                        { name: 'Spielzeug', price: 5.49, quantity: 1 },
                         { name: 'Rabatt', price: -3.00, quantity: 1 }
                     ],
                     total: 12.99*2 + 5.49 - 3.00,
-                    peerId: 'test-12345',
                     date: new Date().toISOString(),
-                    id: 'test123'
+                    id: id
                 };
                 
                 const sampleEntry = {
                     data: LZString.compressToBase64(JSON.stringify(sampleData)),
                     date: new Date().toISOString(),
                     total: sampleData.total,
-                    status: 'Bestätigt'
+                    status: Math.random() > 0.3 ? 'Bestätigt' : 'Abgelehnt',
+                    note: Math.random() > 0.5 ? 'Testbeleg' : ''
                 };
                 
-                localStorage.setItem(`receipt_test123`, JSON.stringify(sampleEntry));
-                
-                // Show success message
-                const errorContainer = document.getElementById('error-container');
-                errorContainer.textContent = "Testbeleg wurde erfolgreich hinzugefügt!";
-                errorContainer.style.backgroundColor = "#e8f5e9";
-                errorContainer.style.color = "#2e7d32";
-                errorContainer.style.display = "block";
-                
-                setTimeout(() => {
-                    errorContainer.style.display = "none";
-                }, 3000);
-                
+                localStorage.setItem(`receipt_${id}`, JSON.stringify(sampleEntry));
+                showSuccess("Testbeleg hinzugefügt");
                 generateReceiptList(loadReceipts());
             } catch (e) {
-                showError(`Fehler beim Hinzufügen des Testbelegs: ${e.message}`);
+                showError(`Fehler: ${e.message}`);
             }
         }
+        
+        // Generate archive receipt PDF
+        function generateArchiveReceipt(receiptData, status) {
+            if (!receiptData) {
+                showError("Belegdaten nicht verfügbar");
+                return;
+            }
+            
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const paymentDate = new Date(receiptData.date).toLocaleDateString('de-DE');
+            const paymentTime = new Date(receiptData.date).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            let yPos = 20;
 
+            // Set colors
+            const primaryColor = [44, 62, 80]; // #2c3e50
+            const surfaceColor = [255, 255, 255]; // #ffffff
+            const accentColor = [108, 117, 125]; // #6c757d
+            const successColor = [40, 167, 69]; // #28a745
+            const dangerColor = [220, 53, 69]; // #dc3545
+            const infoColor = [225, 242, 254]; // #e1f2fe
+
+            // Header
+            doc.setFillColor(...surfaceColor);
+            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'F');
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'S');
+
+            doc.setFontSize(28);
+            doc.setTextColor(...primaryColor);
+            doc.setFont(undefined, 'bold');
+            doc.text("Gittertier", pageWidth/2, yPos + 25, null, 'center');
+
+            doc.setFontSize(12);
+            doc.setTextColor(...accentColor);
+            doc.text(`Belegnummer: ${receiptData.id}`, pageWidth/2, yPos + 40, null, 'center');
+
+            yPos += 70;
+
+            // Receipt details
+            doc.setFontSize(16);
+            doc.setTextColor(...primaryColor);
+            doc.text(`Datum: ${paymentDate}`, 30, yPos);
+            doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos, null, 'right');
+            yPos += 25;
+
+            // Items header
+            doc.setFillColor(...infoColor);
+            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'F');
+            doc.setDrawColor(...accentColor);
+            doc.setLineWidth(0.2);
+            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'S');
+
+            doc.setFontSize(12);
+            doc.setTextColor(...accentColor);
+            doc.text("Artikel", 35, yPos + 13);
+            doc.text("Menge", 130, yPos + 13);
+            doc.text("Preis", pageWidth - 35, yPos + 13, null, 'right');
+
+            yPos += 25;
+
+            // Items
+            if (receiptData.items) {
+                receiptData.items.forEach((item, index) => {
+                    if(yPos > pageHeight - 100) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+
+                    // Alternate row colors
+                    const rowColor = index % 2 === 0 ? surfaceColor : [248, 249, 250];
+                    doc.setFillColor(...rowColor);
+                    doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'F');
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.1);
+                    doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'S');
+
+                    doc.setFontSize(12);
+                    doc.setTextColor(...primaryColor);
+                    doc.text(item.name.substring(0, 40), 35, yPos + 10);
+
+                    const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
+                    doc.text(quantityPrice, 130, yPos + 10);
+
+                    const total = (item.quantity * item.price).toFixed(2);
+                    doc.text(`€${total}`, pageWidth - 35, yPos + 10, null, 'right');
+
+                    yPos += 30;
+                });
+            }
+
+            yPos += 15;
+
+            // Total section
+            doc.setFillColor(232, 252, 238); // Light green
+            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
+            doc.setDrawColor(200, 200, 200);
+            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
+
+            doc.setFontSize(18);
+            doc.setTextColor(...primaryColor);
+            doc.text(`Gesamtsumme:`, 40, yPos + 12);
+            doc.text(`€ ${receiptData.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
+
+            yPos += 45;
+
+            // Status section
+            const statusColor = status === 'Bestätigt' ? successColor : dangerColor;
+            doc.setFillColor(...statusColor);
+            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
+            doc.setDrawColor(...statusColor);
+            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
+
+            doc.setFontSize(18);
+            doc.setTextColor(255, 255, 255);
+            doc.text(`Status: ${status}`, pageWidth/2, yPos + 12, null, 'center');
+
+            yPos += 45;
+
+            // Thank you message
+            doc.setFontSize(12);
+            doc.setTextColor(...accentColor);
+            doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
+
+            // Save the PDF
+            doc.save(`gittertier_beleg_${receiptData.id}.pdf`);
+        }
+
+        // Search functionality
         document.getElementById('search-input').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const allReceipts = loadReceipts();
-            const filtered = allReceipts.filter(r => 
-                r.id.toLowerCase().includes(searchTerm) || 
-                r.date.toLowerCase().includes(searchTerm) ||
-                r.status.toLowerCase().includes(searchTerm) ||
-                r.total.toString().includes(searchTerm)
-            );
-            generateReceiptList(filtered);
+            filterReceipts();
         });
+        
+        // Search by note content
+        document.getElementById('note-search').addEventListener('input', (e) => {
+            filterReceipts();
+        });
+        
+        // Apply status filters
+        document.getElementById('filter-confirmed').addEventListener('change', filterReceipts);
+        document.getElementById('filter-declined').addEventListener('change', filterReceipts);
+        
+        // Apply date filter
+        document.getElementById('apply-date-filter').addEventListener('click', filterReceipts);
+        
+        // Filter receipts based on all criteria
+        function filterReceipts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const noteSearch = document.getElementById('note-search').value.toLowerCase();
+            const showConfirmed = document.getElementById('filter-confirmed').checked;
+            const showDeclined = document.getElementById('filter-declined').checked;
+            
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            const allReceipts = loadReceipts();
+            
+            const filtered = allReceipts.filter(r => {
+                // Status filter
+                if ((r.status === 'Bestätigt' && !showConfirmed) || 
+                    (r.status === 'Abgelehnt' && !showDeclined)) {
+                    return false;
+                }
+                
+                // Date filter
+                if (startDate || endDate) {
+                    const receiptDate = new Date(r.date);
+                    const start = startDate ? new Date(startDate) : null;
+                    const end = endDate ? new Date(endDate + 'T23:59:59') : null;
+                    
+                    if (start && receiptDate < start) return false;
+                    if (end && receiptDate > end) return false;
+                }
+                
+                // Main search
+                if (searchTerm && 
+                    !r.id.toLowerCase().includes(searchTerm) && 
+                    !r.date.toLowerCase().includes(searchTerm) &&
+                    !r.status.toLowerCase().includes(searchTerm) &&
+                    !r.total.toString().includes(searchTerm)) {
+                    return false;
+                }
+                
+                // Note search
+                if (noteSearch && (!r.note || !r.note.toLowerCase().includes(noteSearch))) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            generateReceiptList(filtered);
+        }
 
         // Initial load
-        generateReceiptList(loadReceipts());
+        initTheme();
+        filterReceipts();
+        
+        // Simulate backup reminder if not already set
+        if (!localStorage.getItem('lastBackupReminder')) {
+            localStorage.setItem('lastBackupReminder', new Date().toISOString());
+            document.getElementById('backup-reminder').style.display = 'flex';
+        }
     </script>
 </body>
 </html>
