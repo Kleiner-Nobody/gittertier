@@ -9,20 +9,35 @@
         <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-      --bg: #ebeded;
-      --surface: #ffffff;
-      --text: #2c3e50;
-      --text-secondary: #455a64;
-      --accent: #6c757d;
-      --accent-dark: #5a6268;
-      --accent-light: #d6d8db;
-      --success: #28a745;
-      --danger: #dc3545;
-      --warning: #ffc107;
-      --info: #17a2b8;
-      --border-radius: 16px;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    :root {
+        --bg: #ebeded;
+        --surface: #ffffff;
+        --text: #2c3e50;
+        --text-secondary: #455a64;
+        --accent: #6c757d;
+        --accent-dark: #5a6268;
+        --accent-light: #d6d8db;
+        --success: #28a745;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --info: #17a2b8;
+        --border-radius: 16px;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode {
+        --bg: #121212;
+        --surface: #1e1e1e;
+        --text: #e0e0e0;
+        --text-secondary: #a0a0a0;
+        --accent: #3a86ff;
+        --accent-dark: #2a75e0;
+        --accent-light: #1a3650;
+        --success: #28a745;
+        --danger: #e74c3c;
+        --warning: #f39c12;
+        --info: #3498db;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     * {
@@ -731,7 +746,7 @@
                 decoder: {
                     readers: [
                         'ean_reader', 
-                        'code_128_reader',
+                        //'code_128_reader',
                         'ean_8_reader'
                     ],
                     multiple: false
@@ -852,12 +867,17 @@
             // Barcode Handling
             function handleBarcode(barcode) {
                 currentBarcode = barcode;
+                 playSound('scan'); 
                 
                 if (products[barcode]) {
                     addToCart(products[barcode]);
                     showNotification(`${products[barcode].name} hinzugefügt`);
                 } else {
-                    showProductModal(barcode);
+          if (settings.manualAdd === false) {
+            showNotification('Nicht erlaubt!', 'error');
+        } else {
+          showProductModal(barcode);
+        }
                 }
             }
 
@@ -872,30 +892,30 @@
                 updateCartDisplay();
             }
 
-            function updateCartDisplay() {
-                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const cartItems = document.getElementById('cart-items');
-                const cartCount = document.getElementById('cart-count');
-                
-                cartItems.innerHTML = cart.map(item => `
-                    <div class="cart-item">
-                        <div>
-                            <div style="font-weight: 500; margin-bottom: 8px;">${item.name}</div>
-                            <div class="quantity-controls">
-                                <button onclick="adjustQuantity('${item.barcode}', -1)">−</button>
-                                <span style="min-width: 30px; text-align: center;">${item.quantity}x</span>
-                                <button onclick="adjustQuantity('${item.barcode}', 1)">+</button>
-                            </div>
-                        </div>
-                        <div style="font-weight: 600; color: #2d2f33;">${(item.price * item.quantity).toFixed(2)}€</div>
+    function updateCartDisplay() {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const cartItems = document.getElementById('cart-items');
+        const cartCount = document.getElementById('cart-count');
+        
+        cartItems.innerHTML = cart.map(item => `
+            <div class="cart-item">
+                <div>
+                    <div style="font-weight: 500; margin-bottom: 8px;">${item.name}</div>
+                    <div class="quantity-controls">
+                        <button onclick="adjustQuantity('${item.barcode}', -1)">−</button>
+                        <span style="min-width: 30px; text-align: center;">${item.quantity}x</span>
+                        <button onclick="adjustQuantity('${item.barcode}', 1)">+</button>
                     </div>
-                `).join('');
-                
-                document.getElementById('cart-total').textContent = `Gesamt: ${total.toFixed(2)}€`;
-                cartCount.textContent = `${cart.reduce((sum, item) => sum + item.quantity, 0)} Artikel`;
-            }
-
-            function adjustQuantity(barcode, delta) {
+                </div>
+                <div style="font-weight: 600; color: var(--text);">${(item.price * item.quantity).toFixed(2)}${currencySymbol}</div>
+            </div>
+        `).join('');
+        
+        document.getElementById('cart-total').textContent = `Gesamt: ${total.toFixed(2)}${currencySymbol}`;
+        cartCount.textContent = `${cart.reduce((sum, item) => sum + item.quantity, 0)} Artikel`;
+    }
+           
+    function adjustQuantity(barcode, delta) {
                 const item = cart.find(item => item.barcode === barcode);
                 if (item) {
                     item.quantity = Math.max(0, item.quantity + delta);
@@ -916,6 +936,7 @@
                 const name = document.getElementById('product-name').value.trim();
                 const price = parseFloat(document.getElementById('product-price').value);
                 const barcode = document.getElementById('product-barcode').value;
+                 playSound('success');
 
                 if (!name || isNaN(price) || !barcode) {
                     showNotification('Ungültige Eingabe', 'error');
@@ -961,6 +982,55 @@
                     showNotification('Fehler beim Generieren des QR-Codes', 'error');
                 }
             }
+
+                // Global variables for settings
+    let currencySymbol = '€';
+    let notificationDuration = 3;
+    
+    // Apply all settings from localStorage
+    function applySettings() {
+        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+        
+        // Apply dark mode
+        if (settings.darkMode) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        
+        // Apply currency setting
+        currencySymbol = settings.currency || '€';
+        updateCartDisplay();
+        
+        // Apply auto scanner setting
+        if (settings.autoScanner) {
+            // Start scanner after short delay to allow page to load
+            setTimeout(() => {
+                if (!scannerActive) {
+                    toggleScanner();
+                }
+            }, 500);
+        }
+        
+        // Apply notification duration
+        notificationDuration = settings.notificationDuration || 3;
+        
+        // Apply manual add setting
+        const manualAddBtn = document.getElementById('manual-add');
+        if (settings.manualAdd === false) {
+            if (manualAddBtn) {
+                manualAddBtn.disabled = true;
+                manualAddBtn.style.opacity = '0.5';
+                manualAddBtn.innerHTML = '<i class="fas fa-pencil-alt"></i> Manuell (deaktiviert)';
+            }
+        } else {
+            if (manualAddBtn) {
+                manualAddBtn.disabled = false;
+                manualAddBtn.style.opacity = '1';
+                manualAddBtn.innerHTML = '<i class="fas fa-pencil-alt"></i> Manuell';
+            }
+        }
+    }
             
             // Scanner Control
             async function toggleScanner() {
@@ -1002,6 +1072,7 @@
 
             // UI Helpers
             function showNotification(message, type = 'success') {
+               playSound(type);
                 const notification = document.getElementById('notification');
                 notification.textContent = message;
                 notification.style.display = 'block';
@@ -1021,6 +1092,11 @@
             document.getElementById('toggle-scanner').addEventListener('click', toggleScanner);
             document.getElementById('show-qr').addEventListener('click', generateQR);
             document.getElementById('manual-add').addEventListener('click', () => {
+                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                if (settings.manualAdd === false) {
+                    showNotification('Manuelle Eingabe ist deaktiviert', 'error');
+                    return;
+                }
                 currentBarcode = null;
                 document.getElementById('product-modal').style.display = 'block';
             });
@@ -1032,10 +1108,16 @@
             
             // Initialize products from localStorage
             window.addEventListener('DOMContentLoaded', () => {
-                products = JSON.parse(localStorage.getItem('products')) || {};
-                const status = document.getElementById('scanner-status');
-                status.classList.add('inactive');
-            });
+                    products = JSON.parse(localStorage.getItem('products')) || {};
+                    const status = document.getElementById('scanner-status');
+                    status.classList.add('inactive');
+                    
+                    // Apply settings
+                    applySettings();
+                    
+                    // Initialize currency symbol
+                    currencySymbol = '€';
+                });
             // Apply settings from localStorage
 <!-- Add this at the end of the <script> section -->
 // Apply settings from localStorage
@@ -1056,8 +1138,30 @@ if (settings.manualAdd === false) {
     }
 }
 
-// Apply notification duration
-let notificationDuration = settings.notificationDuration || 3;
+    function playSound(type) {
+        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+        if (!settings.soundEffects) return;
+        
+        const audio = new Audio();
+        audio.volume = 0.3;
+        
+        switch(type) {
+            case 'success':
+                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
+                break;
+            case 'error':
+                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
+                break;
+            case 'scan':
+                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
+                break;
+        }
+        
+        audio.play().catch(e => console.log('Sound playback error:', e));
+    }
+    
+
+
         </script>
     </body>
     </html>
