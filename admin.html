@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <style>
         :root {
             --bg: #ebeded;
@@ -590,63 +591,6 @@
             background: #c82333;
         }
 
-               /* Add these new styles for receipt display */
-        .recent-receipts-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .refresh-btn {
-            background: var(--info);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .receipt-list-container {
-            max-height: 500px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
-        .receipt-list-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .receipt-list-container::-webkit-scrollbar-track {
-            background: var(--accent-light);
-            border-radius: 4px;
-        }
-        
-        .receipt-list-container::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 4px;
-        }
-        
-        .empty-receipts {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            background: #f8f9fa;
-            border-radius: var(--border-radius);
-        }
-        
-        .empty-receipts i {
-            font-size: 2.5rem;
-            color: var(--accent);
-            margin-bottom: 20px;
-        }
-
         /* Mobile-first responsive adjustments */
         @media (max-width: 992px) {
             .admin-sidebar {
@@ -733,6 +677,63 @@
             .stat-value {
                 font-size: 1.5rem;
             }
+        }
+        
+        /* New styles for receipt display */
+        .recent-receipts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .refresh-btn {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .receipt-list-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .receipt-list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .receipt-list-container::-webkit-scrollbar-track {
+            background: var(--accent-light);
+            border-radius: 4px;
+        }
+        
+        .receipt-list-container::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        
+        .empty-receipts {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+        
+        .empty-receipts i {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -832,22 +833,19 @@
             </div>
 
             <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-file-invoice"></i> Aktuelle Transaktionen</h2>
-                </div>
                 <div class="recent-receipts-header">
-                <h2><i class="fas fa-file-invoice"></i> Aktuelle Transaktionen</h2>
-                <button class="refresh-btn" id="refreshReceipts">
-                    <i class="fas fa-sync-alt"></i> Aktualisieren
-                </button>
-            </div>
-            <div class="receipt-list-container" id="receiptListContainer">
-                <!-- Receipts will be loaded here -->
-                <div class="empty-receipts">
-                    <i class="fas fa-receipt"></i>
-                    <p>Keine Transaktionen gefunden</p>
+                    <h2><i class="fas fa-file-invoice"></i> Aktuelle Transaktionen</h2>
+                    <button class="refresh-btn" id="refreshReceipts">
+                        <i class="fas fa-sync-alt"></i> Aktualisieren
+                    </button>
                 </div>
-            </div>
+                <div class="receipt-list-container" id="receiptListContainer">
+                    <!-- Receipts will be loaded here -->
+                    <div class="empty-receipts">
+                        <i class="fas fa-receipt"></i>
+                        <p>Keine Transaktionen gefunden</p>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -933,6 +931,7 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const saveProductBtn = document.getElementById('saveProductBtn');
         const searchInput = document.getElementById('searchInput');
+        const refreshReceiptsBtn = document.getElementById('refreshReceipts');
         
         // Time display function
         function updateTime() {
@@ -1068,29 +1067,8 @@
             });
         });
         
-        // Update stats from localStorage
-        function updateStats() {
-            // Get products from localStorage
-            const products = JSON.parse(localStorage.getItem('products')) || {};
-            document.getElementById('totalProducts').textContent = Object.keys(products).length;
-            
-            // Calculate revenue and transactions from receipts
-            let totalRevenue = 0;
-            let transactionCount = 0;
-            
-            // Loop through localStorage to find receipts
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('receipt_')) {
-                    const receipt = JSON.parse(localStorage.getItem(key));
-                    if (receipt && receipt.total) {
-                        totalRevenue += parseFloat(receipt.total);
-                        transactionCount++;
-                    }
-                }
-            }
-
-                    function loadReceipts() {
+        // Function to load receipts from localStorage
+        function loadReceipts() {
             const receipts = [];
             for(let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -1100,15 +1078,17 @@
                         if (!storedValue) continue;
                         
                         const stored = JSON.parse(storedValue);
+                        let originalData = null;
+                        let transactionDate = stored.date;
                         
                         // Attempt decompression
-                        let originalData = null;
                         if (stored.data) {
                             const decompressed = LZString.decompressFromBase64(stored.data);
                             
                             if (decompressed) {
                                 try {
                                     originalData = JSON.parse(decompressed);
+                                    transactionDate = originalData.date;
                                 } catch (parseError) {
                                     console.error('Error parsing decompressed data:', parseError);
                                 }
@@ -1117,11 +1097,9 @@
                         
                         receipts.push({
                             id: key.replace('receipt_', ''),
-                            data: originalData,
-                            date: stored.date,
+                            date: transactionDate,
                             total: stored.total,
-                            status: stored.status || 'Bestätigt',
-                            note: stored.note || ''
+                            status: stored.status || 'Bestätigt'
                         });
                     } catch (e) {
                         console.error('Error processing receipt:', e);
@@ -1181,7 +1159,7 @@
 
         // Function to update stats from receipts
         function updateStatsFromReceipts(receipts) {
-            // Calculate revenue and transactions
+            // Calculate total revenue and transactions
             let totalRevenue = 0;
             let transactionCount = 0;
             let confirmedCount = 0;
@@ -1194,11 +1172,11 @@
                 transactionCount++;
             });
             
+            const avgOrder = confirmedCount > 0 ? totalRevenue / confirmedCount : 0;
+            
             // Update stats cards
             document.getElementById('totalRevenue').textContent = `€${totalRevenue.toFixed(2)}`;
             document.getElementById('totalTransactions').textContent = transactionCount;
-            
-            const avgOrder = transactionCount > 0 ? (totalRevenue / confirmedCount) : 0;
             document.getElementById('avgOrder').textContent = `€${avgOrder.toFixed(2)}`;
             
             // Update products count
@@ -1212,28 +1190,24 @@
             generateReceiptList(receipts);
             updateStatsFromReceipts(receipts);
         }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load receipts
+            loadAndDisplayReceipts();
             
-            // Update DOM
-            document.getElementById('totalRevenue').textContent = `€${totalRevenue.toFixed(2)}`;
-            document.getElementById('totalTransactions').textContent = transactionCount;
+            // Add event listener for refresh button
+            refreshReceiptsBtn.addEventListener('click', loadAndDisplayReceipts);
             
-            const avgOrder = transactionCount > 0 ? (totalRevenue / transactionCount) : 0;
-            document.getElementById('avgOrder').textContent = `€${avgOrder.toFixed(2)}`;
-        }
-        
-        // Initialize stats
-        updateStats();
-        loadAndDisplayReceipts();
-        document.getElementById('refreshReceipts').addEventListener('click', loadAndDisplayReceipts);
-        
-        // Add sample notifications
-        setTimeout(() => {
-            addNotification('Systemaktualisierung abgeschlossen', 'fas fa-sync-alt');
-        }, 5000);
-        
-        setTimeout(() => {
-            addNotification('Neuer Benutzer angemeldet: admin', 'fas fa-user-plus');
-        }, 10000);
+            // Add sample notifications after delay
+            setTimeout(() => {
+                addNotification('Systemaktualisierung abgeschlossen', 'fas fa-sync-alt');
+            }, 5000);
+            
+            setTimeout(() => {
+                addNotification('Neuer Benutzer angemeldet: admin', 'fas fa-user-plus');
+            }, 10000);
+        });
     </script>
 </body>
 </html>
