@@ -319,6 +319,68 @@
             box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.2);
         }
 
+        .localstorage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--surface);
+            border: 1px solid var(--accent-light);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .localstorage-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .localstorage-key {
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 15px;
+        }
+
+        .localstorage-value {
+            color: var(--text-secondary);
+            flex: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 15px;
+        }
+
+        .localstorage-actions {
+            flex-shrink: 0;
+        }
+
+        .delete-localstorage-btn {
+            padding: 8px 12px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .delete-localstorage-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
         .btn {
             padding: 15px 25px;
             border: none;
@@ -717,6 +779,42 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Add this new section just before the reset section -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <i class="fas fa-database"></i>
+                        <h2>LocalStorage Daten</h2>
+                    </div>
+                    
+                    <div class="setting-card">
+                        <div class="setting-title">
+                            <i class="fas fa-trash-alt"></i>
+                            <h3>Gespeicherte Daten verwalten</h3>
+                        </div>
+                        <div class="setting-description">
+                            Hier sehen Sie alle im localStorage gespeicherten Daten. Sie können einzelne Einträge löschen.
+                            <strong>Sensible Daten wie Passwörter werden aus Sicherheitsgründen nicht angezeigt.</strong>
+                        </div>
+                        
+                        <div id="localStorageContainer" style="margin-top: 20px;">
+                            <div class="form-group">
+                                <label class="form-label" for="filterLocalStorage">Daten filtern:</label>
+                                <input type="text" class="form-input" id="filterLocalStorage" placeholder="Schlüssel oder Wert suchen...">
+                            </div>
+                            
+                            <div id="localStorageData" style="margin-top: 15px; max-height: 300px; overflow-y: auto; border: 1px solid var(--accent-light); border-radius: 8px; padding: 10px;">
+                                <!-- Data will be displayed here -->
+                            </div>
+                            
+                            <div style="margin-top: 20px; text-align: center;">
+                                <button class="btn btn-primary" id="refreshLocalStorageBtn">
+                                    <i class="fas fa-sync-alt"></i> Daten aktualisieren
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="settings-section">
                     <div class="section-header">
@@ -840,6 +938,99 @@
             document.body.classList.remove('dark-mode');
         }
     }
+
+    // DOM Elements for new feature
+    const localStorageContainer = document.getElementById('localStorageData');
+    const refreshLocalStorageBtn = document.getElementById('refreshLocalStorageBtn');
+    const filterLocalStorage = document.getElementById('filterLocalStorage');
+
+    // Function to display localStorage data
+    function displayLocalStorageData(filter = '') {
+        localStorageContainer.innerHTML = '';
+        
+        if (localStorage.length === 0) {
+            localStorageContainer.innerHTML = '<div class="no-data-message">Keine Daten im localStorage gespeichert</div>';
+            return;
+        }
+        
+        let hasVisibleItems = false;
+        const filterLower = filter.toLowerCase();
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            
+            // Skip sensitive data
+            if (key === 'adminPassword' || key === 'validTokens') continue;
+            
+            let value = localStorage.getItem(key);
+            
+            // Skip displaying sensitive values
+            if (key.toLowerCase().includes('password') || key.toLowerCase().includes('token')) {
+                value = '***** (sensibler Inhalt)';
+            }
+            
+            // Apply filter
+            if (filter && 
+                !key.toLowerCase().includes(filterLower) && 
+                !value.toLowerCase().includes(filterLower)) {
+                continue;
+            }
+            
+            hasVisibleItems = true;
+            
+            const itemElement = document.createElement('div');
+            itemElement.className = 'localstorage-item';
+            
+            itemElement.innerHTML = `
+                <div class="localstorage-key" title="${key}">${key}</div>
+                <div class="localstorage-value" title="${value}">${value}</div>
+                <div class="localstorage-actions">
+                    <button class="delete-localstorage-btn" data-key="${key}">
+                        <i class="fas fa-trash"></i> Löschen
+                    </button>
+                </div>
+            `;
+            
+            localStorageContainer.appendChild(itemElement);
+        }
+        
+        if (!hasVisibleItems) {
+            localStorageContainer.innerHTML = '<div class="no-data-message">Keine passenden Einträge gefunden</div>';
+        }
+        
+        // Add event listeners to delete buttons
+        document.querySelectorAll('.delete-localstorage-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const key = this.dataset.key;
+                deleteLocalStorageItem(key);
+            });
+        });
+    }
+
+    // Function to delete a localStorage item
+    function deleteLocalStorageItem(key) {
+        if (!confirm(`Möchten Sie den Eintrag "${key}" wirklich löschen?`)) {
+            return;
+        }
+        
+        localStorage.removeItem(key);
+        displayLocalStorageData(filterLocalStorage.value);
+        showStatus(`Eintrag "${key}" wurde gelöscht.`, 'success');
+    }
+
+    // Event listeners for new feature
+    refreshLocalStorageBtn.addEventListener('click', () => {
+        displayLocalStorageData(filterLocalStorage.value);
+    });
+
+    filterLocalStorage.addEventListener('input', () => {
+        displayLocalStorageData(filterLocalStorage.value);
+    });
+
+    // Initialize localStorage display
+    document.addEventListener('DOMContentLoaded', () => {
+        displayLocalStorageData();
+    });
     
     // Change password functionality
     function changePassword() {
