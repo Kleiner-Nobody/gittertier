@@ -1,3 +1,4 @@
+<!-- settings.html -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -237,6 +238,19 @@
         .setting-control {
             display: flex;
             justify-content: space-between;
+            align-items: center;
+        }
+        
+        .setting-control.vertical {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .setting-option {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
             align-items: center;
         }
 
@@ -606,9 +620,9 @@
                     <i class="fas fa-chart-line"></i>
                     Analysen
                 </a>
-                <a href="settings.html" class="nav-link">
-                    <i class="fas fa-cog"></i>
-                    Einstellungen
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-shield"></i>
+                    Admin
                 </a>
             </div>
         </aside>
@@ -652,6 +666,69 @@
                         
                         <div class="setting-card">
                             <div class="setting-title">
+                                <i class="fas fa-user-clock"></i>
+                                <h3>Anmeldeeinstellungen</h3>
+                            </div>
+                            <div class="setting-description">
+                                Verwalten Sie die Anmeldeeinstellungen für Ihre Sitzungen.
+                            </div>
+                            
+                            <div class="setting-control vertical">
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>Angemeldet bleiben</h4>
+                                        <p class="setting-description">Automatische Anmeldung bei zukünftigen Besuchen</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="stayLoggedInSetting">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>Automatische Abmeldung</h4>
+                                        <p class="setting-description">Automatische Abmeldung bei Inaktivität</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="autoLogoutSetting">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>Passwort für sensible Aktionen</h4>
+                                        <p class="setting-description">Passworteingabe bei kritischen Operationen</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="requirePasswordSetting">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>Abmeldebestätigung</h4>
+                                        <p class="setting-description">Bestätigungsdialog beim Abmelden anzeigen</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="logoutConfirmationSetting">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="notification-duration" style="margin-top: 20px;">
+                                <label for="logoutDuration">Abmeldezeit:</label>
+                                <input type="number" class="duration-input" id="logoutDuration" min="1" max="120" value="30">
+                                <span>Minuten</span>
+                            </div>
+                        </div>
+                    </div>
+
+                                        <div class="setting-card">
+                            <div class="setting-title">
                                 <i class="fas fa-lock"></i>
                                 <h3>Zugangsbeschränkungen</h3>
                             </div>
@@ -669,8 +746,9 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
                 </div>
+
+
                 
                 <div class="settings-section">
                     <div class="section-header">
@@ -780,7 +858,6 @@
                     </div>
                 </div>
 
-                <!-- Add this new section just before the reset section -->
                 <div class="settings-section">
                     <div class="section-header">
                         <i class="fas fa-database"></i>
@@ -793,8 +870,7 @@
                             <h3>Gespeicherte Daten verwalten</h3>
                         </div>
                         <div class="setting-description">
-                            Hier sehen Sie alle im localStorage gespeicherten Daten. Sie können einzelne Einträge löschen.
-                            <strong>Sensible Daten wie Passwörter werden aus Sicherheitsgründen nicht angezeigt.</strong>
+                            Hier sehen Sie alle im localStorage gespeicherten Daten. Sie können einzelne Einträge löschen oder sensible Werte ein-/ausblenden.
                         </div>
                         
                         <div id="localStorageContainer" style="margin-top: 20px;">
@@ -803,7 +879,15 @@
                                 <input type="text" class="form-input" id="filterLocalStorage" placeholder="Schlüssel oder Wert suchen...">
                             </div>
                             
-                            <div id="localStorageData" style="margin-top: 15px; max-height: 300px; overflow-y: auto; border: 1px solid var(--accent-light); border-radius: 8px; padding: 10px;">
+                            <div style="margin: 15px 0; display: flex; align-items: center; gap: 15px;">
+                                <label class="switch">
+                                    <input type="checkbox" id="showPasswordsToggle">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>Sensible Werte anzeigen</span>
+                            </div>
+                            
+                            <div id="localStorageData" style="margin-top: 15px; max-height: 400px; overflow-y: auto; border: 1px solid var(--accent-light); border-radius: 8px; padding: 10px;">
                                 <!-- Data will be displayed here -->
                             </div>
                             
@@ -842,313 +926,312 @@
         </main>
     </div>
 
-<!-- Replace the entire <script> section at the bottom -->
-<script>
-    // Token verification (existing functionality)
-    (function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlToken = decodeURIComponent(urlParams.get('token') || '');
-        const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
-        const tokenIndex = validTokens.indexOf(urlToken);
+    <script>
+        // Token verification (existing functionality)
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = decodeURIComponent(urlParams.get('token') || '');
+            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
+            const tokenIndex = validTokens.indexOf(urlToken);
 
-        if(tokenIndex === -1) {
-            const redirect = encodeURIComponent(window.location.href);
-            window.location.href = `login.html?redirect=${redirect}`;
-        } else {
-            // Remove used token and clean URL
-            validTokens.splice(tokenIndex, 1);
-            sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
-            history.replaceState(null, null, window.location.pathname);
-        }
-    })();
+            if(tokenIndex === -1) {
+                const redirect = encodeURIComponent(window.location.href);
+                window.location.href = `login.html?redirect=${redirect}`;
+            } else {
+                // Remove used token and clean URL
+                validTokens.splice(tokenIndex, 1);
+                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
+                history.replaceState(null, null, window.location.pathname);
+            }
+        })();
 
         if (!localStorage.getItem('adminPassword')) {
             localStorage.setItem('adminPassword', 'GITTERTIER');
         }
 
-    // DOM Elements
-    const hamburger = document.getElementById('hamburger');
-    const sidebar = document.getElementById('sidebar');
-    const logoutBtn = document.getElementById('logoutBtn');
-    
-    // Settings elements
-    const darkModeSetting = document.getElementById('darkModeSetting');
-    const manualAddSetting = document.getElementById('manualAddSetting');
-    const soundEffectsSetting = document.getElementById('soundEffectsSetting');
-    const autoScannerSetting = document.getElementById('autoScannerSetting');
-    const currencySetting = document.getElementById('currencySetting');
-    const scannerSensitivity = document.getElementById('scannerSensitivity');
-    const sensitivityValue = document.getElementById('sensitivityValue');
-    const notificationDuration = document.getElementById('notificationDuration');
-    const changePasswordBtn = document.getElementById('changePasswordBtn');
-    const resetSettingsBtn = document.getElementById('resetSettingsBtn');
-    
-    // Hamburger menu toggle for mobile
-    hamburger.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-    });
-    
-    // Logout functionality
-    logoutBtn.addEventListener('click', () => {
-        sessionStorage.removeItem('validTokens');
-        window.location.reload();
-    });
-    
-    // Load settings from localStorage
-    function loadSettings() {
-        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+        // DOM Elements
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const logoutBtn = document.getElementById('logoutBtn');
         
-        // Apply settings to form elements
-        darkModeSetting.checked = settings.darkMode || false;
-        manualAddSetting.checked = settings.manualAdd !== false; // default true
-        soundEffectsSetting.checked = settings.soundEffects || false;
-        autoScannerSetting.checked = settings.autoScanner || false;
-        currencySetting.value = settings.currency || '€';
-        scannerSensitivity.value = settings.scannerSensitivity || 50;
-        notificationDuration.value = settings.notificationDuration || 3;
+        // Settings elements
+        const darkModeSetting = document.getElementById('darkModeSetting');
+        const manualAddSetting = document.getElementById('manualAddSetting');
+        const soundEffectsSetting = document.getElementById('soundEffectsSetting');
+        const autoScannerSetting = document.getElementById('autoScannerSetting');
+        const currencySetting = document.getElementById('currencySetting');
+        const scannerSensitivity = document.getElementById('scannerSensitivity');
+        const sensitivityValue = document.getElementById('sensitivityValue');
+        const notificationDuration = document.getElementById('notificationDuration');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const resetSettingsBtn = document.getElementById('resetSettingsBtn');
         
-        // Update sensitivity display
-        sensitivityValue.textContent = `${scannerSensitivity.value}%`;
+        // New settings elements
+        const stayLoggedInSetting = document.getElementById('stayLoggedInSetting');
+        const autoLogoutSetting = document.getElementById('autoLogoutSetting');
+        const requirePasswordSetting = document.getElementById('requirePasswordSetting');
+        const logoutConfirmationSetting = document.getElementById('logoutConfirmationSetting');
+        const logoutDuration = document.getElementById('logoutDuration');
         
-        // Apply dark mode if enabled
-        if (settings.darkMode) {
-            document.body.classList.add('dark-mode');
-        }
-    }
-    
-    // Save settings to localStorage
-    function saveSettings() {
-        const settings = {
-            darkMode: darkModeSetting.checked,
-            manualAdd: manualAddSetting.checked,
-            soundEffects: soundEffectsSetting.checked,
-            autoScanner: autoScannerSetting.checked,
-            currency: currencySetting.value,
-            scannerSensitivity: parseInt(scannerSensitivity.value),
-            notificationDuration: parseInt(notificationDuration.value)
-        };
-        
-        localStorage.setItem('appSettings', JSON.stringify(settings));
-        showStatus('Einstellungen erfolgreich gespeichert', 'success');
-        
-        // Apply dark mode immediately
-        if (settings.darkMode) {
-            document.body.classList.add('dark-mode');
-        } else {
-            document.body.classList.remove('dark-mode');
-        }
-    }
-
-    // DOM Elements for new feature
-    const localStorageContainer = document.getElementById('localStorageData');
-    const refreshLocalStorageBtn = document.getElementById('refreshLocalStorageBtn');
-    const filterLocalStorage = document.getElementById('filterLocalStorage');
-
-    // Function to display localStorage data
-    function displayLocalStorageData(filter = '') {
-        localStorageContainer.innerHTML = '';
-        
-        if (localStorage.length === 0) {
-            localStorageContainer.innerHTML = '<div class="no-data-message">Keine Daten im localStorage gespeichert</div>';
-            return;
-        }
-        
-        let hasVisibleItems = false;
-        const filterLower = filter.toLowerCase();
-        
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            
-            // Skip sensitive data
-            if (key === 'adminPassword' || key === 'validTokens') continue;
-            
-            let value = localStorage.getItem(key);
-            
-            // Skip displaying sensitive values
-            if (key.toLowerCase().includes('password') || key.toLowerCase().includes('token')) {
-                value = '***** (sensibler Inhalt)';
-            }
-            
-            // Apply filter
-            if (filter && 
-                !key.toLowerCase().includes(filterLower) && 
-                !value.toLowerCase().includes(filterLower)) {
-                continue;
-            }
-            
-            hasVisibleItems = true;
-            
-            const itemElement = document.createElement('div');
-            itemElement.className = 'localstorage-item';
-            
-            itemElement.innerHTML = `
-                <div class="localstorage-key" title="${key}">${key}</div>
-                <div class="localstorage-value" title="${value}">${value}</div>
-                <div class="localstorage-actions">
-                    <button class="delete-localstorage-btn" data-key="${key}">
-                        <i class="fas fa-trash"></i> Löschen
-                    </button>
-                </div>
-            `;
-            
-            localStorageContainer.appendChild(itemElement);
-        }
-        
-        if (!hasVisibleItems) {
-            localStorageContainer.innerHTML = '<div class="no-data-message">Keine passenden Einträge gefunden</div>';
-        }
-        
-        // Add event listeners to delete buttons
-        document.querySelectorAll('.delete-localstorage-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const key = this.dataset.key;
-                deleteLocalStorageItem(key);
-            });
+        // Hamburger menu toggle for mobile
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
         });
-    }
+        
+        // Logout functionality
+        logoutBtn.addEventListener('click', () => {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            if (settings.logoutConfirmation) {
+                if (!confirm('Möchten Sie sich wirklich abmelden?')) {
+                    return;
+                }
+            }
+            
+            sessionStorage.removeItem('validTokens');
+            localStorage.removeItem('authToken');
+            window.location.reload();
+        });
+        
+        // Load settings from localStorage
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            // Apply settings to form elements
+            darkModeSetting.checked = settings.darkMode || false;
+            manualAddSetting.checked = settings.manualAdd !== false; // default true
+            soundEffectsSetting.checked = settings.soundEffects || false;
+            autoScannerSetting.checked = settings.autoScanner || false;
+            currencySetting.value = settings.currency || '€';
+            scannerSensitivity.value = settings.scannerSensitivity || 50;
+            notificationDuration.value = settings.notificationDuration || 3;
+            
+            // New settings
+            stayLoggedInSetting.checked = settings.stayLoggedIn || false;
+            autoLogoutSetting.checked = settings.autoLogout || true;
+            requirePasswordSetting.checked = settings.requirePassword || true;
+            logoutConfirmationSetting.checked = settings.logoutConfirmation || true;
+            logoutDuration.value = settings.logoutDuration || 30;
+            
+            // Update sensitivity display
+            sensitivityValue.textContent = `${scannerSensitivity.value}%`;
+            
+            // Apply dark mode if enabled
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                darkMode: darkModeSetting.checked,
+                manualAdd: manualAddSetting.checked,
+                soundEffects: soundEffectsSetting.checked,
+                autoScanner: autoScannerSetting.checked,
+                currency: currencySetting.value,
+                scannerSensitivity: parseInt(scannerSensitivity.value),
+                notificationDuration: parseInt(notificationDuration.value),
+                stayLoggedIn: stayLoggedInSetting.checked,
+                autoLogout: autoLogoutSetting.checked,
+                logoutDuration: parseInt(logoutDuration.value),
+                requirePassword: requirePasswordSetting.checked,
+                logoutConfirmation: logoutConfirmationSetting.checked
+            };
+            
+            localStorage.setItem('appSettings', JSON.stringify(settings));
+            showStatus('Einstellungen erfolgreich gespeichert', 'success');
+            
+            // Apply dark mode immediately
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
 
-    // Function to delete a localStorage item
-    function deleteLocalStorageItem(key) {
-        if (!confirm(`Möchten Sie den Eintrag "${key}" wirklich löschen?`)) {
-            return;
+        // Auto logout functionality
+        let inactivityTimer;
+        
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            if (settings.autoLogout) {
+                const timeout = (settings.logoutDuration || 30) * 60 * 1000;
+                inactivityTimer = setTimeout(() => {
+                    logoutUser();
+                }, timeout);
+            }
         }
         
-        localStorage.removeItem(key);
-        displayLocalStorageData(filterLocalStorage.value);
-        showStatus(`Eintrag "${key}" wurde gelöscht.`, 'success');
-    }
-
-    // Event listeners for new feature
-    refreshLocalStorageBtn.addEventListener('click', () => {
-        displayLocalStorageData(filterLocalStorage.value);
-    });
-
-    filterLocalStorage.addEventListener('input', () => {
-        displayLocalStorageData(filterLocalStorage.value);
-    });
-
-    // Initialize localStorage display
-    document.addEventListener('DOMContentLoaded', () => {
-        displayLocalStorageData();
-    });
-    
-    // Change password functionality
-    function changePassword() {
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const passwordMessage = document.getElementById('passwordMessage');
-        if (!document.getElementById('currentPassword').value) {
-          localStorage.setItem('currentPassword', 'GITTERTIER');
-      }
-        
-        // Reset message
-        passwordMessage.style.display = 'none';
-        
-        // Validate inputs
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            showStatus('Bitte füllen Sie alle Felder aus', 'error', passwordMessage);
-            return;
+        function logoutUser() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            // Clear authentication tokens
+            sessionStorage.removeItem('validTokens');
+            localStorage.removeItem('authToken');
+            
+            // Redirect to login
+            window.location.href = 'login.html';
         }
         
-        // Get stored password
-        const storedPassword = localStorage.getItem('adminPassword') || 'GITTERTIER';
+        // Reset timer on user activity
+        document.addEventListener('mousemove', resetInactivityTimer);
+        document.addEventListener('keypress', resetInactivityTimer);
+        document.addEventListener('click', resetInactivityTimer);
+        resetInactivityTimer();
         
-        if (currentPassword !== storedPassword) {
-            showStatus('Aktuelles Passwort ist falsch', 'error', passwordMessage);
-            return;
+        // Password requirement for sensitive actions
+        function requirePassword(actionCallback) {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            if (settings.requirePassword) {
+                const password = prompt('Bitte geben Sie Ihr Passwort ein, um fortzufahren:');
+                const storedPassword = localStorage.getItem('adminPassword') || 'GITTERTIER';
+                
+                if (password === storedPassword) {
+                    actionCallback();
+                } else {
+                    showStatus('Passwort ist falsch. Aktion abgebrochen.', 'error');
+                }
+            } else {
+                actionCallback();
+            }
         }
         
-        if (newPassword !== confirmPassword) {
-            showStatus('Die neuen Passwörter stimmen nicht überein', 'error', passwordMessage);
-            return;
+        // Change password functionality
+        function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const passwordMessage = document.getElementById('passwordMessage');
+            
+            // Reset message
+            passwordMessage.style.display = 'none';
+            
+            // Validate inputs
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showStatus('Bitte füllen Sie alle Felder aus', 'error', passwordMessage);
+                return;
+            }
+            
+            // Get stored password
+            const storedPassword = localStorage.getItem('adminPassword') || 'GITTERTIER';
+            
+            if (currentPassword !== storedPassword) {
+                showStatus('Aktuelles Passwort ist falsch', 'error', passwordMessage);
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showStatus('Die neuen Passwörter stimmen nicht überein', 'error', passwordMessage);
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showStatus('Das Passwort muss mindestens 8 Zeichen lang sein', 'error', passwordMessage);
+                return;
+            }
+            
+            // Save new password
+            localStorage.setItem('adminPassword', newPassword);
+            
+            // Clear form
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            showStatus('Passwort erfolgreich geändert', 'success', passwordMessage);
         }
         
-        if (newPassword.length < 8) {
-            showStatus('Das Passwort muss mindestens 8 Zeichen lang sein', 'error', passwordMessage);
-            return;
+        // Reset settings to defaults
+        function resetSettings() {
+            requirePassword(function() {
+                if (!confirm('Möchten Sie wirklich alle Einstellungen auf Standardwerte zurücksetzen?')) {
+                    return;
+                }
+                
+                // Reset form elements to defaults
+                darkModeSetting.checked = false;
+                manualAddSetting.checked = true;
+                soundEffectsSetting.checked = false;
+                autoScannerSetting.checked = false;
+                currencySetting.value = '€';
+                scannerSensitivity.value = 50;
+                notificationDuration.value = 3;
+                stayLoggedInSetting.checked = false;
+                autoLogoutSetting.checked = true;
+                requirePasswordSetting.checked = true;
+                logoutConfirmationSetting.checked = true;
+                logoutDuration.value = 30;
+                
+                // Update sensitivity display
+                sensitivityValue.textContent = '50%';
+                
+                // Remove saved settings
+                localStorage.removeItem('appSettings');
+                
+                // Apply changes immediately
+                saveSettings();
+                document.body.classList.remove('dark-mode');
+                
+                showStatus('Einstellungen wurden auf Standardwerte zurückgesetzt', 'success', document.getElementById('resetMessage'));
+            });
         }
         
-        // Save new password
-        localStorage.setItem('adminPassword', newPassword);
-        
-        // Clear form
-        document.getElementById('currentPassword').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('confirmPassword').value = '';
-        
-        showStatus('Passwort erfolgreich geändert', 'success', passwordMessage);
-    }
-    
-    // Reset settings to defaults
-    function resetSettings() {
-        if (!confirm('Möchten Sie wirklich alle Einstellungen auf Standardwerte zurücksetzen?')) {
-            return;
+        // Show status message
+        function showStatus(message, type, element) {
+            const el = element || document.getElementById('passwordMessage');
+            el.textContent = message;
+            el.className = 'status-message';
+            
+            if (type === 'success') {
+                el.classList.add('success-message');
+            } else if (type === 'error') {
+                el.classList.add('error-message');
+            }
+            
+            el.style.display = 'block';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
         }
         
-        // Reset form elements to defaults
-        darkModeSetting.checked = false;
-        manualAddSetting.checked = true;
-        soundEffectsSetting.checked = false;
-        autoScannerSetting.checked = false;
-        currencySetting.value = '€';
-        scannerSensitivity.value = 50;
-        notificationDuration.value = 3;
+        // Event listeners
+        darkModeSetting.addEventListener('change', saveSettings);
+        manualAddSetting.addEventListener('change', saveSettings);
+        soundEffectsSetting.addEventListener('change', saveSettings);
+        autoScannerSetting.addEventListener('change', saveSettings);
+        currencySetting.addEventListener('change', saveSettings);
+        scannerSensitivity.addEventListener('input', function() {
+            sensitivityValue.textContent = `${this.value}%`;
+            saveSettings();
+        });
+        notificationDuration.addEventListener('change', saveSettings);
         
-        // Update sensitivity display
-        sensitivityValue.textContent = '50%';
+        // New settings event listeners
+        stayLoggedInSetting.addEventListener('change', saveSettings);
+        autoLogoutSetting.addEventListener('change', saveSettings);
+        requirePasswordSetting.addEventListener('change', saveSettings);
+        logoutConfirmationSetting.addEventListener('change', saveSettings);
+        logoutDuration.addEventListener('change', saveSettings);
         
-        // Remove saved settings
-        localStorage.removeItem('appSettings');
+        changePasswordBtn.addEventListener('click', changePassword);
+        resetSettingsBtn.addEventListener('click', resetSettings);
         
-        // Apply changes immediately
-        saveSettings();
-        document.body.classList.remove('dark-mode');
-        
-        showStatus('Einstellungen wurden auf Standardwerte zurückgesetzt', 'success', document.getElementById('resetMessage'));
-    }
-    
-    // Show status message
-    function showStatus(message, type, element) {
-        const el = element || document.getElementById('passwordMessage');
-        el.textContent = message;
-        el.className = 'status-message';
-        
-        if (type === 'success') {
-            el.classList.add('success-message');
-        } else if (type === 'error') {
-            el.classList.add('error-message');
-        }
-        
-        el.style.display = 'block';
-        
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-            el.style.display = 'none';
-        }, 5000);
-    }
-    
-    // Event listeners
-    darkModeSetting.addEventListener('change', saveSettings);
-    manualAddSetting.addEventListener('change', saveSettings);
-    soundEffectsSetting.addEventListener('change', saveSettings);
-    autoScannerSetting.addEventListener('change', saveSettings);
-    currencySetting.addEventListener('change', saveSettings);
-    scannerSensitivity.addEventListener('input', function() {
-        sensitivityValue.textContent = `${this.value}%`;
-        saveSettings();
-    });
-    notificationDuration.addEventListener('change', saveSettings);
-    changePasswordBtn.addEventListener('click', changePassword);
-    resetSettingsBtn.addEventListener('click', resetSettings);
-    
-    // Initialize settings on load
-    document.addEventListener('DOMContentLoaded', loadSettings);
-    
-    // Initialize admin password if not set
-    if (!document.getElementbyId('storedPassword')) {
-        localStorage.setItem('adminPassword', 'GITTERTIER');
-    }
-</script>
+        // Initialize settings on load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            resetInactivityTimer();
+            
+            // Initialize admin password if not set
+            if (!localStorage.getItem('adminPassword')) {
+                localStorage.setItem('adminPassword', 'GITTERTIER');
+            }
+        });
+    </script>
 </body>
 </html>

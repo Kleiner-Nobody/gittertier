@@ -1,3 +1,4 @@
+<!-- login.html -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -6,9 +7,8 @@
     <title>Gittertier Admin Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-    :root {
+    <style>
+        :root {
   --bg: #ebeded;
   --surface: #ffffff;
   --text: #2c3e50;
@@ -494,6 +494,14 @@ body {
   60% {transform: translateY(-5px);}
 }
 
+/* Stay logged in container */
+.stay-logged-container {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  gap: 10px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .login-container {
@@ -637,21 +645,17 @@ body {
     padding: 15px;
     font-size: 0.95rem;
   }
+  
+  .stay-logged-container {
+    margin-top: 10px;
+  }
 }
-</style>
+    </style>
 </head>
 <body>
-    <!--  //Floating icons for visual interest
-    <div class="floating-icon"><i class="fas fa-lock"></i></div>
-    <div class="floating-icon"><i class="fas fa-shield-alt"></i></div>
-    <div class="floating-icon"><i class="fas fa-user-shield"></i></div>
-    <div class="floating-icon"><i class="fas fa-key"></i></div>
-    <div class="floating-icon"><i class="fas fa-database"></i></div> -->
-    
     <div class="login-container">
         <div class="login-header">
             <div class="logo-container">
-                <div class="logo-glow"></div>
                 <div class="logo">
                     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M50 100C22.386 100 0 77.614 0 50S22.386 0 50 0s50 22.386 50 50-22.386 50-50 50zm0-90C27.909 10 10 27.909 10 50s17.909 40 40 40 40-17.909 40-40S72.091 10 50 10z" fill="#26a69a"/>
@@ -660,16 +664,14 @@ body {
                 </div>
             </div>
             <h1 class="login-title">Gittertier Admin</h1>
-           <!-- <p class="login-subtitle">Sichere Anmeldung mit verschlüsselter Weiterleitung</p> -->
         </div>
 
-            <div class="url-display">
-                <i class="fas fa-link"></i>
-                <span id="redirectUrl">Keine Weiterleitung festgelegt</span>
-                <span class="encrypted-label">Verschlüsselt</span>
-            </div>
-            
-
+        <div class="url-display">
+            <i class="fas fa-link"></i>
+            <span id="redirectUrl">Keine Weiterleitung festgelegt</span>
+            <span class="encrypted-label">Verschlüsselt</span>
+        </div>
+        
         <form class="login-form" id="loginForm">
             <div class="input-group">
                 <label class="input-label" for="passwordInput">Passwort</label>
@@ -678,16 +680,21 @@ body {
                            class="login-input" 
                            placeholder="Passwort eingeben"
                            id="passwordInput"
-                          required
+                           required
                            autocomplete="current-password">
                     <button type="button" class="toggle-password" id="togglePassword">
                         <i class="far fa-eye"></i>
                     </button>
                 </div>
-                <div class="password-strength">
-                    <div class="strength-meter" id="strengthMeter"></div>
-                </div>
-                <!--<div class="strength-label" id="strengthLabel">Passwortstärke: -</div> -->
+            </div>
+            
+            <!-- Stay Logged In Option -->
+            <div class="stay-logged-container" id="stayLoggedInContainer">
+                <label class="switch">
+                    <input type="checkbox" id="stayLoggedIn">
+                    <span class="slider"></span>
+                </label>
+                <span>Angemeldet bleiben (für 1 Tag)</span>
             </div>
             
             <button type="submit" class="login-button">
@@ -710,11 +717,7 @@ body {
                 </div>
             </div>
         </form>
-        
-       <!--  <div class="footer-note">
-            © 2023 Gittertier GmbH | Alle Rechte vorbehalten
-        </div>
-    </div> -->
+    </div>
     
     <!-- Session Timeout Warning -->
     <div class="session-timeout" id="sessionTimeout">
@@ -758,15 +761,12 @@ body {
         const redirectUrlDisplay = document.getElementById('redirectUrl');
         const errorModal = document.getElementById('errorModal');
         const redirectPathDisplay = document.getElementById('redirectPathDisplay');
-        const strengthMeter = document.getElementById('strengthMeter');
-        const strengthLabel = document.getElementById('strengthLabel');
         const sessionTimeout = document.getElementById('sessionTimeout');
         const timeoutCountdown = document.getElementById('timeoutCountdown');
         const extendSessionBtn = document.getElementById('extendSession');
         const activityLog = document.getElementById('activityLog');
-        if (!localStorage.getItem('adminPassword')) {
-            localStorage.setItem('adminPassword', 'GITTERTIER');
-        }
+        const stayLoggedIn = document.getElementById('stayLoggedIn');
+        const stayLoggedInContainer = document.getElementById('stayLoggedInContainer');
         
         let timeoutTimer;
         let countdown = 60;
@@ -833,19 +833,6 @@ body {
             return segments[segments.length - 1] || cleanPath;
         }
         
-        // Validate redirect path
-        function validateRedirectPath(path) {
-            if (!path) return false;
-            
-            // Allow only relative paths and same-origin URLs
-            if (path.startsWith('/') || path.startsWith(window.location.origin)) {
-                return true;
-            }
-            
-            return false;
-        }
-
-        // Password strength evaluation
         // Add activity to log
         function addActivity(message, isError = false) {
             const now = new Date();
@@ -914,11 +901,6 @@ body {
             addActivity('Passwort-Sichtbarkeit geändert');
         });
 
-        // Password strength evaluation
-        passwordInput.addEventListener('input', function() {
-            evaluatePasswordStrength(this.value);
-        });
-
         // Extend session button
         extendSessionBtn.addEventListener('click', function() {
             startSessionTimer();
@@ -945,6 +927,43 @@ body {
         
         // On page load
         window.addEventListener('DOMContentLoaded', () => {
+            // Load settings to check if stay logged in is enabled
+            const appSettings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            // Show/hide stay logged in option based on settings
+            if (appSettings.stayLoggedIn) {
+                stayLoggedInContainer.style.display = 'flex';
+            } else {
+                stayLoggedInContainer.style.display = 'none';
+            }
+            
+            // Check for valid auth token
+            const authToken = JSON.parse(localStorage.getItem('authToken'));
+            if (authToken && authToken.expires > Date.now()) {
+                redirectPath = getRedirectPath();
+                if (redirectPath) {
+                  const token = generateToken();
+                
+                // Create target URL with token
+                    const targetUrl = new URL(redirectPath);
+                    targetUrl.searchParams.set('token', token);
+                    
+                    // Add loading effect
+                    const loadingText = document.createElement('div');
+                    loadingText.innerHTML = '<p>Automatische Anmeldung wird durchgeführt...</p>';
+                    loadingText.style.textAlign = 'center';
+                    loadingText.style.padding = '20px';
+                    loginForm.parentNode.insertBefore(loadingText, loginForm);
+                    loginForm.style.display = 'none';
+                    
+                    // Simulate delay for better UX
+                    setTimeout(() => {
+                        window.location.href = targetUrl.toString();
+                    }, 1);
+                    return;
+                }
+            }
+            
             redirectPath = getRedirectPath();
             
             if (redirectPath === null) {
@@ -986,6 +1005,15 @@ body {
                 const targetUrl = new URL(redirectPath);
                 targetUrl.searchParams.set('token', token);
                 
+                // Store token if "Stay Logged In" is checked
+                if (stayLoggedIn.checked) {
+                    const authToken = {
+                        token: token,
+                        expires: Date.now() + (1000*24*60*60) //1 Tag 
+                    };
+                    localStorage.setItem('authToken', JSON.stringify(authToken));
+                }
+                
                 // Add loading effect
                 const button = this.querySelector('.login-button');
                 button.innerHTML = '<span class="loader"></span> Anmeldung läuft...';
@@ -1020,7 +1048,6 @@ body {
             }
         `;
         document.head.appendChild(style);
-      // Initialize admin password if not set
     </script>
 </body>
 </html>
