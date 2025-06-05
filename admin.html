@@ -932,6 +932,7 @@
         const saveProductBtn = document.getElementById('saveProductBtn');
         const searchInput = document.getElementById('searchInput');
         const refreshReceiptsBtn = document.getElementById('refreshReceipts');
+        const logoutConfirmationSetting = document.getElementById('logoutConfirmationSetting');
         
         // Time display function
         function updateTime() {
@@ -975,10 +976,20 @@
         });
         
         // Logout functionality
-        logoutBtn.addEventListener('click', () => {
-            sessionStorage.removeItem('validTokens');
-            window.location.reload();
-        });
+            logoutBtn.addEventListener('click', () => {
+                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                
+                if (settings.logoutConfirmation) {
+                    if (!confirm('Möchten Sie sich wirklich abmelden?')) {
+                        return;
+                    }
+                }
+                
+                sessionStorage.removeItem('validTokens');
+                localStorage.removeItem('authToken');
+                window.location.reload();
+            });
+        
         
         // Modal open/close functionality
         addProductBtn.addEventListener('click', () => {
