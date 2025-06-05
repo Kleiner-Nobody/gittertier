@@ -1239,7 +1239,40 @@
                 showStatus('Einstellungen wurden auf Standardwerte zurückgesetzt', 'success', document.getElementById('resetMessage'));
             });
         }
-        
+
+                function saveProductSettings() {
+            const settings = {
+                disableDelete: document.getElementById('disableDeleteSetting').checked,
+                mobileOptimization: document.getElementById('mobileOptimizationSetting').checked,
+                hidePrices: document.getElementById('hidePricesSetting').checked
+            };
+            localStorage.setItem('productSettings', JSON.stringify(settings));
+        }
+
+        // NEW: Load product settings from localStorage
+        function loadProductSettings() {
+            const settings = JSON.parse(localStorage.getItem('productSettings')) || {
+                disableDelete: false,
+                mobileOptimization: false,
+                hidePrices: false
+            };
+            
+            document.getElementById('disableDeleteSetting').checked = settings.disableDelete;
+            document.getElementById('mobileOptimizationSetting').checked = settings.mobileOptimization;
+            document.getElementById('hidePricesSetting').checked = settings.hidePrices;
+        }
+
+        // Add event listeners to save on change
+        document.getElementById('disableDeleteSetting').addEventListener('change', saveProductSettings);
+        document.getElementById('mobileOptimizationSetting').addEventListener('change', saveProductSettings);
+        document.getElementById('hidePricesSetting').addEventListener('change', saveProductSettings);
+
+        // Call loadProductSettings on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            loadProductSettings(); // NEW: Load product settings
+            resetInactivityTimer();
+        })
         // Show status message
         function showStatus(message, type, element) {
             const el = element || document.getElementById('passwordMessage');

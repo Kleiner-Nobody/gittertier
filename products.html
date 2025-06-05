@@ -718,6 +718,42 @@
             }
         }
 
+                .mobile-optimized .product-item {
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
+        }
+        
+        .mobile-optimized .product-info {
+            margin-right: 0;
+            text-align: center;
+        }
+        
+        .mobile-optimized .product-actions {
+            flex-direction: column;
+            width: 100%;
+            padding: 0;
+            gap: 10px;
+        }
+        
+        .mobile-optimized .product-actions button {
+            width: 100%;
+        }
+        
+        .mobile-optimized .toolbar {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .mobile-optimized .toolbar button {
+            min-width: 100%;
+        }
+        
+        /* NEW: Hide prices */
+        .price-hidden .product-price {
+            display: none;
+        }
+
         @media (max-width: 480px) {
             body {
                 padding: 15px;
@@ -1023,17 +1059,18 @@
             localStorage.removeItem('authToken');
             window.location.reload();
         });
-
+        // NEW: Load product settings
+        let productSettings = JSON.parse(localStorage.getItem('productSettings')) || {
+            disableDelete: false,
+            mobileOptimization: false,
+            hidePrices: false
+        };
         let products = {};
         let cloudConfig = JSON.parse(localStorage.getItem('cloudConfig')) || {};
         let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
         let selectedProducts = new Set();
         let currentEditBarcode = null;
-        let productSettings = JSON.parse(localStorage.getItem('productSettings')) || {
-            sortOrder: 'name',
-            autoShowQR: true,
-            showImages: false
-        };
+
 
         // Initialize product settings
         document.getElementById('sortOrder').value = productSettings.sortOrder;
@@ -1052,10 +1089,20 @@
             renderProducts();
         }
 
+         // NEW: Optimize for mobile
+        function optimizeForMobile() {
+            if (window.innerWidth <= 768) {
+                document.body.classList.add('mobile-optimized');
+            } else if (!productSettings.mobileOptimization) {
+                document.body.classList.remove('mobile-optimized');
+            }
+        }
+
         // Initialization
         async function initialize() {
             await loadProducts();
             renderProducts();
+            applyProductSettings(); // NEW: Apply settings
             renderActivityLog();
             setupEventListeners();
             
@@ -1133,6 +1180,20 @@
             reader.readAsText(file);
         });
 
+               function applyProductSettings() {
+            if (productSettings.mobileOptimization) {
+                document.body.classList.add('mobile-optimized');
+            } else {
+                document.body.classList.remove('mobile-optimized');
+            }
+            
+            if (productSettings.hidePrices) {
+                document.body.classList.add('price-hidden');
+            } else {
+                document.body.classList.remove('price-hidden');
+            }
+        }
+
         // Validierungsfunktion
         function isValidProductStructure(data) {
             return typeof data === 'object' && 
@@ -1174,16 +1235,17 @@
                                 <div style="font-size: 1.4rem; font-weight: 600; margin-bottom: 8px;">${product.name}</div>
                                 <div style="color: var(--text-secondary); font-size: 1rem;">
                                     <span style="margin-right: 15px;"><i class="fas fa-barcode"></i> ${product.barcode}</span>
-                                    <span><i class="fas fa-euro-sign"></i> ${product.price.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
+                        <div class="product-price">€${product.price.toFixed(2)}</div>
                     </div>
                     <div class="product-actions">
                         <button class="btn btn-primary" onclick="editProduct('${product.barcode}')">
                             <i class="fas fa-edit"></i> Bearbeiten
                         </button>
-                        <button class="btn btn-error" onclick="deleteProduct('${product.barcode}')">
+                        <button class="btn btn-error" onclick="deleteProduct('${product.barcode}')" 
+                                ${productSettings.disableDelete ? 'disabled style="opacity:0.5; pointer-events:none;"' : ''}>
                             <i class="fas fa-trash"></i> Löschen
                         </button>
                         <button class="btn btn-accent" onclick="showQR('${product.barcode}')">
@@ -1416,6 +1478,8 @@
 
         // Start the application
         initialize();
+        window.addEventListener('resize', optimizeForMobile);
+        optimizeForMobile();
     </script>
 </body>
 </html>
