@@ -334,7 +334,7 @@
 
         .product-info {
             flex: 1;
-            margin-right: 40px;
+            margin-right: 10px;
         }
 
         .product-info h3 {
@@ -673,135 +673,55 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-                gap: 25px;
-                padding: 40px 30px;
-            }
-            
-            .header h1 {
-                font-size: 2.2rem;
-            }
-            
-            .product-item {
-                flex-direction: column;
-                gap: 30px;
-                text-align: center;
-                padding: 30px;
-            }
-            
-            .product-info {
-                margin-right: 0;
-            }
-            
-            .product-actions {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .toolbar button {
-                flex: 1 1 100%;
-            }
-            
-            .modal {
-                padding: 40px 30px;
-            }
-            
-            .cloud-status {
-                bottom: 20px;
-                right: 20px;
-                left: 20px;
-                text-align: center;
-                justify-content: center;
-            }
-        }
+/* Add to existing media queries */
+@media (max-width: 768px) {
+    .product-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .toolbar button {
+        min-width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .product-info > div {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .modal {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    .admin-content {
+        padding: 10px;
+    }
+}
 
-                .mobile-optimized .product-item {
-            flex-direction: column;
-            padding: 20px;
-            gap: 15px;
-        }
-        
-        .mobile-optimized .product-info {
-            margin-right: 0;
-            text-align: center;
-        }
-        
-        .mobile-optimized .product-actions {
-            flex-direction: column;
-            width: 100%;
-            padding: 0;
-            gap: 10px;
-        }
-        
-        .mobile-optimized .product-actions button {
-            width: 100%;
-        }
-        
-        .mobile-optimized .toolbar {
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .mobile-optimized .toolbar button {
-            min-width: 100%;
-        }
-        
-        /* NEW: Hide prices */
-        .price-hidden .product-price {
-            display: none;
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-            
-            .product-list {
-                padding: 30px 20px;
-            }
-            
-            .product-item {
-                padding: 30px 20px;
-            }
-            
-            button {
-                padding: 12px 15px;
-                font-size: 0.9rem;
-                min-width: 100%;
-            }
-            
-            .modal {
-                padding: 30px 20px;
-                top: 20px;
-                transform: translateX(-50%);
-            }
-            
-            .modal-header h2 {
-                font-size: 1.8rem;
-            }
-            
-            .modal-input {
-                padding: 12px 15px;
-                min-height: 50px;
-                font-size: 0.9rem;
-            }
-            
-            .product-actions {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .toolbar {
-                gap: 15px;
-            }
-            
-            .header {
-                padding: 30px 20px;
-            }
-        }
+@media (max-width: 480px) {
+    .product-item {
+        padding: 20px 15px;
+    }
+    
+    .product-info h3 {
+        font-size: 1.4rem;
+    }
+    
+    .product-price {
+        font-size: 1.4rem;
+        padding: 8px 15px;
+    }
+    
+    .cloud-status {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+}
     </style>
 </head>
 <body>
@@ -1059,18 +979,17 @@
             localStorage.removeItem('authToken');
             window.location.reload();
         });
-        // NEW: Load product settings
-        let productSettings = JSON.parse(localStorage.getItem('productSettings')) || {
-            disableDelete: false,
-            mobileOptimization: false,
-            hidePrices: false
-        };
+
         let products = {};
         let cloudConfig = JSON.parse(localStorage.getItem('cloudConfig')) || {};
         let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
         let selectedProducts = new Set();
         let currentEditBarcode = null;
-
+        let productSettings = JSON.parse(localStorage.getItem('productSettings')) || {
+            sortOrder: 'name',
+            autoShowQR: true,
+            showImages: false
+        };
 
         // Initialize product settings
         document.getElementById('sortOrder').value = productSettings.sortOrder;
@@ -1089,20 +1008,10 @@
             renderProducts();
         }
 
-         // NEW: Optimize for mobile
-        function optimizeForMobile() {
-            if (window.innerWidth <= 768) {
-                document.body.classList.add('mobile-optimized');
-            } else if (!productSettings.mobileOptimization) {
-                document.body.classList.remove('mobile-optimized');
-            }
-        }
-
         // Initialization
         async function initialize() {
             await loadProducts();
             renderProducts();
-            applyProductSettings(); // NEW: Apply settings
             renderActivityLog();
             setupEventListeners();
             
@@ -1115,6 +1024,17 @@
         // Product Management
         async function loadProducts() {
             products = JSON.parse(localStorage.getItem('products')) || {};
+            
+            // Load product settings
+            const appSettings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            productSettings = appSettings.productSettings || {
+                sortOrder: 'name',
+                autoShowQR: true,
+                showImages: false,
+                disableDelete: false,
+                limitPriceChange: false,
+                validateBarcode: true
+            };
         }
 
         function saveProducts() {
@@ -1180,20 +1100,6 @@
             reader.readAsText(file);
         });
 
-               function applyProductSettings() {
-            if (productSettings.mobileOptimization) {
-                document.body.classList.add('mobile-optimized');
-            } else {
-                document.body.classList.remove('mobile-optimized');
-            }
-            
-            if (productSettings.hidePrices) {
-                document.body.classList.add('price-hidden');
-            } else {
-                document.body.classList.remove('price-hidden');
-            }
-        }
-
         // Validierungsfunktion
         function isValidProductStructure(data) {
             return typeof data === 'object' && 
@@ -1208,6 +1114,10 @@
         function renderProducts() {
             const list = document.getElementById('product-list');
             const productArray = Object.values(products);
+
+
+
+            
             
             // Sort products based on settings
             switch(productSettings.sortOrder) {
@@ -1231,26 +1141,28 @@
                                     <i class="fas fa-box" style="font-size: 2rem; color: #ccc;"></i>
                                 </div>
                             ` : ''}
-                            <div>
-                                <div style="font-size: 1.4rem; font-weight: 600; margin-bottom: 8px;">${product.name}</div>
-                                <div style="color: var(--text-secondary); font-size: 1rem;">
-                                    <span style="margin-right: 15px;"><i class="fas fa-barcode"></i> ${product.barcode}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="product-price">€${product.price.toFixed(2)}</div>
-                    </div>
-                    <div class="product-actions">
-                        <button class="btn btn-primary" onclick="editProduct('${product.barcode}')">
+                                                    <button class="btn btn-primary" onclick="editProduct('${product.barcode}')">
                             <i class="fas fa-edit"></i> Bearbeiten
                         </button>
-                        <button class="btn btn-error" onclick="deleteProduct('${product.barcode}')" 
-                                ${productSettings.disableDelete ? 'disabled style="opacity:0.5; pointer-events:none;"' : ''}>
-                            <i class="fas fa-trash"></i> Löschen
-                        </button>
+                         ${!productSettings.disableDelete ? `
+                                <button class="btn btn-error" onclick="deleteProduct('${product.barcode}')">
+                                  <i class="fas fa-trash"></i> Löschen
+                                </button>
+                            ` : ''}
                         <button class="btn btn-accent" onclick="showQR('${product.barcode}')">
                             <i class="fas fa-qrcode"></i> QR
                         </button>
+                            <div>
+                                <div style="font-size: 1.4rem; font-weight: 600; margin-bottom: 8px">${product.name}</div>
+                                <div style="color: var(--text-secondary); font-size: 1rem;">
+                                    <span style= "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 10px; background: #fff4d1; border-radius: 10px; ;"><i class="fas fa-barcode"></i> ${product.barcode}</span>
+                                    <span class = "product-price"><i class="fas fa-euro-sign"></i> ${product.price.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                         
                     </div>
                 </div>
             `).join('');
@@ -1368,6 +1280,20 @@
                 return;
             }
 
+            if (productSettings.validateBarcode && !/^\d{6,13}$/.test(barcode)) {
+                alert('Ungültiger Barcode! Muss 6-13 Ziffern enthalten.');
+                return;
+            }
+
+            if (productSettings.limitPriceChange && currentEditBarcode) {
+                const oldPrice = products[currentEditBarcode].price;
+                if (Math.abs(price - oldPrice) > oldPrice * 0.2) {
+                    if (!confirm(`Preisänderung über 20%! Alte Preis: ${oldPrice.toFixed(2)}€, neue Preis: ${price.toFixed(2)}€. Fortfahren?`)) {
+                        return;
+                    }
+                }
+            }
+
             if(currentEditBarcode && currentEditBarcode !== barcode) {
                 delete products[currentEditBarcode];
             }
@@ -1478,8 +1404,6 @@
 
         // Start the application
         initialize();
-        window.addEventListener('resize', optimizeForMobile);
-        optimizeForMobile();
     </script>
 </body>
 </html>

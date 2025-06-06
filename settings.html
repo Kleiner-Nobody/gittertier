@@ -727,7 +727,9 @@
                         </div>
                     </div>
 
-                                        <div class="setting-card">
+                    
+
+                        <div class="setting-card">
                             <div class="setting-title">
                                 <i class="fas fa-lock"></i>
                                 <h3>Zugangsbeschränkungen</h3>
@@ -748,6 +750,7 @@
                         </div>
                 </div>
 
+                <!-- Added after "Sicherheitseinstellungen" section -->
                 <div class="settings-section">
                     <div class="section-header">
                         <i class="fas fa-boxes"></i>
@@ -757,52 +760,96 @@
                     <div class="settings-grid">
                         <div class="setting-card">
                             <div class="setting-title">
-                                <i class="fas fa-trash-alt"></i>
-                                <h3>Produktlöschung</h3>
+                                <i class="fas fa-sort"></i>
+                                <h3>Sortierreihenfolge</h3>
                             </div>
                             <div class="setting-description">
-                                Steuern Sie, ob Produkte gelöscht werden können.
+                                Legen Sie die Standardreihenfolge für die Produktansicht fest.
                             </div>
                             <div class="setting-control">
-                                <span>Löschung deaktivieren</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="disableDeleteSetting">
-                                    <span class="slider"></span>
-                                </label>
+                                <select id="sortOrder" class="modal-input">
+                                    <option value="name">Nach Name</option>
+                                    <option value="price">Nach Preis</option>
+                                    <option value="barcode">Nach Barcode</option>
+                                </select>
                             </div>
                         </div>
                         
                         <div class="setting-card">
                             <div class="setting-title">
-                                <i class="fas fa-mobile-alt"></i>
-                                <h3>Mobile Optimierung</h3>
+                                <i class="fas fa-qrcode"></i>
+                                <h3>QR-Code Verhalten</h3>
                             </div>
                             <div class="setting-description">
-                                Optimieren Sie die Produktansicht für Mobilgeräte.
+                                Steuern Sie das Verhalten nach dem Hinzufügen oder Bearbeiten eines Produkts.
                             </div>
-                            <div class="setting-control">
-                                <span>Mobile Ansicht aktivieren</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="mobileOptimizationSetting">
-                                    <span class="slider"></span>
-                                </label>
+                            <div class="setting-control vertical">
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>QR-Code nach Speichern anzeigen</h4>
+                                        <p class="setting-description">Zeigt automatisch den QR-Code nach dem Speichern</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="autoShowQR">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>Produktbilder anzeigen</h4>
+                                        <p class="setting-description">Zeigt Platzhalter für Produktbilder</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="showImages">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                         
+                        <!-- New settings -->
                         <div class="setting-card">
                             <div class="setting-title">
-                                <i class="fas fa-eye-slash"></i>
-                                <h3>Preisausblendung</h3>
+                                <i class="fas fa-lock"></i>
+                                <h3>Sicherheitsfunktionen</h3>
                             </div>
                             <div class="setting-description">
-                                Steuern Sie, ob Preise angezeigt werden.
+                                Zusätzliche Schutzfunktionen für die Produktverwaltung.
                             </div>
-                            <div class="setting-control">
-                                <span>Preise ausblenden</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="hidePricesSetting">
-                                    <span class="slider"></span>
-                                </label>
+                            <div class="setting-control vertical">
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>Löschen deaktivieren</h4>
+                                        <p class="setting-description">Verhindert das Löschen von Produkten</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="disableDelete">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>Preisänderung beschränken</h4>
+                                        <p class="setting-description">Maximale Preisänderung begrenzen</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="limitPriceChange">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-option">
+                                    <div>
+                                        <h4>Barcode-Validierung</h4>
+                                        <p class="setting-description">Prüft Barcode-Format bei Eingabe</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="validateBarcode">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1080,6 +1127,14 @@
             if (settings.darkMode) {
                 document.body.classList.add('dark-mode');
             }
+
+            // Add to loadSettings() function
+            document.getElementById('sortOrder').value = settings.productSettings?.sortOrder || 'name';
+            document.getElementById('autoShowQR').checked = settings.productSettings?.autoShowQR || true;
+            document.getElementById('showImages').checked = settings.productSettings?.showImages || false;
+            document.getElementById('disableDelete').checked = settings.productSettings?.disableDelete || false;
+            document.getElementById('limitPriceChange').checked = settings.productSettings?.limitPriceChange || false;
+            document.getElementById('validateBarcode').checked = settings.productSettings?.validateBarcode || true;
         }
         
         // Save settings to localStorage
@@ -1098,7 +1153,16 @@
                 requirePassword: requirePasswordSetting.checked,
                 logoutConfirmation: logoutConfirmationSetting.checked
             };
-            
+
+            settings.productSettings = {
+                sortOrder: document.getElementById('sortOrder').value,
+                autoShowQR: document.getElementById('autoShowQR').checked,
+                showImages: document.getElementById('showImages').checked,
+                disableDelete: document.getElementById('disableDelete').checked,
+                limitPriceChange: document.getElementById('limitPriceChange').checked,
+                validateBarcode: document.getElementById('validateBarcode').checked
+            };
+                        
             localStorage.setItem('appSettings', JSON.stringify(settings));
             showStatus('Einstellungen erfolgreich gespeichert', 'success');
             
@@ -1239,40 +1303,7 @@
                 showStatus('Einstellungen wurden auf Standardwerte zurückgesetzt', 'success', document.getElementById('resetMessage'));
             });
         }
-
-                function saveProductSettings() {
-            const settings = {
-                disableDelete: document.getElementById('disableDeleteSetting').checked,
-                mobileOptimization: document.getElementById('mobileOptimizationSetting').checked,
-                hidePrices: document.getElementById('hidePricesSetting').checked
-            };
-            localStorage.setItem('productSettings', JSON.stringify(settings));
-        }
-
-        // NEW: Load product settings from localStorage
-        function loadProductSettings() {
-            const settings = JSON.parse(localStorage.getItem('productSettings')) || {
-                disableDelete: false,
-                mobileOptimization: false,
-                hidePrices: false
-            };
-            
-            document.getElementById('disableDeleteSetting').checked = settings.disableDelete;
-            document.getElementById('mobileOptimizationSetting').checked = settings.mobileOptimization;
-            document.getElementById('hidePricesSetting').checked = settings.hidePrices;
-        }
-
-        // Add event listeners to save on change
-        document.getElementById('disableDeleteSetting').addEventListener('change', saveProductSettings);
-        document.getElementById('mobileOptimizationSetting').addEventListener('change', saveProductSettings);
-        document.getElementById('hidePricesSetting').addEventListener('change', saveProductSettings);
-
-        // Call loadProductSettings on DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSettings();
-            loadProductSettings(); // NEW: Load product settings
-            resetInactivityTimer();
-        })
+        
         // Show status message
         function showStatus(message, type, element) {
             const el = element || document.getElementById('passwordMessage');
