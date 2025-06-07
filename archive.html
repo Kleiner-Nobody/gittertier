@@ -9,20 +9,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --bg: #f8f9fa;
+            --bg: #ebeded;
             --surface: #ffffff;
-            --text: #212529;
-            --text-secondary: #6c757d;
-            --accent: #0d6efd;
-            --accent-dark: #0b5ed7;
-            --accent-light: #e7f1ff;
-            --success: #198754;
+            --text: #2c3e50;
+            --text-secondary: #455a64;
+            --accent: #6c757d;
+            --accent-dark: #5a6268;
+            --accent-light: #d6d8db;
+            --success: #28a745;
             --danger: #dc3545;
             --warning: #ffc107;
-            --info: #0dcaf0;
-            --border-radius: 12px;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --card-padding: 24px;
+            --info: #17a2b8;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .dark-mode {
@@ -49,7 +48,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
@@ -58,7 +57,7 @@
             overflow-x: hidden;
         }
 
-        header {
+        .admin-header {
             background: var(--surface);
             padding: 16px 24px;
             display: flex;
@@ -118,30 +117,77 @@
             color: var(--accent);
         }
 
-        .container {
-            max-width: 1400px;
+        .admin-container {
+            display: flex;
+            flex: 1;
+            max-width: 1800px;
             margin: 0 auto;
-            padding: 24px;
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 24px;
+            width: 100%;
         }
 
-        .mobile-menu-toggle {
-            display: none;
-            background: transparent;
-            border: none;
-            font-size: 1.5rem;
+        .admin-sidebar {
+            width: 280px;
+            background: var(--surface);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 99;
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            overflow-y: auto;
+        }
+
+        .nav-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .nav-link {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
             color: var(--text);
-            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 2px solid var(--accent-light);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .nav-link i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent);
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
         }
 
         .card {
             background: var(--surface);
             border-radius: var(--border-radius);
-            padding: var(--card-padding);
+            padding: 24px;
             box-shadow: var(--shadow);
             margin-bottom: 24px;
+            border: 1px solid var(--accent-light);
         }
 
         .card-header {
@@ -229,7 +275,7 @@
         #search-input:focus {
             border-color: var(--accent);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+            box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.2);
         }
 
         .filter-section {
@@ -309,6 +355,7 @@
 
         .receipt-item:hover {
             box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            transform: translateY(-3px);
         }
 
         .receipt-item.selected {
@@ -638,18 +685,13 @@
         }
 
         /* Mobile sidebar toggle */
-        .sidebar {
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar-hidden {
-            transform: translateX(-100%);
-            position: absolute;
-            z-index: 99;
-            background: var(--surface);
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        .hamburger {
+            display: none;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--accent);
+            cursor: pointer;
         }
 
         .mobile-overlay {
@@ -664,21 +706,24 @@
         }
 
         @media (max-width: 1200px) {
-            .container {
-                grid-template-columns: 1fr;
+            .admin-container {
+                flex-direction: column;
             }
             
-            .sidebar {
-                order: 2;
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
             }
         }
 
         @media (max-width: 768px) {
-            header {
+            .admin-header {
                 padding: 16px;
             }
             
-            .container {
+            .admin-content {
                 padding: 16px;
             }
             
@@ -714,27 +759,25 @@
                 text-align: center;
             }
             
-            .mobile-menu-toggle {
+            .hamburger {
                 display: block;
             }
             
-            .sidebar {
+            .admin-sidebar {
                 position: fixed;
                 top: 72px;
-                left: 0;
+                left: -100%;
                 width: 280px;
                 height: calc(100vh - 72px);
-                z-index: 100;
-                transform: translateX(-100%);
+                z-index: 99;
                 transition: transform 0.3s ease;
                 overflow-y: auto;
-                background: var(--surface);
                 padding: 16px;
                 box-shadow: 5px 0 15px rgba(0,0,0,0.1);
             }
             
-            .sidebar-visible {
-                transform: translateX(0);
+            .admin-sidebar.active {
+                left: 0;
             }
             
             .mobile-overlay-visible {
@@ -743,7 +786,7 @@
         }
 
         @media (max-width: 480px) {
-            .container {
+            .admin-content {
                 padding: 0 16px 24px;
             }
             
@@ -759,22 +802,22 @@
                 padding: 16px;
             }
             
-            .sidebar {
+            .admin-sidebar {
                 width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <header>
+    <div class="admin-header">
         <div class="logo">
+            <button class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </button>
             <i class="fas fa-receipt"></i>
             <h1>Belegarchiv</h1>
         </div>
         <div class="header-controls">
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-                <i class="fas fa-bars"></i>
-            </button>
             <button class="theme-toggle" id="theme-toggle">
                 <i class="fas fa-moon"></i>
             </button>
@@ -784,12 +827,39 @@
                 </div>
             </div>
         </div>
-    </header>
+    </div>
 
     <div class="mobile-overlay" id="mobile-overlay"></div>
 
-    <div class="container">
-        <div class="sidebar" id="sidebar">
+    <div class="admin-container">
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="nav-container">
+                <a href="products.html" class="nav-link">
+                    <i class="fas fa-box"></i>
+                    Produktverwaltung
+                </a>
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-cash-register"></i>
+                    Kassenansicht
+                </a>
+                <a href="settings.html" class="nav-link active">
+                    <i class="fas fa-cog"></i>
+                    Einstellungen
+                </a>
+                <a href="merchant.html" class="nav-link">
+                    <i class="fas fa-store"></i>
+                    Händleransicht
+                </a>
+                <a href="analytics.html" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Analysen
+                </a>
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-shield"></i>
+                    Admin
+                </a>
+            </div>
+            
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-filter"></i> Filter</h2>
@@ -878,14 +948,11 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </aside>
         
-        <div class="main-content">
+        <main class="admin-content">
             <div class="search-box">
                 <input type="text" id="search-input" placeholder="🔎 Suche nach Belegnummer, Datum oder Status...">
-                <!-- <button id="mobile-filter-toggle" class="btn-primary mobile-only">
-                    <i class="fas fa-filter"></i> Filter
-                </button> -->
             </div>
             
             <div id="error-container" style="display: none;" class="error-message"></div>
@@ -904,7 +971,7 @@
                 <div class="income-label">Gesamteinnahmen:</div>
                 <span id="total-amount">€0.00</span>
             </div>
-        </div>
+        </main>
     </div>
     
     <div class="modal" id="receipt-modal">
@@ -1007,14 +1074,14 @@
         });
         
         // Mobile sidebar toggle
-        document.getElementById('mobile-menu-toggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('sidebar-visible');
+        document.getElementById('hamburger').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('mobile-overlay').classList.toggle('mobile-overlay-visible');
         });
         
         document.getElementById('mobile-overlay').addEventListener('click', function() {
             this.classList.remove('mobile-overlay-visible');
-            document.getElementById('sidebar').classList.remove('sidebar-visible');
+            document.getElementById('sidebar').classList.remove('active');
         });
         
         // Show success message
@@ -1247,6 +1314,102 @@
                 .filter(r => r.status === 'Bestätigt')
                 .reduce((sum, r) => sum + r.total, 0);
             document.getElementById('total-amount').textContent = `€${total.toFixed(2)}`;
+        }
+
+        function applyArchiveSettings() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            const archiveSettings = settings.archiveSettings || {};
+            
+            // Apply dark mode
+            if (archiveSettings.darkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+            }
+            
+            // Apply full note display
+            if (archiveSettings.showFullNote) {
+                document.body.classList.add('show-full-note');
+            }
+            
+            // Apply default date range
+            if (archiveSettings.defaultDateRange) {
+                const today = new Date();
+                const startDateInput = document.getElementById('start-date');
+                const endDateInput = document.getElementById('end-date');
+                
+                switch(archiveSettings.defaultDateRange) {
+                    case 'last7days':
+                        const sevenDaysAgo = new Date();
+                        sevenDaysAgo.setDate(today.getDate() - 7);
+                        startDateInput.value = sevenDaysAgo.toISOString().split('T')[0];
+                        endDateInput.value = today.toISOString().split('T')[0];
+                        break;
+                    case 'last30days':
+                        const thirtyDaysAgo = new Date();
+                        thirtyDaysAgo.setDate(today.getDate() - 30);
+                        startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+                        endDateInput.value = today.toISOString().split('T')[0];
+                        break;
+                    case 'all':
+                        startDateInput.value = '';
+                        endDateInput.value = '';
+                        break;
+                }
+                
+                // Apply the filter
+                filterReceipts();
+            }
+        }
+        
+        // Disable deletion if setting is enabled
+        function disableDeletionIfNeeded() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.archiveSettings?.disableDeletion) {
+                // Hide delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = 'none');
+                
+                // Hide bulk delete button
+                const bulkDelete = document.getElementById('bulk-delete');
+                if (bulkDelete) bulkDelete.style.display = 'none';
+            }
+        }
+
+        function exportAllReceipts() {
+            const receipts = loadReceipts();
+            if(receipts.length === 0) return;
+            
+            const exportData = receipts.map(receipt => {
+                const stored = JSON.parse(localStorage.getItem(`receipt_${receipt.id}`));
+                return {
+                    key: `receipt_${receipt.id}`,
+                    value: stored
+                };
+            });
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `belege_backup_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            console.log('Automatisches Backup erstellt');
+        }
+        
+        // Check for auto backup
+        function checkAutoBackup() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.archiveSettings?.autoBackup) {
+                const lastBackup = localStorage.getItem('lastArchiveBackup');
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (!lastBackup || lastBackup !== today) {
+                    localStorage.setItem('lastArchiveBackup', today);
+                    exportAllReceipts();
+                }
+            }
         }
 
         // Generate receipt list UI
@@ -1756,7 +1919,10 @@
 
         // Initial load
         initTheme();
+        applyArchiveSettings();
         filterReceipts();
+        disableDeletionIfNeeded();
+        checkAutoBackup();
         
         // Simulate backup reminder if not already set
         if (!localStorage.getItem('lastBackupReminder')) {
