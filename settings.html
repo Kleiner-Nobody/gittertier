@@ -1099,6 +1099,39 @@
                             </label>
                         </div>
                     </div>
+
+                    <!-- Add this inside the "Systemeinstellungen" section of settings.html -->
+                    <div class="setting-card">
+                        <div class="setting-title">
+                            <i class="fas fa-store"></i>
+                            <h3>Öffnungszeiten</h3>
+                        </div>
+                        <div class="setting-description">
+                            Legen Sie die täglichen Öffnungszeiten des Shops fest.
+                        </div>
+                        <div class="setting-control vertical">
+                            <div class="setting-option">
+                                <div>
+                                    <h4>Öffnungszeiten aktivieren</h4>
+                                    <p class="setting-description">Shop automatisch öffnen/schließen nach Zeitplan</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="shopHoursEnabled">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="form-group" style="margin-top: 20px;">
+                                <label class="form-label">Öffnungszeit:</label>
+                                <input type="time" id="openingTime" class="form-input" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Schließzeit:</label>
+                                <input type="time" id="closingTime" class="form-input" required>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="settings-section">
@@ -1250,6 +1283,11 @@
             scannerSensitivity.value = settings.scannerSensitivity || 50;
             notificationDuration.value = settings.notificationDuration || 3;
             document.getElementById('maintenanceMode').checked = settings.maintenanceMode || false;
+
+            const shopHours = settings.shopHours || {};
+            document.getElementById('shopHoursEnabled').checked = shopHours.enabled || false;
+            document.getElementById('openingTime').value = shopHours.openingTime || '08:00';
+            document.getElementById('closingTime').value = shopHours.closingTime || '20:00';
             
             // New settings
             stayLoggedInSetting.checked = settings.stayLoggedIn || false;
@@ -1298,6 +1336,12 @@
                 requirePassword: requirePasswordSetting.checked,
                 logoutConfirmation: logoutConfirmationSetting.checked,
                 maintenanceMode: document.getElementById('maintenanceMode').checked
+            };
+
+            settings.shopHours = {
+                enabled: document.getElementById('shopHoursEnabled').checked,
+                openingTime: document.getElementById('openingTime').value,
+                closingTime: document.getElementById('closingTime').value
             };
 
             settings.archiveSettings = {
@@ -1503,6 +1547,10 @@
         logoutConfirmationSetting.addEventListener('change', saveSettings);
         logoutDuration.addEventListener('change', saveSettings);
         document.getElementById('maintenanceMode').addEventListener('change', saveSettings);
+
+        document.getElementById('shopHoursEnabled').addEventListener('change', saveSettings);
+        document.getElementById('openingTime').addEventListener('change', saveSettings);
+        document.getElementById('closingTime').addEventListener('change', saveSettings);
         
         changePasswordBtn.addEventListener('click', changePassword);
         resetSettingsBtn.addEventListener('click', resetSettings);

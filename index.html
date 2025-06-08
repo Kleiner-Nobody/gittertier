@@ -345,6 +345,18 @@
       font-size: 1.5rem;
     }
 
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes fadeInOut {
+        0% { opacity: 0.7; }
+        50% { opacity: 1; }
+        100% { opacity: 0.7; }
+    }
+
     .cart-section {
       background: var(--surface);
       border-radius: var(--border-radius);
@@ -814,6 +826,58 @@
                     });
                 });
             }
+
+            function timeToMinutes(timeStr) {
+              const [hours, minutes] = timeStr.split(':').map(Number);
+              return hours * 60 + minutes;
+          }
+
+          function isShopOpen() {
+              const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+              const shopHours = settings.shopHours || {};
+              
+              if (!shopHours.enabled) return true;
+              
+              const now = new Date();
+              const currentMinutes = now.getHours() * 60 + now.getMinutes();
+              const openingMinutes = timeToMinutes(shopHours.openingTime);
+              const closingMinutes = timeToMinutes(shopHours.closingTime);
+              
+              // Handle cases where closing time is after midnight
+              if (closingMinutes < openingMinutes) {
+                  return currentMinutes >= openingMinutes || currentMinutes < closingMinutes;
+              }
+              
+              return currentMinutes >= openingMinutes && currentMinutes < closingMinutes;
+          }
+
+          function checkShopStatus() {
+              const open = isShopOpen();
+              const closedScreen = document.getElementById('closed-screen');
+              const mainContent = document.querySelector('.container');
+              const maintenanceModal = document.getElementById('maintenance-modal');
+              
+              if (!open && maintenanceModal.style.display !== 'flex') {
+                  closedScreen.style.display = 'flex';
+                  mainContent.style.display = 'none';
+                  
+                  // Show opening hours
+                  const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                  const shopHours = settings.shopHours || {};
+                  if (shopHours.enabled) {
+                      document.getElementById('opening-hours-display').textContent = 
+                          `Öffnet um ${shopHours.openingTime} Uhr`;
+                  }
+                  
+                  // Stop scanner if active
+                  if (scannerActive) {
+                      toggleScanner();
+                  }
+              } else {
+                  closedScreen.style.display = 'none';
+                  mainContent.style.display = 'block';
+              }
+          }
             
             // Visual feedback for barcode detection
             function onProcessed(result) {
@@ -1081,6 +1145,9 @@
                 manualAddBtn.innerHTML = '<i class="fas fa-pencil-alt"></i> Manuell';
             }
         }
+
+        // Check shop status after applying settings
+        checkShopStatus();
     }
             
             // Scanner Control
@@ -1165,51 +1232,72 @@
                     
                     // Apply settings
                     applySettings();
+                    checkShopStatus();
+                    setInterval(checkShopStatus, 60000);
                     
                     // Initialize currency symbol
                     currencySymbol = '€';
+                    window.addEventListener('focus', checkShopStatus);
                 });
+
+                window.addEventListener('storage', function(e) {
+                  if (e.key === 'appSettings') {
+                      applySettings();
+                      checkShopStatus();
+                  }
+              });
             // Apply settings from localStorage
-<!-- Add this at the end of the <script> section -->
-// Apply settings from localStorage
-const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            // Apply settings from localStorage
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
 
-// Apply dark mode
-if (settings.darkMode) {
-    document.body.classList.add('dark-mode');
-}
+            // Apply dark mode
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            }
 
-// Disable manual add if setting is disabled
-if (settings.manualAdd === false) {
-    const manualAddBtn = document.getElementById('manual-add');
-    if (manualAddBtn) {
-        manualAddBtn.disabled = true;
-        manualAddBtn.style.opacity = '0.5';
-        manualAddBtn.innerHTML = '<i class="fas fa-pencil-alt"></i> Manuell (deaktiviert)';
-    }
-}
+          const maintenanceModal = document.getElementById('maintenance-modal');
+          if (settings.maintenanceMode) {
+              maintenanceModal.style.display = 'flex';
+              document.body.style.overflow = 'hidden';
+              // Also hide the closed screen if shown
+              document.getElementById('closed-screen').style.display = 'none';
+              return; 
+          } else {
+              maintenanceModal.style.display = 'none';
+              document.body.style.overflow = 'auto';
+          }
 
-    function playSound(type) {
-        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-        if (!settings.soundEffects) return;
-        
-        const audio = new Audio();
-        audio.volume = 0.3;
-        
-        switch(type) {
-            case 'success':
-                audio.src = 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_f96ec71310.mp3';
-                break;
-            case 'error':
-                audio.src = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_b805049288.mp3';
-                break;
-            case 'scan':
-                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
-                break;
-        }
-        
-        audio.play().catch(e => console.log('Sound playback error:', e));
-    }
+            // Disable manual add if setting is disabled
+            if (settings.manualAdd === false) {
+                const manualAddBtn = document.getElementById('manual-add');
+                if (manualAddBtn) {
+                    manualAddBtn.disabled = true;
+                    manualAddBtn.style.opacity = '0.5';
+                    manualAddBtn.innerHTML = '<i class="fas fa-pencil-alt"></i> Manuell (deaktiviert)';
+                }
+            }
+
+                function playSound(type) {
+                    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                    if (!settings.soundEffects) return;
+                    
+                    const audio = new Audio();
+                    audio.volume = 0.3;
+                    
+                    switch(type) {
+                        case 'success':
+                            audio.src = 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_f96ec71310.mp3';
+                            break;
+                        case 'error':
+                            audio.src = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_b805049288.mp3';
+                            break;
+                        case 'scan':
+                            audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
+                            break;
+                    }
+                    
+                    audio.play().catch(e => console.log('Sound playback error:', e));
+                }
     
 
 
@@ -1224,5 +1312,15 @@ if (settings.manualAdd === false) {
                 </button>
             </div>
         </div>
+        <div id="closed-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+          <div style="text-align: center; padding: 20px;">
+              <div style="font-size: 8rem; color: #dc3545; margin-bottom: 30px; animation: pulse 2s infinite;">
+                  <i class="fas fa-moon"></i>
+              </div>
+              <h1 style="font-size: 4rem; color: white; margin-bottom: 20px; animation: fadeInOut 3s infinite;">Geschlossen</h1>
+              <p style="font-size: 1.5rem; color: #a0a0a0; margin-bottom: 30px;">Wir haben derzeit geschlossen.</p>
+              <p id="opening-hours-display" style="color: #7a7f85;"></p>
+          </div>
+      </div>
     </body>
     </html>
