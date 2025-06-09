@@ -176,6 +176,53 @@
             overflow-y: auto;
         }
 
+                /* New styles for localStorage editing */
+        .edit-localstorage-btn {
+            padding: 8px 12px;
+            background: var(--warning);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 5px;
+        }
+        
+        .edit-localstorage-btn:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .modal-content {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
         .settings-container {
             max-width: 1000px;
             margin: 0 auto;
@@ -285,6 +332,61 @@
             opacity: 0;
             width: 0;
             height: 0;
+        }
+
+                /* Enhanced styles for detailed editing modal */
+        .detailed-edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            display: none;
+        }
+        
+        .detailed-modal-content {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 700px;
+            box-shadow: var(--shadow);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .value-part {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--accent-light);
+        }
+        
+        .permission-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .part-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            color: var(--text);
+        }
+        
+        .part-value {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         .slider {
@@ -928,6 +1030,21 @@
                     </div>
                 </div>
 
+             <div class="detailed-edit-modal" id="detailedEditModal">
+                <div class="detailed-modal-content">
+                    <h3>Detaillierte Bearbeitung: <span id="detailKeyName"></span></h3>
+                    
+                    <div id="valuePartsContainer">
+                        <!-- Value parts will be added here -->
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button class="btn btn-danger" id="cancelDetailedEdit">Abbrechen</button>
+                        <button class="btn btn-primary" id="saveDetailedChanges">Speichern</button>
+                    </div>
+                </div>
+            </div>
+
 
                 
 
@@ -1173,6 +1290,22 @@
                                 </button>
                             </div>
                         </div>
+                                    <!-- Password modal -->
+                            <div class="password-modal" id="passwordModal">
+                                <div class="modal-content">
+                                    <h3>Super Admin Authentifizierung</h3>
+                                    <div class="form-group">
+                                        <label class="form-label">Passwort eingeben:</label>
+                                        <input type="password" class="form-input" id="superAdminPassword">
+                                    </div>
+                                    <div class="status-message" id="passwordModalMessage"></div>
+                                    <div class="modal-actions">
+                                        <button class="btn btn-danger" id="cancelPassword">Abbrechen</button>
+                                        <button class="btn btn-primary" id="confirmPassword">Bestätigen</button>
+                                    </div>
+                                </div>
+                    </div>
+
                     </div>
                 </div>
                 
@@ -1521,6 +1654,324 @@
                 el.style.display = 'none';
             }, 5000);
         }
+
+                // Variables for localStorage management
+        let currentAction = null;
+        let currentKey = null;
+        let currentValue = null;
+        
+        // Function to show password modal
+        function showPasswordModal(action, key = null, value = null) {
+            currentAction = action;
+            currentKey = key;
+            currentValue = value;
+            document.getElementById('superAdminPassword').value = '';
+            document.getElementById('passwordModalMessage').style.display = 'none';
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+        
+        // Function to hide password modal
+        function hidePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+        
+        // Function to verify super admin password
+        function verifySuperAdminPassword() {
+            const password = document.getElementById('superAdminPassword').value;
+            const messageElement = document.getElementById('passwordModalMessage');
+            
+            if (password === 'malochen') {
+                isSuperAdmin = true;
+                hidePasswordModal();
+                showDetailedEditModal(currentKey, currentValue);
+                return true;
+            } else {
+                showStatus('Falsches Passwort', 'error', messageElement);
+                return false;
+            }
+        }
+        
+        // Update edit button handler to check permissions
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.edit-localstorage-btn')) {
+                const btn = e.target.closest('.edit-localstorage-btn');
+                const key = btn.getAttribute('data-key');
+                const value = btn.getAttribute('data-value');
+                
+                // Check permissions
+                const permissions = JSON.parse(localStorage.getItem('itemPermissions') || '{}');
+                const keyPermissions = permissions[key] || {};
+                
+                // Check if any part is editable by normal user
+                const hasUserEditablePart = Object.values(keyPermissions).some(editable => editable);
+                
+                if (hasUserEditablePart) {
+                    // User can edit directly
+                    isSuperAdmin = false;
+                    showDetailedEditModal(key, value);
+                } else {
+                    // Require super admin password
+                    showPasswordModal('edit', key, value);
+                }
+            }
+        });
+        // Function to perform action after password verification
+        function performActionAfterVerification() {
+            if (currentAction === 'edit') {
+                const newValue = prompt('Neuen Wert für ' + currentKey + ' eingeben:', currentValue);
+                if (newValue !== null) {
+                    localStorage.setItem(currentKey, newValue);
+                    refreshLocalStorageData();
+                    showStatus('Wert erfolgreich aktualisiert', 'success');
+                }
+            } else if (currentAction === 'delete') {
+                if (confirm('Sind Sie sicher, dass Sie ' + currentKey + ' löschen möchten?')) {
+                    localStorage.removeItem(currentKey);
+                    refreshLocalStorageData();
+                    showStatus('Eintrag erfolgreich gelöscht', 'success');
+                }
+            }
+        }
+
+                let currentEditKey = '';
+        let originalValue = '';
+        let isSuperAdmin = false;
+        
+        // Function to show detailed edit modal
+        function showDetailedEditModal(key, value) {
+            currentEditKey = key;
+            originalValue = value;
+            
+            // Update UI
+            document.getElementById('detailKeyName').textContent = key;
+            const container = document.getElementById('valuePartsContainer');
+            container.innerHTML = '';
+            
+            // Try to parse as JSON or split by common delimiters
+            let parts = [];
+            try {
+                const parsed = JSON.parse(value);
+                parts = Object.entries(parsed).map(([k, v]) => ({
+                    name: k,
+                    value: JSON.stringify(v, null, 2),
+                    editable: true
+                }));
+            } catch {
+                // Split by common delimiters if not JSON
+                const delimiters = [',', ';', '|', ':'];
+                for (const delim of delimiters) {
+                    if (value.includes(delim)) {
+                        parts = value.split(delim).map((part, i) => ({
+                            name: `Teil ${i+1}`,
+                            value: part.trim(),
+                            editable: true
+                        }));
+                        break;
+                    }
+                }
+                
+                // If no delimiters found, treat as single part
+                if (parts.length === 0) {
+                    parts = [{
+                        name: 'Wert',
+                        value: value,
+                        editable: true
+                    }];
+                }
+            }
+            
+            // Add permission settings from localStorage
+            const permissions = JSON.parse(localStorage.getItem('itemPermissions') || '{}');
+            const keyPermissions = permissions[key] || {};
+            
+            // Create UI for each part
+            parts.forEach((part, index) => {
+                const partId = `part-${index}`;
+                const partContainer = document.createElement('div');
+                partContainer.className = 'value-part';
+                
+                partContainer.innerHTML = `
+                    <div style="display: flex; justify-content: space-between;">
+                        <span class="part-label">${part.name}</span>
+                        <div class="permission-toggle">
+                            <label>Bearbeitbar für normale Benutzer:</label>
+                            <label class="switch">
+                                <input type="checkbox" class="permission-checkbox" 
+                                    data-part="${partId}" 
+                                    ${keyPermissions[part.name] ? 'checked' : ''}
+                                    ${isSuperAdmin ? '' : 'disabled'}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="part-value" contenteditable="${part.editable}">${part.value}</div>
+                `;
+                
+                container.appendChild(partContainer);
+            });
+            
+            // Show modal
+            document.getElementById('detailedEditModal').style.display = 'flex';
+        }
+        
+        // Function to save detailed changes
+        function saveDetailedChanges() {
+            const parts = [];
+            const container = document.getElementById('valuePartsContainer');
+            const partElements = container.querySelectorAll('.value-part');
+            
+            // Collect all parts
+            partElements.forEach(partEl => {
+                const name = partEl.querySelector('.part-label').textContent;
+                const value = partEl.querySelector('.part-value').textContent;
+                parts.push({ name, value });
+            });
+            
+            // Reconstruct value based on original format
+            let newValue;
+            try {
+                // If original was JSON, reconstruct JSON
+                JSON.parse(originalValue);
+                const jsonObj = {};
+                parts.forEach(part => {
+                    try {
+                        jsonObj[part.name] = JSON.parse(part.value);
+                    } catch {
+                        jsonObj[part.name] = part.value;
+                    }
+                });
+                newValue = JSON.stringify(jsonObj, null, 2);
+            } catch {
+                // Otherwise join with original delimiter
+                const delimiters = [',', ';', '|', ':'];
+                let delimiter = ',';
+                
+                for (const delim of delimiters) {
+                    if (originalValue.includes(delim)) {
+                        delimiter = delim;
+                        break;
+                    }
+                }
+                
+                newValue = parts.map(p => p.value).join(`${delimiter} `);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem(currentEditKey, newValue);
+            
+            // Save permissions
+            const permissions = JSON.parse(localStorage.getItem('itemPermissions') || '{}');
+            permissions[currentEditKey] = {};
+            
+            partElements.forEach((partEl, index) => {
+                const name = partEl.querySelector('.part-label').textContent;
+                const isEditable = partEl.querySelector('.permission-checkbox').checked;
+                permissions[currentEditKey][name] = isEditable;
+            });
+            
+            localStorage.setItem('itemPermissions', JSON.stringify(permissions));
+            
+            // Refresh display
+            refreshLocalStorageData();
+            hideDetailedEditModal();
+            showStatus('Änderungen erfolgreich gespeichert', 'success');
+        }
+        
+        // Function to hide detailed edit modal
+        function hideDetailedEditModal() {
+            document.getElementById('detailedEditModal').style.display = 'none';
+        }
+        
+        
+        // Function to refresh localStorage data display
+        function refreshLocalStorageData() {
+            const container = document.getElementById('localStorageData');
+            const filter = document.getElementById('filterLocalStorage').value.toLowerCase();
+            const showPasswords = document.getElementById('showPasswordsToggle').checked;
+            
+            container.innerHTML = '';
+            
+            // Get all keys and filter them
+            const keys = Object.keys(localStorage).filter(key => 
+                key.toLowerCase().includes(filter) || 
+                localStorage.getItem(key).toLowerCase().includes(filter)
+            );
+            
+            if (keys.length === 0) {
+                container.innerHTML = '<div class="no-data-message">Keine passenden Daten gefunden</div>';
+                return;
+            }
+            
+            keys.forEach(key => {
+                let value = localStorage.getItem(key);
+                
+                // Skip sensitive keys if password toggle is off
+                if (!showPasswords && isSensitiveKey(key)) {
+                    value = '********';
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'localstorage-item';
+                item.innerHTML = `
+                    <div class="localstorage-key">${key}</div>
+                    <div class="localstorage-value">${value}</div>
+                    <div class="localstorage-actions">
+                        <button class="edit-localstorage-btn" data-key="${key}" data-value="${localStorage.getItem(key)}">
+                            <i class="fas fa-edit"></i> Bearbeiten
+                        </button>
+                        <button class="delete-localstorage-btn" data-key="${key}">
+                            <i class="fas fa-trash"></i> Löschen
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+            
+            // Add event listeners to edit buttons
+            document.querySelectorAll('.edit-localstorage-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const key = this.getAttribute('data-key');
+                    const value = this.getAttribute('data-value');
+                    showPasswordModal('edit', key, value);
+                });
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-localstorage-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const key = this.getAttribute('data-key');
+                    showPasswordModal('delete', key);
+                });
+            });
+        }
+        
+        // Function to check if key is sensitive
+        function isSensitiveKey(key) {
+            const sensitiveKeys = ['password', 'token', 'key', 'secret'];
+            return sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive));
+        }
+        
+        // Initialize on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing initialization ...
+            
+            // Initialize localStorage data
+            refreshLocalStorageData();
+            
+            // Add event listeners for localStorage management
+            document.getElementById('refreshLocalStorageBtn').addEventListener('click', refreshLocalStorageData);
+            document.getElementById('filterLocalStorage').addEventListener('input', refreshLocalStorageData);
+            document.getElementById('showPasswordsToggle').addEventListener('change', refreshLocalStorageData);
+            document.getElementById('confirmPassword').addEventListener('click', verifySuperAdminPassword);
+            document.getElementById('cancelPassword').addEventListener('click', hidePasswordModal);
+            
+            // Handle Enter key in password modal
+            document.getElementById('superAdminPassword').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    verifySuperAdminPassword();
+                }
+            });
+        });
         
         // Event listeners
         darkModeSetting.addEventListener('change', saveSettings);

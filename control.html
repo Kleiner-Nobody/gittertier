@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Cart Remote Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            background: rgba(0, 0, 30, 0.7);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .controls-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            flex: 1;
+            background: rgba(0, 15, 31, 0.85);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.8rem;
+            padding: 20px 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+        }
+        
+        .control-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 30, 63, 0.95);
+        }
+        
+        .direction-btn {
+            font-size: 2.5rem;
+            min-height: 120px;
+        }
+        
+        .stop-btn {
+            background: rgba(200, 0, 0, 0.85);
+        }
+        
+        .stop-btn:active {
+            background: rgba(230, 0, 0, 0.95);
+        }
+        
+        .center-btn {
+            flex: 2;
+        }
+        
+        .connection-panel {
+            background: rgba(0, 0, 30, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(0, 30, 63, 0.85);
+            color: white;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .slider-container {
+            padding: 10px 0;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 30px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #00c853, #ffd600, #ff3d00);
+            border-radius: 15px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .status-indicators {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        .indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .indicator-value {
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin-top: 5px;
+        }
+        
+        #connectionStatus {
+            color: #ff5252;
+            font-weight: bold;
+        }
+        
+        .connected {
+            color: #69f0ae !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Cart Remote Control</h1>
+        <div class="status-bar">
+            <div>Battery: <span id="batteryLevel">85%</span></div>
+            <div>Status: <span id="connectionStatus">Disconnected</span></div>
+        </div>
+    </div>
+    
+    <div class="controls-container">
+        <div class="control-row">
+            <button class="control-btn" id="lightsBtn">💡 LIGHTS</button>
+            <button class="control-btn stop-btn" id="stopBtn">⏹ STOP</button>
+        </div>
+        
+        <div class="control-row">
+            <div style="flex:1"></div>
+            <button class="control-btn direction-btn" id="fwdBtn">▲</button>
+            <div style="flex:1"></div>
+        </div>
+        
+        <div class="control-row">
+            <button class="control-btn direction-btn" id="leftBtn">◀</button>
+            <button class="control-btn direction-btn center-btn" id="backBtn">▼</button>
+            <button class="control-btn direction-btn" id="rightBtn">▶</button>
+        </div>
+    </div>
+    
+    <div class="connection-panel">
+        <div class="slider-container">
+            <input type="range" min="0" max="100" value="50" class="slider" id="speedSlider">
+        </div>
+        
+        <div class="btn-row">
+            <button class="action-btn" id="connectBtn">CONNECT</button>
+            <button class="action-btn" id="disconnectBtn">DISCONNECT</button>
+        </div>
+        
+        <div class="status-indicators">
+            <div class="indicator">
+                <div>Speed</div>
+                <div class="indicator-value" id="speedValue">50%</div>
+            </div>
+            <div class="indicator">
+                <div>Direction</div>
+                <div class="indicator-value" id="directionValue">STOP</div>
+            </div>
+            <div class="indicator">
+                <div>Lights</div>
+                <div class="indicator-value" id="lightsValue">OFF</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bluetoothDevice;
+        let bluetoothCharacteristic;
+        const serviceUuid = '19b10010-e8f2-537e-4f6c-d104768a1214';
+        const characteristicUuid = '19b10011-e8f2-537e-4f6c-d104768a1214';
+        
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const fwdBtn = document.getElementById('fwdBtn');
+        const backBtn = document.getElementById('backBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const lightsBtn = document.getElementById('lightsBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const batteryLevel = document.getElementById('batteryLevel');
+        const directionValue = document.getElementById('directionValue');
+        const lightsValue = document.getElementById('lightsValue');
+        const speedValue = document.getElementById('speedValue');
+        
+        connectBtn.addEventListener('click', connectToDevice);
+        disconnectBtn.addEventListener('click', disconnectDevice);
+        stopBtn.addEventListener('click', () => sendCommand('STOP'));
+        fwdBtn.addEventListener('click', () => sendCommand('FWD'));
+        backBtn.addEventListener('click', () => sendCommand('BACK'));
+        leftBtn.addEventListener('click', () => sendCommand('LEFT'));
+        rightBtn.addEventListener('click', () => sendCommand('RIGHT'));
+        lightsBtn.addEventListener('click', () => sendCommand('HLTOG'));
+        speedSlider.addEventListener('input', updateSpeed);
+        
+        async function connectToDevice() {
+            try {
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: 'CartRemote' }],
+                    optionalServices: [serviceUuid]
+                });
+                
+                const server = await bluetoothDevice.gatt.connect();
+                const service = await server.getPrimaryService(serviceUuid);
+                bluetoothCharacteristic = await service.getCharacteristic(characteristicUuid);
+                
+                bluetoothDevice.addEventListener('gattserverdisconnected', handleDisconnect);
+                bluetoothCharacteristic.addEventListener('characteristicvaluechanged', handleData);
+                await bluetoothCharacteristic.startNotifications();
+                
+                updateConnectionStatus(true);
+                console.log('Connected to device');
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Connection failed: ' + error.message);
+            }
+        }
+        
+        function handleData(event) {
+            const value = new TextDecoder().decode(event.target.value);
+            if (value.includes('BATT:')) {
+                batteryLevel.textContent = value.replace('BATT:', '') + '%';
+            }
+        }
+        
+        function handleDisconnect() {
+            updateConnectionStatus(false);
+            console.log('Device disconnected');
+        }
+        
+        function disconnectDevice() {
+            if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+                bluetoothDevice.gatt.disconnect();
+            }
+            updateConnectionStatus(false);
+        }
+        
+        function updateConnectionStatus(isConnected) {
+            connectionStatus.textContent = isConnected ? 'CONNECTED' : 'DISCONNECTED';
+            connectionStatus.className = isConnected ? 'connected' : '';
+            disconnectBtn.disabled = !isConnected;
+            connectBtn.disabled = isConnected;
+        }
+        
+        function sendCommand(command) {
+            if (!bluetoothCharacteristic) return;
+            
+            try {
+                const encoder = new TextEncoder();
+                bluetoothCharacteristic.writeValue(encoder.encode(command));
+                updateUI(command);
+            } catch (error) {
+                console.error('Command error:', error);
+            }
+        }
+        
+        function updateUI(command) {
+            switch(command) {
+                case 'FWD':
+                    directionValue.textContent = 'FORWARD';
+                    break;
+                case 'BACK':
+                    directionValue.textContent = 'BACKWARD';
+                    break;
+                case 'LEFT':
+                    directionValue.textContent = 'LEFT';
+                    break;
+                case 'RIGHT':
+                    directionValue.textContent = 'RIGHT';
+                    break;
+                case 'STOP':
+                    directionValue.textContent = 'STOP';
+                    break;
+                case 'HLTOG':
+                    const newState = lightsValue.textContent === 'ON' ? 'OFF' : 'ON';
+                    lightsValue.textContent = newState;
+                    lightsBtn.style.background = newState === 'ON' ? 
+                        'rgba(255, 215, 0, 0.85)' : 'rgba(0, 15, 31, 0.85)';
+                    break;
+            }
+        }
+        
+        function updateSpeed() {
+            const speed = speedSlider.value;
+            speedValue.textContent = speed + '%';
+            sendCommand('SPD:' + speed);
+        }
+        
+        // Simulate battery updates
+        setInterval(() => {
+            const currentBattery = parseInt(batteryLevel.textContent);
+            const newBattery = Math.max(0, currentBattery - 1);
+            batteryLevel.textContent = newBattery + '%';
+            
+            // Send battery update to device
+            if (bluetoothCharacteristic) {
+                const encoder = new TextEncoder();
+                bluetoothCharacteristic.writeValue(encoder.encode('BATT:' + newBattery));
+            }
+        }, 60000);
+    </script>
+</body>
+</html>
