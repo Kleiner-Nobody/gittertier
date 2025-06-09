@@ -84,58 +84,6 @@
             align-items: center;
         }
 
-        .search-container {
-            position: relative;
-            flex: 1;
-            max-width: 400px;
-            margin: 0 20px;
-        }
-
-        #productSearch {
-            width: 100%;
-            padding: 10px 15px;
-            border-radius: 25px;
-            border: 1px solid var(--accent-light);
-            font-size: 1rem;
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        #suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--surface);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            margin-top: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 200;
-            display: none;
-        }
-
-        .suggestion-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid var(--accent-light);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .suggestion-item:hover {
-            background: var(--accent-light);
-        }
-
-        .suggestion-name {
-            font-weight: 600;
-        }
-
-        .suggestion-barcode {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
         .hamburger {
             display: none;
             background: transparent;
@@ -360,6 +308,114 @@
             font-size: 1.1rem;
         }
 
+        /* Search styles */
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #productSearch {
+            width: 100%;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--accent-light);
+            font-size: 1.1rem;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        #suggestions {
+            position: absolute;
+            width: 100%;
+            background: var(--surface);
+            border: 2px solid var(--accent-light);
+            border-radius: var(--border-radius);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: var(--shadow);
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--accent-light);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .suggestion-item:hover {
+            background: var(--accent-light);
+        }
+
+        .suggestion-name {
+            font-weight: bold;
+        }
+
+        .suggestion-barcode {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .modal-product-name {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .modal-barcode {
+            font-family: monospace;
+            font-size: 1.2rem;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .modal-btn:hover {
+            background: var(--accent-dark);
+        }
+
         @media (max-width: 992px) {
             .admin-sidebar {
                 position: fixed;
@@ -394,27 +450,6 @@
             .direction-btn {
                 min-height: 100px;
                 font-size: 2rem;
-            }
-            
-            .search-container {
-                max-width: 250px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .admin-header {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .search-container {
-                order: 3;
-                max-width: 100%;
-                margin: 10px 0 0;
-            }
-            
-            .status-bar {
-                margin-left: auto;
             }
         }
 
@@ -454,12 +489,6 @@
             </button>
             <h1>Cart Remote Control</h1>
         </div>
-        
-        <div class="search-container">
-            <input type="text" id="productSearch" placeholder="Search products...">
-            <div id="suggestions"></div>
-        </div>
-        
         <div class="status-bar">
             <div>Battery: <span id="batteryLevel">85%</span></div>
             <div>Status: <span id="connectionStatus">Disconnected</span></div>
@@ -501,6 +530,13 @@
         </aside>
 
         <main class="admin-content">
+            <div class="control-section">
+                <div class="search-container">
+                    <input type="text" id="productSearch" placeholder="Search product...">
+                    <div id="suggestions" class="suggestions"></div>
+                </div>
+            </div>
+            
             <div class="control-section">
                 <div class="controls-container">
                     <div class="control-row">
@@ -552,41 +588,17 @@
         </main>
     </div>
 
-    <script>
-        // Initialize localStorage with sample products
-        function initializeProducts() {
-            const products = {
-                "0042280005023": {
-                    "name": "Making Movies DS CD",
-                    "price": 7.99,
-                    "barcode": "0042280005023",
-                    "updatedAt": "2025-06-09T10:11:55.427Z"
-                },
-                "4004880108852": {
-                    "name": "Sprudel",
-                    "price": 2,
-                    "barcode": "4004880108852",
-                    "createdAt": "2025-06-04T20:52:33.232Z",
-                    "updatedAt": "2025-06-09T10:11:55.427Z"
-                },
-                "8710447493915": {
-                    "name": "Deo",
-                    "price": 1.85,
-                    "barcode": "8710447493915",
-                    "updatedAt": "2025-06-09T10:11:55.427Z"
-                }
-            };
-            
-            // Only add if they don't already exist
-            Object.keys(products).forEach(barcode => {
-                if (!localStorage.getItem(barcode)) {
-                    localStorage.setItem(barcode, JSON.stringify(products[barcode]));
-                }
-            });
-        }
-        
-        initializeProducts();
+    <!-- Website modal for directing confirmation -->
+    <div id="websiteDirectModal" class="modal">
+        <div class="modal-content">
+            <h2>Directing to Product</h2>
+            <div class="modal-product-name" id="modalProductName"></div>
+            <div class="modal-barcode" id="modalBarcode"></div>
+            <button class="modal-btn" id="closeModalBtn">OK</button>
+        </div>
+    </div>
 
+    <script>
         // Sidebar toggle functionality
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
@@ -595,84 +607,93 @@
             sidebar.classList.toggle('active');
         });
 
-        // Search functionality
+        // Product search functionality
         const productSearch = document.getElementById('productSearch');
         const suggestions = document.getElementById('suggestions');
+        let products = {};
         
-        productSearch.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
+        // Load products from localStorage
+        function loadProducts() {
+            const storedProducts = localStorage.getItem('products');
+            if (storedProducts) {
+                products = JSON.parse(storedProducts);
+                console.log('Loaded products:', products);
+            }
+        }
+        
+        // Show search suggestions
+        function showSuggestions(query) {
             suggestions.innerHTML = '';
-            
-            if (query.length === 0) {
+            if (!query) {
                 suggestions.style.display = 'none';
                 return;
             }
             
-            // Get all products from localStorage
-            const products = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (/^\d{13}$/.test(key)) { // Only 13-digit barcodes
-                    try {
-                        const product = JSON.parse(localStorage.getItem(key));
-                        products.push(product);
-                    } catch (e) {
-                        console.error('Error parsing product:', key);
-                    }
+            const matches = [];
+            for (const barcode in products) {
+                const product = products[barcode];
+                if (product.name.toLowerCase().includes(query.toLowerCase())) {
+                    matches.push({...product, barcode});
                 }
             }
             
-            // Filter products
-            const filtered = products.filter(product => 
-                product.name.toLowerCase().includes(query) || 
-                product.barcode.includes(query)
-            );
+            if (matches.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
             
-            if (filtered.length > 0) {
-                filtered.forEach(product => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.innerHTML = `
-                        <div class="suggestion-name">${product.name}</div>
-                        <div class="suggestion-barcode">${product.barcode}</div>
-                    `;
-                    div.addEventListener('click', () => {
-                        selectProduct(product);
-                        suggestions.style.display = 'none';
-                        productSearch.value = '';
-                    });
-                    suggestions.appendChild(div);
+            matches.forEach(product => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `
+                    <span class="suggestion-name">${shortenName(product.name)}</span>
+                    <span class="suggestion-barcode">${product.barcode}</span>
+                `;
+                div.addEventListener('click', () => {
+                    productSearch.value = product.name;
+                    suggestions.style.display = 'none';
+                    selectProduct(product);
                 });
-                suggestions.style.display = 'block';
-            } else {
-                suggestions.style.display = 'none';
-            }
-        });
+                suggestions.appendChild(div);
+            });
+            
+            suggestions.style.display = 'block';
+        }
         
-        // Close suggestions when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!productSearch.contains(e.target)) {
-                suggestions.style.display = 'none';
-            }
-        });
+        // Shorten product names longer than 7 characters
+        function shortenName(name) {
+            if (name.length <= 7) return name;
+            return name.substring(0, 7) + '...';
+        }
         
+        // Handle product selection
         function selectProduct(product) {
-            // Shorten name if longer than 7 characters
-            let displayName = product.name;
-            if (displayName.length > 7) {
-                // Try to find a space to split
-                const lastSpaceIndex = displayName.lastIndexOf(' ', 7);
-                if (lastSpaceIndex > 0) {
-                    displayName = displayName.substring(0, lastSpaceIndex) + '..';
-                } else {
-                    displayName = displayName.substring(0, 7) + '..';
-                }
-            }
+            // Show website modal
+            document.getElementById('modalProductName').textContent = product.name;
+            document.getElementById('modalBarcode').textContent = product.barcode;
+            document.getElementById('websiteDirectModal').style.display = 'flex';
             
             // Send command to Arduino
-            sendCommand(`BC:${product.barcode}|${displayName}`);
+            const shortenedName = shortenName(product.name);
+            sendCommand(`DIRECT:${product.barcode}:${shortenedName}`);
         }
-
+        
+        // Close modal handler
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('websiteDirectModal').style.display = 'none';
+        });
+        
+        // Event listeners for search
+        productSearch.addEventListener('input', () => {
+            showSuggestions(productSearch.value);
+        });
+        
+        productSearch.addEventListener('blur', () => {
+            setTimeout(() => {
+                suggestions.style.display = 'none';
+            }, 200);
+        });
+        
         // Control functionality
         let bluetoothDevice;
         let bluetoothCharacteristic;
@@ -703,6 +724,9 @@
         rightBtn.addEventListener('click', () => sendCommand('RIGHT'));
         lightsBtn.addEventListener('click', () => sendCommand('HLTOG'));
         speedSlider.addEventListener('input', updateSpeed);
+        
+        // Load products on startup
+        loadProducts();
         
         async function connectToDevice() {
             try {
