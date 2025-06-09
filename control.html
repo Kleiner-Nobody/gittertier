@@ -2,127 +2,259 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart Remote Control</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --bg: #ebeded;
+            --surface: #ffffff;
+            --text: #2c3e50;
+            --text-secondary: #455a64;
+            --accent: #6c757d;
+            --accent-dark: #5a6268;
+            --accent-light: #d6d8db;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --text: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent: #3a86ff;
+            --accent-dark: #2a75e0;
+            --accent-light: #1a3650;
+            --success: #28a745;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             touch-action: manipulation;
             user-select: none;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
-            height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            padding: 15px;
-            color: #fff;
-            overflow: hidden;
         }
-        
-        .header {
-            text-align: center;
-            padding: 15px 0;
-            background: rgba(0, 0, 30, 0.7);
-            border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .status-bar {
+
+        .admin-header {
+            background: var(--surface);
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
-            padding: 0 20px;
-            margin-top: 10px;
-            font-size: 1.1rem;
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .hamburger {
+            display: none;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .admin-container {
+            display: flex;
+            flex: 1;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: var(--surface);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 99;
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            overflow-y: auto;
+        }
+
+        .nav-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .nav-link {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 2px solid var(--accent-light);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .nav-link i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent);
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* CONTROL PAGE SPECIFIC STYLES */
+        .control-section {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+
         .controls-container {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-        
+
         .control-row {
             display: flex;
             justify-content: center;
             gap: 15px;
         }
-        
+
         .control-btn {
             flex: 1;
-            background: rgba(0, 15, 31, 0.85);
+            background: var(--accent);
             border: none;
-            border-radius: 15px;
+            border-radius: var(--border-radius);
             color: white;
             font-size: 1.8rem;
             padding: 20px 10px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100px;
         }
-        
+
         .control-btn:active {
             transform: translateY(6px);
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            background: rgba(0, 30, 63, 0.95);
+            background: var(--accent-dark);
         }
-        
+
         .direction-btn {
             font-size: 2.5rem;
             min-height: 120px;
         }
-        
+
         .stop-btn {
-            background: rgba(200, 0, 0, 0.85);
+            background: var(--danger);
         }
-        
+
         .stop-btn:active {
-            background: rgba(230, 0, 0, 0.95);
+            background: #c82333;
         }
-        
+
         .center-btn {
             flex: 2;
         }
-        
+
         .connection-panel {
-            background: rgba(0, 0, 30, 0.7);
-            border-radius: 15px;
+            background: var(--surface);
+            border-radius: var(--border-radius);
             padding: 15px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
         }
-        
+
         .btn-row {
             display: flex;
             gap: 10px;
         }
-        
+
         .action-btn {
             flex: 1;
             padding: 15px;
             border: none;
             border-radius: 10px;
-            background: rgba(0, 30, 63, 0.85);
+            background: var(--accent);
             color: white;
             font-size: 1.1rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
         }
-        
+
+        .action-btn:hover {
+            background: var(--accent-dark);
+        }
+
         .slider-container {
             padding: 10px 0;
         }
-        
+
         .slider {
             width: 100%;
             height: 30px;
@@ -131,7 +263,7 @@
             border-radius: 15px;
             outline: none;
         }
-        
+
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 40px;
@@ -140,91 +272,217 @@
             background: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
-        
+
         .status-indicators {
             display: flex;
             justify-content: space-around;
             padding: 10px 0;
             font-size: 1.1rem;
         }
-        
+
         .indicator {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        
+
         .indicator-value {
             font-weight: bold;
             font-size: 1.3rem;
             margin-top: 5px;
         }
-        
+
         #connectionStatus {
-            color: #ff5252;
+            color: var(--danger);
             font-weight: bold;
         }
-        
+
         .connected {
-            color: #69f0ae !important;
+            color: var(--success) !important;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 992px) {
+            .admin-sidebar {
+                position: fixed;
+                left: -280px;
+                top: 70px;
+                height: calc(100vh - 70px);
+                z-index: 99;
+                box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            .admin-sidebar.active {
+                left: 0;
+            }
+            
+            .hamburger {
+                display: block;
+            }
+            
+            .admin-content {
+                padding: 15px;
+            }
+            
+            .control-row {
+                flex-wrap: wrap;
+            }
+            
+            .control-btn {
+                min-height: 80px;
+                font-size: 1.5rem;
+            }
+            
+            .direction-btn {
+                min-height: 100px;
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .admin-content {
+                padding: 10px;
+            }
+            
+            .control-section {
+                padding: 20px;
+            }
+            
+            .control-btn {
+                padding: 15px 5px;
+                min-height: 70px;
+                font-size: 1.3rem;
+            }
+            
+            .direction-btn {
+                min-height: 80px;
+                font-size: 1.8rem;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                gap: 5px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Cart Remote Control</h1>
+    <div class="admin-header">
+        <div class="logo">
+            <button class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1>Cart Remote Control</h1>
+        </div>
         <div class="status-bar">
             <div>Battery: <span id="batteryLevel">85%</span></div>
             <div>Status: <span id="connectionStatus">Disconnected</span></div>
         </div>
     </div>
-    
-    <div class="controls-container">
-        <div class="control-row">
-            <button class="control-btn" id="lightsBtn">💡 LIGHTS</button>
-            <button class="control-btn stop-btn" id="stopBtn">⏹ STOP</button>
-        </div>
-        
-        <div class="control-row">
-            <div style="flex:1"></div>
-            <button class="control-btn direction-btn" id="fwdBtn">▲</button>
-            <div style="flex:1"></div>
-        </div>
-        
-        <div class="control-row">
-            <button class="control-btn direction-btn" id="leftBtn">◀</button>
-            <button class="control-btn direction-btn center-btn" id="backBtn">▼</button>
-            <button class="control-btn direction-btn" id="rightBtn">▶</button>
-        </div>
-    </div>
-    
-    <div class="connection-panel">
-        <div class="slider-container">
-            <input type="range" min="0" max="100" value="50" class="slider" id="speedSlider">
-        </div>
-        
-        <div class="btn-row">
-            <button class="action-btn" id="connectBtn">CONNECT</button>
-            <button class="action-btn" id="disconnectBtn">DISCONNECT</button>
-        </div>
-        
-        <div class="status-indicators">
-            <div class="indicator">
-                <div>Speed</div>
-                <div class="indicator-value" id="speedValue">50%</div>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="nav-container">
+                <a href="control.html" class="nav-link" style="color:#218838; font-weight: bold;">
+                    <i class="fas fa-gamepad"></i>
+                    Steuerung
+                </a>
+                <a href="products.html" class="nav-link">
+                    <i class="fas fa-box"></i>
+                    Produktverwaltung
+                </a>
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-cash-register"></i>
+                    Kassenansicht
+                </a>
+                <a href="archive.html" class="nav-link">
+                    <i class="fas fa-archive"></i>
+                    Archiv
+                </a>
+                <a href="merchant.html" class="nav-link">
+                    <i class="fas fa-store"></i>
+                    Händleransicht
+                </a>
+                <a href="analytics.html" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Analysen
+                </a>
+                <a href="admin.html" class="nav-link">
+                    <i class="fas fa-shield"></i>
+                    Admin
+                </a>
             </div>
-            <div class="indicator">
-                <div>Direction</div>
-                <div class="indicator-value" id="directionValue">STOP</div>
+        </aside>
+
+        <main class="admin-content">
+            <div class="control-section">
+                <div class="controls-container">
+                    <div class="control-row">
+                        <button class="control-btn" id="lightsBtn">💡 LIGHTS</button>
+                        <button class="control-btn stop-btn" id="stopBtn">⏹ STOP</button>
+                    </div>
+                    
+                    <div class="control-row">
+                        <div style="flex:1"></div>
+                        <button class="control-btn direction-btn" id="fwdBtn">▲</button>
+                        <div style="flex:1"></div>
+                    </div>
+                    
+                    <div class="control-row">
+                        <button class="control-btn direction-btn" id="leftBtn">◀</button>
+                        <button class="control-btn direction-btn center-btn" id="backBtn">▼</button>
+                        <button class="control-btn direction-btn" id="rightBtn">▶</button>
+                    </div>
+                </div>
             </div>
-            <div class="indicator">
-                <div>Lights</div>
-                <div class="indicator-value" id="lightsValue">OFF</div>
+            
+            <div class="control-section">
+                <div class="connection-panel">
+                    <div class="slider-container">
+                        <input type="range" min="0" max="100" value="50" class="slider" id="speedSlider">
+                    </div>
+                    
+                    <div class="btn-row">
+                        <button class="action-btn" id="connectBtn">CONNECT</button>
+                        <button class="action-btn" id="disconnectBtn">DISCONNECT</button>
+                    </div>
+                    
+                    <div class="status-indicators">
+                        <div class="indicator">
+                            <div>Speed</div>
+                            <div class="indicator-value" id="speedValue">50%</div>
+                        </div>
+                        <div class="indicator">
+                            <div>Direction</div>
+                            <div class="indicator-value" id="directionValue">STOP</div>
+                        </div>
+                        <div class="indicator">
+                            <div>Lights</div>
+                            <div class="indicator-value" id="lightsValue">OFF</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
+        // Sidebar toggle functionality
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Control functionality
         let bluetoothDevice;
         let bluetoothCharacteristic;
         const serviceUuid = '19b10010-e8f2-537e-4f6c-d104768a1214';
@@ -337,7 +595,7 @@
                     const newState = lightsValue.textContent === 'ON' ? 'OFF' : 'ON';
                     lightsValue.textContent = newState;
                     lightsBtn.style.background = newState === 'ON' ? 
-                        'rgba(255, 215, 0, 0.85)' : 'rgba(0, 15, 31, 0.85)';
+                        'rgba(255, 215, 0, 0.85)' : 'var(--accent)';
                     break;
             }
         }
