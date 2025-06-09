@@ -84,6 +84,58 @@
             align-items: center;
         }
 
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+
+        #productSearch {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 1px solid var(--accent-light);
+            font-size: 1rem;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        #suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 200;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--accent-light);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: var(--accent-light);
+        }
+
+        .suggestion-name {
+            font-weight: 600;
+        }
+
+        .suggestion-barcode {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
         .hamburger {
             display: none;
             background: transparent;
@@ -343,6 +395,27 @@
                 min-height: 100px;
                 font-size: 2rem;
             }
+            
+            .search-container {
+                max-width: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .search-container {
+                order: 3;
+                max-width: 100%;
+                margin: 10px 0 0;
+            }
+            
+            .status-bar {
+                margin-left: auto;
+            }
         }
 
         @media (max-width: 576px) {
@@ -381,6 +454,12 @@
             </button>
             <h1>Cart Remote Control</h1>
         </div>
+        
+        <div class="search-container">
+            <input type="text" id="productSearch" placeholder="Search products...">
+            <div id="suggestions"></div>
+        </div>
+        
         <div class="status-bar">
             <div>Battery: <span id="batteryLevel">85%</span></div>
             <div>Status: <span id="connectionStatus">Disconnected</span></div>
@@ -390,9 +469,9 @@
     <div class="admin-container">
         <aside class="admin-sidebar" id="sidebar">
             <div class="nav-container">
-                <a href="control.html" class="nav-link" style="color:#218838; font-weight: bold;">
-                    <i class="fas fa-gamepad"></i>
-                    Steuerung
+                <a href="settings.html" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    Einstellungen
                 </a>
                 <a href="products.html" class="nav-link">
                     <i class="fas fa-box"></i>
@@ -474,6 +553,40 @@
     </div>
 
     <script>
+        // Initialize localStorage with sample products
+        function initializeProducts() {
+            const products = {
+                "0042280005023": {
+                    "name": "Making Movies DS CD",
+                    "price": 7.99,
+                    "barcode": "0042280005023",
+                    "updatedAt": "2025-06-09T10:11:55.427Z"
+                },
+                "4004880108852": {
+                    "name": "Sprudel",
+                    "price": 2,
+                    "barcode": "4004880108852",
+                    "createdAt": "2025-06-04T20:52:33.232Z",
+                    "updatedAt": "2025-06-09T10:11:55.427Z"
+                },
+                "8710447493915": {
+                    "name": "Deo",
+                    "price": 1.85,
+                    "barcode": "8710447493915",
+                    "updatedAt": "2025-06-09T10:11:55.427Z"
+                }
+            };
+            
+            // Only add if they don't already exist
+            Object.keys(products).forEach(barcode => {
+                if (!localStorage.getItem(barcode)) {
+                    localStorage.setItem(barcode, JSON.stringify(products[barcode]));
+                }
+            });
+        }
+        
+        initializeProducts();
+
         // Sidebar toggle functionality
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
@@ -481,6 +594,84 @@
         hamburger.addEventListener('click', () => {
             sidebar.classList.toggle('active');
         });
+
+        // Search functionality
+        const productSearch = document.getElementById('productSearch');
+        const suggestions = document.getElementById('suggestions');
+        
+        productSearch.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            suggestions.innerHTML = '';
+            
+            if (query.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
+            
+            // Get all products from localStorage
+            const products = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (/^\d{13}$/.test(key)) { // Only 13-digit barcodes
+                    try {
+                        const product = JSON.parse(localStorage.getItem(key));
+                        products.push(product);
+                    } catch (e) {
+                        console.error('Error parsing product:', key);
+                    }
+                }
+            }
+            
+            // Filter products
+            const filtered = products.filter(product => 
+                product.name.toLowerCase().includes(query) || 
+                product.barcode.includes(query)
+            );
+            
+            if (filtered.length > 0) {
+                filtered.forEach(product => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `
+                        <div class="suggestion-name">${product.name}</div>
+                        <div class="suggestion-barcode">${product.barcode}</div>
+                    `;
+                    div.addEventListener('click', () => {
+                        selectProduct(product);
+                        suggestions.style.display = 'none';
+                        productSearch.value = '';
+                    });
+                    suggestions.appendChild(div);
+                });
+                suggestions.style.display = 'block';
+            } else {
+                suggestions.style.display = 'none';
+            }
+        });
+        
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!productSearch.contains(e.target)) {
+                suggestions.style.display = 'none';
+            }
+        });
+        
+        function selectProduct(product) {
+            // Shorten name if longer than 7 characters
+            let displayName = product.name;
+            if (displayName.length > 7) {
+                // Try to find a space to split
+                const lastSpaceIndex = displayName.lastIndexOf(' ', 7);
+                if (lastSpaceIndex > 0) {
+                    displayName = displayName.substring(0, lastSpaceIndex) + '..';
+                } else {
+                    displayName = displayName.substring(0, 7) + '..';
+                }
+            }
+            
+            // Send command to Arduino
+            sendCommand(`BC:${product.barcode}|${displayName}`);
+        }
 
         // Control functionality
         let bluetoothDevice;
