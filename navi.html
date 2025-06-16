@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigation Beacon | Microsoft Design</title>
+    <title>Navigation Beacon | Information Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -32,6 +32,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
         }
 
         /* Microsoft Header Styles */
@@ -39,11 +40,13 @@
             background-color: var(--ms-light);
             box-shadow: var(--ms-card-shadow);
             padding: 0 24px;
-            height: 48px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             z-index: 100;
+            position: sticky;
+            top: 0;
         }
 
         .ms-header-left {
@@ -55,13 +58,14 @@
         .ms-logo {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 8px;
             font-weight: 600;
             color: var(--ms-blue);
+            font-size: 20px;
         }
 
         .ms-logo i {
-            font-size: 20px;
+            font-size: 24px;
         }
 
         .ms-header-nav {
@@ -73,19 +77,29 @@
         .ms-header-nav a {
             text-decoration: none;
             color: var(--ms-dark);
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
-            padding: 14px 0;
+            padding: 18px 0;
             position: relative;
+            transition: var(--ms-transition);
         }
 
-        .ms-header-nav a:hover::after {
+        .ms-header-nav a:hover {
+            color: var(--ms-blue);
+        }
+
+        .ms-header-nav a.active {
+            color: var(--ms-blue);
+            font-weight: 600;
+        }
+
+        .ms-header-nav a.active::after {
             content: '';
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 2px;
+            height: 3px;
             background-color: var(--ms-blue);
         }
 
@@ -95,222 +109,330 @@
             gap: 16px;
         }
 
-        .ms-search-box {
-            position: relative;
-            width: 240px;
-        }
-
-        .ms-search-box input {
-            width: 100%;
-            padding: 6px 12px 6px 32px;
-            border: 1px solid #d2d0ce;
+        .control-link {
+            background-color: var(--ms-blue);
+            color: white;
+            border: none;
             border-radius: var(--ms-border-radius);
-            font-size: 14px;
-            outline: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
             transition: var(--ms-transition);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .ms-search-box input:focus {
-            border-color: var(--ms-blue);
-            box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
+        .control-link:hover {
+            background-color: #106ebe;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 120, 212, 0.3);
         }
 
-        .ms-search-box i {
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #2c3e50, #4a69b5);
+            color: white;
+            padding: 80px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
             position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #605e5c;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: var(--ms-border-radius);
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--ms-transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--ms-accent);
+            color: var(--ms-dark);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #ffa500;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(253, 165, 15, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
         }
 
         /* Main Content */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 60px 24px;
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 60px;
         }
 
-        .ms-page-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--ms-dark);
-            margin-bottom: 8px;
-        }
-
-        .ms-page-description {
-            font-size: 14px;
-            color: #605e5c;
-            margin-bottom: 24px;
-        }
-
-        /* Connection Modal */
-        .connection-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            animation: pulseBackground 2s infinite;
-        }
-
-        .modal-content {
-            background-color: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            box-shadow: var(--ms-card-shadow);
-            padding: 24px;
-            width: 90%;
-            max-width: 500px;
+        .section-title {
+            font-size: 36px;
+            font-weight: 700;
             text-align: center;
-            animation: pulse 1.5s infinite;
+            margin-bottom: 50px;
+            position: relative;
         }
 
-        .modal-icon {
-            font-size: 48px;
-            color: var(--ms-error);
-            margin-bottom: 16px;
-            animation: pulse 1.5s infinite;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--ms-error);
-        }
-
-        .modal-message {
-            margin-bottom: 24px;
-            color: var(--ms-dark);
-            line-height: 1.5;
-        }
-
-        .modal-steps {
-            background-color: #faf9f8;
-            border-radius: var(--ms-border-radius);
-            padding: 16px;
-            margin: 20px 0;
-            text-align: left;
-        }
-
-        .modal-steps li {
-            margin-bottom: 12px;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-
-        .modal-steps li:last-child {
-            margin-bottom: 0;
-        }
-
-        .modal-steps i {
-            color: var(--ms-blue);
-            margin-top: 3px;
-        }
-
-        .modal-button {
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
             background-color: var(--ms-blue);
-            color: white;
-            border: none;
-            border-radius: var(--ms-border-radius);
-            padding: 10px 24px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--ms-transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            border-radius: 2px;
         }
 
-        .modal-button:hover {
-            background-color: #106ebe;
-        }
-
-        /* Dashboard Cards */
-        .dashboard-grid {
+        /* Features Section */
+        .features-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
         }
 
-        .ms-card {
+        .feature-card {
             background-color: var(--ms-light);
             border-radius: var(--ms-border-radius);
             box-shadow: var(--ms-card-shadow);
-            padding: 24px;
+            padding: 30px;
             transition: var(--ms-transition);
-        }
-
-        .ms-card:hover {
-            box-shadow: 0 3.2px 7.2px rgba(0,0,0,.132), 0 0.6px 1.8px rgba(0,0,0,.108);
-        }
-
-        .card-header {
+            text-align: center;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            margin-bottom: 20px;
         }
 
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--ms-dark);
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         }
 
-        .card-icon {
-            width: 40px;
-            height: 40px;
+        .feature-icon {
+            width: 80px;
+            height: 80px;
             background-color: rgba(0, 120, 212, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 20px;
+            font-size: 32px;
             color: var(--ms-blue);
         }
 
-        /* Connection Status */
-        .connection-status {
+        .feature-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--ms-dark);
+        }
+
+        .feature-description {
+            color: #605e5c;
+            line-height: 1.6;
+        }
+
+        /* How It Works Section */
+        .how-it-works {
+            background-color: var(--ms-light);
+            border-radius: var(--ms-border-radius);
+            box-shadow: var(--ms-card-shadow);
+            padding: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 250px;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background-color: var(--ms-blue);
+            color: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            z-index: 2;
         }
 
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .status-disconnected {
-            background-color: var(--ms-error);
-        }
-
-        .status-text {
+        .step-title {
+            font-size: 20px;
             font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--ms-dark);
         }
 
-        .status-value {
-            font-weight: 400;
+        .step-description {
             color: #605e5c;
+            line-height: 1.6;
         }
 
-        /* Compass */
+        /* Connection Panel */
+        .connection-panel {
+            background: linear-gradient(135deg, #4a69b5, #2c3e50);
+            border-radius: var(--ms-border-radius);
+            padding: 40px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .panel-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .panel-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .ip-address {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 30px 0;
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, var(--ms-accent), #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .connection-instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--ms-border-radius);
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .instruction-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .instruction-icon {
+            font-size: 24px;
+            color: var(--ms-accent);
+            min-width: 40px;
+        }
+
+        .instruction-text {
+            flex: 1;
+        }
+
+        /* Beacon Simulator */
+        .beacon-simulator {
+            background-color: var(--ms-light);
+            border-radius: var(--ms-border-radius);
+            box-shadow: var(--ms-card-shadow);
+            padding: 40px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
         .compass-container {
             position: relative;
             width: 280px;
             height: 280px;
-            margin: 0 auto;
+            margin: 0 auto 30px;
         }
 
         .compass-face {
@@ -350,6 +472,7 @@
             transform: translate(-50%, -50%) rotate(0deg);
             transform-origin: bottom center;
             transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 5;
         }
 
         .arrow-stem {
@@ -384,9 +507,9 @@
             font-weight: 700;
             color: var(--ms-blue);
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            z-index: 10;
         }
 
-        /* Direction Buttons */
         .direction-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -423,7 +546,6 @@
             background-color: #106ebe;
         }
 
-        /* Search Container */
         .search-container {
             display: flex;
             gap: 8px;
@@ -460,59 +582,123 @@
             background-color: #106ebe;
         }
 
-        /* Status Card */
-        .status-card {
-            background-color: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            box-shadow: var(--ms-card-shadow);
-            padding: 16px;
-            margin-top: 8px;
+        /* Footer */
+        .footer {
+            background-color: var(--ms-dark);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 50px 24px 30px;
         }
 
-        .status-item {
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-column h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--ms-blue);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: var(--ms-transition);
             display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #edebe9;
+            align-items: center;
+            gap: 8px;
         }
 
-        .status-item:last-child {
-            border-bottom: none;
+        .footer-links a:hover {
+            color: white;
+            transform: translateX(5px);
         }
 
-        .status-label {
-            color: #605e5c;
+        .footer-links i {
+            font-size: 14px;
+            color: var(--ms-accent);
         }
 
-        .status-value {
-            font-weight: 500;
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
         }
 
         /* Animations */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes pulseBackground {
-            0% { background-color: rgba(0, 0, 0, 0.7); }
-            50% { background-color: rgba(209, 52, 56, 0.5); }
-            100% { background-color: rgba(0, 0, 0, 0.7); }
+        .animate {
+            animation: fadeIn 0.8s ease-out forwards;
         }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .ms-header-nav {
                 display: none;
             }
             
-            .ms-search-box {
-                width: 180px;
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .section-title {
+                font-size: 28px;
+            }
+            
+            .how-it-works {
+                padding: 30px 20px;
+            }
+            
+            .connection-panel {
+                padding: 30px 20px;
+            }
+            
+            .ip-address {
+                font-size: 32px;
             }
         }
     </style>
@@ -526,74 +712,130 @@
                 <span>Navigation Beacon</span>
             </div>
             <nav class="ms-header-nav">
-                <a href="#">Dashboard</a>
-                <a href="#">Directions</a>
-                <a href="#">Settings</a>
-                <a href="#">Help</a>
+                <a href="#" class="active">Home</a>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#beacon-simulator">Simulator</a>
+                <a href="#control">Connect</a>
             </nav>
         </div>
         <div class="ms-header-right">
-            <div class="ms-search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search directions...">
-            </div>
+            <a href="http://192.168.4.1" class="control-link" id="controlLink">
+                <i class="fas fa-cogs"></i>
+                Go to Control Panel
+            </a>
         </div>
     </header>
 
-    <!-- Connection Required Modal -->
-    <div class="connection-modal" id="connectionModal">
-        <div class="modal-content">
-            <div class="modal-icon">
-                <i class="fas fa-exclamation-triangle"></i>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="animate">Precise Navigation Beacon System</h1>
+            <p class="animate delay-1">Advanced directional guidance technology powered by Arduino and BLE. Perfect for indoor navigation, exhibitions, and complex environments.</p>
+            <div class="hero-buttons">
+                <a href="#control" class="btn btn-primary animate delay-2" id="getStartedBtn">
+                    <i class="fas fa-rocket"></i>
+                    Get Started Now
+                </a>
+                <a href="#features" class="btn btn-secondary animate delay-3" id="learnMoreBtn">
+                    <i class="fas fa-book"></i>
+                    Learn More
+                </a>
             </div>
-            <h2 class="modal-title">Connection Required</h2>
-            <p class="modal-message">You must connect to the Arduino via WiFi to use this navigation beacon.</p>
-            
-            <div class="modal-steps">
-                <ul>
-                    <li>
-                        <i class="fas fa-wifi"></i>
-                        <span>Connect to WiFi network: <strong>NavBeacon</strong></span>
-                    </li>
-                    <li>
-                        <i class="fas fa-key"></i>
-                        <span>Use password: <strong>12345678</strong></span>
-                    </li>
-                    <li>
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Refresh this page after connecting</span>
-                    </li>
-                </ul>
-            </div>
-            
-            <button class="modal-button" id="refreshButton">
-                <i class="fas fa-sync-alt"></i>
-                Refresh Connection
-            </button>
         </div>
-    </div>
+    </section>
 
     <!-- Main Content -->
     <div class="container">
-        <div>
-            <h1 class="ms-page-title">Navigation Beacon</h1>
-            <p class="ms-page-description">Control your Arduino navigation beacon and set directions</p>
-        </div>
-
-        <div class="dashboard-grid">
-            <!-- Direction Control Card -->
-            <div class="ms-card">
-                <div class="card-header">
-                    <h2 class="card-title">Direction Control</h2>
-                    <div class="card-icon">
-                        <i class="fas fa-compass"></i>
+        <!-- Features Section -->
+        <section id="features">
+            <h2 class="section-title">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card animate">
+                    <div class="feature-icon">
+                        <i class="fas fa-bluetooth-b"></i>
                     </div>
+                    <h3 class="feature-title">BLE Connectivity</h3>
+                    <p class="feature-description">Low-energy Bluetooth technology enables seamless communication with mobile devices and displays without draining battery life.</p>
                 </div>
                 
-                <div class="connection-status">
-                    <div class="status-indicator status-disconnected"></div>
-                    <div class="status-text">Status: <span class="status-value">Disconnected</span></div>
+                <div class="feature-card animate delay-1">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Real-time Updates</h3>
+                    <p class="feature-description">Direction changes are instantly transmitted to all connected devices with near-zero latency for precise navigation.</p>
                 </div>
+                
+                <div class="feature-card animate delay-2">
+                    <div class="feature-icon">
+                        <i class="fas fa-compass"></i>
+                    </div>
+                    <h3 class="feature-title">16-Direction Precision</h3>
+                    <p class="feature-description">Supports all primary and secondary intercardinal directions for detailed navigation instructions.</p>
+                </div>
+                
+                <div class="feature-card animate delay-3">
+                    <div class="feature-icon">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+                    <h3 class="feature-title">Dual Connectivity</h3>
+                    <p class="feature-description">Operates simultaneously as a WiFi hotspot for control interface and BLE broadcaster for direction transmission.</p>
+                </div>
+                
+                <div class="feature-card animate">
+                    <div class="feature-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h3 class="feature-title">High Performance</h3>
+                    <p class="feature-description">Optimized Arduino code ensures smooth operation even with multiple simultaneous connections.</p>
+                </div>
+                
+                <div class="feature-card animate delay-1">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Secure Communication</h3>
+                    <p class="feature-description">Encrypted communication channels ensure that your navigation instructions remain secure and tamper-proof.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- How It Works Section -->
+        <section class="how-it-works" id="how-it-works">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step animate">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Connect to Beacon</h3>
+                    <p class="step-description">Connect your device to the "NavBeacon" WiFi network using the password 12345678 to establish communication.</p>
+                </div>
+                
+                <div class="step animate delay-1">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Access Control Panel</h3>
+                    <p class="step-description">Open your web browser and navigate to the control panel at http://192.168.4.1 to manage directions.</p>
+                </div>
+                
+                <div class="step animate delay-2">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Set Directions</h3>
+                    <p class="step-description">Select the desired direction from the intuitive control interface to update the beacon immediately.</p>
+                </div>
+                
+                <div class="step animate delay-3">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">View Navigation</h3>
+                    <p class="step-description">Connected displays will show the updated direction with smooth animations for clear guidance.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Beacon Simulator -->
+        <section id="beacon-simulator">
+            <div class="beacon-simulator">
+                <h2 class="section-title">Beacon Simulator</h2>
+                <p>Experience how the navigation beacon works with this interactive simulator. Set directions and see how the arrow responds.</p>
                 
                 <div class="compass-container">
                     <div class="compass-face">
@@ -628,22 +870,22 @@
                 </div>
                 
                 <div class="direction-grid">
-                    <button class="direction-btn active">N</button>
-                    <button class="direction-btn">NNE</button>
-                    <button class="direction-btn">NE</button>
-                    <button class="direction-btn">ENE</button>
-                    <button class="direction-btn">E</button>
-                    <button class="direction-btn">ESE</button>
-                    <button class="direction-btn">SE</button>
-                    <button class="direction-btn">SSE</button>
-                    <button class="direction-btn">S</button>
-                    <button class="direction-btn">SSW</button>
-                    <button class="direction-btn">SW</button>
-                    <button class="direction-btn">WSW</button>
-                    <button class="direction-btn">W</button>
-                    <button class="direction-btn">WNW</button>
-                    <button class="direction-btn">NW</button>
-                    <button class="direction-btn">NNW</button>
+                    <button class="direction-btn active" data-dir="N">N</button>
+                    <button class="direction-btn" data-dir="NNE">NNE</button>
+                    <button class="direction-btn" data-dir="NE">NE</button>
+                    <button class="direction-btn" data-dir="ENE">ENE</button>
+                    <button class="direction-btn" data-dir="E">E</button>
+                    <button class="direction-btn" data-dir="ESE">ESE</button>
+                    <button class="direction-btn" data-dir="SE">SE</button>
+                    <button class="direction-btn" data-dir="SSE">SSE</button>
+                    <button class="direction-btn" data-dir="S">S</button>
+                    <button class="direction-btn" data-dir="SSW">SSW</button>
+                    <button class="direction-btn" data-dir="SW">SW</button>
+                    <button class="direction-btn" data-dir="WSW">WSW</button>
+                    <button class="direction-btn" data-dir="W">W</button>
+                    <button class="direction-btn" data-dir="WNW">WNW</button>
+                    <button class="direction-btn" data-dir="NW">NW</button>
+                    <button class="direction-btn" data-dir="NNW">NNW</button>
                 </div>
                 
                 <div class="search-container">
@@ -651,93 +893,167 @@
                     <button class="search-button" id="searchButton">Set Direction</button>
                 </div>
             </div>
-            
-            <!-- Status Card -->
-            <div class="ms-card">
-                <div class="card-header">
-                    <h2 class="card-title">System Status</h2>
-                    <div class="card-icon">
-                        <i class="fas fa-info-circle"></i>
+        </section>
+        
+        <!-- Connection Panel -->
+        <section id="control">
+            <div class="connection-panel">
+                <h2 class="panel-title">Ready to Control Your Beacon?</h2>
+                <div class="panel-content">
+                    <p>Connect to the Navigation Beacon WiFi network and access the control panel:</p>
+                    
+                    <div class="ip-address">192.168.4.1</div>
+                    
+                    <div class="connection-instructions">
+                        <div class="instruction-item">
+                            <div class="instruction-icon">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div class="instruction-text">
+                                <h4>Connect to WiFi</h4>
+                                <p>On your device, go to WiFi settings and connect to "NavBeacon" using password: <strong>12345678</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="instruction-item">
+                            <div class="instruction-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="instruction-text">
+                                <h4>Access Control Panel</h4>
+                                <p>Open any web browser and enter the address: <strong>http://192.168.4.1</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="instruction-item">
+                            <div class="instruction-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div class="instruction-text">
+                                <h4>Start Controlling</h4>
+                                <p>Use the intuitive interface to set directions and manage your navigation beacon</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="status-card">
-                    <div class="status-item">
-                        <span class="status-label">WiFi Network</span>
-                        <span class="status-value">NavBeacon</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Signal Strength</span>
-                        <span class="status-value">Excellent</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Device IP</span>
-                        <span class="status-value">192.168.4.1</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">BLE Status</span>
-                        <span class="status-value">Advertising</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Uptime</span>
-                        <span class="status-value">15m 42s</span>
-                    </div>
+                    
+                    <a href="http://192.168.4.1" class="btn btn-primary" id="panelControlBtn">
+                        <i class="fas fa-external-link-alt"></i>
+                        Go to Control Panel Now
+                    </a>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Navigation Beacon</h3>
+                <p style="margin-bottom:20px; opacity:0.7;">Advanced directional guidance system for complex environments.</p>
+                <p style="opacity:0.7;">Version 2.1.5 | Firmware v1.0.3</p>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="http://192.168.4.1" id="footerControlLink"><i class="fas fa-chevron-right"></i> Control Panel</a></li>
+                    <li><a href="#" id="docsLink"><i class="fas fa-chevron-right"></i> Documentation</a></li>
+                    <li><a href="#" id="apiLink"><i class="fas fa-chevron-right"></i> API Reference</a></li>
+                    <li><a href="#" id="troubleLink"><i class="fas fa-chevron-right"></i> Troubleshooting</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Resources</h3>
+                <ul class="footer-links">
+                    <li><a href="https://github.com" target="_blank" id="githubLink"><i class="fas fa-chevron-right"></i> GitHub Repository</a></li>
+                    <li><a href="#" id="setupLink"><i class="fas fa-chevron-right"></i> Arduino Setup Guide</a></li>
+                    <li><a href="#" id="firmwareLink"><i class="fas fa-chevron-right"></i> Firmware Updates</a></li>
+                    <li><a href="#" id="examplesLink"><i class="fas fa-chevron-right"></i> Example Projects</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Support</h3>
+                <ul class="footer-links">
+                    <li><a href="mailto:support@navbeacon.com" id="contactLink"><i class="fas fa-chevron-right"></i> Contact Us</a></li>
+                    <li><a href="#" id="forumLink"><i class="fas fa-chevron-right"></i> Community Forum</a></li>
+                    <li><a href="#" id="knowledgeLink"><i class="fas fa-chevron-right"></i> Knowledge Base</a></li>
+                    <li><a href="#" id="issueLink"><i class="fas fa-chevron-right"></i> Report an Issue</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2023 Navigation Beacon System. All rights reserved. | Microsoft-inspired design for educational purposes
+        </div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const connectionModal = document.getElementById('connectionModal');
-            const refreshButton = document.getElementById('refreshButton');
+            // DOM Elements
             const compassArrow = document.getElementById('compassArrow');
             const currentDirection = document.getElementById('currentDirection');
             const directionBtns = document.querySelectorAll('.direction-btn');
             const directionSearch = document.getElementById('directionSearch');
             const searchButton = document.getElementById('searchButton');
+            const controlLink = document.getElementById('controlLink');
+            const getStartedBtn = document.getElementById('getStartedBtn');
+            const learnMoreBtn = document.getElementById('learnMoreBtn');
+            const panelControlBtn = document.getElementById('panelControlBtn');
+            const footerControlLink = document.getElementById('footerControlLink');
             
-            // Show connection modal by default
-            connectionModal.style.display = 'flex';
+            // Direction map with angles
+            const directionAngles = {
+                'N': 0,
+                'NNE': -22.5,
+                'NE': -45,
+                'ENE': -67.5,
+                'E': -90,
+                'ESE': -112.5,
+                'SE': -135,
+                'SSE': -157.5,
+                'S': 180,
+                'SSW': 157.5,
+                'SW': 135,
+                'WSW': 112.5,
+                'W': 90,
+                'WNW': 67.5,
+                'NW': 45,
+                'NNW': 22.5
+            };
             
-            // Refresh button handler
-            refreshButton.addEventListener('click', function() {
-                // Simulate reconnection attempt
-                connectionModal.style.display = 'none';
+            // Set direction function
+            function setDirection(direction) {
+                // Update the arrow position
+                const angle = directionAngles[direction] || 0;
+                compassArrow.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
                 
-                // In a real implementation, this would check the connection status
-                setTimeout(() => {
-                    // If still not connected, show modal again
-                    connectionModal.style.display = 'flex';
-                }, 2000);
-            });
+                // Update the direction text
+                currentDirection.textContent = direction;
+                
+                // Update active button
+                directionBtns.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.dir === direction) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // Show notification
+                showNotification(`Direction set to ${direction}`);
+            }
             
             // Direction buttons handler
             directionBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    directionBtns.forEach(b => b.classList.remove('active'));
-                    
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    // Update direction display
-                    const direction = this.textContent;
-                    currentDirection.textContent = direction;
-                    
-                    // Rotate arrow to selected direction
-                    rotateArrow(direction);
+                    const direction = this.dataset.dir;
+                    setDirection(direction);
                 });
             });
             
             // Search handler
-            searchButton.addEventListener('click', setDirectionFromSearch);
-            directionSearch.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    setDirectionFromSearch();
-                }
-            });
-            
             function setDirectionFromSearch() {
                 const searchTerm = directionSearch.value.trim().toUpperCase();
                 if (!searchTerm) return;
@@ -764,48 +1080,99 @@
                 
                 const direction = directionMap[searchTerm];
                 if (direction) {
-                    // Find and click the corresponding button
-                    directionBtns.forEach(btn => {
-                        if (btn.textContent === direction) {
-                            btn.click();
-                        }
-                    });
-                    
-                    // Clear search
+                    setDirection(direction);
                     directionSearch.value = '';
                 } else {
-                    // Show error for invalid direction
-                    alert(`"${searchTerm}" is not a valid direction. Please enter a compass direction (e.g., North, NNE, Southeast).`);
+                    showNotification(`"${searchTerm}" is not a valid direction.`, 'error');
                 }
             }
             
-            // Function to rotate arrow based on direction
-            function rotateArrow(direction) {
-                const angles = {
-                    'N': 0,
-                    'NNE': -22.5,
-                    'NE': -45,
-                    'ENE': -67.5,
-                    'E': -90,
-                    'ESE': -112.5,
-                    'SE': -135,
-                    'SSE': -157.5,
-                    'S': 180,
-                    'SSW': 157.5,
-                    'SW': 135,
-                    'WSW': 112.5,
-                    'W': 90,
-                    'WNW': 67.5,
-                    'NW': 45,
-                    'NNW': 22.5
-                };
+            searchButton.addEventListener('click', setDirectionFromSearch);
+            directionSearch.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    setDirectionFromSearch();
+                }
+            });
+            
+            // Show notification function
+            function showNotification(message, type = 'success') {
+                // Remove existing notification if any
+                const existingNotification = document.querySelector('.notification');
+                if (existingNotification) {
+                    existingNotification.remove();
+                }
                 
-                const angle = angles[direction] || 0;
-                compassArrow.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                // Add to body
+                document.body.appendChild(notification);
+                
+                // Show notification
+                setTimeout(() => {
+                    notification.style.opacity = '1';
+                    notification.style.transform = 'translateY(0)';
+                }, 10);
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateY(-20px)';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
             }
             
-            // Initialize with North direction
-            rotateArrow('N');
+            // Control panel link handling
+            function handleControlLink(e) {
+                if (!navigator.onLine) {
+                    e.preventDefault();
+                    showNotification('Please connect to the NavBeacon WiFi to access the control panel.', 'error');
+                } else {
+                    showNotification('Redirecting to control panel...');
+                }
+            }
+            
+            // Add event listeners to all control panel links
+            [controlLink, getStartedBtn, panelControlBtn, footerControlLink].forEach(link => {
+                link.addEventListener('click', handleControlLink);
+            });
+            
+            // Learn more button
+            learnMoreBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Footer links
+            const footerLinks = document.querySelectorAll('.footer-links a');
+            footerLinks.forEach(link => {
+                if (!link.href || link.href === '#' || link.href.includes('mailto') || link.href.includes('http')) {
+                    return;
+                }
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showNotification('This feature is not implemented in this demo.', 'error');
+                });
+            });
+            
+            // Initialization
+            setDirection('N');
+            
+            // Animation on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.feature-card, .step').forEach(card => {
+                observer.observe(card);
+            });
         });
     </script>
 </body>
