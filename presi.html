@@ -17,6 +17,8 @@
             --border: #dadce0;
             --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --card-bg: #ffffff;
+            --modal-bg: rgba(0,0,0,0.7);
         }
         
         * {
@@ -33,6 +35,16 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        body.dark-mode {
+            --surface: #121212;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border: #444;
+            --card-bg: #1e1e1e;
+            --modal-bg: rgba(0,0,0,0.85);
         }
         
         body.fullscreen {
@@ -46,10 +58,11 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 24px;
-            background: white;
+            background: var(--card-bg);
             border-bottom: 1px solid var(--border);
             box-shadow: var(--shadow);
             z-index: 100;
+            transition: background 0.3s, border-color 0.3s;
         }
         
         .logo-container {
@@ -97,9 +110,17 @@
             transition: all 0.3s;
         }
         
+        .dark-mode .search-bar {
+            background: #333;
+        }
+        
         .search-bar:hover {
             background: white;
             box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+        }
+        
+        .dark-mode .search-bar:hover {
+            background: #444;
         }
         
         .search-bar i {
@@ -150,13 +171,13 @@
         /* Slide-Navigation (Google-Docs-Sidebar) */
         .slide-nav {
             width: 220px;
-            background: white;
+            background: var(--card-bg);
             border-right: 1px solid var(--border);
             padding: 20px 0;
             overflow-y: auto;
             box-shadow: var(--shadow);
             z-index: 50;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, background 0.3s, border-color 0.3s;
         }
         
         .nav-header {
@@ -185,6 +206,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        
+        .dark-mode .thumbnail {
+            background: #333;
         }
         
         .thumbnail.active {
@@ -225,10 +250,15 @@
             background: #f1f3f4;
             position: relative;
             overflow: auto;
+            transition: background 0.3s;
+        }
+        
+        .dark-mode .slide-content {
+            background: #1a1a1a;
         }
         
         .slide {
-            background: white;
+            background: var(--card-bg);
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             width: 100%;
@@ -238,6 +268,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
+            transition: background 0.3s, box-shadow 0.3s;
         }
         
         .slide-header {
@@ -276,7 +307,7 @@
         }
         
         .card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 8px;
             border: 1px solid var(--border);
             padding: 25px;
@@ -405,11 +436,12 @@
             display: flex;
             justify-content: space-between;
             padding: 12px 24px;
-            background: white;
+            background: var(--card-bg);
             border-top: 1px solid var(--border);
             color: var(--text-secondary);
             font-size: 14px;
             z-index: 100;
+            transition: background 0.3s, border-color 0.3s;
         }
         
         .footer-info {
@@ -423,24 +455,93 @@
             gap: 15px;
         }
         
-        /* Vollbild Button */
-        .fullscreen-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 18px;
-            padding: 5px;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        /* Animationen */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
         }
         
-        .slide {
-            animation: fadeIn 0.4s ease-out;
+        .btn-primary {
+            background: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        /* Settings Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 400px;
+            max-width: 90%;
+            padding: 25px;
+            position: relative;
+        }
+        
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        
+        .setting-item {
+            margin: 20px 0;
+        }
+        
+        .setting-item label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .setting-item select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            width: 100%;
+            margin-top: 5px;
         }
         
         /* Progress Bar */
@@ -488,7 +589,7 @@
                 top: 0;
                 bottom: 0;
                 z-index: 200;
-                background: white;
+                background: var(--card-bg);
             }
             
             .slide-nav.active {
@@ -609,6 +710,9 @@
         </div>
         
         <div class="header-actions">
+            <button class="header-btn" id="settings-btn">
+                <i class="fas fa-cog"></i> <span>Einstellungen</span>
+            </button>
             <button class="header-btn" id="share-btn">
                 <i class="fas fa-share-alt"></i> <span>Teilen</span>
             </button>
@@ -660,6 +764,30 @@
             </button>
         </div>
     </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <span class="close" id="close-modal">&times;</span>
+            <h3 class="modal-title">Einstellungen</h3>
+            
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="dark-mode-toggle">
+                    Dunkler Modus aktivieren
+                </label>
+            </div>
+            
+            <div class="setting-item">
+                <label for="font-size-select">Schriftgröße:</label>
+                <select id="font-size-select">
+                    <option value="small">Klein</option>
+                    <option value="medium">Mittel</option>
+                    <option value="large">Groß</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Präsentationsdaten
@@ -681,7 +809,7 @@
                                 <div class="emoji">🐘💡</div>
                                 <h1 style="font-size: 2.5rem; color: var(--secondary-color); margin-bottom: 20px;">Digitaler Humanismus</h1>
                                 <h2 style="font-size: 1.8rem; margin-bottom: 30px;">Nach Julian Nida-Rümelin</h2>
-                                <div class="group-name">${presentation.groupName}</div>
+                                <div class="group-name">Die Gigalektrischen Elefantenflüsterer</div>
                                 <p style="font-size: 1.2rem; margin-top: 30px;">Präsentation für Digitale Ethik</p>
                             </div>
                         </div>
@@ -1160,6 +1288,11 @@
             const totalSlides = document.getElementById('total-slides');
             const progressBar = document.getElementById('progress-bar');
             const shareBtn = document.getElementById('share-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeModal = document.getElementById('close-modal');
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const fontSizeSelect = document.getElementById('font-size-select');
             
             let currentSlideIndex = 0;
             totalSlides.textContent = presentation.slides.length;
@@ -1214,6 +1347,76 @@
                     alert('Teilen-Funktion wird in diesem Browser nicht unterstützt. Bitte kopieren Sie die URL.');
                 }
             });
+            
+            // Settings Modal
+            settingsBtn.addEventListener('click', () => {
+                settingsModal.style.display = 'flex';
+            });
+            
+            closeModal.addEventListener('click', () => {
+                settingsModal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    settingsModal.style.display = 'none';
+                }
+            });
+            
+            // Settings Funktionen
+            function loadSettings() {
+                // Defensive programming - check if elements exist
+                if (darkModeToggle) {
+                    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                    darkModeToggle.checked = isDarkMode;
+                    document.body.classList.toggle('dark-mode', isDarkMode);
+                }
+                
+                if (fontSizeSelect) {
+                    const savedFontSize = localStorage.getItem('fontSize') || 'medium';
+                    fontSizeSelect.value = savedFontSize;
+                    applyFontSize(savedFontSize);
+                }
+            }
+            
+            function applySettings() {
+                if (darkModeToggle) {
+                    const isDarkMode = darkModeToggle.checked;
+                    document.body.classList.toggle('dark-mode', isDarkMode);
+                    localStorage.setItem('darkMode', isDarkMode);
+                }
+                
+                if (fontSizeSelect) {
+                    const fontSize = fontSizeSelect.value;
+                    applyFontSize(fontSize);
+                    localStorage.setItem('fontSize', fontSize);
+                }
+            }
+            
+            function applyFontSize(size) {
+                switch(size) {
+                    case 'small':
+                        document.documentElement.style.fontSize = '14px';
+                        break;
+                    case 'large':
+                        document.documentElement.style.fontSize = '18px';
+                        break;
+                    default:
+                        document.documentElement.style.fontSize = '16px';
+                }
+            }
+            
+            // Event listeners for settings
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('change', applySettings);
+            }
+            
+            if (fontSizeSelect) {
+                fontSizeSelect.addEventListener('change', applySettings);
+            }
+            
+            // Load settings on start
+            loadSettings();
             
             // Tastatur-Navigation
             document.addEventListener('keydown', (e) => {
