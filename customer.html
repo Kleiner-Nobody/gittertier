@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     :root {
   --bg: #ebeded;
@@ -19,20 +20,25 @@
   --accent-light: #d6d8db;
   --success: #28a745;
   --danger: #dc3545;
-  --warning: #ffc107;
+  --warning: #ff9500;
   --info: #17a2b8;
   --border-radius: 16px;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   --error-color: #d32f2f;
   --error-bg: #ffcdd2;
   --error-icon: #b71c1c;
-  
-  /* Dark mode variables */
-  --dark-bg: #121212;
-  --dark-surface: #1e1e1e;
-  --dark-text: #f0f0f0;
-  --dark-text-secondary: #b0b0b0;
-  --dark-accent-light: #3a3a3a;
+}
+
+/* Dark mode variables */
+.dark-mode {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --text: #e6e6e6;
+  --text-secondary: #b0b0b0;
+  --accent: #6c757d;
+  --accent-dark: #5a6268;
+  --accent-light: #2c2c44;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -52,12 +58,7 @@ body {
   padding: 20px;
   position: relative;
   overflow: auto;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-body.dark-mode {
-  background: var(--dark-bg);
-  color: var(--dark-text);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -75,13 +76,7 @@ body.dark-mode {
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: background-color 0.3s, box-shadow 0.3s;
-}
-
-body.dark-mode .payment-card {
-  background: var(--dark-surface);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
 }
 
 .payment-header {
@@ -96,11 +91,6 @@ body.dark-mode .payment-card {
   margin-bottom: 10px;
   color: var(--text);
   letter-spacing: 0.5px;
-  transition: color 0.3s;
-}
-
-body.dark-mode .payment-title {
-  color: var(--dark-text);
 }
 
 .payment-subtitle {
@@ -108,28 +98,44 @@ body.dark-mode .payment-title {
   margin-bottom: 40px;
   font-weight: 400;
   font-size: 1.1rem;
-  transition: color 0.3s;
 }
 
-body.dark-mode .payment-subtitle {
-  color: var(--dark-text-secondary);
+.qr-container {
+  position: relative;
+  margin: 40px auto;
+  display: inline-block;
 }
 
 #qrcode {
-  margin: 40px auto;
   padding: 30px;
   background: #f8f9fa;
   border-radius: 12px;
   display: inline-block;
   border: 2px solid var(--accent-light);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
-body.dark-mode #qrcode {
-  background: #2a2a2a;
-  border-color: var(--dark-accent-light);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.dark-mode #qrcode {
+  background: #2c2c44;
+}
+
+.countdown {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--warning);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .status {
@@ -173,13 +179,11 @@ body.dark-mode #qrcode {
   text-align: left;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   border: 2px solid var(--accent-light);
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
-body.dark-mode .item-box {
-  background: #252525;
-  border-color: var(--dark-accent-light);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+.dark-mode .item-box {
+  background: #1e2a52;
 }
 
 .item-detail {
@@ -188,11 +192,6 @@ body.dark-mode .item-box {
   padding: 15px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 1.1rem;
-  transition: border-color 0.3s;
-}
-
-body.dark-mode .item-detail {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .item-detail:last-child {
@@ -202,21 +201,11 @@ body.dark-mode .item-detail {
 .item-label {
   color: var(--text-secondary);
   font-weight: 500;
-  transition: color 0.3s;
-}
-
-body.dark-mode .item-label {
-  color: var(--dark-text-secondary);
 }
 
 .item-value {
   font-weight: 600;
   color: var(--text);
-  transition: color 0.3s;
-}
-
-body.dark-mode .item-value {
-  color: var(--dark-text);
 }
 
 #amount {
@@ -225,11 +214,7 @@ body.dark-mode .item-value {
   display: block;
   font-weight: 700;
   color: var(--text);
-  transition: color 0.3s;
-}
-
-body.dark-mode #amount {
-  color: var(--dark-text);
+  transition: color 0.3s ease;
 }
 
 .action-buttons {
@@ -285,12 +270,6 @@ body.dark-mode #amount {
   opacity: 0.8;
   padding-top: 20px;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.3s;
-}
-
-body.dark-mode .payment-footer {
-  color: var(--dark-text-secondary);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Error Modal Styles */
@@ -388,99 +367,6 @@ body.dark-mode .payment-footer {
   font-weight: 300;
 }
 
-/* Countdown timer */
-.countdown-container {
-  margin: 20px 0;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: var(--text);
-  transition: color 0.3s;
-}
-
-body.dark-mode .countdown-container {
-  color: var(--dark-text);
-}
-
-.countdown-value {
-  font-weight: 700;
-  font-size: 1.4rem;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 8px 16px;
-  border-radius: 8px;
-  transition: background 0.3s;
-}
-
-body.dark-mode .countdown-value {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Connection Modal */
-.connection-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1500;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-
-.connection-modal.active {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.connection-content {
-  background: linear-gradient(145deg, #ff8c00, #ff6a00);
-  border-radius: 20px;
-  padding: 50px 40px;
-  text-align: center;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transform: scale(0.9);
-  opacity: 0;
-  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
-}
-
-.connection-modal.active .connection-content {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.connection-icon {
-  font-size: 100px;
-  margin-bottom: 30px;
-  animation: rotate 2s linear infinite;
-}
-
-.connection-title {
-  font-size: 2.5rem;
-  color: white;
-  margin-bottom: 20px;
-  letter-spacing: 1px;
-  font-weight: 800;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.connection-message {
-  font-size: 1.4rem;
-  color: white;
-  margin-bottom: 40px;
-  line-height: 1.6;
-  font-weight: 400;
-}
-
 /* Status Modals */
 .status-modal {
   position: fixed;
@@ -492,10 +378,10 @@ body.dark-mode .countdown-value {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1500;
+  z-index: 3000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
 }
 
 .status-modal.active {
@@ -503,72 +389,97 @@ body.dark-mode .countdown-value {
   pointer-events: all;
 }
 
-.status-content {
-  background: white;
-  border-radius: 30px;
-  padding: 70px 50px;
+.modal-content {
+  background: var(--surface);
+  border-radius: 25px;
+  padding: 60px 50px;
   text-align: center;
   width: 90%;
   max-width: 600px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-  transform: scale(0.8);
+  transform: scale(0.7);
   opacity: 0;
-  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.5), opacity 0.6s ease;
 }
 
-.status-modal.active .status-content {
+.status-modal.active .modal-content {
   transform: scale(1);
   opacity: 1;
 }
 
-.status-icon {
-  font-size: 150px;
-  margin-bottom: 40px;
-  animation: float 3s ease-in-out infinite;
+.modal-icon {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 100px;
 }
 
-.status-title {
-  font-size: 3.5rem;
-  margin-bottom: 30px;
+.confirmed .modal-icon {
+  background: rgba(40, 167, 69, 0.15);
+  color: #28a745;
+  animation: scaleIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.5);
+}
+
+.declined .modal-icon {
+  background: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+  animation: shake 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.5);
+}
+
+.pending .modal-icon {
+  background: rgba(255, 149, 0, 0.15);
+  color: #ff9500;
+  animation: rotate 2s linear infinite;
+}
+
+.modal-title {
+  font-size: 3.2rem;
   font-weight: 800;
+  margin-bottom: 20px;
   letter-spacing: 1px;
 }
 
-.status-message {
-  font-size: 1.8rem;
-  margin-bottom: 50px;
+.confirmed .modal-title {
+  color: #28a745;
+}
+
+.declined .modal-title {
+  color: #dc3545;
+}
+
+.pending .modal-title {
+  color: #ff9500;
+}
+
+.modal-message {
+  font-size: 1.6rem;
+  margin-bottom: 40px;
   line-height: 1.6;
+  font-weight: 400;
+  color: var(--text);
 }
 
-/* Confirmed state */
-.status-content.confirmed {
-  background: linear-gradient(145deg, #28a745, #218838);
+.modal-close {
+  background: var(--accent);
   color: white;
+  border: none;
+  padding: 18px 50px;
+  border-radius: 50px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
 
-.status-icon.confirmed::after {
-  content: "✓";
-}
-
-/* Declined state */
-.status-content.declined {
-  background: linear-gradient(145deg, #dc3545, #bd2130);
-  color: white;
-}
-
-.status-icon.declined::after {
-  content: "✗";
-}
-
-/* Pending state */
-.status-content.pending {
-  background: linear-gradient(145deg, #ff8c00, #ff6a00);
-  color: white;
-}
-
-.status-icon.pending::after {
-  content: "⏳";
-  animation: rotate 2s linear infinite;
+.modal-close:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Animation Keyframes */
@@ -589,87 +500,39 @@ body.dark-mode .countdown-value {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-20px);
+    transform: translateY(-10px);
   }
   100% {
     transform: translateY(0px);
   }
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes scaleIn {
   0% {
-    transform: scale(0);
+    transform: scale(0.5);
     opacity: 0;
   }
   70% {
     transform: scale(1.1);
+    opacity: 1;
   }
   100% {
     transform: scale(1);
-    opacity: 1;
   }
 }
 
-/* Settings toggle */
-.settings-toggle {
-  position: absolute;
-  top: 30px;
-  right: 30px;
-  z-index: 1000;
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-20px); }
+  40% { transform: translateX(20px); }
+  60% { transform: translateX(-15px); }
+  80% { transform: translateX(15px); }
+  100% { transform: translateX(0); }
 }
 
-.dark-mode-toggle {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
-
-.dark-mode-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.dark-mode-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 34px;
-}
-
-.dark-mode-slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-
-input:checked + .dark-mode-slider {
-  background-color: #2196F3;
-}
-
-input:checked + .dark-mode-slider:before {
-  transform: translateX(26px);
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Responsive adjustments */
@@ -709,24 +572,45 @@ input:checked + .dark-mode-slider:before {
     padding: 20px;
   }
   
-  .connection-content,
-  .status-content {
+  /* Error modal mobile adjustments */
+  .error-content {
     padding: 40px 25px;
   }
   
-  .connection-icon,
-  .status-icon {
+  .error-icon {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .error-icon::before {
+    font-size: 60px;
+  }
+  
+  .error-title {
+    font-size: 2.2rem;
+  }
+  
+  .error-message {
+    font-size: 1.2rem;
+  }
+  
+  /* Status modals */
+  .modal-content {
+    padding: 40px 30px;
+  }
+  
+  .modal-icon {
+    width: 140px;
+    height: 140px;
     font-size: 80px;
   }
   
-  .connection-title,
-  .status-title {
-    font-size: 2rem;
+  .modal-title {
+    font-size: 2.5rem;
   }
   
-  .connection-message,
-  .status-message {
-    font-size: 1.2rem;
+  .modal-message {
+    font-size: 1.4rem;
   }
 }
 
@@ -770,60 +654,75 @@ input:checked + .dark-mode-slider:before {
     font-size: 1.1rem;
   }
   
-  .connection-content,
-  .status-content {
+  /* Error modal mobile adjustments */
+  .error-content {
     padding: 30px 20px;
     border-radius: 16px;
   }
   
-  .connection-icon,
-  .status-icon {
-    font-size: 70px;
+  .error-icon {
+    width: 80px;
+    height: 80px;
     margin-bottom: 20px;
   }
   
-  .connection-title,
-  .status-title {
+  .error-icon::before {
+    font-size: 50px;
+  }
+  
+  .error-title {
     font-size: 1.8rem;
     margin-bottom: 15px;
   }
   
-  .connection-message,
-  .status-message {
+  .error-message {
     font-size: 1.1rem;
     margin-bottom: 30px;
   }
   
-  .settings-toggle {
-    top: 20px;
-    right: 20px;
+  .error-details {
+    padding: 15px;
+    font-size: 1rem;
+  }
+  
+  /* Status modals */
+  .modal-content {
+    padding: 30px 20px;
+  }
+  
+  .modal-icon {
+    width: 120px;
+    height: 120px;
+    font-size: 60px;
+  }
+  
+  .modal-title {
+    font-size: 2rem;
+  }
+  
+  .modal-message {
+    font-size: 1.2rem;
   }
 }
 </style>
 </head>
 <body>
-    <div class="settings-toggle">
-        <label class="dark-mode-toggle">
-            <input type="checkbox" id="darkModeToggle">
-            <span class="dark-mode-slider"></span>
-        </label>
-    </div>
-    
     <div class="container">
         <div class="payment-card">
-            <h1>Zahlung erforderlich</h1>
+            <h1 class="payment-title">Zahlung erforderlich</h1>
             <span id="amount">€0.00</span>
             <div id="items-list"></div>
-            <div id="qrcode"></div>
-            
-            <!-- Countdown timer -->
-            <div class="countdown-container">
-                QR-Code gültig für: 
-                <span id="countdown-value" class="countdown-value">60</span>
-                Sekunden
+            <div class="qr-container">
+                <div class="countdown">
+                    <i class="fas fa-clock"></i>
+                    <span id="countdown">10</span> Sekunden
+                </div>
+                <div id="qrcode"></div>
             </div>
-            
-            <div id="status" class="status pending">Zahlung ausstehend</div>
+            <div id="status" class="status pending">
+                <i class="fas fa-sync-alt fa-spin"></i>
+                Zahlung ausstehend
+            </div>
             <p>Scannen Sie diesen QR-Code mit dem Händlergerät</p>
         </div>
     </div>
@@ -839,163 +738,203 @@ input:checked + .dark-mode-slider:before {
         </div>
     </div>
     
-    <!-- Merchant Connection Modal -->
-    <div class="connection-modal" id="connectionModal">
-        <div class="connection-content">
-            <div class="connection-icon">⏳</div>
-            <h2 class="connection-title">Händler verbunden!</h2>
-            <p class="connection-message">Der Händler hat eine Verbindung hergestellt. Bitte warten Sie auf die Bestätigung der Zahlung.</p>
+    <!-- Status Modals -->
+    <div class="status-modal pending" id="pendingModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <h2 class="modal-title">In Bearbeitung</h2>
+            <p class="modal-message">Der Händler hat die Zahlung erhalten und verarbeitet sie jetzt.</p>
+            <button class="modal-close">Verstanden</button>
         </div>
     </div>
     
-    <!-- Confirmed Status Modal -->
-    <div class="status-modal" id="confirmedModal">
-        <div class="status-content confirmed">
-            <div class="status-icon confirmed"></div>
-            <h2 class="status-title">Bestätigt!</h2>
-            <p class="status-message">Ihre Zahlung wurde erfolgreich bestätigt.</p>
+    <div class="status-modal confirmed" id="confirmedModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 class="modal-title">Bestätigt!</h2>
+            <p class="modal-message">Ihre Zahlung wurde erfolgreich verarbeitet.</p>
+            <button class="modal-close">Fertig</button>
         </div>
     </div>
     
-    <!-- Declined Status Modal -->
-    <div class="status-modal" id="declinedModal">
-        <div class="status-content declined">
-            <div class="status-icon declined"></div>
-            <h2 class="status-title">Abgelehnt!</h2>
-            <p class="status-message">Ihre Zahlung wurde leider abgelehnt.</p>
-        </div>
-    </div>
-    
-    <!-- Pending Status Modal -->
-    <div class="status-modal" id="pendingModal">
-        <div class="status-content pending">
-            <div class="status-icon pending"></div>
-            <h2 class="status-title">In Bearbeitung</h2>
-            <p class="status-message">Ihre Zahlung wird verarbeitet...</p>
+    <div class="status-modal declined" id="declinedModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-times"></i>
+            </div>
+            <h2 class="modal-title">Abgelehnt</h2>
+            <p class="modal-message">Ihre Zahlung konnte nicht verarbeitet werden.</p>
+            <button class="modal-close">Erneut versuchen</button>
         </div>
     </div>
 
     <script>
         const { jsPDF } = window.jspdf;
-        let paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
-        let peer = null;
+        const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        const peer = new Peer(paymentId, {
+            debug: 3,
+            config: {'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }]}
+        });
         let paymentData = null;
-        let refreshInterval = null;
-        let countdownInterval = null;
-        let countdownTime = 60; // seconds
+        let refreshInterval;
+        let countdownInterval;
+        let merchantConnected = false;
         
-        // Get the dark mode toggle
-        const darkModeToggle = document.getElementById('darkModeToggle');
+        // Get DOM elements
+        const errorModal = document.getElementById('errorModal');
+        const pendingModal = document.getElementById('pendingModal');
+        const confirmedModal = document.getElementById('confirmedModal');
+        const declinedModal = document.getElementById('declinedModal');
+        const countdownEl = document.getElementById('countdown');
+        const statusEl = document.getElementById('status');
+        const closeButtons = document.querySelectorAll('.modal-close');
         
-        // Apply saved settings
+        // Apply dark mode from localStorage
         function applyDarkMode() {
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
             if (settings.darkMode) {
                 document.body.classList.add('dark-mode');
-                darkModeToggle.checked = true;
             } else {
                 document.body.classList.remove('dark-mode');
-                darkModeToggle.checked = false;
             }
         }
         
-        // Save settings
-        function saveSettings() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            settings.darkMode = darkModeToggle.checked;
-            localStorage.setItem('appSettings', JSON.stringify(settings));
-            applyDarkMode();
-        }
-        
-        // Initialize dark mode
-        applyDarkMode();
-        
-        // Listen for dark mode toggle
-        darkModeToggle.addEventListener('change', saveSettings);
-        
-        // Get modals
-        const errorModal = document.getElementById('errorModal');
-        const connectionModal = document.getElementById('connectionModal');
-        const confirmedModal = document.getElementById('confirmedModal');
-        const declinedModal = document.getElementById('declinedModal');
-        const pendingModal = document.getElementById('pendingModal');
-        
-        // Function to show error modal
-        function showErrorModal() {
-            errorModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // Function to show connection modal
-        function showConnectionModal() {
-            connectionModal.classList.add('active');
-        }
-        
-        // Function to hide connection modal
-        function hideConnectionModal() {
-            connectionModal.classList.remove('active');
-        }
-        
-        // Function to show status modal
-        function showStatusModal(modal) {
+        // Show modal function
+        function showModal(modal) {
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
         
+        // Close modal function
+        function closeModal(modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close all modals when clicking close buttons
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                closeModal(pendingModal);
+                closeModal(confirmedModal);
+                closeModal(declinedModal);
+            });
+        });
+        
+        // Function to show error modal
+        function showErrorModal() {
+            showModal(errorModal);
+        }
+        
         // Start countdown timer
         function startCountdown() {
-            const countdownElement = document.getElementById('countdown-value');
-            countdownElement.textContent = countdownTime;
+            let seconds = 20;
+            countdownEl.textContent = seconds;
             
             countdownInterval = setInterval(() => {
-                countdownTime--;
-                countdownElement.textContent = countdownTime;
+                seconds--;
+                countdownEl.textContent = seconds;
                 
-                if (countdownTime <= 0) {
+                if (seconds <= 0) {
                     clearInterval(countdownInterval);
-                    location.reload();
+                    if (!merchantConnected) {
+                        location.reload();
+                    }
                 }
             }, 1000);
         }
         
-        // Stop all intervals
-        function stopAllIntervals() {
-            if (refreshInterval) clearInterval(refreshInterval);
-            if (countdownInterval) clearInterval(countdownInterval);
+        // Set up auto-refresh
+        function setupAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                if (!merchantConnected) {
+                    location.reload();
+                }
+            }, 20000);
         }
         
-        // Initialize payment
-        function initPayment() {
+        // Initialize payment data
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const compressedData = urlParams.get('id');
+            if (!compressedData) throw new Error('Keine Zahlungsdaten gefunden');
+            
+            const jsonString = LZString.decompressFromBase64(compressedData);
+            if (!jsonString) throw new Error('Daten-Dekompression fehlgeschlagen');
+            
+            paymentData = JSON.parse(jsonString);
+            if (!paymentData?.items || !paymentData?.total) throw new Error('Ungültige Datenstruktur');
+
+        } catch(e) {
+            showErrorModal();
+            console.error('Invalid payment data: ' + e.message);
+        }
+        
+        function generateQR() {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            
+            const qrData = {
+                p: paymentId,
+                t: paymentData.total,
+                i: paymentData.items.map(item => ({
+                    n: item.name,
+                    q: item.quantity,
+                    p: item.price
+                }))
+            };
+
             try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const compressedData = urlParams.get('id');
-                if (!compressedData) throw new Error('Keine Zahlungsdaten gefunden');
+                const jsonStr = JSON.stringify(qrData);
+                const compressed = LZString.compressToBase64(jsonStr);
                 
-                const jsonString = LZString.decompressFromBase64(compressedData);
-                if (!jsonString) throw new Error('Daten-Dekompression fehlgeschlagen');
-                
-                paymentData = JSON.parse(jsonString);
-                if (!paymentData?.items || !paymentData?.total) throw new Error('Ungültige Datenstruktur');
-                
-                // Initialize PeerJS
-                peer = new Peer(paymentId, {
-                    debug: 3,
-                    config: {'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }]}
+                new QRCode(qrContainer, {
+                    text: compressed,
+                    width: 250,
+                    height: 250,
+                    colorDark: document.body.classList.contains('dark-mode') ? "#e6e6e6" : "#2c3e50",
+                    colorLight: document.body.classList.contains('dark-mode') ? "#2c2c44" : "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
                 });
                 
-                // Set up auto-refresh
-                refreshInterval = setInterval(() => {
-                    location.reload();
-                }, 10000);
-                
-                // Start countdown
-                startCountdown();
-                
-                // Display payment data
+            } catch(e) {
+                console.error('QR Generation Error:', e);
+                qrContainer.innerHTML = '<p>QR-Code generation fehlgeschlagen</p>';
+            }
+        }
+
+        peer.on('connection', (conn) => {
+            merchantConnected = true;
+            clearInterval(refreshInterval);
+            clearInterval(countdownInterval);
+            statusEl.innerHTML = '<i class="fas fa-hourglass-half"></i> Zahlung wird verarbeitet...';
+            
+            // Show pending modal
+            showModal(pendingModal);
+            
+            conn.on('data', (data) => {
+                if (data.type === 'confirm') {
+                    statusEl.className = 'status confirmed';
+                    statusEl.innerHTML = '<i class="fas fa-check"></i> Zahlung bestätigt!';
+                    closeModal(pendingModal);
+                    showModal(confirmedModal);
+                } else if (data.type === 'decline') {
+                    statusEl.className = 'status declined';
+                    statusEl.innerHTML = '<i class="fas fa-times"></i> Zahlung abgelehnt';
+                    closeModal(pendingModal);
+                    showModal(declinedModal);
+                }
+            });
+        });
+        
+        // Initialize the page
+        function initPage() {
+            if (paymentData) {
                 document.getElementById('amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
                 const itemsList = document.getElementById('items-list');
-                itemsList.innerHTML = '';
-                
                 paymentData.items.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'item-box';
@@ -1006,241 +945,18 @@ input:checked + .dark-mode-slider:before {
                     `;
                     itemsList.appendChild(div);
                 });
-                
+
                 generateQR();
-                
-                // Listen for connections
-                peer.on('connection', (conn) => {
-                    // Stop refreshing and countdown when merchant connects
-                    stopAllIntervals();
-                    showConnectionModal();
-                    
-                    conn.on('data', (data) => {
-                        hideConnectionModal();
-                        const statusEl = document.getElementById('status');
-                        
-                        if (data.type === 'confirm') {
-                            statusEl.className = 'status confirmed';
-                            statusEl.textContent = 'Zahlung bestätigt!';
-                            saveToArchive('Bestätigt');
-                            generateReceipt('Bestätigt');
-                            showStatusModal(confirmedModal);
-                        } else if (data.type === 'decline') {
-                            statusEl.className = 'status declined';
-                            statusEl.textContent = 'Zahlung abgelehnt';
-                            saveToArchive('Abgelehnt');
-                            generateReceipt('Abgelehnt');
-                            showStatusModal(declinedModal);
-                        } else if (data.type === 'pending') {
-                            statusEl.className = 'status pending';
-                            statusEl.textContent = 'Zahlung in Bearbeitung';
-                            showStatusModal(pendingModal);
-                        }
-                    });
-                });
-                
-            } catch(e) {
-                showErrorModal();
-                console.error('Payment initialization error: ' + e.message);
+                startCountdown();
+                setupAutoRefresh();
             }
+            
+            // Apply dark mode
+            applyDarkMode();
         }
         
-        function saveToArchive(status) {
-            const archiveEntry = {
-                data: LZString.compressToBase64(JSON.stringify({
-                    ...paymentData,
-                    peerId: paymentId,
-                    date: new Date().toISOString()
-                })),
-                date: new Date().toISOString(),
-                total: paymentData.total,
-                status: status
-            };
-            
-            const shortId = paymentId.split('-').pop().substr(0, 8);
-            localStorage.setItem(`receipt_${shortId}`, JSON.stringify(archiveEntry));
-        }
-
-        function generateQR() {
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = '';
-            
-            // Maintain full data structure but optimize it
-            const qrData = {
-                p: paymentId,       // Peer ID
-                t: paymentData.total, // Total amount
-                i: paymentData.items.map(item => ({
-                    n: item.name,  // Shortened property names
-                    q: item.quantity,
-                    p: item.price
-                }))
-            };
-
-            try {
-                // Double compression strategy
-                const jsonStr = JSON.stringify(qrData);
-                const compressed = LZString.compressToBase64(jsonStr);
-                
-                // Split data into chunks if needed
-                const maxChunkSize = 1500;
-                const chunks = [];
-                
-                for(let i = 0; i < compressed.length; i += maxChunkSize) {
-                    chunks.push(compressed.slice(i, i + maxChunkSize));
-                }
-
-                // Only show first chunk if within limit
-                if(chunks.length === 1) {
-                    new QRCode(qrContainer, {
-                        text: compressed,
-                        width: 250,
-                        height: 250,
-                        colorDark: document.body.classList.contains('dark-mode') ? "#f0f0f0" : "#2c3e50",
-                        colorLight: document.body.classList.contains('dark-mode') ? "#2a2a2a" : "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-                } else {
-                    // Implement multi-QR system or error
-                    qrContainer.innerHTML = '<p>Zu viele Artikel für QR-Code</p>';
-                    console.error('QR data too large:', compressed.length);
-                }
-                
-            } catch(e) {
-                console.error('QR Generation Error:', e);
-                qrContainer.innerHTML = '<p>QR-Code generation fehlgeschlagen</p>';
-            }
-        }
-
-        function generateReceipt(status) {
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.width;
-            const pageHeight = doc.internal.pageSize.height;
-            const paymentDate = new Date().toLocaleDateString('de-DE');
-            const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-            let yPos = 20;
-            
-            // Set color scheme to match admin login
-            const primaryColor = [44, 62, 80];        // #2c3e50
-            const bgColor = [235, 237, 237];          // #ebeded
-            const surfaceColor = [255, 255, 255];     // #ffffff
-            const accentColor = [108, 117, 125];      // #6c757d
-            const successColor = [40, 167, 69];       // #28a745
-            const dangerColor = [220, 53, 69];        // #dc3545
-            const infoColor = [225, 242, 254];        // #e1f2fe
-            
-            // Set background color
-            doc.setFillColor(...bgColor);
-            doc.rect(0, 0, pageWidth, pageHeight, 'F');
-            
-            // Header with admin-style design
-            doc.setFillColor(...surfaceColor);
-            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'F');
-            doc.setDrawColor(200, 200, 200);
-            doc.setLineWidth(0.3);
-            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'S');
-            
-            doc.setFontSize(28);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text("Gittertier", pageWidth/2, yPos + 25, null, 'center');
-            
-            doc.setFontSize(12);
-            doc.setTextColor(...accentColor);
-            doc.text(`Belegnummer: ${paymentId}`, pageWidth/2, yPos + 40, null, 'center');
-            
-            yPos += 70;
-            
-            // Receipt details
-            doc.setFontSize(16);
-            doc.setTextColor(...primaryColor);
-            doc.text(`Datum: ${paymentDate}`, 30, yPos);
-            doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos, null, 'right');
-            yPos += 25;
-            
-            // Items header
-            doc.setFillColor(...infoColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'F');
-            doc.setDrawColor(...accentColor);
-            doc.setLineWidth(0.2);
-            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'S');
-            
-            doc.setFontSize(12);
-            doc.setTextColor(...accentColor);
-            doc.text("Artikel", 35, yPos + 13);
-            doc.text("Menge", 130, yPos + 13);
-            doc.text("Preis", pageWidth - 35, yPos + 13, null, 'right');
-            
-            yPos += 25;
-            
-            // Items
-            paymentData.items.forEach((item, index) => {
-                if(yPos > pageHeight - 100) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-                
-                // Alternate row colors
-                const rowColor = index % 2 === 0 ? surfaceColor : [248, 249, 250];
-                doc.setFillColor(...rowColor);
-                doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'F');
-                doc.setDrawColor(200, 200, 200);
-                doc.setLineWidth(0.1);
-                doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'S');
-                
-                doc.setFontSize(12);
-                doc.setTextColor(...primaryColor);
-                doc.text(item.name.substring(0, 40), 35, yPos + 10);
-                
-                const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
-                doc.text(quantityPrice, 130, yPos + 10);
-                
-                const total = (item.quantity * item.price).toFixed(2);
-                doc.text(`€${total}`, pageWidth - 35, yPos + 10, null, 'right');
-                
-                yPos += 30;
-            });
-            
-            yPos += 15;
-            
-            // Total section
-            doc.setFillColor(232, 252, 238); // Light green
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-            doc.setDrawColor(200, 200, 200);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
-            
-            doc.setFontSize(18);
-            doc.setTextColor(...primaryColor);
-            doc.text(`Gesamtsumme:`, 40, yPos + 12);
-            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
-            
-            yPos += 45;
-            
-            // Status section
-            const statusColor = status === 'Bestätigt' ? successColor : dangerColor;
-            doc.setFillColor(...statusColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-            doc.setDrawColor(...statusColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
-            
-            doc.setFontSize(18);
-            doc.setTextColor(255, 255, 255);
-            doc.text(`Status: ${status}`, pageWidth/2, yPos + 12, null, 'center');
-            
-            yPos += 45;
-            
-            // Thank you message and receipt number
-            doc.setFontSize(12);
-            doc.setTextColor(...accentColor);
-            doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
-            
-            doc.setFontSize(11);
-            
-            // Save the PDF
-            doc.save(`gittertier_beleg_${paymentId}.pdf`);
-        }
-        
-        // Initialize payment when page loads
-        window.addEventListener('DOMContentLoaded', initPayment);
+        // Initialize the page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initPage);
     </script>
 </body>
 </html>
