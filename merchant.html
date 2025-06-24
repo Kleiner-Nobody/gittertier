@@ -32,6 +32,16 @@
         justify-content: center;
         align-items: center;
         padding: 20px;
+        transition: background 0.3s, color 0.3s;
+    }
+    
+    /* Dark Mode Variables */
+    body.dark-mode {
+        --bg: #121212;
+        --surface: #1e1e1e;
+        --text: #e0e0e0;
+        --accent: #6c757d;
+        --accent-dark: #5a6268;
     }
     
     .container {
@@ -46,6 +56,7 @@
         z-index: 20;
         max-height: 90vh;
         overflow-y: auto;
+        transition: background 0.3s;
     }
     
     .container::before {
@@ -70,12 +81,14 @@
         margin-bottom: 10px;
         color: var(--text);
         letter-spacing: 0.5px;
+        transition: color 0.3s;
     }
     
     .header p {
         color: var(--accent);
         font-weight: 400;
         font-size: 1.1rem;
+        transition: color 0.3s;
     }
     
     #scanner-container {
@@ -122,6 +135,7 @@
         flex-direction: column;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
         overflow: hidden;
+        transition: background 0.3s;
     }
     
     .modal-content::before {
@@ -146,11 +160,13 @@
         font-weight: 700;
         color: var(--text);
         margin-bottom: 15px;
+        transition: color 0.3s;
     }
     
     .payment-header p {
         color: var(--accent);
         font-size: 1.1rem;
+        transition: color 0.3s;
     }
     
     .item-box {
@@ -160,18 +176,25 @@
         margin: 20px 0;
         box-shadow: var(--shadow);
         border: 1px solid rgba(108, 117, 125, 0.1);
+        transition: background 0.3s;
+    }
+    
+    .dark-mode .item-box {
+        background: #1a2a3a;
     }
     
     .item-box h3 {
         font-size: 1.3rem;
         margin-bottom: 15px;
         color: var(--text);
+        transition: color 0.3s;
     }
     
     .item-box p {
         font-size: 1.1rem;
         color: var(--accent);
         margin: 10px 0;
+        transition: color 0.3s;
     }
     
     #items-list {
@@ -192,6 +215,11 @@
         box-shadow: var(--shadow);
         color: var(--success);
         flex-shrink: 0;
+        transition: background 0.3s, color 0.3s;
+    }
+    
+    .dark-mode .total-amount {
+        background: #1c3a2b;
     }
     
     .button-group {
@@ -268,10 +296,20 @@
         border: 1px solid #c3e6cb;
     }
     
+    .dark-mode .status-success {
+        background-color: #1c3a2b;
+        color: #c3e6cb;
+    }
+    
     .status-error {
         background-color: #f8d7da;
         color: #721c24;
         border: 1px solid #f5c6cb;
+    }
+    
+    .dark-mode .status-error {
+        background-color: #3a1c1f;
+        color: #f5c6cb;
     }
     
     .debug-info {
@@ -285,6 +323,24 @@
         max-height: 300px;
         overflow: auto;
         border: 1px dashed var(--accent);
+        transition: background 0.3s;
+    }
+    
+    .dark-mode .debug-info {
+        background: #1a2a3a;
+    }
+    
+    /* Details Button */
+    #details-btn {
+        background: var(--accent);
+        padding: 15px 30px;
+        font-size: 1rem;
+        margin: 0 auto;
+        display: block;
+    }
+    
+    #details-btn:hover {
+        background: var(--accent-dark);
     }
     
     /* Scrollbar styling */
@@ -318,6 +374,10 @@
         font-size: 0.9rem;
         color: var(--text);
         z-index: 10;
+    }
+    
+    .dark-mode .scroll-indicator {
+        background: rgba(30, 30, 30, 0.95);
     }
     
     .scroll-indicator i {
@@ -454,19 +514,46 @@
                 <div class="payment-header">
                     <h2>Zahlungsbestätigung</h2>
                 </div>
-                <div id="items-list"></div>
                 <div class="total-amount">
                     Gesamtbetrag: <strong id="payment-amount">€0.00</strong>
                 </div>
+                <button id="details-btn">Details anzeigen</button>
                 <div class="button-group">
                     <button id="confirm-btn">Bestätigen</button>
                     <button id="decline-btn">Ablehnen</button>
                 </div>
             </div>
         </div>
+        
+        <!-- Items Modal -->
+        <div class="modal-overlay" id="items-modal">
+            <div class="modal-content">
+                <div class="payment-header">
+                    <h2>Warenkorb Details</h2>
+                </div>
+                <div id="items-list"></div>
+                <div class="button-group">
+                    <button id="close-items-btn">Schließen</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Apply dark mode based on localStorage
+        function applyDarkMode() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        
+        // Apply dark mode on page load
+        document.addEventListener('DOMContentLoaded', applyDarkMode);
+        
+        // Main code
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
             const urlToken = decodeURIComponent(urlParams.get('token') || '');
@@ -518,12 +605,22 @@
             };
         }
 
+        // Modal controls
+        document.getElementById('details-btn').addEventListener('click', () => {
+            document.getElementById('items-modal').style.display = 'block';
+        });
+
+        document.getElementById('close-items-btn').addEventListener('click', () => {
+            document.getElementById('items-modal').style.display = 'none';
+        });
+
         document.getElementById('confirm-btn').addEventListener('click', () => {
             if(currentPayment?.connection?.open) {
                 saveToArchive('Bestätigt', currentPayment);
                 currentPayment.connection.send({ type: 'confirm' });
                 generateReceipt(currentPayment, 'Bestätigt');
                 document.getElementById('confirmation-modal').style.display = 'none';
+                document.getElementById('items-modal').style.display = 'none';
                 initScanner();
             } else {
                 showStatusMessage('Verbindung zum Kunden fehlgeschlagen!', false);
@@ -536,6 +633,7 @@
                 currentPayment.connection.send({ type: 'decline' });
                 generateReceipt(currentPayment, 'Abgelehnt');
                 document.getElementById('confirmation-modal').style.display = 'none';
+                document.getElementById('items-modal').style.display = 'none';
                 initScanner();
             } else {
                 showStatusMessage('Verbindung zum Kunden fehlgeschlagen!', false);
@@ -684,133 +782,133 @@
             }
         }
 
-function generateReceipt(status) {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    const paymentDate = new Date().toLocaleDateString('de-DE');
-    const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-    let yPos = 20;
-    
-    // Set color scheme to match admin login
-    const primaryColor = [44, 62, 80];        // #2c3e50
-    const bgColor = [235, 237, 237];          // #ebeded
-    const surfaceColor = [255, 255, 255];     // #ffffff
-    const accentColor = [108, 117, 125];      // #6c757d
-    const successColor = [40, 167, 69];       // #28a745
-    const dangerColor = [220, 53, 69];        // #dc3545
-    const infoColor = [225, 242, 254];        // #e1f2fe
-    
-    // Set background color
-    doc.setFillColor(...bgColor);
-    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-    
-    // Header with admin-style design
-    doc.setFillColor(...surfaceColor);
-    doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'F');
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'S');
-    
-    doc.setFontSize(28);
-    doc.setTextColor(...primaryColor);
-    doc.setFont(undefined, 'bold');
-    doc.text("Gittertier", pageWidth/2, yPos + 25, null, 'center');
-    
-    doc.setFontSize(12);
-    doc.setTextColor(...accentColor);
-    doc.text(`Belegnummer: ${paymentId}`, pageWidth/2, yPos + 40, null, 'center');
-    
-    yPos += 70;
-    
-    // Receipt details
-    doc.setFontSize(16);
-    doc.setTextColor(...primaryColor);
-    doc.text(`Datum: ${paymentDate}`, 30, yPos);
-    doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos, null, 'right');
-    yPos += 25;
-    
-    // Items header
-    doc.setFillColor(...infoColor);
-    doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'F');
-    doc.setDrawColor(...accentColor);
-    doc.setLineWidth(0.2);
-    doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'S');
-    
-    doc.setFontSize(12);
-    doc.setTextColor(...accentColor);
-    doc.text("Artikel", 35, yPos + 13);
-    doc.text("Menge", 130, yPos + 13);
-    doc.text("Preis", pageWidth - 35, yPos + 13, null, 'right');
-    
-    yPos += 25;
-    
-    // Items
-    paymentData.items.forEach((item, index) => {
-        if(yPos > pageHeight - 100) {
-            doc.addPage();
-            yPos = 20;
+        function generateReceipt(status) {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const paymentDate = new Date().toLocaleDateString('de-DE');
+            const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            let yPos = 20;
+            
+            // Set color scheme to match admin login
+            const primaryColor = [44, 62, 80];        // #2c3e50
+            const bgColor = [235, 237, 237];          // #ebeded
+            const surfaceColor = [255, 255, 255];     // #ffffff
+            const accentColor = [108, 117, 125];      // #6c757d
+            const successColor = [40, 167, 69];       // #28a745
+            const dangerColor = [220, 53, 69];        // #dc3545
+            const infoColor = [225, 242, 254];        // #e1f2fe
+            
+            // Set background color
+            doc.setFillColor(...bgColor);
+            doc.rect(0, 0, pageWidth, pageHeight, 'F');
+            
+            // Header with admin-style design
+            doc.setFillColor(...surfaceColor);
+            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'F');
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'S');
+            
+            doc.setFontSize(28);
+            doc.setTextColor(...primaryColor);
+            doc.setFont(undefined, 'bold');
+            doc.text("Gittertier", pageWidth/2, yPos + 25, null, 'center');
+            
+            doc.setFontSize(12);
+            doc.setTextColor(...accentColor);
+            doc.text(`Belegnummer: ${paymentId}`, pageWidth/2, yPos + 40, null, 'center');
+            
+            yPos += 70;
+            
+            // Receipt details
+            doc.setFontSize(16);
+            doc.setTextColor(...primaryColor);
+            doc.text(`Datum: ${paymentDate}`, 30, yPos);
+            doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos, null, 'right');
+            yPos += 25;
+            
+            // Items header
+            doc.setFillColor(...infoColor);
+            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'F');
+            doc.setDrawColor(...accentColor);
+            doc.setLineWidth(0.2);
+            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'S');
+            
+            doc.setFontSize(12);
+            doc.setTextColor(...accentColor);
+            doc.text("Artikel", 35, yPos + 13);
+            doc.text("Menge", 130, yPos + 13);
+            doc.text("Preis", pageWidth - 35, yPos + 13, null, 'right');
+            
+            yPos += 25;
+            
+            // Items
+            paymentData.items.forEach((item, index) => {
+                if(yPos > pageHeight - 100) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                // Alternate row colors
+                const rowColor = index % 2 === 0 ? surfaceColor : [248, 249, 250];
+                doc.setFillColor(...rowColor);
+                doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'F');
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.1);
+                doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'S');
+                
+                doc.setFontSize(12);
+                doc.setTextColor(...primaryColor);
+                doc.text(item.name.substring(0, 40), 35, yPos + 10);
+                
+                const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
+                doc.text(quantityPrice, 130, yPos + 10);
+                
+                const total = (item.quantity * item.price).toFixed(2);
+                doc.text(`€${total}`, pageWidth - 35, yPos + 10, null, 'right');
+                
+                yPos += 30;
+            });
+            
+            yPos += 15;
+            
+            // Total section
+            doc.setFillColor(232, 252, 238); // Light green
+            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
+            doc.setDrawColor(200, 200, 200);
+            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
+            
+            doc.setFontSize(18);
+            doc.setTextColor(...primaryColor);
+            doc.text(`Gesamtsumme:`, 40, yPos + 12);
+            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
+            
+            yPos += 45;
+            
+            // Status section
+            const statusColor = status === 'Bestätigt' ? successColor : dangerColor;
+            doc.setFillColor(...statusColor);
+            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
+            doc.setDrawColor(...statusColor);
+            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
+            
+            doc.setFontSize(18);
+            doc.setTextColor(255, 255, 255);
+            doc.text(`Status: ${status}`, pageWidth/2, yPos + 12, null, 'center');
+            
+            yPos += 45;
+            
+            // Thank you message and receipt number
+            doc.setFontSize(12);
+            doc.setTextColor(...accentColor);
+            doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
+            
+            // Save the PDF
+            doc.save(`gittertier_beleg_${paymentId}.pdf`);
         }
-        
-        // Alternate row colors
-        const rowColor = index % 2 === 0 ? surfaceColor : [248, 249, 250];
-        doc.setFillColor(...rowColor);
-        doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'F');
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.1);
-        doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'S');
-        
-        doc.setFontSize(12);
-        doc.setTextColor(...primaryColor);
-        doc.text(item.name.substring(0, 40), 35, yPos + 10);
-        
-        const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
-        doc.text(quantityPrice, 130, yPos + 10);
-        
-        const total = (item.quantity * item.price).toFixed(2);
-        doc.text(`€${total}`, pageWidth - 35, yPos + 10, null, 'right');
-        
-        yPos += 30;
-    });
-    
-    yPos += 15;
-    
-    // Total section
-    doc.setFillColor(232, 252, 238); // Light green
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-    doc.setDrawColor(200, 200, 200);
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
-    
-    doc.setFontSize(18);
-    doc.setTextColor(...primaryColor);
-    doc.text(`Gesamtsumme:`, 40, yPos + 12);
-    doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
-    
-    yPos += 45;
-    
-    // Status section
-    const statusColor = status === 'Bestätigt' ? successColor : dangerColor;
-    doc.setFillColor(...statusColor);
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-    doc.setDrawColor(...statusColor);
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
-    
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text(`Status: ${status}`, pageWidth/2, yPos + 12, null, 'center');
-    
-    yPos += 45;
-    
-    // Thank you message and receipt number
-    doc.setFontSize(12);
-    doc.setTextColor(...accentColor);
-    doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
-    
-    // Save the PDF
-    doc.save(`gittertier_beleg_${paymentId}.pdf`);
-}
 
-// Initialize PeerJS connection
+        // Initialize PeerJS connection
         merchantPeer.on('open', (id) => {
             console.log('Merchant Peer ID:', id);
             showStatusMessage('Bereit zum Scannen von QR-Codes');
