@@ -8,6 +8,8 @@
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <!-- Add Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     :root {
   --bg: #ebeded;
@@ -124,6 +126,18 @@ body.dark-mode .payment-subtitle {
   border: 2px solid var(--accent-light);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s;
+  /* Responsive QR code */
+  max-width: 90%;
+  overflow: hidden;
+}
+
+/* Ensure QR code always fits */
+#qrcode canvas, 
+#qrcode img {
+  max-width: 100%;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
 }
 
 body.dark-mode #qrcode {
@@ -338,8 +352,6 @@ body.dark-mode .payment-footer {
   width: 120px;
   height: 120px;
   margin: 0 auto 30px;
-  border-radius: 50%;
-  background: var(--error-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -347,10 +359,8 @@ body.dark-mode .payment-footer {
   animation: pulse 2s infinite;
 }
 
-.error-icon::before {
-  content: "!";
+.error-icon i {
   font-size: 70px;
-  font-weight: 900;
   color: var(--error-icon);
 }
 
@@ -459,9 +469,10 @@ body.dark-mode .countdown-value {
 }
 
 .connection-icon {
-  font-size: 100px;
+  font-size: 70px;
   margin-bottom: 30px;
   animation: rotate 2s linear infinite;
+  color: white;
 }
 
 .connection-title {
@@ -522,9 +533,39 @@ body.dark-mode .countdown-value {
 }
 
 .status-icon {
-  font-size: 150px;
+  font-size: 100px;
   margin-bottom: 40px;
   animation: float 3s ease-in-out infinite;
+}
+
+/* Confirmed state */
+.status-content.confirmed {
+  background: linear-gradient(145deg, #28a745, #218838);
+  color: white;
+}
+
+.status-icon.confirmed {
+  color: white;
+}
+
+/* Declined state */
+.status-content.declined {
+  background: linear-gradient(145deg, #dc3545, #bd2130);
+  color: white;
+}
+
+.status-icon.declined {
+  color: white;
+}
+
+/* Pending state */
+.status-content.pending {
+  background: linear-gradient(145deg, #ff8c00, #ff6a00);
+  color: white;
+}
+
+.status-icon.pending {
+  animation: rotate 2s linear infinite;
 }
 
 .status-title {
@@ -538,37 +579,6 @@ body.dark-mode .countdown-value {
   font-size: 1.8rem;
   margin-bottom: 50px;
   line-height: 1.6;
-}
-
-/* Confirmed state */
-.status-content.confirmed {
-  background: linear-gradient(145deg, #28a745, #218838);
-  color: white;
-}
-
-.status-icon.confirmed::after {
-  content: "✓";
-}
-
-/* Declined state */
-.status-content.declined {
-  background: linear-gradient(145deg, #dc3545, #bd2130);
-  color: white;
-}
-
-.status-icon.declined::after {
-  content: "✗";
-}
-
-/* Pending state */
-.status-content.pending {
-  background: linear-gradient(145deg, #ff8c00, #ff6a00);
-  color: white;
-}
-
-.status-icon.pending::after {
-  content: "⏳";
-  animation: rotate 2s linear infinite;
 }
 
 /* Animation Keyframes */
@@ -802,12 +812,12 @@ input:checked + .dark-mode-slider:before {
 </style>
 </head>
 <body>
-   <div class="settings-toggle">
+    <div class="settings-toggle">
         <label class="dark-mode-toggle">
             <input type="checkbox" id="darkModeToggle">
 
-        </label> 
-    </div> 
+        </label>
+    </div>
     
     <div class="container">
         <div class="payment-card">
@@ -831,7 +841,9 @@ input:checked + .dark-mode-slider:before {
     <!-- Error Modal -->
     <div class="error-modal" id="errorModal">
         <div class="error-content">
-            <div class="error-icon"></div>
+            <div class="error-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
             <h2 class="error-title">Kritischer Fehler</h2>
             <p class="error-message">Die Zahlungsinformationen konnten nicht geladen werden.</p>
             <div class="error-details">Bitte überprüfen Sie die URL oder versuchen Sie es später erneut.</div>
@@ -842,7 +854,9 @@ input:checked + .dark-mode-slider:before {
     <!-- Merchant Connection Modal -->
     <div class="connection-modal" id="connectionModal">
         <div class="connection-content">
-            <div class="connection-icon">⏳</div>
+            <div class="connection-icon">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
             <h2 class="connection-title">Händler verbunden!</h2>
             <p class="connection-message">Der Händler hat eine Verbindung hergestellt. Bitte warten Sie auf die Bestätigung der Zahlung.</p>
         </div>
@@ -851,7 +865,9 @@ input:checked + .dark-mode-slider:before {
     <!-- Confirmed Status Modal -->
     <div class="status-modal" id="confirmedModal">
         <div class="status-content confirmed">
-            <div class="status-icon confirmed"></div>
+            <div class="status-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
             <h2 class="status-title">Bestätigt!</h2>
             <p class="status-message">Ihre Zahlung wurde erfolgreich bestätigt.</p>
         </div>
@@ -860,7 +876,9 @@ input:checked + .dark-mode-slider:before {
     <!-- Declined Status Modal -->
     <div class="status-modal" id="declinedModal">
         <div class="status-content declined">
-            <div class="status-icon declined"></div>
+            <div class="status-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
             <h2 class="status-title">Abgelehnt!</h2>
             <p class="status-message">Ihre Zahlung wurde leider abgelehnt.</p>
         </div>
@@ -869,7 +887,9 @@ input:checked + .dark-mode-slider:before {
     <!-- Pending Status Modal -->
     <div class="status-modal" id="pendingModal">
         <div class="status-content pending">
-            <div class="status-icon pending"></div>
+            <div class="status-icon">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
             <h2 class="status-title">In Bearbeitung</h2>
             <p class="status-message">Ihre Zahlung wird verarbeitet...</p>
         </div>
@@ -1089,12 +1109,15 @@ input:checked + .dark-mode-slider:before {
                     chunks.push(compressed.slice(i, i + maxChunkSize));
                 }
 
+                // Calculate QR size based on viewport
+                const qrSize = Math.min(300, Math.min(window.innerWidth, window.innerHeight) * 0.7);
+                
                 // Only show first chunk if within limit
                 if(chunks.length === 1) {
                     new QRCode(qrContainer, {
                         text: compressed,
-                        width: 250,
-                        height: 250,
+                        width: qrSize,
+                        height: qrSize,
                         colorDark: document.body.classList.contains('dark-mode') ? "#f0f0f0" : "#2c3e50",
                         colorLight: document.body.classList.contains('dark-mode') ? "#2a2a2a" : "#ffffff",
                         correctLevel: QRCode.CorrectLevel.H
