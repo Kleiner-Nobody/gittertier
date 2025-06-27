@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Die Geschichte des Einkaufswagens | Gittertier der Zukunft</title>
-    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.10.0/dist/pptxgen.bundle.js"></script>
+    <title>Vom Drahtgestell zum smarten Gittertier - Die Evolution des Einkaufswagens</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.11.0/pptxgen.bundle.js"></script>
     <style>
         :root {
-            --history-bg: #f8f9fa;
-            --history-text: #212529;
-            --future-bg: #0f172a;
-            --future-text: #e2e8f0;
-            --navi-bg: #1e293b;
-            --navi-highlight: #0ea5e9;
-            --accent: #f97316;
-            --transition-duration: 0.5s;
+            --primary: #2a5885;
+            --secondary: #4a8cff;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --transition: all 0.5s cubic-bezier(0.65, 0, 0.35, 1);
         }
         
         * {
@@ -25,999 +23,1220 @@
         }
         
         body {
-            background: #000;
+            background-color: var(--light);
+            color: var(--dark);
             overflow-x: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
         
         .presentation-container {
+            width: 100vw;
+            height: 100vh;
             position: relative;
-            width: 100%;
-            max-width: 1600px;
-            height: 900px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
             overflow: hidden;
-            border-radius: 16px;
         }
         
         .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1;
+        }
+        
+        .slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+        
+        .historical-slide {
+            background-color: white;
+            color: var(--dark);
+        }
+        
+        .future-slide {
+            background-color: #121212;
+            color: white;
+        }
+        
+        .slide-title {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 800;
+        }
+        
+        .historical-slide .slide-title {
+            color: var(--primary);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .future-slide .slide-title {
+            color: var(--secondary);
+            text-shadow: 0 0 10px rgba(74, 140, 255, 0.5);
+        }
+        
+        .slide-content {
+            display: flex;
+            width: 100%;
+            height: 70%;
+            gap: 2rem;
+        }
+        
+        .historical-slide .slide-content {
+            flex-direction: row;
+        }
+        
+        .future-slide .slide-content {
+            flex-direction: row-reverse;
+        }
+        
+        .slide-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .historical-slide .slide-text {
+            padding-right: 2rem;
+        }
+        
+        .future-slide .slide-text {
+            padding-left: 2rem;
+        }
+        
+        .bullet-point {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .historical-slide .bullet-point:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .future-slide .bullet-point:before {
+            content: "➤";
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+        
+        .slide-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .historical-slide .slide-image {
+            background-color: #f1f3f5;
+            border: 1px solid #dee2e6;
+        }
+        
+        .future-slide .slide-image {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+        }
+        
+        .slide-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: var(--transition);
+        }
+        
+        .navi-container {
+            position: absolute;
+            bottom: 2rem;
+            width: 80%;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .navi-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .historical-slide .navi-btn {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .historical-slide .navi-btn:hover {
+            background-color: #1a446b;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .future-slide .navi-btn {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .future-slide .navi-btn:hover {
+            background-color: #3a7cff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(74, 140, 255, 0.3);
+        }
+        
+        .download-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .download-btn:hover {
+            background-color: #ff5252;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .future-nav {
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 300px;
+            height: 500px;
+            background: linear-gradient(135deg, #1a2a4a, #0d1525);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(74, 140, 255, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .nav-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .nav-close {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .nav-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            color: white;
+        }
+        
+        .nav-instruction {
+            background-color: rgba(74, 140, 255, 0.1);
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid var(--secondary);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        .nav-instruction-title {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+            color: var(--secondary);
+        }
+        
+        .nav-instruction-text {
+            font-size: 1.1rem;
+        }
+        
+        .nav-map {
+            flex: 1;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-map::before {
+            content: "";
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            padding: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            transition: all 1s cubic-bezier(0.65, 0, 0.35, 1);
-            opacity: 0;
-            transform: translateY(100px);
-            z-index: 1;
-            background-size: cover;
-            background-position: center;
+            background: linear-gradient(
+                135deg,
+                transparent 0%,
+                transparent 49%,
+                rgba(74, 140, 255, 0.1) 50%,
+                transparent 51%,
+                transparent 100%
+            );
+            background-size: 20px 20px;
+            animation: moveGrid 5s linear infinite;
         }
         
-        .slide.active {
-            opacity: 1;
-            transform: translateY(0);
-            z-index: 10;
+        @keyframes moveGrid {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
         }
         
-        /* Historische Folien */
-        .history-slide {
-            background-color: var(--history-bg);
-            color: var(--history-text);
-        }
-        
-        .history-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .history-title {
-            font-size: 3.5rem;
-            margin-bottom: 40px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: -1px;
-            color: #000;
-        }
-        
-        .history-points {
-            list-style: none;
-            text-align: left;
-            margin-top: 30px;
-        }
-        
-        .history-points li {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            padding-left: 30px;
-            position: relative;
-            font-weight: 600;
-            line-height: 1.4;
-        }
-        
-        .history-points li:before {
-            content: "→";
+        .nav-route {
             position: absolute;
-            left: 0;
-            color: var(--accent);
-            font-weight: 800;
+            width: 70%;
+            height: 70%;
+            top: 15%;
+            left: 15%;
+            background-color: rgba(74, 140, 255, 0.05);
+            border: 1px dashed rgba(74, 140, 255, 0.3);
         }
         
-        .history-image {
-            max-height: 300px;
-            max-width: 100%;
-            margin: 20px auto;
-            border: 8px solid #fff;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Zukunftsfolien */
-        .future-slide {
-            background: linear-gradient(135deg, var(--future-bg) 0%, #020617 100%);
-            color: var(--future-text);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            padding: 40px;
-        }
-        
-        .future-content {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        .future-title {
-            font-size: 2.5rem;
-            margin-bottom: 30px;
-            font-weight: 800;
-            color: var(--navi-highlight);
-            text-transform: uppercase;
-        }
-        
-        .future-points {
-            list-style: none;
-        }
-        
-        .future-points li {
-            font-size: 1.4rem;
-            margin-bottom: 25px;
-            padding-left: 35px;
-            position: relative;
-            font-weight: 500;
-            line-height: 1.5;
-        }
-        
-        .future-points li:before {
-            content: "✓";
+        .nav-position {
             position: absolute;
-            left: 0;
-            top: 0;
-            color: var(--accent);
-            font-size: 1.8rem;
-            font-weight: 800;
-        }
-        
-        .navi-container {
-            background: var(--navi-bg);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .navi-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 20px;
-        }
-        
-        .navi-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--navi-highlight);
-        }
-        
-        .navi-time {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #94a3b8;
-        }
-        
-        .navi-map {
-            flex-grow: 1;
-            background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
-            border-radius: 16px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .navi-path {
-            position: absolute;
-            width: 80%;
-            height: 8px;
-            background: rgba(14, 165, 233, 0.3);
+            width: 15px;
+            height: 15px;
+            background-color: var(--secondary);
+            border-radius: 50%;
             top: 50%;
-            left: 10%;
-            border-radius: 4px;
+            left: 20%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px var(--secondary);
+            animation: bounce 1.5s infinite;
         }
         
-        .navi-car {
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%); }
+            50% { transform: translate(-50%, -60%); }
+        }
+        
+        .nav-position::after {
+            content: "";
             position: absolute;
-            top: 50%;
-            left: 10%;
             width: 30px;
             height: 30px;
-            background: var(--navi-highlight);
-            border-radius: 50% 50% 0 50%;
-            transform: translate(-50%, -50%) rotate(45deg);
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.7);
-            animation: moveCar 8s linear infinite;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid var(--secondary);
+            opacity: 0;
+            animation: ripple 2s infinite;
         }
         
-        .navi-instructions {
-            padding: 20px 0;
-            border-top: 2px solid rgba(255, 255, 255, 0.1);
-            margin-top: 20px;
+        @keyframes ripple {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
         }
         
-        .navi-instruction {
-            font-size: 1.8rem;
-            font-weight: 700;
-            text-align: center;
-            color: #fff;
-            text-shadow: 0 0 10px rgba(14, 165, 233, 0.7);
-            animation: pulse 2s infinite;
-        }
-        
-        /* Interaktiver Wagen */
-        .interactive-cart {
+        .nav-destination {
             position: absolute;
-            bottom: 60px;
+            width: 12px;
+            height: 12px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            top: 30%;
+            left: 70%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px var(--accent);
+        }
+        
+        .nav-destination::before {
+            content: "Milch";
+            position: absolute;
+            top: -25px;
             left: 50%;
             transform: translateX(-50%);
-            width: 400px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+        
+        .transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .shape {
+            position: absolute;
+            background-color: var(--secondary);
+            transition: all 1s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        
+        .shape-1 {
+            top: 10%;
+            left: 10%;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--primary);
+        }
+        
+        .shape-2 {
+            top: 60%;
+            left: 20%;
+            width: 150px;
+            height: 80px;
+            border-radius: 10px;
+            background-color: var(--accent);
+        }
+        
+        .shape-3 {
+            top: 30%;
+            right: 15%;
+            width: 120px;
+            height: 120px;
+            border-radius: 30px;
+            transform: rotate(45deg);
+            background-color: var(--light);
+        }
+        
+        .shape-4 {
+            bottom: 20%;
+            right: 10%;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+        }
+        
+        .shape-5 {
+            top: 15%;
+            left: 50%;
+            width: 200px;
+            height: 60px;
+            border-radius: 5px;
+            background-color: var(--accent);
+        }
+        
+        .shape-6 {
+            bottom: 10%;
+            left: 30%;
+            width: 100px;
+            height: 100px;
             border-radius: 20px;
-            backdrop-filter: blur(10px);
-            padding: 20px;
+            transform: rotate(20deg);
+            background-color: var(--primary);
+        }
+        
+        .shape-7 {
+            top: 70%;
+            right: 25%;
+            width: 50px;
+            height: 150px;
+            border-radius: 25px;
+            background-color: var(--light);
+        }
+        
+        .interactive-cart {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 150px;
+            background-color: #1a2a4a;
+            border-radius: 1rem;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            border: 2px solid var(--navi-highlight);
-            box-shadow: 0 0 30px rgba(14, 165, 233, 0.4);
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(74, 140, 255, 0.2);
             cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 100;
+            transition: var(--transition);
+            z-index: 10;
         }
         
         .interactive-cart:hover {
             transform: translateX(-50%) scale(1.05);
-            box-shadow: 0 0 50px rgba(14, 165, 233, 0.7);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
         }
         
         .cart-icon {
-            font-size: 5rem;
-            color: var(--navi-highlight);
-            margin-bottom: 20px;
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
         }
         
-        .cart-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #fff;
-            text-align: center;
-            margin-bottom: 10px;
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
         
-        .cart-subtitle {
+        .cart-text {
+            color: white;
             font-size: 1.2rem;
-            color: #94a3b8;
             text-align: center;
         }
         
-        /* Navigation */
-        .navigation {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            z-index: 100;
-        }
-        
-        .nav-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-dot.active {
-            background: var(--navi-highlight);
-            transform: scale(1.3);
-        }
-        
-        .nav-button {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 100;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .nav-button:hover {
-            background: rgba(14, 165, 233, 0.2);
-            transform: translateY(-50%) scale(1.1);
-        }
-        
-        .prev-button {
-            left: 20px;
-        }
-        
-        .next-button {
-            right: 20px;
-        }
-        
-        .nav-button i {
-            font-size: 2rem;
-            color: white;
-        }
-        
-        /* Download Button */
-        .download-btn {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-size: 1.1rem;
+        .cart-highlight {
+            color: var(--secondary);
             font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 100;
-            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .download-btn:hover {
-            background: #ea580c;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
-        }
-        
-        /* Vollbild Button */
-        .fullscreen-btn {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .fullscreen-btn:hover {
-            background: rgba(14, 165, 233, 0.2);
-            transform: scale(1.1);
-        }
-        
-        /* Übergangsanimation */
-        @keyframes moveCar {
-            0% { left: 10%; }
-            100% { left: 90%; }
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 0.7; transform: scale(1); }
-        }
-        
-        @keyframes highlight {
-            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
-            70% { box-shadow: 0 0 0 20px rgba(14, 165, 233, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
         }
         
         /* Responsive Design */
-        @media (max-width: 1200px) {
-            .future-slide {
-                grid-template-columns: 1fr;
-            }
-            
-            .navi-container {
-                height: 300px;
-            }
-        }
-        
         @media (max-width: 768px) {
             .slide {
-                padding: 30px;
+                padding: 1rem;
+                overflow-y: auto;
             }
             
-            .history-title {
-                font-size: 2.5rem;
-            }
-            
-            .history-points li {
-                font-size: 1.2rem;
-            }
-            
-            .future-title {
+            .slide-title {
                 font-size: 2rem;
+                margin-bottom: 1rem;
             }
             
-            .future-points li {
-                font-size: 1.1rem;
+            .slide-content {
+                flex-direction: column;
+                height: auto;
+                gap: 1rem;
+            }
+            
+            .slide-text {
+                padding: 0 !important;
+            }
+            
+            .bullet-point {
+                font-size: 1rem;
+            }
+            
+            .future-nav {
+                position: relative;
+                right: auto;
+                top: auto;
+                transform: none;
+                width: 100%;
+                height: 300px;
+                margin-top: 1rem;
             }
             
             .interactive-cart {
-                width: 300px;
+                width: 250px;
+                height: 120px;
             }
+            
+            .cart-icon {
+                font-size: 2rem;
+            }
+            
+            .cart-text {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 1s forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .slide-in-left {
+            animation: slideInLeft 1s forwards;
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 1s forwards;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .scale-in {
+            animation: scaleIn 1s forwards;
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .rotate-in {
+            animation: rotateIn 1s forwards;
+        }
+        
+        @keyframes rotateIn {
+            from { transform: rotate(-10deg) scale(0.8); opacity: 0; }
+            to { transform: rotate(0) scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div class="presentation-container">
-        <!-- Download Button -->
-        <button class="download-btn" onclick="generatePPTX()">
-            <i class="fas fa-download"></i> PPTX Herunterladen
-        </button>
-        
-        <!-- Vollbild Button -->
-        <button class="fullscreen-btn" onclick="toggleFullscreen()">
-            <i class="fas fa-expand"></i>
-        </button>
-        
-        <!-- Navigation Buttons -->
-        <div class="nav-button prev-button" onclick="prevSlide()">
-            <i class="fas fa-chevron-left"></i>
-        </div>
-        <div class="nav-button next-button" onclick="nextSlide()">
-            <i class="fas fa-chevron-right"></i>
-        </div>
-        
-        <!-- Historische Folien 1-10 -->
-        <div class="slide history-slide active" id="slide1">
-            <div class="history-content">
-                <h1 class="history-title">Die Geschichte des Einkaufswagens</h1>
-                <img src="https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Historischer Einkaufswagen" class="history-image">
-                <ul class="history-points">
-                    <li>Erfunden 1937 von Sylvan Goldman in Oklahoma</li>
-                    <li>Erster Wagen aus Draht mit festen Rädern</li>
-                    <li>Kunden waren anfangs skeptisch - "zu weiblich"</li>
-                    <li>Revolutionierte den Einzelhandel weltweit</li>
-                    <li>Heute über 40 Millionen Wagen allein in Deutschland</li>
-                </ul>
+        <!-- Historical Slides 1-10 -->
+        <div class="slide historical-slide active" id="slide1">
+            <h1 class="slide-title">Die Geburt des Gittertiers</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">1937 erfand Sylvan Goldman den ersten Einkaufswagen in Oklahoma City, USA</p>
+                    <p class="bullet-point">Inspiriert von einem Klappstuhl mit Rädern und einem Korb obenauf</p>
+                    <p class="bullet-point">Ziel: Kunden sollten mehr einkaufen können als mit Körben</p>
+                    <p class="bullet-point">Anfangs skeptisch aufgenommen - "zu feminin" für Männer</p>
+                    <p class="bullet-point">Durch Statisten mit vollen Wagen wurde die Akzeptanz gesteigert</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi1.png" alt="Erster Einkaufswagen von Sylvan Goldman" class="fade-in">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide2">
-            <div class="history-content">
-                <h1 class="history-title">Die Anfänge des "Gittertiers"</h1>
-                <img src="https://images.unsplash.com/photo-1505904267569-f02eaeb45a4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Alter Einkaufswagen" class="history-image">
-                <ul class="history-points">
-                    <li>Erste Modelle aus einfachem Stahldraht</li>
-                    <li>Keine Klappmechanismen - sperrige Lagerung</li>
-                    <li>Räder ohne Drehfunktion - schwer zu manövrieren</li>
-                    <li>Oft als "unpraktische Drahtgestelle" verspottet</li>
-                    <li>Goldmans erster Prototyp kostete nur 7$ in Material</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide2">
+            <h1 class="slide-title">Die ersten Schritte in Deutschland</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">1948 kamen die ersten Einkaufswagen nach Deutschland (Augsburg & Hamburg)</p>
+                    <p class="bullet-point">Fahrbare Gestelle mit zwei übereinander hängenden Körben</p>
+                    <p class="bullet-point">Rudolf Wanzl prägte die deutsche Entwicklung entscheidend</p>
+                    <p class="bullet-point">1950 erste Modelle mit festem Korb statt hängender Körbe</p>
+                    <p class="bullet-point">Großer Nachlauf der Räder für stabileres Schieben</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi2.png" alt="Erste deutsche Einkaufswagen" class="slide-in-right">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide3">
-            <div class="history-content">
-                <h1 class="history-title">Innovation: Der klappbare Wagen</h1>
-                <img src="https://images.unsplash.com/photo-1607083206968-13611e3d76db?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Klappbarer Einkaufswagen" class="history-image">
-                <ul class="history-points">
-                    <li>1947: Orla Watson erfindet klappbares Design</li>
-                    <li>Wagen konnten ineinander geschoben werden</li>
-                    <li>Platzersparnis von bis zu 80% in Lagerräumen</li>
-                    <li>Goldman kaufte Patent und verbesserte das Design</li>
-                    <li>Basis für alle modernen Einkaufswagen</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide3">
+            <h1 class="slide-title">Die platzsparende Revolution</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">1946 erfand Orla E. Watson das "telescoping shopping cart"</p>
+                    <p class="bullet-point">Wagen konnten platzsparend ineinandergeschoben werden</p>
+                    <p class="bullet-point">Wanzl baute 1957 den Typ "Concentra" nach diesem Prinzip</p>
+                    <p class="bullet-point">Bis heute Basismodell für die meisten Einkaufswagen weltweit</p>
+                    <p class="bullet-point">Ermöglichte effiziente Lagerung und Bereitstellung der Wagen</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi3.png" alt="Telescoping Einkaufswagen" class="rotate-in">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide4">
-            <div class="history-content">
-                <h1 class="history-title">Der Kindersitz: Ein Meilenstein</h1>
-                <img src="https://images.unsplash.com/photo-1576563536300-1defbd30f1f0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Einkaufswagen mit Kindersitz" class="history-image">
-                <ul class="history-points">
-                    <li>1950er: Erste Wagen mit integriertem Kindersitz</li>
-                    <li>Befreiung für Eltern - beide Hände frei</li>
-                    <li>Anfängliche Sicherheitsbedenken</li>
-                    <li>Heute Standard mit Gurten und Spielzeug</li>
-                    <li>Reduzierte "Kind-Fluchtversuche" um 73%</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide4">
+            <h1 class="slide-title">Das Münzsystem kommt</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Anfangs standen Wagen ungesichert auf Parkplätzen</p>
+                    <p class="bullet-point">Hilfskräfte (oft Schüler) sammelten sie wieder ein</p>
+                    <p class="bullet-point">Dann Einführung von Pfandmünzen zum Rückgabeanreiz</p>
+                    <p class="bullet-point">Später Münzsystem mit Sperrkette (nicht überall erfolgreich)</p>
+                    <p class="bullet-point">Reduzierte Diebstahlzahlen und Chaos auf Parkplätzen</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi4.png" alt="Einkaufswagen mit Münzschloss" class="scale-in">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide5">
-            <div class="history-content">
-                <h1 class="history-title">Materialrevolution: Kunststoff</h1>
-                <img src="https://images.unsplash.com/photo-1563014959-7aaa83350992?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Modernes Wagenmaterial" class="history-image">
-                <ul class="history-points">
-                    <li>1970er: Kunststoff hält Einzug</li>
-                    <li>Griffe aus weichem PVC für besseren Komfort</li>
-                    <li>Kunststoffkörbe für weniger Rostprobleme</li>
-                    <li>Farbige Griffe zur Markenidentifikation</li>
-                    <li>Reduziertes Gewicht bei gleicher Stabilität</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide5">
+            <h1 class="slide-title">Design und Funktion verbessern sich</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Zubehör wie Taschenhaken und Kindersitze kamen hinzu</p>
+                    <p class="bullet-point">Großablagen unter dem Warenkorb für schwere Artikel</p>
+                    <p class="bullet-point">Beladungsgrenze von ca. 220 kg (Tests zeigen bis zu 1 Tonne möglich)</p>
+                    <p class="bullet-point">Ab 2000er: Kunststoffkörbe für weniger Gewicht und bessere Manövrierbarkeit</p>
+                    <p class="bullet-point">Farbliche CI-Anpassung an Handelsketten</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi5.png" alt="Moderner Einkaufswagen mit Zubehör" class="slide-in-left">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide6">
-            <div class="history-content">
-                <h1 class="history-title">Das Münzsystem: Diebstahlschutz</h1>
-                <img src="https://images.unsplash.com/photo-1594041680534-e8c8cdebd659?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Münzschloss am Einkaufswagen" class="history-image">
-                <ul class="history-points">
-                    <li>1980er: Einführung des Münzpfandsystems</li>
-                    <li>Reduzierte Verluste um durchschnittlich 90%</li>
-                    <li>Typischerweise 50 Cent, 1€ oder 1€-Münzen</li>
-                    <li>Kundentreue durch Rückgabe des Pfands</li>
-                    <li>Ungewollte "Münzspenden" für Supermärkte</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide6">
+            <h1 class="slide-title">Das Problem mit den entführten Gittertieren</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Jährlich werden in Deutschland ca. 100.000 Wagen entwendet</p>
+                    <p class="bullet-point">Jeder 20. Wagen verschwindet innerhalb eines Jahres</p>
+                    <p class="bullet-point">Kosten: 80-130€ pro Wagen - erheblicher Schaden für Händler</p>
+                    <p class="bullet-point">In Wien sammelt die Müllabfuhr herrenlose Wagen ein (30.150 in 2006)</p>
+                    <p class="bullet-point">Neue Diebstahlsicherungen blockieren Wagen bei Geländeverlassen</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi6.png" alt="Entwendete Einkaufswagen" class="fade-in">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide7">
-            <div class="history-content">
-                <h1 class="history-title">Design-Evolution: Ergonomie</h1>
-                <img src="https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Ergonomischer Einkaufswagen" class="history-image">
-                <ul class="history-points">
-                    <li>Gelenkte Hinterräder für bessere Manövrierfähigkeit</li>
-                    <li>Verstellbare Griffhöhen für verschiedene Körpergrößen</li>
-                    <li>Integrierte Getränkehalter und Handyablagen</li>
-                    <li>Spezielle Wagen für Elektrorollstuhlfahrer</li>
-                    <li>Warentrenner für bessere Organisation</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide7">
+            <h1 class="slide-title">Psychologie des Einkaufswagens</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Größere Körbe animieren zu mehr Einkäufen (bis zu 40% mehr)</p>
+                    <p class="bullet-point">Korbvolumen stieg von 40 auf 200 Liter seit den Anfängen</p>
+                    <p class="bullet-point">Supermarkt-Layouts sind auf Wagen-Nutzung optimiert</p>
+                    <p class="bullet-point">Breite Gänge für bequemes Navigieren mit dem Wagen</p>
+                    <p class="bullet-point">Strategische Platzierung von Artikeln entlang der Hauptwege</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi7.png" alt="Supermarkt Layout" class="slide-in-right">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide8">
-            <div class="history-content">
-                <h1 class="history-title">Das "Gittertier" in der Popkultur</h1>
-                <img src="https://images.unsplash.com/photo-1626804475297-41608ea09aeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Kunstprojekt mit Einkaufswagen" class="history-image">
-                <ul class="history-points">
-                    <li>Einkaufswagen-Rennen als Sportveranstaltung</li>
-                    <li>"Gittertier"-Meme: Anthropomorphisierung</li>
-                    <li>Street-Art-Objekt in urbanen Zentren</li>
-                    <li>Symbol für Konsumgesellschaft in der Kunst</li>
-                    <li>Wissenschaftliche Studien über "verwilderte" Wagen</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide8">
+            <h1 class="slide-title">Kulturelle Unterschiede</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">In Österreich: "Einkaufswagerl" statt Einkaufswagen</p>
+                    <p class="bullet-point">USA: Münzsystem nicht weit verbreitet, mehr herrenlose Wagen</p>
+                    <p class="bullet-point">Südafrika: Häufig keine Sperrketten im Einsatz</p>
+                    <p class="bullet-point">Japan: Mini-Wagen für enge Supermarkt-Gänge</p>
+                    <p class="bullet-point">Europa: Standardisierung durch Wanzl als Marktführer</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi8.png" alt="Internationale Einkaufswagen" class="rotate-in">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide9">
-            <div class="history-content">
-                <h1 class="history-title">Ökologische Aspekte</h1>
-                <img src="https://images.unsplash.com/photo-1581578021470-9fcc0e5d7d2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Recycling von Einkaufswagen" class="history-image">
-                <ul class="history-points">
-                    <li>Durchschnittliche Lebensdauer: 10-15 Jahre</li>
-                    <li>100% recycelbarer Stahl und Kunststoff</li>
-                    <li>Pro Wagen ca. 15kg CO2 bei der Produktion</li>
-                    <li>Innovative Leichtbauweise reduziert Material</li>
-                    <li>Wiederverwendung von alten Wagen als Regale</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide9">
+            <h1 class="slide-title">Einkaufswagen als Kulturgut</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Zweckentfremdung als Grill, Blumenkorb oder Designobjekt</p>
+                    <p class="bullet-point">In Kunst und Literatur als Symbol für Konsumgesellschaft</p>
+                    <p class="bullet-point">"Gittertier"-Meme im Internet</p>
+                    <p class="bullet-point">Urban Exploration: Verlassene Einkaufswagen in ungewöhnlichen Orten</p>
+                    <p class="bullet-point">Kultstatus durch alltägliche Präsenz und Wiedererkennung</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi9.png" alt="Künstlerische Einkaufswagen" class="scale-in">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <div class="slide history-slide" id="slide10">
-            <div class="history-content">
-                <h1 class="history-title">Der moderne Einkaufswagen</h1>
-                <img src="https://images.unsplash.com/photo-1551133985-2df5d0e3d1f2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Moderner Einkaufswagen" class="history-image">
-                <ul class="history-points">
-                    <li>Hochspezialisierte Designs für verschiedene Märkte</li>
-                    <li>Integrierte Scanner und Preisdisplays</li>
-                    <li>Gewichtsbegrenzung bei 250kg</li>
-                    <li>GPS-Tracking gegen Diebstahl</li>
-                    <li>Letzte Stufe vor dem autonomen Wagen</li>
-                </ul>
+
+        <div class="slide historical-slide" id="slide10">
+            <h1 class="slide-title">Der Einkaufswagen heute</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Weltweit etwa 20 Millionen Einkaufswagen im Einsatz</p>
+                    <p class="bullet-point">Wanzl produziert jährlich 2 Millionen Wagen in 200 Varianten</p>
+                    <p class="bullet-point">Preis: 90-350€ je nach Ausstattung</p>
+                    <p class="bullet-point">Lebensdauer: bis zu 10 Jahre, ca. 40.000 km Laufleistung</p>
+                    <p class="bullet-point">Testphase für High-Tech-Wagen mit Displays und Bluetooth</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi10.png" alt="Moderner Einkaufswagen" class="slide-in-left">
+                </div>
+            </div>
+            <div class="navi-container">
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
-        <!-- Zukunftsfolien 11-17 -->
+
+        <!-- Future Slides 11-17 -->
         <div class="slide future-slide" id="slide11">
-            <div class="future-content">
-                <h2 class="future-title">Das Gittertier der Zukunft</h2>
-                <ul class="future-points">
-                    <li>Präsentiert von Bastian & Kaspar</li>
-                    <li>Revolutionäres Design auf Basis des Wanzl CR90</li>
-                    <li>Integrierte Arduino UNO R4 Steuerung</li>
-                    <li>Autonomes Fahren im Supermarkt</li>
-                    <li>Intelligente Routenplanung zum schnellsten Einkauf</li>
-                </ul>
+            <h1 class="slide-title">Das Gittertier der Zukunft</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Präsentiert von Bastian & Kaspar</p>
+                    <p class="bullet-point">Revolutionäres Konzept auf Basis des Wanzl CR90</p>
+                    <p class="bullet-point">Integriertes Navigationssystem für effizientes Einkaufen</p>
+                    <p class="bullet-point">Autonomes Fahren für müheloses Manövrieren</p>
+                    <p class="bullet-point">Arduino UNO R4 als Steuerungseinheit</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi11.png" alt="Gittertier der Zukunft" class="fade-in">
+                </div>
+            </div>
+            <div class="future-nav">
+                <div class="nav-header">
+                    <div class="nav-title">Gittertier Navi</div>
+                    <button class="nav-close">✕</button>
+                </div>
+                <div class="nav-content">
+                    <div class="nav-instruction">
+                        <div class="nav-instruction-title">NÄCHSTE ANWEISUNG</div>
+                        <div class="nav-instruction-text">Für Milch in 5m rechts abbiegen</div>
+                    </div>
+                    <div class="nav-map">
+                        <div class="nav-route"></div>
+                        <div class="nav-position"></div>
+                        <div class="nav-destination"></div>
+                    </div>
+                </div>
             </div>
             <div class="navi-container">
-                <div class="navi-header">
-                    <div class="navi-title">GITTERNAV 2.0</div>
-                    <div class="navi-time">14:25</div>
-                </div>
-                <div class="navi-map">
-                    <div class="navi-path"></div>
-                    <div class="navi-car"></div>
-                </div>
-                <div class="navi-instructions">
-                    <div class="navi-instruction">Willkommen im Jahr 2030!</div>
-                </div>
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
+
         <div class="slide future-slide" id="slide12">
-            <div class="future-content">
-                <h2 class="future-title">Autonomes Fahren</h2>
-                <ul class="future-points">
-                    <li>Lidar-Sensoren für präzise Umgebungserfassung</li>
-                    <li>Kollisionsvermeidung in Echtzeit</li>
-                    <li>Automatisches Folgen des Kunden</li>
-                    <li>Selbstständiges Einparken nach Benutzung</li>
-                    <li>Geschwindigkeitsanpassung an Kunden-Tempo</li>
-                </ul>
+            <h1 class="slide-title">Intelligente Navigation</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Sprachgesteuerte Routenführung im Supermarkt</p>
+                    <p class="bullet-point">Echtzeit-Informationen zu Angeboten entlang der Route</p>
+                    <p class="bullet-point">Integration mit Einkaufslisten-Apps</p>
+                    <p class="bullet-point">Optimierter Weg für schnellstmöglichen Einkauf</p>
+                    <p class="bullet-point">Alternativrouten bei vollen Gängen</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi12.png" alt="Navigationssystem" class="slide-in-right">
+                </div>
+            </div>
+            <div class="future-nav">
+                <div class="nav-header">
+                    <div class="nav-title">Gittertier Navi</div>
+                    <button class="nav-close">✕</button>
+                </div>
+                <div class="nav-content">
+                    <div class="nav-instruction">
+                        <div class="nav-instruction-title">AKTUELLES ANGEBOT</div>
+                        <div class="nav-instruction-text">Milch 1L - 20% Rabatt in Aisle 4</div>
+                    </div>
+                    <div class="nav-map">
+                        <div class="nav-route"></div>
+                        <div class="nav-position"></div>
+                        <div class="nav-destination"></div>
+                    </div>
+                </div>
             </div>
             <div class="navi-container">
-                <div class="navi-header">
-                    <div class="navi-title">AUTOPILOT</div>
-                    <div class="navi-time">14:26</div>
-                </div>
-                <div class="navi-map">
-                    <div class="navi-path"></div>
-                    <div class="navi-car"></div>
-                </div>
-                <div class="navi-instructions">
-                    <div class="navi-instruction">Folge mir zum Obst!</div>
-                </div>
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
+
         <div class="slide future-slide" id="slide13">
-            <div class="future-content">
-                <h2 class="future-title">Intelligente Navigation</h2>
-                <ul class="future-points">
-                    <li>Sprachgesteuerte Routenführung</li>
-                    <li>"Für Milch in 5m rechts abbiegen"</li>
-                    <li>Echtzeit-Lagerbestandsanzeige</li>
-                    <li>Alternative Produktvorschläge bei Engpässen</li>
-                    <li>Optimierte Route für Einkaufsliste</li>
-                </ul>
+            <h1 class="slide-title">Autonomes Fahren</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Folgt automatisch dem Kunden durch den Supermarkt</p>
+                    <p class="bullet-point">Kollisionsvermeidung mit anderen Wagen und Hindernissen</p>
+                    <p class="bullet-point">Automatisches Anhalten an der Kasse</p>
+                    <p class="bullet-point">Rückgabe zum Sammelpunkt ohne manuelles Schieben</p>
+                    <p class="bullet-point">Ladestationen für elektrische Antriebe</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi13.png" alt="Autonomer Einkaufswagen" class="rotate-in">
+                </div>
+            </div>
+            <div class="future-nav">
+                <div class="nav-header">
+                    <div class="nav-title">Gittertier Navi</div>
+                    <button class="nav-close">✕</button>
+                </div>
+                <div class="nav-content">
+                    <div class="nav-instruction">
+                        <div class="nav-instruction-title">AUTONOMER MODUS</div>
+                        <div class="nav-instruction-text">Folge Ihnen in 2m Abstand</div>
+                    </div>
+                    <div class="nav-map">
+                        <div class="nav-route"></div>
+                        <div class="nav-position"></div>
+                        <div class="nav-destination"></div>
+                    </div>
+                </div>
             </div>
             <div class="navi-container">
-                <div class="navi-header">
-                    <div class="navi-title">NAVIGATION</div>
-                    <div class="navi-time">14:28</div>
-                </div>
-                <div class="navi-map">
-                    <div class="navi-path"></div>
-                    <div class="navi-car"></div>
-                </div>
-                <div class="navi-instructions">
-                    <div class="navi-instruction">Milch in 5m rechts</div>
-                </div>
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
+
         <div class="slide future-slide" id="slide14">
-            <div class="future-content">
-                <h2 class="future-title">Arduino UNO R4 Steuerung</h2>
-                <ul class="future-points">
-                    <li>Leistungsstarker Mikrocontroller</li>
-                    <li>Open-Source-Plattform für Erweiterungen</li>
-                    <li>Echtzeit-Kommunikation mit Marktsystem</li>
-                    <li>Energieeffizientes Design</li>
-                    <li>Fernwartung und Updates über WLAN</li>
-                </ul>
+            <h1 class="slide-title">Technische Umsetzung</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Basis: Wanzl CR90 mit modifiziertem Chassis</p>
+                    <p class="bullet-point">Arduino UNO R4 als zentrale Steuerungseinheit</p>
+                    <p class="bullet-point">Ultraschallsensoren für Abstandsmessung</p>
+                    <p class="bullet-point">Gyroskop für präzise Bewegungssteuerung</p>
+                    <p class="bullet-point">Bluetooth-Modul für Kommunikation mit Smartphone</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi14.png" alt="Technische Komponenten" class="scale-in">
+                </div>
+            </div>
+            <div class="future-nav">
+                <div class="nav-header">
+                    <div class="nav-title">Gittertier Navi</div>
+                    <button class="nav-close">✕</button>
+                </div>
+                <div class="nav-content">
+                    <div class="nav-instruction">
+                        <div class="nav-instruction-title">SYSTEMSTATUS</div>
+                        <div class="nav-instruction-text">Alle Systeme nominal</div>
+                    </div>
+                    <div class="nav-map">
+                        <div class="nav-route"></div>
+                        <div class="nav-position"></div>
+                        <div class="nav-destination"></div>
+                    </div>
+                </div>
             </div>
             <div class="navi-container">
-                <div class="navi-header">
-                    <div class="navi-title">SYSTEMSTATUS</div>
-                    <div class="navi-time">14:30</div>
-                </div>
-                <div class="navi-map">
-                    <div class="navi-path"></div>
-                    <div class="navi-car"></div>
-                </div>
-                <div class="navi-instructions">
-                    <div class="navi-instruction">Aktualisiere Firmware...</div>
-                </div>
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
+
         <div class="slide future-slide" id="slide15">
-            <div class="future-content">
-                <h2 class="future-title">Sicherheitsfeatures</h2>
-                <ul class="future-points">
-                    <li>Automatische Gewichtskontrolle</li>
-                    <li>Kindersicherung mit Bewegungsalarm</li>
-                    <li>Diebstahlschutz mit Geo-Fencing</li>
-                    <li>Notbremsassistent bei Hindernissen</li>
-                    <li>Wegfahrsperre bei unbezahlter Ware</li>
-                </ul>
+            <h1 class="slide-title">Sicherheitsfeatures</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Automatische Diebstahlsicherung bei Geländeverlassen</p>
+                    <p class="bullet-point">GPS-Tracking für verlorene Wagen</p>
+                    <p class="bullet-point">Persönliche PIN zur Freigabe des Wagens</p>
+                    <p class="bullet-point">Kindersicherung für autonomes Fahren mit Kindern</p>
+                    <p class="bullet-point">Notstopp-Taste für manuelle Übersteuerung</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi15.png" alt="Sicherheitsfeatures" class="slide-in-left">
+                </div>
+            </div>
+            <div class="future-nav">
+                <div class="nav-header">
+                    <div class="nav-title">Gittertier Navi</div>
+                    <button class="nav-close">✕</button>
+                </div>
+                <div class="nav-content">
+                    <div class="nav-instruction">
+                        <div class="nav-instruction-title">SICHERHEIT</div>
+                        <div class="nav-instruction-text">Diebstahlschutz aktiv</div>
+                    </div>
+                    <div class="nav-map">
+                        <div class="nav-route"></div>
+                        <div class="nav-position"></div>
+                        <div class="nav-destination"></div>
+                    </div>
+                </div>
             </div>
             <div class="navi-container">
-                <div class="navi-header">
-                    <div class="navi-title">SICHERHEIT</div>
-                    <div class="navi-time">14:32</div>
-                </div>
-                <div class="navi-map">
-                    <div class="navi-path"></div>
-                    <div class="navi-car"></div>
-                </div>
-                <div class="navi-instructions">
-                    <div class="navi-instruction">Kind gesichert ✓</div>
-                </div>
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
+
         <div class="slide future-slide" id="slide16">
-            <div class="future-content">
-                <h2 class="future-title">Nachhaltigkeit 2.0</h2>
-                <ul class="future-points">
-                    <li>Solarzellen für autarke Energieversorgung</li>
-                    <li>Recycelte Materialien aus alten Wagen</li>
-                    <li>Biologisch abbaubare Komponenten</li>
-                    <li>CO2-Kompensation pro Nutzung</li>
-                    <li>Digitale Rechnung statt Papierbon</li>
-                </ul>
+            <h1 class="slide-title">Zukunftsausblick</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Integration mit Kassen für automatischen Checkout</p>
+                    <p class="bullet-point">Gewichtserkennung für Echtzeit-Preisberechnung</p>
+                    <p class="bullet-point">KI-gestützte Einkaufsempfehlungen</p>
+                    <p class="bullet-point">Augmented Reality für Produktinformationen</p>
+                    <p class="bullet-point">Energiegewinnung durch Bewegungsenergie</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi16.png" alt="Zukunftsausblick" class="slide-in-right">
+                </div>
+            </div>
+            <div class="future-nav">
+                <div class="nav-header">
+                    <div class="nav-title">Gittertier Navi</div>
+                    <button class="nav-close">✕</button>
+                </div>
+                <div class="nav-content">
+                    <div class="nav-instruction">
+                        <div class="nav-instruction-title">ZUKUNFTSFUNKTION</div>
+                        <div class="nav-instruction-text">Augmented Reality aktivieren?</div>
+                    </div>
+                    <div class="nav-map">
+                        <div class="nav-route"></div>
+                        <div class="nav-position"></div>
+                        <div class="nav-destination"></div>
+                    </div>
+                </div>
             </div>
             <div class="navi-container">
-                <div class="navi-header">
-                    <div class="navi-title">ÖKO-MODUS</div>
-                    <div class="navi-time">14:34</div>
-                </div>
-                <div class="navi-map">
-                    <div class="navi-path"></div>
-                    <div class="navi-car"></div>
-                </div>
-                <div class="navi-instructions">
-                    <div class="navi-instruction">Solarladung: 87%</div>
-                </div>
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="nextSlide()">Weiter</button>
             </div>
         </div>
-        
+
         <div class="slide future-slide" id="slide17">
-            <div class="future-content">
-                <h2 class="future-title">Die Zukunft beginnt jetzt</h2>
-                <ul class="future-points">
-                    <li>Pilotprojekt in 20 Supermärkten ab 2025</li>
-                    <li>Kostenersparnis durch reduzierte Diebstähle</li>
-                    <li>Bessere Kundenerfahrung durch Assistenzsysteme</li>
-                    <li>Barrierefreiheit für alle Kunden</li>
-                    <li>Revolution des Einkaufserlebnisses</li>
-                </ul>
+            <h1 class="slide-title">Ihr Gittertier der Zukunft</h1>
+            <div class="slide-content">
+                <div class="slide-text">
+                    <p class="bullet-point">Revolutionieren Sie das Einkaufserlebnis</p>
+                    <p class="bullet-point">Sparen Sie Zeit mit intelligenter Navigation</p>
+                    <p class="bullet-point">Genießen Sie komfortables, autonomes Fahren</p>
+                    <p class="bullet-point">Profitieren Sie von innovativen Sicherheitsfeatures</p>
+                    <p class="bullet-point">Seien Sie bereit für die Zukunft des Einzelhandels</p>
+                </div>
+                <div class="slide-image">
+                    <img src="presi17.png" alt="Gittertier der Zukunft" class="rotate-in">
+                </div>
+            </div>
+            <div class="future-nav">
+                <div class="nav-header">
+                    <div class="nav-title">Gittertier Navi</div>
+                    <button class="nav-close">✕</button>
+                </div>
+                <div class="nav-content">
+                    <div class="nav-instruction">
+                        <div class="nav-instruction-title">BEREIT FÜR DIE ZUKUNFT?</div>
+                        <div class="nav-instruction-text">Kontaktieren Sie uns jetzt!</div>
+                    </div>
+                    <div class="nav-map">
+                        <div class="nav-route"></div>
+                        <div class="nav-position"></div>
+                        <div class="nav-destination"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="interactive-cart" onclick="showDemo()">
+                <div class="cart-icon">🛒</div>
+                <div class="cart-text">Klicken Sie hier für eine <span class="cart-highlight">interaktive Demo</span> unseres Gittertiers der Zukunft!</div>
             </div>
             <div class="navi-container">
-                <div class="navi-header">
-                    <div class="navi-title">ZIEL ERREICHT</div>
-                    <div class="navi-time">14:35</div>
-                </div>
-                <div class="navi-map">
-                    <div class="navi-path"></div>
-                    <div class="navi-car" style="left: 90%;"></div>
-                </div>
-                <div class="navi-instructions">
-                    <div class="navi-instruction">Einkauf erfolgreich!</div>
-                </div>
-            </div>
-            
-            <!-- Interaktiver Einkaufswagen -->
-            <div class="interactive-cart" onclick="showFeatures()">
-                <div class="cart-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="cart-title">Unser Gittertier der Zukunft</div>
-                <div class="cart-subtitle">Klicken Sie, um die Features zu entdecken</div>
+                <button class="navi-btn" onclick="prevSlide()">Zurück</button>
+                <button class="navi-btn" onclick="restartPresentation()">Neustart</button>
             </div>
         </div>
-        
-        <!-- Navigation Dots -->
-        <div class="navigation" id="navDots">
-            <!-- Wird per JavaScript generiert -->
+
+        <div class="transition-overlay" id="transitionOverlay">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+            <div class="shape shape-5"></div>
+            <div class="shape shape-6"></div>
+            <div class="shape shape-7"></div>
         </div>
     </div>
 
+    <button class="download-btn" onclick="generatePPTX()">PPTX Herunterladen</button>
+
     <script>
-        // Globale Variablen
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        const totalSlides = slides.length;
+        // Präsentationssteuerung
+        let currentSlide = 1;
+        const totalSlides = 17;
+        let isTransitioning = false;
         
-        // Initialisierung
-        function initPresentation() {
-            createNavigationDots();
-            updateNavigation();
+        function showSlide(n) {
+            if (isTransitioning) return;
             
-            // Intervall für automatischen Wechsel (kann entfernt werden)
-            // setInterval(nextSlide, 10000);
-        }
-        
-        // Navigation erstellen
-        function createNavigationDots() {
-            const navContainer = document.getElementById('navDots');
-            for (let i = 0; i < totalSlides; i++) {
-                const dot = document.createElement('div');
-                dot.classList.add('nav-dot');
-                dot.dataset.slide = i;
-                dot.addEventListener('click', () => goToSlide(i));
-                navContainer.appendChild(dot);
+            // Verstecke alle Slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Zeige die gewählte Slide
+            document.getElementById(`slide${n}`).classList.add('active');
+            currentSlide = n;
+            
+            // Spezielle Behandlung für Übergang von Slide 10 zu 11
+            if (n === 11 && currentSlide === 10) {
+                startTransition();
             }
         }
         
-        // Navigation aktualisieren
-        function updateNavigation() {
-            // Aktuelle Slide hervorheben
-            slides.forEach((slide, index) => {
-                if (index === currentSlide) {
-                    slide.classList.add('active');
-                } else {
-                    slide.classList.remove('active');
-                }
-            });
-            
-            // Navigationspunkte aktualisieren
-            const dots = document.querySelectorAll('.nav-dot');
-            dots.forEach((dot, index) => {
-                if (index === currentSlide) {
-                    dot.classList.add('active');
-                } else {
-                    dot.classList.remove('active');
-                }
-            });
-            
-            // Spezielle Übergangsanimation von Slide 10 zu 11
-            if (currentSlide === 10) {
-                startSpecialTransition();
-            }
-        }
-        
-        // Zur nächsten Folie wechseln
         function nextSlide() {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-                updateNavigation();
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
             }
         }
         
-        // Zur vorherigen Folie wechseln
         function prevSlide() {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateNavigation();
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
             }
         }
         
-        // Zu einer bestimmten Folie springen
-        function goToSlide(slideIndex) {
-            currentSlide = slideIndex;
-            updateNavigation();
+        function restartPresentation() {
+            showSlide(1);
         }
         
-        // Spezielle Übergangsanimation
-        function startSpecialTransition() {
-            // Hier käme die komplexe 45-Sekunden-Animation
-            // Für dieses Beispiel reduzieren wir sie auf einen symbolischen Effekt
-            
-            const slide10 = document.getElementById('slide10');
-            const slide11 = document.getElementById('slide11');
-            
-            // Animationseffekte
-            slide10.style.opacity = '0.5';
-            slide10.style.transform = 'scale(0.95)';
-            
-            setTimeout(() => {
-                slide10.style.display = 'none';
-                slide11.style.display = 'block';
-            }, 500);
-        }
-        
-        // Interaktive Features anzeigen
-        function showFeatures() {
-            alert("Feature-Simulation:\n\n1. Autonomes Fahren: Der Wagen folgt Ihnen automatisch\n2. Navigation: 'Für Milch in 5m rechts abbiegen'\n3. Kindersicherung: Alarm bei zu großer Entfernung\n4. Solarladung: Energieautarker Betrieb\n5. Warenscanner: Automatische Preiserkennung");
-            
-            // Animationseffekt für den Wagen
-            const cart = document.querySelector('.interactive-cart');
-            cart.style.animation = 'highlight 2s ease';
-            setTimeout(() => {
-                cart.style.animation = '';
-            }, 2000);
-        }
-        
-        // Vollbildmodus umschalten
-        function toggleFullscreen() {
-            const container = document.querySelector('.presentation-container');
-            
-            if (!document.fullscreenElement) {
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) {
-                    container.msRequestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-            }
-        }
-        
-        // PPTX generieren
-        function generatePPTX() {
-            const pptx = new pptxgen();
-            
-            // Präsentationseinstellungen
-            pptx.layout = 'LAYOUT_16x9';
-            pptx.defineSlideMaster({
-                title: 'MASTER_SLIDE',
-                background: { color: 'FFFFFF' },
-                objects: [
-                    { rect: { x: 0.5, y: 0.5, w: 12, h: 0.75, fill: { color: 'F97316' } } },
-                    { placeholder: { options: { name: 'title', type: 'title', x: 0.5, y: 0.2, w: 12, h: 1, fontSize: 36, bold: true }, text: '' } },
-                    { placeholder: { options: { name: 'content', type: 'body', x: 1, y: 1.5, w: 11, h: 5, fontSize: 24, bullet: true }, text: '' } }
-                ]
-            });
-            
-            // Historische Folien hinzufügen
-            for (let i = 0; i < 10; i++) {
-                const slide = pptx.addSlide({ masterName: 'MASTER_SLIDE' });
-                slide.addText(`Folie ${i+1}: Geschichte des Einkaufswagens`, { placeholder: 'title' });
-                
-                // Hier würden die tatsächlichen Inhalte hinzugefügt werden
-                const points = [
-                    "Punkt 1: Historische Entwicklung",
-                    "Punkt 2: Design-Innovationen",
-                    "Punkt 3: Materialien und Herstellung",
-                    "Punkt 4: Gesellschaftliche Auswirkungen",
-                    "Punkt 5: Ökologische Aspekte"
-                ];
-                
-                slide.addText(points, { placeholder: 'content' });
-            }
-            
-            // Zukunftsfolien hinzufügen
-            for (let i = 10; i < 17; i++) {
-                const slide = pptx.addSlide({ masterName: 'MASTER_SLIDE' });
-                slide.addText(`Folie ${i+1}: Gittertier der Zukunft`, { placeholder: 'title' });
-                
-                const points = [
-                    "Feature 1: Autonomes Fahren",
-                    "Feature 2: Intelligente Navigation",
-                    "Feature 3: Arduino UNO R4 Steuerung",
-                    "Feature 4: Sicherheitssysteme",
-                    "Feature 5: Nachhaltigkeit"
-                ];
-                
-                slide.addText(points, { placeholder: 'content' });
-            }
-            
-            // Präsentation speichern
-            pptx.writeFile({ fileName: 'Geschichte-des-Einkaufswagens.pptx' });
-        }
-        
-        // Tastaturnavigation
-        document.addEventListener('keydown', (e) => {
+        // Tastatursteuerung
+        document.addEventListener('keydown', function(e) {
             if (e.key === 'ArrowRight') {
                 nextSlide();
             } else if (e.key === 'ArrowLeft') {
                 prevSlide();
-            } else if (e.key === 'f') {
-                toggleFullscreen();
             }
         });
         
-        // Initialisierung nach Laden der Seite
-        window.addEventListener('load', initPresentation);
+        // Spektakulärer Übergang von historisch zu zukunftsorientiert
+        function startTransition() {
+            isTransitioning = true;
+            const overlay = document.getElementById('transitionOverlay');
+            overlay.style.display = 'block';
+            
+            // Animation der Formen
+            const shapes = document.querySelectorAll('.shape');
+            shapes.forEach((shape, index) => {
+                setTimeout(() => {
+                    // Zufällige Transformationen für jede Form
+                    const randomX = Math.random() * 80 - 40;
+                    const randomY = Math.random() * 80 - 40;
+                    const randomScale = Math.random() * 2 + 0.5;
+                    const randomRotate = Math.random() * 360;
+                    
+                    shape.style.transform = `translate(${randomX}vw, ${randomY}vh) scale(${randomScale}) rotate(${randomRotate}deg)`;
+                    shape.style.backgroundColor = getRandomColor();
+                    
+                    // Zweite Transformationsphase
+                    setTimeout(() => {
+                        shape.style.transform = 'translate(0, 0) scale(1) rotate(0)';
+                        shape.style.backgroundColor = index % 2 === 0 ? '#4a8cff' : '#ff6b6b';
+                        
+                        // Finale Positionierung für neue Slide
+                        if (index === shapes.length - 1) {
+                            setTimeout(() => {
+                                overlay.style.display = 'none';
+                                isTransitioning = false;
+                            }, 1000);
+                        }
+                    }, 2000 + index * 200);
+                }, index * 100);
+            });
+        }
+        
+        function getRandomColor() {
+            const colors = ['#2a5885', '#4a8cff', '#ff6b6b', '#ffffff', '#121212'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        // Interaktive Demo
+        function showDemo() {
+            alert('Demo unseres Gittertiers der Zukunft:\n\n1. Sprachbefehl: "Wo finde ich Milch?"\n2. Navi zeigt Weg zu Milchprodukten\n3. Wagen folgt autonom mit 2m Abstand\n4. Automatischer Checkout an der Kasse\n5. Rückkehr zum Sammelpunkt nach Bezahlung');
+        }
+        
+        // PPTX-Generierung
+        function generatePPTX() {
+            const pptx = new PptxGenJS();
+            pptx.layout = 'LAYOUT_16x9';
+            
+            // Historische Slides
+            for (let i = 1; i <= 10; i++) {
+                let slide = pptx.addSlide();
+                slide.background = { color: 'FFFFFF' };
+                slide.addText(`Folie ${i}: Historische Entwicklung`, 
+                    { x: 1, y: 0.5, w: 8, h: 1, fontSize: 24, bold: true, color: '2a5885' });
+                slide.addText(`Inhalt der historischen Folie ${i}`, 
+                    { x: 1, y: 2, w: 8, h: 3, fontSize: 18, color: '000000' });
+                slide.addImage({ path: `presi${i}.png`, x: 9, y: 1, w: 6, h: 4.5 });
+            }
+            
+            // Zukunfts-Slides
+            for (let i = 11; i <= 17; i++) {
+                let slide = pptx.addSlide();
+                slide.background = { color: '121212' };
+                slide.addText(`Folie ${i}: Gittertier der Zukunft`, 
+                    { x: 1, y: 0.5, w: 8, h: 1, fontSize: 24, bold: true, color: '4a8cff' });
+                slide.addText(`Inhalt der Zukunftsfolie ${i-10}`, 
+                    { x: 1, y: 2, w: 8, h: 3, fontSize: 18, color: 'FFFFFF' });
+                slide.addImage({ path: `presi${i}.png`, x: 9, y: 1, w: 6, h: 4.5 });
+            }
+            
+            pptx.writeFile({ fileName: 'Gittertier-der-Zukunft-Präsentation.pptx' });
+        }
+        
+        // Initiale Slide anzeigen
+        showSlide(1);
     </script>
 </body>
 </html>
