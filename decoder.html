@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LZString Decoder</title>
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --text: #212529;
+      --accent: #2c6fd1;
+      --surface: #ffffff;
+      --border: #dee2e6;
+      --success: #198754;
+      --error: #dc3545;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --text: #e9ecef;
+        --accent: #4d9fec;
+        --surface: #1e1e1e;
+        --border: #495057;
+        --success: #20c997;
+        --error: #ff6b6b;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface);
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    header {
+      padding: 2rem 2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      text-align: center;
+      color: var(--accent);
+    }
+
+    main {
+      padding: 1.5rem 2rem 2rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.8rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 1.25rem;
+      font-size: 0.95rem;
+      font-family: 'SF Mono', Menlo, Consolas, monospace;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      resize: vertical;
+      transition: border 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(44, 111, 209, 0.15);
+    }
+
+    button {
+      width: 100%;
+      padding: 1.1rem;
+      font-size: 1.05rem;
+      font-weight: 500;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #1a5db7;
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .output-container {
+      margin-top: 2.2rem;
+    }
+
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .status {
+      font-size: 0.85rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 50px;
+      background: #e9ecef;
+      color: #495057;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .status {
+        background: #2b3035;
+        color: #adb5bd;
+      }
+    }
+
+    .status-success {
+      background: rgba(25, 135, 84, 0.15);
+      color: var(--success);
+    }
+
+    .status-error {
+      background: rgba(220, 53, 69, 0.15);
+      color: var(--error);
+    }
+
+    pre {
+      background: rgba(0, 0, 0, 0.025);
+      padding: 1.5rem;
+      border-radius: 12px;
+      font-family: 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 50vh;
+      overflow: auto;
+      border: 1px solid var(--border);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      pre {
+        background: rgba(255, 255, 255, 0.03);
+      }
+    }
+
+    footer {
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #6c757d;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .container {
+        border-radius: 12px;
+      }
+      
+      header, main {
+        padding: 1.5rem;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>LZString Decoder</h1>
+    </header>
+    
+    <main>
+      <div class="input-group">
+        <textarea 
+          id="input" 
+          placeholder="Komprimierten Base64-String einfügen"
+          autocomplete="off"
+          spellcheck="false"
+        ></textarea>
+      </div>
+      
+      <button onclick="decode()">Dekodieren</button>
+      
+      <div class="output-container">
+        <div class="output-header">
+          <h2>Ergebnis</h2>
+          <div id="status" class="status">Inaktiv</div>
+        </div>
+        <pre id="output"></pre>
+      </div>
+    </main>
+    
+    <footer>
+      <p>LZString Komprimierung • Dekodierung in Echtzeit</p>
+    </footer>
+  </div>
+
+  <script>
+    const inputEl = document.getElementById('input');
+    const outputEl = document.getElementById('output');
+    const statusEl = document.getElementById('status');
+    
+    function decode() {
+      const input = inputEl.value.trim();
+      
+      if (!input) {
+        statusEl.textContent = 'Leere Eingabe';
+        statusEl.className = 'status status-error';
+        outputEl.textContent = '';
+        return;
+      }
+      
+      statusEl.textContent = 'Verarbeitung';
+      statusEl.className = 'status';
+      
+      try {
+        const startTime = performance.now();
+        const decompressed = LZString.decompressFromBase64(input);
+        
+        if (!decompressed) {
+          throw new Error('Dekompression fehlgeschlagen');
+        }
+        
+        const result = JSON.parse(decompressed);
+        const jsonString = JSON.stringify(result, null, 2);
+        const endTime = performance.now();
+        
+        outputEl.textContent = jsonString;
+        statusEl.textContent = `Erfolg (${(endTime - startTime).toFixed(1)}ms)`;
+        statusEl.className = 'status status-success';
+      } catch (error) {
+        outputEl.textContent = `Fehler: `;
+        statusEl.textContent = 'Fehlgeschlagen';
+        statusEl.className = 'status status-error';
+      }
+    }
+    
+    // Enter-Taste zum Dekodieren
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        decode();
+      }
+    });
+  </script>
+
+</body>
+</html>
