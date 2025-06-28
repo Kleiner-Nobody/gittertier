@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LZString Decoder</title>
+  <title>LZString Transformation</title>
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <style>
     :root {
@@ -14,6 +14,7 @@
       --border: #dee2e6;
       --success: #198754;
       --error: #dc3545;
+      --module-gap: 2.5rem;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -49,38 +50,90 @@
 
     .container {
       width: 100%;
-      max-width: 680px;
+      max-width: 780px;
       background: var(--surface);
       border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
       overflow: hidden;
       border: 1px solid var(--border);
     }
 
     header {
-      padding: 2rem 2rem 1.5rem;
+      padding: 2.2rem 2.5rem 1.8rem;
       border-bottom: 1px solid var(--border);
+      text-align: center;
     }
 
     h1 {
-      font-size: 1.8rem;
+      font-size: 1.9rem;
       font-weight: 600;
       letter-spacing: -0.015em;
-      text-align: center;
       color: var(--accent);
+      margin-bottom: 0.4rem;
     }
 
-    main {
-      padding: 1.5rem 2rem 2rem;
+    .subtitle {
+      font-size: 0.95rem;
+      color: #6c757d;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .modules {
+      padding: 1.5rem 2.5rem 1rem;
+    }
+
+    .module {
+      margin-bottom: var(--module-gap);
+      position: relative;
+    }
+
+    .module:after {
+      content: "";
+      position: absolute;
+      bottom: calc(var(--module-gap) * -0.7);
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border);
+      opacity: 0.5;
+    }
+
+    .module:last-child:after {
+      display: none;
+    }
+
+    .module-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .module-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(44, 111, 209, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+
+    .module-title {
+      font-size: 1.35rem;
+      font-weight: 500;
     }
 
     .input-group {
-      margin-bottom: 1.8rem;
+      margin-bottom: 1.5rem;
     }
 
     textarea {
       width: 100%;
-      min-height: 160px;
+      min-height: 150px;
       padding: 1.25rem;
       font-size: 0.95rem;
       font-family: 'SF Mono', Menlo, Consolas, monospace;
@@ -89,7 +142,7 @@
       background: var(--surface);
       color: var(--text);
       resize: vertical;
-      transition: border 0.2s;
+      transition: all 0.2s;
     }
 
     textarea:focus {
@@ -98,21 +151,44 @@
       box-shadow: 0 0 0 3px rgba(44, 111, 209, 0.15);
     }
 
+    .btn-group {
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+
     button {
-      width: 100%;
+      flex: 1;
       padding: 1.1rem;
       font-size: 1.05rem;
       font-weight: 500;
-      background: var(--accent);
-      color: white;
       border: none;
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    button:hover {
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
       background: #1a5db7;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(44, 111, 209, 0.2);
+    }
+
+    .btn-secondary {
+      background: rgba(108, 117, 125, 0.1);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(108, 117, 125, 0.2);
       transform: translateY(-1px);
     }
 
@@ -121,7 +197,7 @@
     }
 
     .output-container {
-      margin-top: 2.2rem;
+      margin-top: 1.8rem;
     }
 
     .output-header {
@@ -131,8 +207,8 @@
       margin-bottom: 0.8rem;
     }
 
-    h2 {
-      font-size: 1.2rem;
+    h3 {
+      font-size: 1.15rem;
       font-weight: 500;
     }
 
@@ -142,6 +218,7 @@
       border-radius: 50px;
       background: #e9ecef;
       color: #495057;
+      font-weight: 500;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -170,7 +247,7 @@
       line-height: 1.5;
       white-space: pre-wrap;
       word-break: break-word;
-      max-height: 50vh;
+      max-height: 40vh;
       overflow: auto;
       border: 1px solid var(--border);
     }
@@ -182,14 +259,21 @@
     }
 
     footer {
-      padding: 1.5rem 2rem;
+      padding: 1.8rem 2.5rem;
       text-align: center;
       font-size: 0.85rem;
       color: #6c757d;
       border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.02);
     }
 
-    @media (max-width: 600px) {
+    @media (prefers-color-scheme: dark) {
+      footer {
+        background: rgba(255, 255, 255, 0.02);
+      }
+    }
+
+    @media (max-width: 650px) {
       body {
         padding: 1rem;
       }
@@ -198,12 +282,20 @@
         border-radius: 12px;
       }
       
-      header, main {
+      header, .modules {
         padding: 1.5rem;
       }
       
       h1 {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
+      }
+      
+      .module-title {
+        font-size: 1.2rem;
+      }
+      
+      .btn-group {
+        flex-direction: column;
       }
     }
   </style>
@@ -212,54 +304,147 @@
 
   <div class="container">
     <header>
-      <h1>LZString Decoder</h1>
+      <h1>LZString Transformation</h1>
+      <p class="subtitle">Komprimierung und Dekompression von Daten in Echtzeit</p>
     </header>
     
-    <main>
-      <div class="input-group">
-        <textarea 
-          id="input" 
-          placeholder="Komprimierten Base64-String einfügen"
-          autocomplete="off"
-          spellcheck="false"
-        ></textarea>
-      </div>
-      
-      <button onclick="decode()">Dekodieren</button>
-      
-      <div class="output-container">
-        <div class="output-header">
-          <h2>Ergebnis</h2>
-          <div id="status" class="status">Inaktiv</div>
+    <div class="modules">
+      <!-- Encoder Module -->
+      <section class="module">
+        <div class="module-header">
+          <div class="module-icon">→</div>
+          <h2 class="module-title">Encoder</h2>
         </div>
-        <pre id="output"></pre>
-      </div>
-    </main>
+        
+        <div class="input-group">
+          <textarea 
+            id="encoder-input" 
+            placeholder="JSON-Daten oder Text zur Komprimierung eingeben"
+            autocomplete="off"
+            spellcheck="false"
+          ></textarea>
+        </div>
+        
+        <div class="btn-group">
+          <button class="btn-primary" onclick="encode()">
+            Komprimieren
+          </button>
+          <button class="btn-secondary" onclick="clearEncoder()">
+            Zurücksetzen
+          </button>
+        </div>
+        
+        <div class="output-container">
+          <div class="output-header">
+            <h3>Komprimierte Ausgabe</h3>
+            <div id="encoder-status" class="status">Bereit</div>
+          </div>
+          <pre id="encoder-output"></pre>
+        </div>
+      </section>
+      
+      <!-- Decoder Module -->
+      <section class="module">
+        <div class="module-header">
+          <div class="module-icon">←</div>
+          <h2 class="module-title">Decoder</h2>
+        </div>
+        
+        <div class="input-group">
+          <textarea 
+            id="decoder-input" 
+            placeholder="Komprimierten Base64-String einfügen"
+            autocomplete="off"
+            spellcheck="false"
+          ></textarea>
+        </div>
+        
+        <div class="btn-group">
+          <button class="btn-primary" onclick="decode()">
+            Dekomprimieren
+          </button>
+          <button class="btn-secondary" onclick="clearDecoder()">
+            Zurücksetzen
+          </button>
+        </div>
+        
+        <div class="output-container">
+          <div class="output-header">
+            <h3>Dekodierte Ausgabe</h3>
+            <div id="decoder-status" class="status">Bereit</div>
+          </div>
+          <pre id="decoder-output"></pre>
+        </div>
+      </section>
+    </div>
     
     <footer>
-      <p>LZString Komprimierung • Dekodierung in Echtzeit</p>
+      <p>LZString Komprimierungstechnologie • Echtzeit-Transformation</p>
     </footer>
   </div>
 
   <script>
-    const inputEl = document.getElementById('input');
-    const outputEl = document.getElementById('output');
-    const statusEl = document.getElementById('status');
+    // Elemente referenzieren
+    const encoderInput = document.getElementById('encoder-input');
+    const encoderOutput = document.getElementById('encoder-output');
+    const encoderStatus = document.getElementById('encoder-status');
     
-    function decode() {
-      const input = inputEl.value.trim();
-      
-      if (!input) {
-        statusEl.textContent = 'Leere Eingabe';
-        statusEl.className = 'status status-error';
-        outputEl.textContent = '';
-        return;
-      }
-      
-      statusEl.textContent = 'Verarbeitung';
-      statusEl.className = 'status';
+    const decoderInput = document.getElementById('decoder-input');
+    const decoderOutput = document.getElementById('decoder-output');
+    const decoderStatus = document.getElementById('decoder-status');
+    
+    // Encoder-Funktion
+    function encode() {
+      const input = encoderInput.value.trim();
+      encoderStatus.textContent = 'Verarbeitung';
+      encoderStatus.className = 'status';
       
       try {
+        if (!input) {
+          throw new Error('Eingabe ist leer');
+        }
+        
+        const startTime = performance.now();
+        
+        // Versuchen, Eingabe als JSON zu parsen
+        let parsedInput = input;
+        try {
+          const jsonObj = JSON.parse(input);
+          parsedInput = JSON.stringify(jsonObj);
+        } catch {
+          // Kein gültiges JSON - als normalen Text behandeln
+        }
+        
+        // Komprimierung durchführen
+        const compressed = LZString.compressToBase64(parsedInput);
+        const endTime = performance.now();
+        
+        // Ausgabe formatieren
+        encoderOutput.textContent = compressed;
+        encoderStatus.textContent = `Komprimiert (${(endTime - startTime).toFixed(1)}ms)`;
+        encoderStatus.className = 'status status-success';
+        
+        // Automatisch in Decoder-Input übernehmen
+        decoderInput.value = compressed;
+        
+      } catch (error) {
+        encoderOutput.textContent = `Fehler: ${error.message}`;
+        encoderStatus.textContent = 'Fehlgeschlagen';
+        encoderStatus.className = 'status status-error';
+      }
+    }
+    
+    // Decoder-Funktion
+    function decode() {
+      const input = decoderInput.value.trim();
+      decoderStatus.textContent = 'Verarbeitung';
+      decoderStatus.className = 'status';
+      
+      try {
+        if (!input) {
+          throw new Error('Eingabe ist leer');
+        }
+        
         const startTime = performance.now();
         const decompressed = LZString.decompressFromBase64(input);
         
@@ -267,22 +452,51 @@
           throw new Error('Dekompression fehlgeschlagen');
         }
         
-        const result = JSON.parse(decompressed);
-        const jsonString = JSON.stringify(result, null, 2);
+        // Versuchen, das Ergebnis als JSON zu parsen
+        let formattedOutput = decompressed;
+        try {
+          const jsonObj = JSON.parse(decompressed);
+          formattedOutput = JSON.stringify(jsonObj, null, 2);
+        } catch {
+          // Kein JSON - unverändert anzeigen
+        }
+        
         const endTime = performance.now();
         
-        outputEl.textContent = jsonString;
-        statusEl.textContent = `Erfolg (${(endTime - startTime).toFixed(1)}ms)`;
-        statusEl.className = 'status status-success';
+        decoderOutput.textContent = formattedOutput;
+        decoderStatus.textContent = `Dekodiert (${(endTime - startTime).toFixed(1)}ms)`;
+        decoderStatus.className = 'status status-success';
+        
       } catch (error) {
-        outputEl.textContent = `Fehler: `;
-        statusEl.textContent = 'Fehlgeschlagen';
-        statusEl.className = 'status status-error';
+        decoderOutput.textContent = `Fehler: ${error.message}`;
+        decoderStatus.textContent = 'Fehlgeschlagen';
+        decoderStatus.className = 'status status-error';
       }
     }
     
-    // Enter-Taste zum Dekodieren
-    inputEl.addEventListener('keydown', (e) => {
+    // Hilfsfunktionen
+    function clearEncoder() {
+      encoderInput.value = '';
+      encoderOutput.textContent = '';
+      encoderStatus.textContent = 'Bereit';
+      encoderStatus.className = 'status';
+    }
+    
+    function clearDecoder() {
+      decoderInput.value = '';
+      decoderOutput.textContent = '';
+      decoderStatus.textContent = 'Bereit';
+      decoderStatus.className = 'status';
+    }
+    
+    // Tastaturkürzel
+    encoderInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        encode();
+      }
+    });
+    
+    decoderInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         decode();
       }
