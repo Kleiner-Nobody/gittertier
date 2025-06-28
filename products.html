@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produktmanager | Modern Dashboard</title>
+    <title>Produktmanager | Cloud Sync</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
@@ -393,6 +393,11 @@
             color: white;
         }
 
+        .btn-cloud {
+            background: #6f42c1;
+            color: white;
+        }
+
         .toolbar button i {
             font-size: 1.8rem;
         }
@@ -502,7 +507,7 @@
         }
 
         .dark-mode .product-price {
-            background: rgba(182, 245, 196, 0.953);
+            background: rgba(40, 167, 69, 0.2);
         }
 
         .product-actions {
@@ -733,6 +738,42 @@
             gap: 8px;
         }
 
+        /* Cloud status */
+        .cloud-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: var(--ms-card-shadow);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--ms-success);
+            border: 2px solid var(--ms-success);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .cloud-status {
+            background: rgba(40, 167, 69, 0.2);
+        }
+
+        .cloud-status.syncing {
+            background: rgba(0, 120, 212, 0.1);
+            color: var(--ms-blue);
+            border-color: var(--ms-blue);
+        }
+
+        .cloud-status.error {
+            background: rgba(209, 52, 56, 0.1);
+            color: var(--ms-error);
+            border-color: var(--ms-error);
+        }
+
         /* Responsive adjustments */
         @media (min-width: 480px) {
             .admin-header {
@@ -824,6 +865,15 @@
 
         .fade-in {
             animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
         }
     </style>
 </head>
@@ -917,6 +967,9 @@
                         <button class="btn btn-primary" onclick="importProducts()">
                             <i class="fas fa-file-import"></i> Import
                         </button>
+                        <button class="btn btn-cloud" onclick="loadCloudProducts()">
+                            <i class="fas fa-cloud-download-alt"></i> Cloud Sync
+                        </button>
                         <input type="file" id="file-input" accept=".json" style="display: none;">
                     </div>
 
@@ -967,6 +1020,11 @@
         </div>
     </div>
 
+    <div class="cloud-status" id="cloudStatus">
+        <i class="fas fa-cloud"></i>
+        <span>Mit Cloud verbunden</span>
+    </div>
+
     <script>
         // DOM Elements
         const hamburger = document.getElementById('hamburger');
@@ -975,11 +1033,13 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const modalOverlay = document.getElementById('modal-overlay');
         const themeToggle = document.getElementById('themeToggle');
+        const cloudStatus = document.getElementById('cloudStatus');
         
         // Product data management
         let products = JSON.parse(localStorage.getItem('products')) || {};
         let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
         let currentEditBarcode = null;
+        const cloudUrl = "https://raw.githubusercontent.com/Kleiner-Nobody/gittertier/main/products.json";
         
         // Initialize the application
         function initialize() {
@@ -992,6 +1052,9 @@
             if(activityLog.length === 0) {
                 addActivity('Produktmanager gestartet', 'success');
             }
+            
+            // Show cloud status
+            updateCloudStatus('connected');
         }
         
         // Apply dark mode based on localStorage
@@ -1155,7 +1218,7 @@
                     <div style="text-align: center; padding: 30px; color: var(--ms-dark); opacity: 0.7;">
                         <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 15px;"></i>
                         <p style="font-size: 1.2rem; font-weight: 600;">Keine Produkte vorhanden</p>
-                        <p>Fügen Sie ein neues Produkt hinzu, um zu beginnen</p>
+                        <p>Fügen Sie ein neues Produkt hinzu oder laden Sie Produkte aus der Cloud</p>
                     </div>
                 `;
                 return;
@@ -1240,6 +1303,62 @@
             };
             reader.readAsText(file);
         });
+        
+        // Load products from cloud JSON
+        async function loadCloudProducts() {
+            try {
+                updateCloudStatus('syncing');
+                
+                const response = await fetch(cloudUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const cloudProducts = await response.json();
+                
+                if (!isValidProductStructure(cloudProducts)) {
+                    throw new Error('Ungültiges Cloud-Datenformat');
+                }
+                
+                const productCount = Object.keys(cloudProducts).length;
+                
+                if (confirm(`${productCount} Produkte aus der Cloud laden?`)) {
+                    // Merge cloud products with existing ones
+                    Object.assign(products, cloudProducts);
+                    
+                    // Save to localStorage
+                    localStorage.setItem('products', JSON.stringify(products));
+                    
+                    // Update UI
+                    renderProducts();
+                    
+                    addActivity(`${productCount} Produkte aus der Cloud geladen`, 'success');
+                    updateCloudStatus('connected');
+                }
+            } catch (error) {
+                addActivity(`Cloud-Sync fehlgeschlagen: ${error.message}`, 'error');
+                updateCloudStatus('error');
+                setTimeout(() => updateCloudStatus('connected'), 3000);
+            }
+        }
+        
+        function updateCloudStatus(status) {
+            cloudStatus.className = 'cloud-status';
+            
+            switch(status) {
+                case 'syncing':
+                    cloudStatus.classList.add('syncing');
+                    cloudStatus.innerHTML = '<i class="fas fa-sync spinner"></i> <span>Synchronisiere...</span>';
+                    break;
+                case 'connected':
+                    cloudStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Mit Cloud verbunden</span>';
+                    break;
+                case 'error':
+                    cloudStatus.classList.add('error');
+                    cloudStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Cloud-Fehler</span>';
+                    break;
+            }
+            
+            cloudStatus.style.display = 'flex';
+        }
         
         function isValidProductStructure(data) {
             if (typeof data !== 'object' || Array.isArray(data)) return false;
