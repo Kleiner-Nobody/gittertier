@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile-Optimized Admin Dashboard</title>
+    <title>Produktmanager - Mobile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --ms-blue: #0078d4;
@@ -29,17 +30,17 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
             background-color: var(--ms-gray);
             color: var(--ms-dark);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow-x: hidden;
             line-height: 1.6;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Mobile-First Header */
@@ -122,8 +123,7 @@
             position: fixed;
             top: 70px;
             left: -100%;
-            width: 85%;
-            max-width: 320px;
+            width: 100%;
             height: calc(100vh - 70px);
             background: var(--ms-light);
             padding: 25px 15px;
@@ -211,6 +211,7 @@
             max-width: 100%;
             overflow-x: hidden;
             margin-top: 20px;
+            width: 100%;
         }
 
         .settings-container {
@@ -250,27 +251,28 @@
         /* Toolbar with large buttons */
         .toolbar {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: 1fr;
             gap: 15px;
             padding: 0 0 20px 0;
             margin-bottom: 20px;
         }
 
         .toolbar button {
-            padding: 16px 12px;
+            padding: 20px 15px;
             border: none;
             border-radius: var(--ms-border-radius);
-            font-size: 1rem;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: var(--ms-transition);
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 12px;
             font-weight: 700;
             box-shadow: var(--ms-card-shadow);
-            min-height: 90px;
+            min-height: 70px;
+            width: 100%;
         }
 
         .btn-accent {
@@ -289,11 +291,11 @@
         }
 
         .toolbar button i {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
         }
 
         .toolbar button:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             box-shadow: var(--ms-card-shadow-hover);
         }
 
@@ -301,7 +303,7 @@
         .product-list {
             background: var(--ms-light);
             border-radius: var(--ms-border-radius);
-            padding: 20px;
+            padding: 15px;
             box-shadow: var(--ms-card-shadow);
             margin: 25px 0;
             border: 1px solid var(--ms-gray-dark);
@@ -318,6 +320,7 @@
             box-shadow: var(--ms-card-shadow);
             transition: var(--ms-transition);
             border: 2px solid var(--ms-gray-dark);
+            position: relative;
         }
 
         .product-item:hover {
@@ -354,16 +357,16 @@
 
         .product-actions {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-top: 15px;
         }
 
         .product-actions button {
-            padding: 12px 10px;
+            padding: 14px 10px;
             border: none;
             border-radius: var(--ms-border-radius);
-            font-size: 0.9rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: var(--ms-transition);
             display: flex;
@@ -375,7 +378,7 @@
         }
 
         .product-actions button i {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
         }
 
         .product-actions button:hover {
@@ -427,53 +430,189 @@
             margin-bottom: 4px;
         }
 
-        /* Cloud status */
-        .cloud-status {
+        /* Modal styles */
+        .modal-overlay {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            box-shadow: var(--ms-card-shadow);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--ms-success);
-            border: 2px solid var(--ms-success);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
         }
 
-        .cloud-status i {
+        .modal-overlay.active {
+            display: block;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: var(--ms-border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--ms-gray-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ms-dark);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--ms-dark);
+            padding: 5px;
+        }
+
+        .modal-content {
+            padding: 20px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--ms-gray-dark);
+            border-radius: var(--ms-border-radius);
+            font-size: 1rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: var(--ms-border-radius);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Notification center */
+        .notification-center {
+            position: fixed;
+            top: 70px;
+            right: -320px;
+            width: 300px;
+            height: calc(100vh - 70px);
+            background: var(--ms-light);
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            z-index: 100;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .notification-center.active {
+            right: 0;
+        }
+
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--ms-gray-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-title {
+            font-weight: 700;
             font-size: 1.2rem;
+        }
+
+        .clear-notifications {
+            background: none;
+            border: none;
+            color: var(--ms-blue);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .notification-list {
+            padding: 15px;
+        }
+
+        .notification-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: var(--ms-gray-light);
+            border-radius: var(--ms-border-radius);
+            position: relative;
+        }
+
+        .notification-item::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background: var(--ms-blue);
+            border-radius: var(--ms-border-radius) 0 0 var(--ms-border-radius);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--ms-error);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
 
         /* Responsive adjustments */
         @media (min-width: 768px) {
-            .admin-header {
-                padding: 16px 30px;
-            }
-            
-            .logo h1 {
-                font-size: 1.6rem;
-            }
-            
             .toolbar {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            }
-            
-            .product-item {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
             
             .product-actions {
                 grid-template-columns: repeat(3, 1fr);
-                margin-top: 0;
-                width: auto;
+            }
+            
+            .admin-sidebar {
+                width: 85%;
+                max-width: 320px;
             }
         }
 
@@ -505,6 +644,22 @@
             .overlay {
                 display: none !important;
             }
+            
+            .toolbar {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .product-item {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .product-actions {
+                grid-template-columns: repeat(3, 1fr);
+                margin-top: 0;
+                width: auto;
+            }
         }
 
         /* Animations */
@@ -526,8 +681,7 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="admin-header">
+    <div class="admin-header">
         <div class="logo">
             <button class="hamburger" id="hamburger">
                 <i class="fas fa-bars"></i>
@@ -535,241 +689,573 @@
             <h1>Produktmanager</h1>
         </div>
         <div class="header-controls">
+            <button class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationBadge">0</span>
+            </button>
             <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
-                <span>Abmelden</span>
             </button>
         </div>
-    </header>
+    </div>
 
-    <!-- Sidebar and overlay -->
     <div class="overlay" id="overlay"></div>
-    <aside class="admin-sidebar" id="sidebar">
-        <div class="nav-container">
-            <a href="control" class="nav-link">
-                <i class="fas fa-cogs"></i>
-                Steuerung
-                <span class="new-feature">NEU</span>
-            </a>
-            
-            <a href="navi" class="nav-link">
-                <i class="fas fa-map-marked-alt"></i>
-                Navigation
-            </a>
-            
-            <a href="admin" class="nav-link">
-                <i class="fas fa-tachometer-alt"></i>
-                Dashboard
-            </a>
-            
-            <a href="products" class="nav-link active">
-                <i class="fas fa-box"></i>
-                Produktverwaltung
-            </a>
-            
-            <a href="index" class="nav-link">
-                <i class="fas fa-cash-register"></i>
-                Kassenansicht
-            </a>
-            
-            <a href="archive" class="nav-link">
-                <i class="fas fa-archive"></i>
-                Archiv
-            </a>
-            
-            <a href="merchant" class="nav-link">
-                <i class="fas fa-store"></i>
-                Händleransicht
-            </a>
-            
-            <a href="analytics" class="nav-link">
-                <i class="fas fa-chart-line"></i>
-                Analysen
-            </a>
-            
-            <a href="settings" class="nav-link">
-                <i class="fas fa-cog"></i>
-                Einstellungen
-            </a>
-        </div>
-    </aside>
 
-    <!-- Main content -->
-    <main class="admin-content">
-        <div class="settings-container">
-            <div class="settings-section">
-                <div class="section-header">
-                    <i class="fas fa-boxes"></i>
-                    <h2>Produktverwaltung</h2>
-                </div>
+    <div class="admin-container">
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="nav-container">
+                <a href="control" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    Steuerung
+                    <span class="new-feature">NEU</span>
+                </a>
                 
-                <div class="toolbar">
-                    <button class="btn-accent" onclick="showProductModal()">
-                        <i class="fas fa-plus"></i>
-                        Neues Produkt
-                    </button>
-                    <button class="btn-primary" onclick="exportProducts()">
-                        <i class="fas fa-file-export"></i>
-                        Export
-                    </button>
-                    <button class="btn-primary" onclick="importProducts()">
-                        <i class="fas fa-file-import"></i>
-                        Import
-                    </button>
-                    <button class="btn-primary" onclick="showCloudModal()">
-                        <i class="fas fa-cloud"></i>
-                        Cloud
-                    </button>
-                </div>
+                <a href="navi" class="nav-link">
+                    <i class="fas fa-map-marked-alt"></i>
+                    Navigation
+                </a>
+                
+                <a href="admin" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                
+                <a href="products" class="nav-link active">
+                    <i class="fas fa-box"></i>
+                    Produktverwaltung
+                </a>
+                
+                <a href="index" class="nav-link">
+                    <i class="fas fa-cash-register"></i>
+                    Kassenansicht
+                </a>
+                
+                <a href="archive" class="nav-link">
+                    <i class="fas fa-archive"></i>
+                    Archiv
+                </a>
+                
+                <a href="merchant" class="nav-link">
+                    <i class="fas fa-store"></i>
+                    Händleransicht
+                </a>
+                
+                <a href="analytics" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Analysen
+                </a>
+                
+                <a href="settings" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    Einstellungen
+                </a>
+            </div>
+        </aside>
 
-                <div class="bulk-actions" id="bulk-actions" style="display: none;">
-                    <button class="btn btn-error" onclick="deleteSelected()">
-                        <i class="fas fa-trash"></i> Löschen
-                    </button>
-                    <button class="btn btn-primary" onclick="exportSelected()">
-                        <i class="fas fa-file-export"></i> Export
-                    </button>
-                    <button class="btn btn-primary" onclick="clearSelection()">
-                        <i class="fas fa-times"></i> Abbrechen
-                    </button>
-                </div>
-
-                <div class="product-list" id="product-list">
-                    <div class="product-item">
-                        <div class="product-info">
-                            <h3>Premium Kaffee</h3>
-                            <p><i class="fas fa-barcode"></i> 123456789012</p>
-                            <div class="product-price">€4.99</div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn-primary">
-                                <i class="fas fa-edit"></i> Bearbeiten
-                            </button>
-                            <button class="btn-primary">
-                                <i class="fas fa-qrcode"></i> QR
-                            </button>
-                            <button class="btn-error">
-                                <i class="fas fa-trash"></i> Löschen
-                            </button>
-                        </div>
+        <main class="admin-content">
+            <div class="settings-container">
+                <div class="settings-section">
+                    <div class="section-header">
+                        <i class="fas fa-boxes"></i>
+                        <h2>Produktverwaltung</h2>
                     </div>
                     
-                    <div class="product-item">
-                        <div class="product-info">
-                            <h3>Bio Tee</h3>
-                            <p><i class="fas fa-barcode"></i> 987654321098</p>
-                            <div class="product-price">€3.49</div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn-primary">
-                                <i class="fas fa-edit"></i> Bearbeiten
-                            </button>
-                            <button class="btn-primary">
-                                <i class="fas fa-qrcode"></i> QR
-                            </button>
-                            <button class="btn-error">
-                                <i class="fas fa-trash"></i> Löschen
-                            </button>
-                        </div>
+                    <div class="toolbar">
+                        <button class="btn btn-accent" onclick="showProductModal()">
+                            <i class="fas fa-plus"></i> Neues Produkt
+                        </button>
+                        <button class="btn btn-primary" onclick="exportProducts()">
+                            <i class="fas fa-file-export"></i> Export
+                        </button>
+                        <button class="btn btn-primary" onclick="importProducts()">
+                            <i class="fas fa-file-import"></i> Import
+                        </button>
+                        <input type="file" id="file-input" accept=".json" style="display: none;">
                     </div>
-                    
-                    <div class="product-item">
-                        <div class="product-info">
-                            <h3>Frische Brötchen</h3>
-                            <p><i class="fas fa-barcode"></i> 567890123456</p>
-                            <div class="product-price">€2.29</div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn-primary">
-                                <i class="fas fa-edit"></i> Bearbeiten
-                            </button>
-                            <button class="btn-primary">
-                                <i class="fas fa-qrcode"></i> QR
-                            </button>
-                            <button class="btn-error">
-                                <i class="fas fa-trash"></i> Löschen
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="activity-log">
-                    <h3><i class="fas fa-clipboard-list"></i> Aktivitäten</h3>
-                    <div id="activity-list">
-                        <div class="activity-entry">
-                            <div class="activity-time">28.06.2025, 14:30</div>
-                            <div>Produkt "Bio Tee" wurde hinzugefügt</div>
-                        </div>
-                        <div class="activity-entry">
-                            <div class="activity-time">28.06.2025, 13:45</div>
-                            <div>Preis für "Premium Kaffee" aktualisiert</div>
-                        </div>
-                        <div class="activity-entry">
-                            <div class="activity-time">28.06.2025, 12:20</div>
-                            <div>Erfolgreich mit Cloud synchronisiert</div>
-                        </div>
+                    <div class="bulk-actions" id="bulk-actions" style="display: none;">
+                        <button class="btn btn-error" onclick="deleteSelected()">
+                            <i class="fas fa-trash"></i> Löschen
+                        </button>
+                        <button class="btn btn-primary" onclick="exportSelected()">
+                            <i class="fas fa-file-export"></i> Export
+                        </button>
+                        <button class="btn btn-primary" onclick="clearSelection()">
+                            <i class="fas fa-times"></i> Abbrechen
+                        </button>
+                    </div>
+
+                    <div class="product-list" id="product-list">
+                        <!-- Products will be loaded here -->
+                    </div>
+
+                    <div class="activity-log">
+                        <h3><i class="fas fa-clipboard-list"></i> Aktivitäten</h3>
+                        <div id="activity-list"></div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
+    </div>
 
-        <div class="cloud-status" id="cloud-status">
-            <i class="fas fa-cloud"></i>
-            <span id="sync-status">Mit Cloud verbunden</span>
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
+    
+    <div id="product-modal" class="modal">
+        <div class="modal-header">
+            <h2 id="modal-title">Neues Produkt</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
-    </main>
+        <div class="modal-content">
+            <input type="text" id="product-name" placeholder="Produktname" class="modal-input">
+            <input type="number" step="0.01" id="product-price" placeholder="Preis (€)" class="modal-input">
+            <input type="text" id="product-barcode" placeholder="Barcode" class="modal-input">
+            <div class="modal-buttons">
+                <button class="btn btn-accent" onclick="saveProduct()">
+                    <i class="fas fa-save"></i> Speichern
+                </button>
+                <button class="btn btn-primary" onclick="closeModal()">
+                    <i class="fas fa-times"></i> Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div id="qr-modal" class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-qrcode"></i> QR-Code</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div id="qr-container" style="text-align: center; padding: 20px;"></div>
+        </div>
+    </div>
+
+    <!-- Notification Center -->
+    <div class="notification-center" id="notificationCenter">
+        <div class="notification-header">
+            <div class="notification-title">Benachrichtigungen</div>
+            <button class="clear-notifications" onclick="clearNotifications()">Alle löschen</button>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <!-- Notifications will be added here -->
+        </div>
+    </div>
 
     <script>
         // DOM Elements
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationCenter = document.getElementById('notificationCenter');
+        const notificationBadge = document.getElementById('notificationBadge');
         const logoutBtn = document.getElementById('logoutBtn');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const notificationList = document.getElementById('notificationList');
         
-        // Toggle sidebar on mobile
+        // Product data management
+        let products = JSON.parse(localStorage.getItem('products')) || {};
+        let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
+        let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+        let currentEditBarcode = null;
+        
+        // Initialize the application
+        function initialize() {
+            renderProducts();
+            renderActivityLog();
+            renderNotifications();
+            setupEventListeners();
+        }
+        
+        // Mobile sidebar toggle
         hamburger.addEventListener('click', (e) => {
             e.stopPropagation();
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
         });
         
-        // Close sidebar when clicking overlay
+        // Close sidebar when clicking outside
         overlay.addEventListener('click', () => {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         });
         
-        // Close sidebar when clicking outside on larger screens
+        // Notification center toggle
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationCenter.classList.toggle('active');
+        });
+        
+        // Close notification center when clicking outside
         document.addEventListener('click', (e) => {
-            if (window.innerWidth < 992 && !sidebar.contains(e.target) && !hamburger.contains(e.target)) {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
+            if (!notificationBtn.contains(e.target) && !notificationCenter.contains(e.target)) {
+                notificationCenter.classList.remove('active');
             }
         });
         
         // Logout functionality
         logoutBtn.addEventListener('click', () => {
             if (confirm('Möchten Sie sich wirklich abmelden?')) {
-                // Perform logout actions
-                alert('Abmeldung erfolgreich');
+                localStorage.removeItem('authToken');
+                window.location.href = 'login.html';
             }
         });
+
+        // Modal functions
+        function showProductModal(barcode = null) {
+            currentEditBarcode = barcode;
+            const modal = document.getElementById('product-modal');
+            
+            if (barcode && products[barcode]) {
+                document.getElementById('modal-title').textContent = 'Produkt bearbeiten';
+                const product = products[barcode];
+                document.getElementById('product-name').value = product.name;
+                document.getElementById('product-price').value = product.price;
+                document.getElementById('product-barcode').value = product.barcode;
+            } else {
+                document.getElementById('modal-title').textContent = 'Neues Produkt';
+                document.getElementById('product-name').value = '';
+                document.getElementById('product-price').value = '';
+                document.getElementById('product-barcode').value = '';
+            }
+            
+            modal.classList.add('active');
+            modalOverlay.classList.add('active');
+        }
         
-        // Simulated functions for demonstration
-        function showProductModal() {
-            alert('Neues Produkt-Modal würde angezeigt werden');
+        function showQR(barcode) {
+            const modal = document.getElementById('qr-modal');
+            const container = document.getElementById('qr-container');
+            
+            container.innerHTML = '';
+            new QRCode(container, {
+                text: barcode,
+                width: 200,
+                height: 200,
+                colorDark: "#2b3035",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            modal.classList.add('active');
+            modalOverlay.classList.add('active');
+        }
+        
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+            modalOverlay.classList.remove('active');
+            currentEditBarcode = null;
+        }
+        
+        // Close modals when clicking outside
+        modalOverlay.addEventListener('click', closeModal);
+        
+        // Prevent modal content from closing when clicking inside modal
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
+
+        // Product management
+        function saveProduct() {
+            const name = document.getElementById('product-name').value.trim();
+            const price = parseFloat(document.getElementById('product-price').value);
+            const barcode = document.getElementById('product-barcode').value.trim();
+            
+            if (!name || isNaN(price) || !barcode) {
+                alert('Bitte füllen Sie alle Felder korrekt aus');
+                return;
+            }
+            
+            // Update or create product
+            if (currentEditBarcode && currentEditBarcode !== barcode) {
+                // Remove old product if barcode changed
+                delete products[currentEditBarcode];
+            }
+            
+            products[barcode] = {
+                name,
+                price,
+                barcode,
+                createdAt: currentEditBarcode ? products[currentEditBarcode]?.createdAt || new Date().toISOString() : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('products', JSON.stringify(products));
+            
+            // Update UI
+            renderProducts();
+            closeModal();
+            
+            // Add activity
+            const action = currentEditBarcode ? 'aktualisiert' : 'hinzugefügt';
+            addActivity(`Produkt ${name} wurde ${action}`, 'success');
+            addNotification(`Produkt ${action}: ${name}`);
+        }
+        
+        function deleteProduct(barcode) {
+            if (!products[barcode]) return;
+            
+            const productName = products[barcode].name;
+            if (confirm(`Möchten Sie "${productName}" wirklich löschen?`)) {
+                delete products[barcode];
+                localStorage.setItem('products', JSON.stringify(products));
+                renderProducts();
+                addActivity(`Produkt ${productName} wurde gelöscht`, 'error');
+                addNotification(`Produkt gelöscht: ${productName}`);
+            }
+        }
+        
+        function renderProducts() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = '';
+            
+            if (Object.keys(products).length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>Keine Produkte vorhanden</p></div>';
+                return;
+            }
+            
+            Object.values(products).forEach(product => {
+                const item = document.createElement('div');
+                item.className = 'product-item';
+                item.innerHTML = `
+                    <div class="product-info">
+                        <h3>${product.name}</h3>
+                        <p><i class="fas fa-barcode"></i> ${product.barcode}</p>
+                        <div class="product-price">€${product.price.toFixed(2)}</div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn btn-primary" onclick="showProductModal('${product.barcode}')">
+                            <i class="fas fa-edit"></i> Bearbeiten
+                        </button>
+                        <button class="btn btn-error" onclick="deleteProduct('${product.barcode}')">
+                            <i class="fas fa-trash"></i> Löschen
+                        </button>
+                        <button class="btn btn-accent" onclick="showQR('${product.barcode}')">
+                            <i class="fas fa-qrcode"></i> QR
+                        </button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
         }
         
         function exportProducts() {
-            alert('Produkte werden exportiert');
+            try {
+                const data = JSON.stringify(products, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `produkte_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                addActivity('Produkte exportiert', 'success');
+                addNotification('Produkte erfolgreich exportiert');
+            } catch (error) {
+                addActivity(`Export fehlgeschlagen: ${error.message}`, 'error');
+                addNotification('Export fehlgeschlagen', 'error');
+            }
         }
         
         function importProducts() {
-            alert('Produkte werden importiert');
+            document.getElementById('file-input').click();
         }
         
-        function showCloudModal() {
-            alert('Cloud-Einstellungen werden angezeigt');
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedProducts = JSON.parse(e.target.result);
+                    
+                    if (!isValidProductStructure(importedProducts)) {
+                        throw new Error('Ungültiges Dateiformat');
+                    }
+                    
+                    if (!confirm(`${Object.keys(importedProducts).length} Produkte importieren?`)) return;
+                    
+                    // Merge products
+                    Object.assign(products, importedProducts);
+                    
+                    // Save to localStorage
+                    localStorage.setItem('products', JSON.stringify(products));
+                    
+                    // Update UI
+                    renderProducts();
+                    
+                    addActivity(`${Object.keys(importedProducts).length} Produkte importiert`, 'success');
+                    addNotification('Produkte erfolgreich importiert');
+                } catch (error) {
+                    addActivity(`Import fehlgeschlagen: ${error.message}`, 'error');
+                    addNotification('Import fehlgeschlagen', 'error');
+                }
+            };
+            reader.readAsText(file);
+        });
+        
+        function isValidProductStructure(data) {
+            if (typeof data !== 'object' || Array.isArray(data)) return false;
+            
+            return Object.values(data).every(item => 
+                item.hasOwnProperty('name') &&
+                item.hasOwnProperty('price') &&
+                item.hasOwnProperty('barcode')
+            );
+        }
+        
+        // Activity log
+        function addActivity(message, type = 'info') {
+            const entry = {
+                timestamp: new Date().toISOString(),
+                message,
+                type
+            };
+            
+            activityLog.push(entry);
+            localStorage.setItem('activityLog', JSON.stringify(activityLog));
+            renderActivityLog();
+        }
+        
+        function renderActivityLog() {
+            const list = document.getElementById('activity-list');
+            list.innerHTML = '';
+            
+            // Show latest activities first
+            [...activityLog].reverse().forEach(entry => {
+                const element = document.createElement('div');
+                element.className = 'activity-entry';
+                
+                const date = new Date(entry.timestamp);
+                const formattedDate = date.toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+                const formattedTime = date.toLocaleTimeString('de-DE', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                element.innerHTML = `
+                    <div class="activity-time">${formattedDate}, ${formattedTime}</div>
+                    <div>${entry.message}</div>
+                `;
+                list.appendChild(element);
+            });
+        }
+        
+        // Notifications
+        function addNotification(message, type = 'info') {
+            const notification = {
+                id: Date.now(),
+                message,
+                type,
+                timestamp: new Date().toISOString(),
+                read: false
+            };
+            
+            notifications.push(notification);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            renderNotifications();
+            
+            // Update badge
+            notificationBadge.textContent = notifications.filter(n => !n.read).length;
+        }
+        
+        function renderNotifications() {
+            notificationList.innerHTML = '';
+            
+            // Show latest notifications first
+            [...notifications].reverse().forEach(notification => {
+                const element = document.createElement('div');
+                element.className = 'notification-item';
+                
+                const date = new Date(notification.timestamp);
+                const formattedDate = date.toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+                const formattedTime = date.toLocaleTimeString('de-DE', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                element.innerHTML = `
+                    <div>${notification.message}</div>
+                    <div class="notification-time">${formattedDate}, ${formattedTime}</div>
+                `;
+                notificationList.appendChild(element);
+            });
+            
+            // Update badge
+            const unreadCount = notifications.filter(n => !n.read).length;
+            notificationBadge.textContent = unreadCount;
+            notificationBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+        
+        function clearNotifications() {
+            notifications = [];
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            renderNotifications();
+        }
+        
+        // Event listeners
+        function setupEventListeners() {
+            // Close modals with ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+        
+        // Initialize the app
+        initialize();
+        
+        // Add some sample data if none exists
+        if (Object.keys(products).length === 0) {
+            products = {
+                '123456789012': {
+                    name: 'Premium Kaffee',
+                    price: 12.99,
+                    barcode: '123456789012',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                },
+                '987654321098': {
+                    name: 'Bio Tee',
+                    price: 8.49,
+                    barcode: '987654321098',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                },
+                '567890123456': {
+                    name: 'Schokolade',
+                    price: 3.99,
+                    barcode: '567890123456',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                }
+            };
+            localStorage.setItem('products', JSON.stringify(products));
+            renderProducts();
+            
+            addActivity('Beispieldaten geladen', 'info');
+        }
+        
+        if (activityLog.length === 0) {
+            addActivity('Produktmanager gestartet', 'success');
         }
     </script>
 </body>
+</html>
