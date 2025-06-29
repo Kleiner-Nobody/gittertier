@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GuitarTab Pro</title>
+    <style>
+        :root {
+            --primary: #1a2b3c;
+            --secondary: #2c8f5e;
+            --text: #e0e7ec;
+            --background: #0d1419;
+            --highlight: #ff6b35;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: linear-gradient(to bottom, var(--background), #0a1a25);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 10px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 70px;
+        }
+        
+        header {
+            background-color: rgba(26, 43, 60, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--highlight);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        input {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(40, 60, 80, 0.7);
+            color: var(--text);
+            font-size: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        input:focus {
+            outline: 2px solid var(--highlight);
+            background: rgba(40, 60, 80, 0.9);
+        }
+        
+        button {
+            padding: 14px;
+            background: linear-gradient(to right, var(--secondary), #1e6b4e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            background: #5a7a6c;
+            cursor: not-allowed;
+        }
+        
+        .loader {
+            text-align: center;
+            padding: 25px;
+            display: none;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--highlight);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .song-container {
+            background: rgba(20, 35, 50, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            line-height: 2.3;
+            font-size: 19px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .chord {
+            color: var(--highlight);
+            font-weight: 700;
+            position: relative;
+            top: -12px;
+            font-size: 16px;
+            text-shadow: 0 0 3px rgba(255, 107, 53, 0.5);
+            letter-spacing: 0.5px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 43, 60, 0.95);
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-btn {
+            flex: 1;
+            max-width: 200px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .offline-status {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #7f9ba8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #2c8f5e;
+        }
+        
+        .status-indicator.offline {
+            background-color: #ff6b35;
+        }
+        
+        .lyrics-line {
+            position: relative;
+            min-height: 30px;
+        }
+        
+        @media (max-width: 480px) {
+            input, button {
+                padding: 16px;
+                font-size: 18px;
+            }
+            
+            .song-container {
+                font-size: 20px;
+                padding: 15px;
+            }
+            
+            .chord {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GuitarTab Pro</h1>
+            <div class="search-container">
+                <div class="input-group">
+                    <input type="text" id="artistInput" placeholder="Künstler (z.B. Beatles)" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="songInput" placeholder="Songtitel (z.B. Let It Be)" autocomplete="off">
+                </div>
+                <button id="searchButton">Song laden</button>
+            </div>
+        </header>
+        
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Analysiere Songdaten...</p>
+        </div>
+        
+        <div id="result"></div>
+        
+        <div class="offline-status" id="offlineStatus">
+            <div class="status-indicator"></div>
+            <span>Online-Modus</span>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button id="saveOffline" class="control-btn">Offline speichern</button>
+        <button id="toggleScroll" class="control-btn">Smart Scroll: AUS</button>
+        <button id="micToggle" class="control-btn">Mikrofon: AUS</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM-Elemente
+            const artistInput = document.getElementById('artistInput');
+            const songInput = document.getElementById('songInput');
+            const searchButton = document.getElementById('searchButton');
+            const resultDiv = document.getElementById('result');
+            const loader = document.getElementById('loader');
+            const toggleScroll = document.getElementById('toggleScroll');
+            const micToggle = document.getElementById('micToggle');
+            const saveOffline = document.getElementById('saveOffline');
+            const offlineStatus = document.getElementById('offlineStatus');
+            
+            // Statusvariablen
+            let autoScrollInterval = null;
+            let audioContext = null;
+            let analyser = null;
+            let microphone = null;
+            let isMicActive = false;
+            let currentSongData = null;
+            const scrollSpeed = 60; // Pixel pro Sekunde
+            
+            // Initialisierung
+            checkOfflineStatus();
+            loadOfflineSongs();
+            
+            // Event-Listener
+            searchButton.addEventListener('click', searchSong);
+            saveOffline.addEventListener('click', saveSongOffline);
+            toggleScroll.addEventListener('click', toggleAutoScroll);
+            micToggle.addEventListener('click', toggleMicrophone);
+            
+            // Offline-Status prüfen
+            function checkOfflineStatus() {
+                if (!navigator.onLine) {
+                    offlineStatus.innerHTML = '<div class="status-indicator offline"></div><span>Offline-Modus</span>';
+                }
+            }
+            
+            window.addEventListener('online', checkOfflineStatus);
+            window.addEventListener('offline', checkOfflineStatus);
+            
+            // Song-Suche
+            async function searchSong() {
+                const artist = artistInput.value.trim();
+                const song = songInput.value.trim();
+                
+                if (!artist || !song) {
+                    showError("Bitte Künstler und Songtitel eingeben");
+                    return;
+                }
+                
+                // Offline-Song prüfen
+                const offlineSong = getOfflineSong(artist, song);
+                if (offlineSong) {
+                    displayTab(offlineSong.content);
+                    currentSongData = offlineSong;
+                    return;
+                }
+                
+                loader.style.display = 'block';
+                resultDiv.innerHTML = '';
+                
+                try {
+                    const tabContent = await fetchTabContent(artist, song);
+                    currentSongData = {
+                        artist,
+                        song,
+                        content: tabContent,
+                        timestamp: new Date().toISOString()
+                    };
+                    displayTab(tabContent);
+                } catch (error) {
+                    showError("Fehler beim Laden. Versuche: '" + song + "' von '" + artist + "'");
+                    console.error("API-Fehler:", error);
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
+            
+            // Ultimate Guitar Scraper
+            async function fetchTabContent(artist, song) {
+                const searchQuery = ` `.toLowerCase().replace(/\s+/g, '_');
+                const searchUrl = `https://www.ultimate-guitar.com/search.php?search_type=title&value=`;
+                
+                try {
+                    // Scraping-Prozess
+                    const response = await fetch(`https://api.allorigins.win/get?url=`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const data = await response.json();
+                    const htmlContent = data.contents;
+                    
+                    // DOM-Parsing
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlContent, 'text/html');
+                    
+                    // Tab-Link finden
+                    const tabLinkElement = [...doc.querySelectorAll('a[href^="https://tabs.ultimate-guitar.com/tab/"]')]
+                        .find(a => a.href.includes('chords'));
+                    
+                    if (!tabLinkElement) throw new Error('Keine Akkord-Tabs gefunden');
+                    const tabUrl = tabLinkElement.href;
+                    
+                    // Tab-Inhalt extrahieren
+                    const tabResponse = await fetch(`https://api.allorigins.win/get?url=`);
+                    const tabData = await tabResponse.json();
+                    const tabHtml = tabData.contents;
+                    
+                    // Tab-Inhalt parsen
+                    const tabDoc = parser.parseFromString(tabHtml, 'text/html');
+                    const tabContent = tabDoc.querySelector('.js-tab-content')?.innerHTML;
+                    
+                    if (!tabContent) throw new Error('Tab-Inhalt nicht gefunden');
+                    
+                    return tabContent;
+                } catch (error) {
+                    throw new Error('Ultimate Guitar konnte nicht erreicht werden: ' + error.message);
+                }
+            }
+            
+            // Tab anzeigen
+            function displayTab(content) {
+                const container = document.createElement('div');
+                container.className = 'song-container';
+                
+                // Formatierung der Akkorde
+                const formattedContent = content
+                    .replace(/\[ch\](.*?)\[\/ch\]/g, '<span class="chord"></span>')
+                    .replace(/\n/g, '<br>');
+                
+                container.innerHTML = formattedContent;
+                resultDiv.innerHTML = '';
+                resultDiv.appendChild(container);
+                
+                // Auto-Scroll zurücksetzen
+                resetAutoScroll();
+                
+                // Positionierung optimieren
+                setTimeout(() => {
+                    container.scrollTop = 0;
+                }, 100);
+            }
+            
+            // Offline-Speicherung
+            function saveSongOffline() {
+                if (!currentSongData) {
+                    showError("Kein Song zum Speichern vorhanden");
+                    return;
+                }
+                
+                const songs = JSON.parse(localStorage.getItem('guitarTabs') || '[]');
+                const existingIndex = songs.findIndex(s => 
+                    s.artist === currentSongData.artist && s.song === currentSongData.song
+                );
+                
+                if (existingIndex !== -1) {
+                    songs[existingIndex] = currentSongData;
+                } else {
+                    songs.push(currentSongData);
+                }
+                
+                localStorage.setItem('guitarTabs', JSON.stringify(songs));
+                alert(`"" offline gespeichert!`);
+            }
+            
+            // Offline-Songs laden
+            function loadOfflineSongs() {
+                const songs = JSON.parse(localStorage.getItem('guitarTabs') || '[]');
+                if (songs.length > 0) {
+                    console.log(` offline Songs geladen`);
+                }
+            }
+            
+            // Offline-Song abrufen
+            function getOfflineSong(artist, song) {
+                const songs = JSON.parse(localStorage.getItem('guitarTabs') || '[]';
+                return songs.find(s => 
+                    s.artist.toLowerCase() === artist.toLowerCase() && 
+                    s.song.toLowerCase() === song.toLowerCase()
+                );
+            }
+            
+            // Smart Scroll Funktionen
+            function toggleAutoScroll() {
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                    autoScrollInterval = null;
+                    toggleScroll.textContent = 'Smart Scroll: AUS';
+                } else {
+                    startAutoScroll();
+                    toggleScroll.textContent = 'Smart Scroll: EIN';
+                }
+            }
+            
+            function startAutoScroll() {
+                const container = document.querySelector('.song-container');
+                if (!container) return;
+                
+                let scrollPosition = container.scrollTop;
+                const maxScroll = container.scrollHeight - container.clientHeight;
+                
+                autoScrollInterval = setInterval(() => {
+                    if (scrollPosition >= maxScroll) {
+                        resetAutoScroll();
+                        return;
+                    }
+                    
+                    scrollPosition += 1;
+                    container.scrollTop = scrollPosition;
+                }, 1000 / scrollSpeed);
+            }
+            
+            function resetAutoScroll() {
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                    autoScrollInterval = null;
+                    toggleScroll.textContent = 'Smart Scroll: AUS';
+                }
+            }
+            
+            // Mikrofon-Akkord-Erkennung
+            function toggleMicrophone() {
+                if (isMicActive) {
+                    stopMicrophone();
+                    micToggle.textContent = 'Mikrofon: AUS';
+                    isMicActive = false;
+                } else {
+                    startMicrophone();
+                    micToggle.textContent = 'Mikrofon: EIN';
+                    isMicActive = true;
+                }
+            }
+            
+            async function startMicrophone() {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 2048;
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    microphone = audioContext.createMediaStreamSource(stream);
+                    microphone.connect(analyser);
+                    
+                    detectChords();
+                } catch (error) {
+                    showError("Mikrofon-Zugriff fehlgeschlagen: " + error.message);
+                }
+            }
+            
+            function stopMicrophone() {
+                if (microphone && microphone.mediaStream) {
+                    microphone.mediaStream.getTracks().forEach(track => track.stop());
+                }
+                if (audioContext) {
+                    audioContext.close();
+                }
+            }
+            
+            function detectChords() {
+                if (!analyser) return;
+                
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                const detect = () => {
+                    if (!isMicActive) return;
+                    
+                    analyser.getByteTimeDomainData(dataArray);
+                    // Hier würde die eigentliche Akkorderkennung implementiert werden
+                    // Vereinfacht: Fortschrittserkennung durch Lautstärke
+                    
+                    requestAnimationFrame(detect);
+                };
+                
+                detect();
+            }
+            
+            // Hilfsfunktionen
+            function showError(message) {
+                resultDiv.innerHTML = `<div class="error"></div>`;
+            }
+        });
+    </script>
+</body>
+</html>
