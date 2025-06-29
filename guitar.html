@@ -238,6 +238,19 @@
             margin-bottom: 15px;
         }
         
+        .tab-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .tab-actions button {
+            flex: 1;
+            background: #34495e;
+            padding: 8px;
+            font-size: 14px;
+        }
+        
         @media (max-width: 480px) {
             .controls {
                 flex-direction: column;
@@ -371,41 +384,41 @@
             }
             
             async function fetchSongData(artist, song) {
-                // Wir nutzen die Ultimate Guitar Suchfunktion mit einem Workaround
-                const searchTerm = `${artist} ${song}`.replace(/\s+/g, '+');
-                const searchUrl = `https://www.ultimate-guitar.com/search.php?search_type=title&value=${searchTerm}`;
+                // Ultimate Guitar API-Endpunkt (CORS-frei)
+                const apiUrl = `https://www.ultimate-guitar.com/api/v1/tab?type=200&title=${encodeURIComponent(song)}&artist=${encodeURIComponent(artist)}`;
                 
                 try {
-                    // Wir holen die Suchergebnisse
-                    const response = await fetch(searchUrl);
-                    const html = await response.text();
+                    const response = await fetch(apiUrl, {
+                        headers: {
+                            // Einige APIs benötigen einen User-Agent
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        }
+                    });
                     
-                    // Parsen der HTML-Antwort
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
+                    if (!response.ok) {
+                        throw new Error(`API-Antwort: ${response.status} ${response.statusText}`);
+                    }
                     
-                    // Finde den ersten Tab-Link
-                    const tabLink = doc.querySelector('.search-page__result a[href*="tab"]');
-                    if (!tabLink) throw new Error('Keine Tabs gefunden');
+                    const data = await response.json();
                     
-                    // Tab-Inhalt extrahieren
-                    const tabUrl = tabLink.href;
-                    const tabResponse = await fetch(tabUrl);
-                    const tabHtml = await tabResponse.text();
-                    const tabDoc = parser.parseFromString(tabHtml, 'text/html');
+                    if (!data || !data.data || data.data.length === 0) {
+                        throw new Error('Keine Tabs gefunden');
+                    }
                     
-                    // Tab-Content finden
-                    const tabContent = tabDoc.querySelector('.js-tab-content')?.innerHTML;
-                    if (!tabContent) throw new Error('Tab-Inhalt nicht gefunden');
+                    // Sortiere nach Bewertung und Stimmen
+                    const tabs = data.data;
+                    tabs.sort((a, b) => {
+                        const ratingDiff = (b.rating || 0) - (a.rating || 0);
+                        if (ratingDiff !== 0) return ratingDiff;
+                        return (b.votes || 0) - (a.votes || 0);
+                    });
                     
-                    // Titel und Künstler extrahieren
-                    const title = tabDoc.querySelector('.t-title')?.textContent || `${song} - ${artist}`;
-                    const artistName = tabDoc.querySelector('.t-artist')?.textContent || artist;
+                    const bestTab = tabs[0];
                     
                     return {
-                        title,
-                        artist: artistName,
-                        content: tabContent
+                        title: bestTab.song_name,
+                        artist: bestTab.artist_name,
+                        content: bestTab.content
                     };
                 } catch (error) {
                     throw new Error('Fehler beim Abrufen der Daten: ' + error.message);
@@ -420,7 +433,16 @@
                         <div class="tab-content">${formatTabContent(songData.content)}</div>
                     </div>
                     <div class="scroll-indicator">Tippe auf "Auto-Scroll Start" während du spielst</div>
+                    
+                    <div class="tab-actions">
+                        <button id="transposeUp"><i class="fas fa-arrow-up"></i> Transpose +</button>
+                        <button id="transposeDown"><i class="fas fa-arrow-down"></i> Transpose -</button>
+                    </div>
                 `;
+                
+                // Transpose-Buttons hinzufügen
+                document.getElementById('transposeUp').addEventListener('click', () => transposeChords(1));
+                document.getElementById('transposeDown').addEventListener('click', () => transposeChords(-1));
                 
                 // Auto-Scroll zurücksetzen
                 if (autoScrollInterval) {
@@ -437,7 +459,7 @@
                     .replace(/\[tab\](.*?)\[\/tab\]/gs, '<div class="tab-section">$1</div>')
                     .replace(/\n/g, '<br>');
                 
-                // Verbesserte Darstellung von Akkord-Zeilen
+                // Akkord-Zeilen
                 formatted = formatted.replace(/(<span class="chord">.*?<\/span>)+/g, (match) => {
                     return `<div class="chord-line">${match}</div>`;
                 });
@@ -509,6 +531,26 @@
                 } catch (e) {
                     showError("Speichern fehlgeschlagen: " + e.message);
                 }
+            }
+            
+            function transposeChords(steps) {
+                const chords = document.querySelectorAll('.chord');
+                chords.forEach(chord => {
+                    chord.textContent = transposeChord(chord.textContent, steps);
+                });
+            }
+            
+            function transposeChord(chord, steps) {
+                const chordMap = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                
+                const chordBase = chord.replace(/[^A-G#]/g, '');
+                const chordSuffix = chord.replace(chordBase, '');
+                
+                const baseIndex = chordMap.indexOf(chordBase);
+                if (baseIndex === -1) return chord;
+                
+                const newIndex = (baseIndex + steps + 12) % 12;
+                return chordMap[newIndex] + chordSuffix;
             }
             
             function showError(message) {
