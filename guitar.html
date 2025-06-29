@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GuitarTuna Alternative</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuitarTuna Alternative | CORS-Lösung</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -13,6 +13,7 @@
             --background: #1a1a1a;
             --highlight: #e74c3c;
             --success: #2ecc71;
+            --warning: #f39c12;
         }
         
         * {
@@ -23,38 +24,71 @@
         }
         
         body {
-            background-color: var(--background);
+            background: linear-gradient(135deg, #1a2a3a 0%, #0d1520 100%);
             color: var(--text);
             line-height: 1.6;
-            padding: 10px;
-            overflow-x: hidden;
+            padding: 15px;
+            min-height: 100vh;
         }
         
         .container {
             max-width: 100%;
             margin: 0 auto;
-            padding-bottom: 60px;
+            padding-bottom: 80px;
         }
         
         header {
-            background-color: var(--primary);
-            padding: 15px;
-            border-radius: 10px;
+            background-color: rgba(44, 62, 80, 0.9);
+            padding: 20px;
+            border-radius: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
             text-align: center;
+            border: 1px solid #3a506b;
         }
         
         h1 {
             margin-bottom: 15px;
             font-size: 1.8rem;
             color: var(--secondary);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .cors-guide {
+            background-color: rgba(52, 73, 94, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid #3a506b;
+        }
+        
+        .cors-guide ol {
+            text-align: left;
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        .cors-guide li {
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
         }
         
         .search-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
         
         .input-group {
@@ -62,39 +96,53 @@
             flex-direction: column;
         }
         
-        input {
+        input, textarea {
             padding: 12px;
-            border: none;
-            border-radius: 5px;
-            background-color: #34495e;
+            border: 1px solid #3a506b;
+            border-radius: 8px;
+            background-color: #1e2b38;
             color: var(--text);
             font-size: 16px;
             width: 100%;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
         }
         
         button {
-            padding: 12px;
-            background-color: var(--secondary);
+            padding: 14px;
+            background: linear-gradient(to bottom, var(--secondary), #2980b9);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        button:disabled {
-            background-color: #7f8c8d;
-            cursor: not-allowed;
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
         }
         
         button:active {
-            background-color: #2980b9;
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .loader {
@@ -119,9 +167,9 @@
         }
         
         .song-container {
-            background-color: var(--primary);
-            border-radius: 10px;
-            padding: 20px;
+            background-color: rgba(30, 43, 56, 0.9);
+            border-radius: 12px;
+            padding: 25px;
             margin-top: 20px;
             overflow: hidden;
             line-height: 2.5;
@@ -130,6 +178,8 @@
             min-height: 300px;
             max-width: 100%;
             overflow-x: auto;
+            border: 1px solid #3a506b;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
         }
         
         .chord {
@@ -140,6 +190,7 @@
             font-size: 14px;
             margin-right: 3px;
             display: inline-block;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         
         .error {
@@ -147,16 +198,20 @@
             padding: 20px;
             text-align: center;
             font-weight: bold;
-            background-color: rgba(231, 76, 60, 0.1);
+            background-color: rgba(231, 76, 60, 0.15);
             border-radius: 8px;
             margin: 10px 0;
+            border: 1px solid rgba(231, 76, 60, 0.3);
         }
         
         .success {
             color: var(--success);
             text-align: center;
-            padding: 10px;
+            padding: 15px;
             font-weight: bold;
+            background-color: rgba(46, 204, 113, 0.15);
+            border-radius: 8px;
+            border: 1px solid rgba(46, 204, 113, 0.3);
         }
         
         .controls {
@@ -165,11 +220,12 @@
             left: 0;
             right: 0;
             background-color: var(--primary);
-            padding: 10px;
+            padding: 12px;
             display: flex;
             justify-content: center;
-            gap: 10px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+            gap: 12px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.25);
+            border-top: 1px solid #3a506b;
         }
         
         .control-btn {
@@ -189,10 +245,11 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 15px;
             background: rgba(52, 152, 219, 0.2);
-            padding: 8px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
         }
         
         .speed-control label {
@@ -203,20 +260,23 @@
         .speed-control input {
             flex: 1;
             padding: 5px;
+            background: #2c3e50;
         }
         
         .song-title {
             text-align: center;
-            margin: 10px 0;
+            margin: 15px 0 5px;
             color: var(--secondary);
-            font-size: 1.4rem;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
         
         .artist-name {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #bdc3c7;
             font-style: italic;
+            font-size: 1.1rem;
         }
         
         .tab-content {
@@ -224,7 +284,7 @@
             line-height: 1.8;
             white-space: pre-wrap;
             word-wrap: break-word;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
         }
         
         .chord-line {
@@ -232,23 +292,39 @@
             font-weight: bold;
             margin-bottom: 5px;
             font-size: 16px;
+            letter-spacing: 1px;
         }
         
         .lyrics-line {
             margin-bottom: 15px;
+            padding: 2px 0;
         }
         
         .tab-actions {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
         }
         
         .tab-actions button {
             flex: 1;
-            background: #34495e;
-            padding: 8px;
+            min-width: 120px;
+            background: rgba(52, 73, 94, 0.8);
+            padding: 10px;
             font-size: 14px;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad) !important;
+        }
+        
+        .transpose-btn {
+            background: linear-gradient(to bottom, #3498db, #2980b9) !important;
+        }
+        
+        .save-btn {
+            background: linear-gradient(to bottom, #2ecc71, #27ae60) !important;
         }
         
         @media (max-width: 480px) {
@@ -269,27 +345,106 @@
             h1 {
                 font-size: 1.5rem;
             }
+            
+            .tab-actions button {
+                min-width: 100%;
+            }
+        }
+        
+        .tab-content-container {
+            position: relative;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .highlight {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-radius: 4px;
+            padding: 2px 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .section-title {
+            display: block;
+            color: var(--secondary);
+            font-weight: bold;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #3a506b;
+        }
+        
+        .footer-note {
+            text-align: center;
+            font-size: 12px;
+            color: #95a5a6;
+            margin-top: 20px;
+            padding: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-guitar"></i> Smart Guitar Tabs</h1>
+            <h1><i class="fas fa-guitar"></i> Guitar Tab Viewer</h1>
+            
+            <div class="cors-guide">
+                <h3><i class="fas fa-info-circle"></i> So umgehen Sie CORS-Beschränkungen:</h3>
+                <ol>
+                    <li>
+                        <span class="step-number">1</span> 
+                        Installieren Sie eine CORS-Erweiterung für Ihren Browser:
+                        <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="https://chrome.google.com/webstore/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf" 
+                               target="_blank" 
+                               style="background: #3498db; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none;">
+                                <i class="fab fa-chrome"></i> Chrome
+                            </a>
+                            <a href="https://addons.mozilla.org/firefox/addon/cors-everywhere/" 
+                               target="_blank" 
+                               style="background: #e67e22; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none;">
+                                <i class="fab fa-firefox"></i> Firefox
+                            </a>
+                            <a href="https://microsoftedge.microsoft.com/addons/detail/cors-unblock/hkjklmhkbkdhlgnnfbbcihcajofmjgbh" 
+                               target="_blank" 
+                               style="background: #0078d7; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none;">
+                                <i class="fab fa-edge"></i> Edge
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">2</span> 
+                        Aktivieren Sie die Erweiterung (meist über ein Icon in der Browser-Symbolleiste)
+                    </li>
+                    <li>
+                        <span class="step-number">3</span> 
+                        Suchen Sie Ihren Song auf 
+                        <a href="https://www.ultimate-guitar.com" target="_blank" style="color: var(--secondary); font-weight: bold;">
+                            Ultimate Guitar
+                        </a>
+                    </li>
+                    <li>
+                        <span class="step-number">4</span> 
+                        Kopieren Sie die URL der Songseite und fügen Sie sie unten ein
+                    </li>
+                </ol>
+            </div>
+            
             <div class="search-container">
                 <div class="input-group">
-                    <input type="text" id="artistInput" placeholder="Künstler (z.B. Beatles)">
+                    <input type="text" 
+                           id="songUrl" 
+                           placeholder="Ultimate Guitar URL hier einfügen (z.B. https://tabs.ultimate-guitar.com/tab/the-beatles/let-it-be-chords-951420)"
+                           value="https://tabs.ultimate-guitar.com/tab/the-beatles/let-it-be-chords-951420">
                 </div>
-                <div class="input-group">
-                    <input type="text" id="songInput" placeholder="Songtitel (z.B. Let It Be)">
-                </div>
-                <button id="searchButton">
-                    <i class="fas fa-search"></i> Akkorde finden
+                <button id="loadButton">
+                    <i class="fas fa-cloud-download-alt"></i> Akkorde laden
                 </button>
             </div>
             
             <div class="speed-control">
-                <label for="scrollSpeed">Scroll-Geschwindigkeit:</label>
+                <label for="scrollSpeed"><i class="fas fa-tachometer-alt"></i> Scroll-Geschwindigkeit:</label>
                 <input type="range" id="scrollSpeed" min="20" max="100" value="50">
                 <span id="speedValue">50%</span>
             </div>
@@ -297,13 +452,17 @@
         
         <div class="loader" id="loader">
             <div class="spinner"></div>
-            <p>Lade Song...</p>
+            <p>Lade Songdaten...</p>
         </div>
         
         <div id="result">
             <div class="success">
-                Gib einen Künstler und Songtitel ein, um die Akkorde zu sehen!
+                <i class="fas fa-music"></i> Fügen Sie eine Ultimate Guitar URL ein und klicken Sie auf "Akkorde laden"
             </div>
+        </div>
+        
+        <div class="footer-note">
+            <p>Hinweis: Diese Anwendung benötigt eine aktivierte CORS-Erweiterung, um auf Ultimate Guitar zugreifen zu können</p>
         </div>
     </div>
     
@@ -311,16 +470,15 @@
         <button id="scrollToggle" class="control-btn">
             <i class="fas fa-play"></i> Auto-Scroll Start
         </button>
-        <button id="saveButton" class="control-btn">
+        <button id="saveButton" class="control-btn save-btn">
             <i class="fas fa-download"></i> Offline speichern
         </button>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const artistInput = document.getElementById('artistInput');
-            const songInput = document.getElementById('songInput');
-            const searchButton = document.getElementById('searchButton');
+            const songUrlInput = document.getElementById('songUrl');
+            const loadButton = document.getElementById('loadButton');
             const resultDiv = document.getElementById('result');
             const loader = document.getElementById('loader');
             const scrollToggle = document.getElementById('scrollToggle');
@@ -331,6 +489,7 @@
             let autoScrollInterval = null;
             let currentScrollSpeed = 50;
             let currentSongData = null;
+            let currentPosition = 0;
             
             // Geschwindigkeitssteuerung
             scrollSpeed.addEventListener('input', () => {
@@ -343,14 +502,12 @@
                 }
             });
             
-            // Suche initialisieren
-            searchButton.addEventListener('click', searchSong);
+            // Song laden
+            loadButton.addEventListener('click', loadSong);
             
             // Enter-Taste für Suche
-            [artistInput, songInput].forEach(input => {
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') searchSong();
-                });
+            songUrlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') loadSong();
             });
             
             // Auto-Scroll Toggle
@@ -359,12 +516,16 @@
             // Offline speichern
             saveButton.addEventListener('click', saveOffline);
             
-            async function searchSong() {
-                const artist = artistInput.value.trim();
-                const song = songInput.value.trim();
+            async function loadSong() {
+                const songUrl = songUrlInput.value.trim();
                 
-                if (!artist || !song) {
-                    showError("Bitte Künstler und Songtitel eingeben");
+                if (!songUrl) {
+                    showError("Bitte eine Ultimate Guitar URL eingeben");
+                    return;
+                }
+                
+                if (!songUrl.includes('ultimate-guitar.com')) {
+                    showError("Bitte eine gültige Ultimate Guitar URL eingeben");
                     return;
                 }
                 
@@ -372,28 +533,34 @@
                 resultDiv.innerHTML = '';
                 
                 try {
-                    const songData = await fetchSongData(artist, song);
+                    // Benutzer hat die URL bereitgestellt - wir verarbeiten sie
+                    const tabId = extractTabId(songUrl);
+                    if (!tabId) throw new Error('Ungültige URL');
+                    
+                    // Wir verwenden die Tab-ID, um die Daten zu verarbeiten
+                    const songData = await fetchTabData(tabId);
                     currentSongData = songData;
                     displaySong(songData);
                 } catch (error) {
-                    showError("Fehler beim Laden des Songs. Bitte versuche einen anderen Songtitel.");
+                    showError("Fehler beim Laden des Songs: " + error.message);
                     console.error(error);
                 } finally {
                     loader.style.display = 'none';
                 }
             }
             
-            async function fetchSongData(artist, song) {
-                // Ultimate Guitar API-Endpunkt (CORS-frei)
-                const apiUrl = `https://www.ultimate-guitar.com/api/v1/tab?type=200&title=${encodeURIComponent(song)}&artist=${encodeURIComponent(artist)}`;
+            function extractTabId(url) {
+                // Extrahiere die Tab-ID aus der Ultimate Guitar URL
+                const match = url.match(/(\d+)$/);
+                return match ? match[1] : null;
+            }
+            
+            async function fetchTabData(tabId) {
+                // API-Endpunkt von Ultimate Guitar
+                const apiUrl = `https://www.ultimate-guitar.com/api/v1/tabs/${tabId}`;
                 
                 try {
-                    const response = await fetch(apiUrl, {
-                        headers: {
-                            // Einige APIs benötigen einen User-Agent
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                        }
-                    });
+                    const response = await fetch(apiUrl);
                     
                     if (!response.ok) {
                         throw new Error(`API-Antwort: ${response.status} ${response.statusText}`);
@@ -401,27 +568,21 @@
                     
                     const data = await response.json();
                     
-                    if (!data || !data.data || data.data.length === 0) {
-                        throw new Error('Keine Tabs gefunden');
+                    if (!data || !data.content) {
+                        throw new Error('Keine Tab-Daten gefunden');
                     }
                     
-                    // Sortiere nach Bewertung und Stimmen
-                    const tabs = data.data;
-                    tabs.sort((a, b) => {
-                        const ratingDiff = (b.rating || 0) - (a.rating || 0);
-                        if (ratingDiff !== 0) return ratingDiff;
-                        return (b.votes || 0) - (a.votes || 0);
-                    });
-                    
-                    const bestTab = tabs[0];
-                    
                     return {
-                        title: bestTab.song_name,
-                        artist: bestTab.artist_name,
-                        content: bestTab.content
+                        title: data.song_name || "Unbekannter Titel",
+                        artist: data.artist_name || "Unbekannter Künstler",
+                        content: data.content
                     };
                 } catch (error) {
-                    throw new Error('Fehler beim Abrufen der Daten: ' + error.message);
+                    // Fehlerbehandlung für CORS
+                    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                        throw new Error('CORS-Blockierung. Bitte installieren und aktivieren Sie eine CORS-Erweiterung.');
+                    }
+                    throw error;
                 }
             }
             
@@ -432,17 +593,27 @@
                     <div class="song-container">
                         <div class="tab-content">${formatTabContent(songData.content)}</div>
                     </div>
-                    <div class="scroll-indicator">Tippe auf "Auto-Scroll Start" während du spielst</div>
+                    <div class="scroll-indicator">
+                        <i class="fas fa-info-circle"></i> Tippe auf "Auto-Scroll Start" während du spielst
+                    </div>
                     
                     <div class="tab-actions">
-                        <button id="transposeUp"><i class="fas fa-arrow-up"></i> Transpose +</button>
-                        <button id="transposeDown"><i class="fas fa-arrow-down"></i> Transpose -</button>
+                        <button id="transposeUp" class="transpose-btn">
+                            <i class="fas fa-arrow-up"></i> Transponieren (+)
+                        </button>
+                        <button id="transposeDown" class="transpose-btn">
+                            <i class="fas fa-arrow-down"></i> Transponieren (-)
+                        </button>
+                        <button id="copyBtn" class="copy-btn">
+                            <i class="fas fa-copy"></i> Tab kopieren
+                        </button>
                     </div>
                 `;
                 
-                // Transpose-Buttons hinzufügen
-                document.getElementById('transposeUp').addEventListener('click', () => transposeChords(1));
-                document.getElementById('transposeDown').addEventListener('click', () => transposeChords(-1));
+                // Event-Listener für die Buttons hinzufügen
+                document.getElementById('transposeUp')?.addEventListener('click', () => transposeChords(1));
+                document.getElementById('transposeDown')?.addEventListener('click', () => transposeChords(-1));
+                document.getElementById('copyBtn')?.addEventListener('click', copyTabContent);
                 
                 // Auto-Scroll zurücksetzen
                 if (autoScrollInterval) {
@@ -467,6 +638,9 @@
                 // Textzeilen formatieren
                 formatted = formatted.replace(/(<br>\s*)+/g, '<br>');
                 
+                // Abschnitts-Überschriften
+                formatted = formatted.replace(/\[([^\]]+)\]/g, '<div class="section-title">$1</div>');
+                
                 return formatted;
             }
             
@@ -478,6 +652,7 @@
                     clearInterval(autoScrollInterval);
                     autoScrollInterval = null;
                     scrollToggle.innerHTML = '<i class="fas fa-play"></i> Auto-Scroll Start';
+                    currentPosition = container.scrollTop;
                 } else {
                     startAutoScroll();
                     scrollToggle.innerHTML = '<i class="fas fa-stop"></i> Auto-Scroll Stop';
@@ -488,21 +663,23 @@
                 const container = document.querySelector('.song-container');
                 if (!container) return;
                 
-                let scrollPosition = container.scrollTop;
                 const maxScroll = container.scrollHeight - container.clientHeight;
                 const speedFactor = currentScrollSpeed / 50;
                 
+                container.scrollTop = currentPosition;
+                
                 autoScrollInterval = setInterval(() => {
-                    scrollPosition += 2 * speedFactor;
+                    currentPosition += 2 * speedFactor;
                     
-                    if (scrollPosition >= maxScroll) {
+                    if (currentPosition >= maxScroll) {
                         clearInterval(autoScrollInterval);
                         scrollToggle.innerHTML = '<i class="fas fa-play"></i> Auto-Scroll Start';
                         autoScrollInterval = null;
+                        currentPosition = 0;
                         return;
                     }
                     
-                    container.scrollTop = scrollPosition;
+                    container.scrollTop = currentPosition;
                 }, 50);
             }
             
@@ -542,15 +719,34 @@
             
             function transposeChord(chord, steps) {
                 const chordMap = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                const baseChord = chord.replace(/[^A-G#]/g, '');
+                const suffix = chord.replace(baseChord, '');
                 
-                const chordBase = chord.replace(/[^A-G#]/g, '');
-                const chordSuffix = chord.replace(chordBase, '');
-                
-                const baseIndex = chordMap.indexOf(chordBase);
+                const baseIndex = chordMap.indexOf(baseChord);
                 if (baseIndex === -1) return chord;
                 
                 const newIndex = (baseIndex + steps + 12) % 12;
-                return chordMap[newIndex] + chordSuffix;
+                return chordMap[newIndex] + suffix;
+            }
+            
+            function copyTabContent() {
+                if (!currentSongData) {
+                    showError("Kein Tab zum Kopieren gefunden");
+                    return;
+                }
+                
+                try {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = currentSongData.content;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    showSuccess("Tab erfolgreich in die Zwischenablage kopiert!");
+                } catch (e) {
+                    showError("Kopieren fehlgeschlagen: " + e.message);
+                }
             }
             
             function showError(message) {
@@ -562,28 +758,32 @@
                 `;
             }
             
-            // Versuche, gespeicherten Song zu laden
-            function loadOfflineSong() {
-                const savedData = localStorage.getItem('guitarTab');
-                if (savedData) {
-                    try {
-                        const songData = JSON.parse(savedData);
-                        currentSongData = songData;
-                        displaySong(songData);
-                        resultDiv.innerHTML += `
-                            <div class="success">
-                                <i class="fas fa-info-circle"></i> 
-                                Zuletzt gespeicherter Song geladen
-                            </div>
-                        `;
-                    } catch (e) {
-                        console.log("Kein gespeicherter Song gefunden");
-                    }
-                }
+            function showSuccess(message) {
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success';
+                successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+                resultDiv.prepend(successDiv);
+                
+                setTimeout(() => {
+                    successDiv.style.opacity = '0';
+                    setTimeout(() => successDiv.remove(), 500);
+                }, 3000);
             }
             
-            // Beim Start geladenen Song anzeigen
-            loadOfflineSong();
+            // Beim Start: Lade gespeicherten Song, falls vorhanden
+            window.addEventListener('DOMContentLoaded', () => {
+                const savedSong = localStorage.getItem('guitarTab');
+                if (savedSong) {
+                    try {
+                        const songData = JSON.parse(savedSong);
+                        currentSongData = songData;
+                        displaySong(songData);
+                        showSuccess("Zuletzt gespeicherter Song geladen");
+                    } catch (e) {
+                        console.error("Fehler beim Laden des gespeicherten Songs", e);
+                    }
+                }
+            });
         });
     </script>
 </body>
