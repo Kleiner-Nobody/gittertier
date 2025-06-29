@@ -2,10 +2,19 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Guitar Song Finder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GuitarTuna Alternative</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --text: #ecf0f1;
+            --background: #1a1a1a;
+            --highlight: #e74c3c;
+            --success: #2ecc71;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,1047 +23,525 @@
         }
         
         body {
-            background-color: #121212;
-            color: #f5f5f5;
-            min-height: 100vh;
-            padding: 0;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 10px;
             overflow-x: hidden;
         }
         
         .container {
             max-width: 100%;
             margin: 0 auto;
-            background-color: #1e1e1e;
-            overflow: hidden;
+            padding-bottom: 60px;
         }
         
-        /* Header mit Suchfeldern */
-        .search-header {
-            background-color: #2d2d2d;
-            padding: 20px 15px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid #444;
-        }
-        
-        .search-title {
-            font-size: 1.8rem;
+        header {
+            background-color: var(--primary);
+            padding: 15px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            color: #ff6b6b;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
         
-        .search-fields {
+        h1 {
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            color: var(--secondary);
+        }
+        
+        .search-container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            max-width: 600px;
-            margin: 0 auto;
+            gap: 10px;
         }
         
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            text-align: left;
         }
         
-        .input-group label {
-            font-size: 0.9rem;
-            color: #aaa;
-            margin-left: 5px;
+        input {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #34495e;
+            color: var(--text);
+            font-size: 16px;
+            width: 100%;
         }
         
-        .input-group input {
-            padding: 14px 18px;
-            font-size: 1rem;
-            background: #333;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 8px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        
-        .input-group input:focus {
-            border-color: #ff6b6b;
-            box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
-        }
-        
-        .search-btn {
-            background: #ff6b6b;
+        button {
+            padding: 12px;
+            background-color: var(--secondary);
             color: white;
             border: none;
-            padding: 15px;
-            font-size: 1.1rem;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
             font-weight: bold;
-            border-radius: 8px;
-            margin-top: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .search-btn:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-        
-        /* Ergebnisse Bereich */
-        .results-container {
-            padding: 20px 15px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .song-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .song-card {
-            background: #252525;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid #333;
-        }
-        
-        .song-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            border-color: #ff6b6b;
-        }
-        
-        .song-card img {
-            width: 100%;
-            height: 160px;
-            object-fit: cover;
-            border-bottom: 1px solid #333;
-        }
-        
-        .song-card-content {
-            padding: 18px;
-        }
-        
-        .song-card-title {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            color: #f5f5f5;
-            font-weight: 600;
-        }
-        
-        .song-card-artist {
-            font-size: 0.95rem;
-            color: #aaa;
-            margin-bottom: 12px;
-        }
-        
-        .song-card-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .song-card-rating {
+            transition: background-color 0.3s;
             display: flex;
             align-items: center;
-            gap: 5px;
-            color: #ffd166;
-            font-size: 0.9rem;
-        }
-        
-        .song-card-views {
-            color: #aaa;
-            font-size: 0.85rem;
-        }
-        
-        /* Song-Detailansicht */
-        .song-detail {
-            padding: 20px 15px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        
-        .song-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 25px 20px;
-            background: #252525;
-            border-radius: 12px;
-            border: 1px solid #333;
-        }
-        
-        .song-title {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: #f5f5f5;
-        }
-        
-        .song-artist {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: #aaa;
-        }
-        
-        .song-meta {
-            display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .meta-item {
-            background: #333;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
             gap: 8px;
         }
         
-        .song-content {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
+        button:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
         }
         
-        .chords-section {
-            background: #252525;
+        button:active {
+            background-color: #2980b9;
+        }
+        
+        .loader {
+            text-align: center;
             padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #333;
+            display: none;
         }
         
-        .section-title {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: #f5f5f5;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #444;
-        }
-        
-        .chord-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 12px;
-        }
-        
-        .chord {
-            background: #333;
-            padding: 15px 10px;
-            text-align: center;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80px;
-            transition: all 0.3s ease;
-        }
-        
-        .chord:hover {
-            background: #444;
-            transform: translateY(-3px);
-        }
-        
-        .chord-diagram {
-            font-size: 0.75rem;
-            margin-top: 8px;
-            color: #aaa;
-        }
-        
-        .lyrics-section {
-            background: #252525;
-            padding: 20px;
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #333;
-        }
-        
-        .lyrics-container {
-            height: 500px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #1e1e1e;
-            border-radius: 8px;
-            line-height: 2.3;
-            font-size: 1.1rem;
-            position: relative;
-            scroll-behavior: smooth;
-        }
-        
-        .chord-position {
-            position: relative;
-            display: inline-block;
-            margin-right: 15px;
-        }
-        
-        .chord-over {
-            position: absolute;
-            top: -1.4em;
-            left: 0;
-            width: 100%;
-            color: #ff6b6b;
-            font-weight: bold;
-            font-size: 0.8em;
-            text-align: center;
-        }
-        
-        .lyric-line {
-            margin-bottom: 25px;
-            padding: 8px 12px;
-            border-radius: 6px;
-            position: relative;
-            white-space: pre-wrap;
-            background: rgba(255, 255, 255, 0.03);
-            transition: all 0.3s ease;
-        }
-        
-        .section-header {
-            font-size: 1.4rem;
-            color: #ff6b6b;
-            margin: 25px 0 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #444;
-            text-align: center;
-        }
-        
-        .active-line {
-            background: rgba(255, 107, 107, 0.15);
-            border-left: 3px solid #ff6b6b;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 25px;
-            padding: 18px;
-            background: #252525;
-            border-radius: 12px;
-            flex-wrap: wrap;
-            border: 1px solid #333;
-        }
-        
-        .control-btn {
-            background: #333;
-            border: none;
-            color: white;
-            width: 60px;
-            height: 60px;
+        .loader .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .control-btn:hover {
-            background: #444;
-            transform: scale(1.05);
-        }
-        
-        .control-btn.active {
-            background: #ff6b6b;
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
-        }
-        
-        .bpm-control {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #333;
-            padding: 0 20px;
-            border-radius: 30px;
-            font-size: 1rem;
-        }
-        
-        .bpm-control input {
-            width: 70px;
-            background: #1e1e1e;
-            border: 1px solid #444;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 50px 20px;
-            font-size: 1.2rem;
-            color: #aaa;
-        }
-        
-        .loading i {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: #ff6b6b;
-            animation: spin 1.5s linear infinite;
-        }
-        
-        .error {
-            text-align: center;
-            padding: 30px 20px;
-            color: #ff6b6b;
-            font-size: 1.1rem;
-            max-width: 800px;
-            margin: 0 auto;
-            border-radius: 12px;
-            background: #252525;
-            border: 1px solid #333;
-        }
-        
-        .back-btn {
-            position: absolute;
-            top: 25px;
-            left: 20px;
-            background: #333;
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            font-size: 1.3rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            transition: all 0.3s ease;
-        }
-        
-        .back-btn:hover {
-            background: #444;
-            transform: scale(1.1);
+            border-top: 4px solid var(--secondary);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
         
         @keyframes spin {
+            0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         
-        footer {
-            text-align: center;
-            padding: 20px 15px;
-            margin-top: 30px;
-            font-size: 0.9rem;
-            color: #777;
-            background: #1e1e1e;
-            border-top: 1px solid #333;
-        }
-        
-        .progress-bar {
-            height: 5px;
-            background: #333;
-            border-radius: 3px;
+        .song-container {
+            background-color: var(--primary);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
             overflow: hidden;
-            margin-top: 15px;
-            max-width: 800px;
-            margin: 15px auto 0;
+            line-height: 2.5;
+            font-size: 18px;
+            position: relative;
+            min-height: 300px;
+            max-width: 100%;
+            overflow-x: auto;
         }
         
-        .progress {
-            height: 100%;
-            background: #ff6b6b;
-            width: 0%;
-            transition: width 0.3s ease;
+        .chord {
+            color: var(--highlight);
+            font-weight: bold;
+            position: relative;
+            top: -10px;
+            font-size: 14px;
+            margin-right: 3px;
+            display: inline-block;
         }
         
-        /* Mobile Optimierungen */
-        @media (max-width: 768px) {
-            .search-title {
-                font-size: 1.5rem;
-            }
-            
-            .song-card {
-                border-radius: 10px;
-            }
-            
-            .song-title {
-                font-size: 1.5rem;
-            }
-            
-            .song-artist {
-                font-size: 1.1rem;
-            }
-            
-            .chords-section, .lyrics-section {
-                padding: 15px;
-            }
-            
-            .lyrics-container {
-                height: 400px;
-                padding: 12px;
-                font-size: 1rem;
-            }
-            
-            .control-btn {
-                width: 55px;
-                height: 55px;
-                font-size: 1.4rem;
-            }
-            
-            .bpm-control {
-                padding: 0 15px;
-                font-size: 0.95rem;
-            }
-            
-            .bpm-control input {
-                width: 60px;
-                padding: 8px;
-            }
-            
-            .section-title {
-                font-size: 1.2rem;
-            }
+        .error {
+            color: var(--highlight);
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            background-color: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            color: var(--success);
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--primary);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-btn {
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .scroll-indicator {
+            text-align: center;
+            font-size: 14px;
+            padding: 10px;
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            background: rgba(52, 152, 219, 0.2);
+            padding: 8px;
+            border-radius: 5px;
+        }
+        
+        .speed-control label {
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .speed-control input {
+            flex: 1;
+            padding: 5px;
+        }
+        
+        .song-title {
+            text-align: center;
+            margin: 10px 0;
+            color: var(--secondary);
+            font-size: 1.4rem;
+        }
+        
+        .artist-name {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #bdc3c7;
+            font-style: italic;
+        }
+        
+        .tab-content {
+            font-size: 18px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+        }
+        
+        .chord-line {
+            color: var(--highlight);
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .lyrics-line {
+            margin-bottom: 15px;
         }
         
         @media (max-width: 480px) {
-            .search-title {
-                font-size: 1.3rem;
+            .controls {
+                flex-direction: column;
+                align-items: center;
             }
             
-            .song-title {
-                font-size: 1.3rem;
+            .control-btn {
+                max-width: 100%;
+                width: 100%;
             }
             
-            .song-artist {
-                font-size: 1rem;
+            .tab-content {
+                font-size: 16px;
             }
             
-            .meta-item {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-            }
-            
-            .lyrics-container {
-                height: 350px;
-                font-size: 0.95rem;
-                line-height: 2.1;
-            }
-            
-            .section-header {
-                font-size: 1.2rem;
-            }
-            
-            .song-list {
-                grid-template-columns: 1fr;
+            h1 {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header mit Suchfeldern -->
-        <header class="search-header">
-            <h1 class="search-title"><i class="fas fa-guitar"></i> Guitar Song Finder</h1>
-            
-            <div class="search-fields">
+        <header>
+            <h1><i class="fas fa-guitar"></i> Smart Guitar Tabs</h1>
+            <div class="search-container">
                 <div class="input-group">
-                    <label for="songTitle"><i class="fas fa-music"></i> Songtitel</label>
-                    <input type="text" id="songTitle" placeholder="z.B. Wonderwall" autocomplete="off">
+                    <input type="text" id="artistInput" placeholder="Künstler (z.B. Beatles)">
                 </div>
-                
                 <div class="input-group">
-                    <label for="songArtist"><i class="fas fa-user"></i> Künstler (optional)</label>
-                    <input type="text" id="songArtist" placeholder="z.B. Oasis" autocomplete="off">
+                    <input type="text" id="songInput" placeholder="Songtitel (z.B. Let It Be)">
                 </div>
-                
-                <button class="search-btn" onclick="searchSongs()">
-                    <i class="fas fa-search"></i> Song suchen
+                <button id="searchButton">
+                    <i class="fas fa-search"></i> Akkorde finden
                 </button>
             </div>
             
-            <div class="progress-bar" id="progressBar">
-                <div class="progress" id="progress"></div>
+            <div class="speed-control">
+                <label for="scrollSpeed">Scroll-Geschwindigkeit:</label>
+                <input type="range" id="scrollSpeed" min="20" max="100" value="50">
+                <span id="speedValue">50%</span>
             </div>
         </header>
         
-        <div class="results-container">
-            <div class="song-list" id="songList">
-                <!-- Song-Karten werden hier dynamisch eingefügt -->
-            </div>
-            
-            <div class="loading" id="loading">
-                <i class="fas fa-spinner"></i>
-                <p>Lade Song-Daten... Bitte warten</p>
-            </div>
-            
-            <div class="error" id="error">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p id="errorMessage"></p>
-            </div>
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Lade Song...</p>
         </div>
         
-        <div class="song-detail" id="songDetail">
-            <button class="back-btn" onclick="showSearchResults()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            
-            <div class="song-header">
-                <h2 class="song-title" id="detailSongTitle">Song Titel</h2>
-                <h3 class="song-artist" id="detailSongArtist">Künstler</h3>
-                <div class="song-meta">
-                    <div class="meta-item"><i class="fas fa-music"></i> Typ: <span id="songType">Chords</span></div>
-                    <div class="meta-item"><i class="fas fa-star"></i> Bewertung: <span id="songRating">4.8</span></div>
-                    <div class="meta-item"><i class="fas fa-eye"></i> Aufrufe: <span id="songViews">125k</span></div>
-                </div>
-            </div>
-            
-            <div class="song-content">
-                <div class="chords-section">
-                    <h3 class="section-title"><i class="fas fa-guitar"></i> Verwendete Akkorde</h3>
-                    <div class="chord-grid" id="chordGrid">
-                        <!-- Akkorde werden hier dynamisch eingefügt -->
-                    </div>
-                </div>
-                
-                <div class="lyrics-section">
-                    <h3 class="section-title"><i class="fas fa-scroll"></i> Songtext mit Smart Scroll</h3>
-                    <div class="lyrics-container" id="lyricsContainer">
-                        <!-- Songtext wird hier dynamisch eingefügt -->
-                    </div>
-                </div>
-            </div>
-            
-            <div class="controls">
-                <button class="control-btn" onclick="togglePlayback()" id="playBtn">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="control-btn" onclick="stopPlayback()">
-                    <i class="fas fa-stop"></i>
-                </button>
-                <div class="bpm-control">
-                    <label for="bpm"><i class="fas fa-tachometer-alt"></i> BPM:</label>
-                    <input type="number" id="bpm" value="120" min="60" max="240">
-                </div>
+        <div id="result">
+            <div class="success">
+                Gib einen Künstler und Songtitel ein, um die Akkorde zu sehen!
             </div>
         </div>
-        
-        <footer>
-            <p>Hinweis: Diese Anwendung nutzt öffentlich verfügbare Songdaten. Bitte respektiere Urheberrechte.</p>
-        </footer>
+    </div>
+    
+    <div class="controls">
+        <button id="scrollToggle" class="control-btn">
+            <i class="fas fa-play"></i> Auto-Scroll Start
+        </button>
+        <button id="saveButton" class="control-btn">
+            <i class="fas fa-download"></i> Offline speichern
+        </button>
     </div>
 
     <script>
-        // Globale Variablen
-        let currentSong = null;
-        let playbackInterval = null;
-        let currentLineIndex = 0;
-        let searchResults = [];
-        let isPlaying = false;
-        
-        // Funktion zum Suchen von Songs
-        function searchSongs() {
-            const title = document.getElementById('songTitle').value.trim();
-            const artist = document.getElementById('songArtist').value.trim();
+        document.addEventListener('DOMContentLoaded', () => {
+            const artistInput = document.getElementById('artistInput');
+            const songInput = document.getElementById('songInput');
+            const searchButton = document.getElementById('searchButton');
+            const resultDiv = document.getElementById('result');
+            const loader = document.getElementById('loader');
+            const scrollToggle = document.getElementById('scrollToggle');
+            const saveButton = document.getElementById('saveButton');
+            const scrollSpeed = document.getElementById('scrollSpeed');
+            const speedValue = document.getElementById('speedValue');
             
-            if (!title) {
-                showError('Bitte gib einen Songtitel ein');
-                return;
-            }
+            let autoScrollInterval = null;
+            let currentScrollSpeed = 50;
+            let currentSongData = null;
             
-            // Ladeanimation anzeigen
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('error').style.display = 'none';
-            document.getElementById('songList').style.display = 'none';
-            document.getElementById('songDetail').style.display = 'none';
-            document.getElementById('progressBar').style.display = 'block';
-            
-            // Fortschrittsbalken simulieren
-            simulateProgress();
-            
-            // Suche durchführen (simuliert)
-            setTimeout(() => {
-                // Simulierte Suchergebnisse
-                searchResults = [
-                    {
-                        id: 1,
-                        title: "Wonderwall",
-                        artist: "Oasis",
-                        type: "Chords",
-                        rating: 4.8,
-                        views: "1.2M",
-                        chords: ["Em", "G", "D", "A7sus4", "C", "Dsus4"],
-                        sections: [
-                            {
-                                name: "Intro",
-                                lines: [
-                                    { chords: ["Em", null, "G", null, "D", null, "A7sus4"], lyrics: "Today is gonna be the day" },
-                                    { chords: ["Em", null, "G", null, "D", null, "A7sus4"], lyrics: "That they're gonna throw it back to you" }
-                                ]
-                            },
-                            {
-                                name: "Verse 1",
-                                lines: [
-                                    { chords: ["G", null, "D", null, "Em", null, "C"], lyrics: "By now you should've somehow" },
-                                    { chords: ["G", null, "D", null, "C", null, "D"], lyrics: "Realized what you gotta do" }
-                                ]
-                            },
-                            {
-                                name: "Chorus",
-                                lines: [
-                                    { chords: ["Em", null, "G", null, "D", null, "A7sus4"], lyrics: "I don't believe that anybody" },
-                                    { chords: ["Em", null, "G", null, "D", null, "A7sus4"], lyrics: "Feels the way I do about you now" },
-                                    { chords: ["C", null, "G", null, "D", null, "Em"], lyrics: "And all the roads we have to walk are winding" }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        id: 2,
-                        title: "Hotel California",
-                        artist: "Eagles",
-                        type: "Chords",
-                        rating: 4.9,
-                        views: "2.3M",
-                        chords: ["Bm", "F#", "A", "E", "G", "D", "Em"],
-                        sections: [
-                            {
-                                name: "Intro",
-                                lines: [
-                                    { chords: ["Bm", "F#", "A", "E"], lyrics: "On a dark desert highway, cool wind in my hair" }
-                                ]
-                            },
-                            {
-                                name: "Verse 1",
-                                lines: [
-                                    { chords: ["G", "D", "Em", "F#"], lyrics: "Warm smell of colitas, rising up through the air" }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        id: 3,
-                        title: "Let It Be",
-                        artist: "The Beatles",
-                        type: "Chords",
-                        rating: 4.7,
-                        views: "980k",
-                        chords: ["C", "G", "Am", "F", "D", "E"],
-                        sections: [
-                            {
-                                name: "Verse 1",
-                                lines: [
-                                    { chords: ["C", null, "G", null, "Am", null, "F"], lyrics: "When I find myself in times of trouble" },
-                                    { chords: ["C", null, "G", null, "F", null, "C"], lyrics: "Mother Mary comes to me" }
-                                ]
-                            }
-                        ]
-                    }
-                ];
+            // Geschwindigkeitssteuerung
+            scrollSpeed.addEventListener('input', () => {
+                currentScrollSpeed = parseInt(scrollSpeed.value);
+                speedValue.textContent = `${currentScrollSpeed}%`;
                 
-                // Ergebnisse filtern, wenn Künstler angegeben ist
-                if (artist) {
-                    const searchTerm = artist.toLowerCase();
-                    searchResults = searchResults.filter(song => 
-                        song.artist.toLowerCase().includes(searchTerm)
-                    );
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                    startAutoScroll();
+                }
+            });
+            
+            // Suche initialisieren
+            searchButton.addEventListener('click', searchSong);
+            
+            // Enter-Taste für Suche
+            [artistInput, songInput].forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') searchSong();
+                });
+            });
+            
+            // Auto-Scroll Toggle
+            scrollToggle.addEventListener('click', toggleAutoScroll);
+            
+            // Offline speichern
+            saveButton.addEventListener('click', saveOffline);
+            
+            async function searchSong() {
+                const artist = artistInput.value.trim();
+                const song = songInput.value.trim();
+                
+                if (!artist || !song) {
+                    showError("Bitte Künstler und Songtitel eingeben");
+                    return;
                 }
                 
-                // Suchergebnisse anzeigen
-                displaySearchResults();
+                loader.style.display = 'block';
+                resultDiv.innerHTML = '';
                 
-                // Fortschrittsbalken ausblenden
-                document.getElementById('progressBar').style.display = 'none';
-            }, 1500);
-        }
-        
-        // Fortschrittsbalken simulieren
-        function simulateProgress() {
-            const progressBar = document.getElementById('progress');
-            let width = 0;
-            const interval = setInterval(() => {
-                if (width >= 100) {
-                    clearInterval(interval);
+                try {
+                    const songData = await fetchSongData(artist, song);
+                    currentSongData = songData;
+                    displaySong(songData);
+                } catch (error) {
+                    showError("Fehler beim Laden des Songs. Bitte versuche einen anderen Songtitel.");
+                    console.error(error);
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
+            
+            async function fetchSongData(artist, song) {
+                // Wir nutzen die Ultimate Guitar Suchfunktion mit einem Workaround
+                const searchTerm = `${artist} ${song}`.replace(/\s+/g, '+');
+                const searchUrl = `https://www.ultimate-guitar.com/search.php?search_type=title&value=${searchTerm}`;
+                
+                try {
+                    // Wir holen die Suchergebnisse
+                    const response = await fetch(searchUrl);
+                    const html = await response.text();
+                    
+                    // Parsen der HTML-Antwort
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Finde den ersten Tab-Link
+                    const tabLink = doc.querySelector('.search-page__result a[href*="tab"]');
+                    if (!tabLink) throw new Error('Keine Tabs gefunden');
+                    
+                    // Tab-Inhalt extrahieren
+                    const tabUrl = tabLink.href;
+                    const tabResponse = await fetch(tabUrl);
+                    const tabHtml = await tabResponse.text();
+                    const tabDoc = parser.parseFromString(tabHtml, 'text/html');
+                    
+                    // Tab-Content finden
+                    const tabContent = tabDoc.querySelector('.js-tab-content')?.innerHTML;
+                    if (!tabContent) throw new Error('Tab-Inhalt nicht gefunden');
+                    
+                    // Titel und Künstler extrahieren
+                    const title = tabDoc.querySelector('.t-title')?.textContent || `${song} - ${artist}`;
+                    const artistName = tabDoc.querySelector('.t-artist')?.textContent || artist;
+                    
+                    return {
+                        title,
+                        artist: artistName,
+                        content: tabContent
+                    };
+                } catch (error) {
+                    throw new Error('Fehler beim Abrufen der Daten: ' + error.message);
+                }
+            }
+            
+            function displaySong(songData) {
+                resultDiv.innerHTML = `
+                    <div class="song-title">${songData.title}</div>
+                    <div class="artist-name">${songData.artist}</div>
+                    <div class="song-container">
+                        <div class="tab-content">${formatTabContent(songData.content)}</div>
+                    </div>
+                    <div class="scroll-indicator">Tippe auf "Auto-Scroll Start" während du spielst</div>
+                `;
+                
+                // Auto-Scroll zurücksetzen
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                    scrollToggle.innerHTML = '<i class="fas fa-play"></i> Auto-Scroll Start';
+                    autoScrollInterval = null;
+                }
+            }
+            
+            function formatTabContent(content) {
+                // Formatierung der Akkorde
+                let formatted = content
+                    .replace(/\[ch\](.*?)\[\/ch\]/g, '<span class="chord">$1</span>')
+                    .replace(/\[tab\](.*?)\[\/tab\]/gs, '<div class="tab-section">$1</div>')
+                    .replace(/\n/g, '<br>');
+                
+                // Verbesserte Darstellung von Akkord-Zeilen
+                formatted = formatted.replace(/(<span class="chord">.*?<\/span>)+/g, (match) => {
+                    return `<div class="chord-line">${match}</div>`;
+                });
+                
+                // Textzeilen formatieren
+                formatted = formatted.replace(/(<br>\s*)+/g, '<br>');
+                
+                return formatted;
+            }
+            
+            function toggleAutoScroll() {
+                const container = document.querySelector('.song-container');
+                if (!container) return;
+                
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                    autoScrollInterval = null;
+                    scrollToggle.innerHTML = '<i class="fas fa-play"></i> Auto-Scroll Start';
                 } else {
-                    width += 5;
-                    progressBar.style.width = width + '%';
+                    startAutoScroll();
+                    scrollToggle.innerHTML = '<i class="fas fa-stop"></i> Auto-Scroll Stop';
                 }
-            }, 100);
-        }
-        
-        // Suchergebnisse anzeigen
-        function displaySearchResults() {
-            document.getElementById('loading').style.display = 'none';
-            
-            const songList = document.getElementById('songList');
-            songList.innerHTML = '';
-            
-            if (searchResults.length === 0) {
-                showError('Keine Songs gefunden. Bitte versuche eine andere Suchanfrage.');
-                return;
             }
             
-            searchResults.forEach(song => {
-                const songCard = document.createElement('div');
-                songCard.className = 'song-card';
-                songCard.onclick = () => displaySong(song);
+            function startAutoScroll() {
+                const container = document.querySelector('.song-container');
+                if (!container) return;
                 
-                songCard.innerHTML = `
-                    <img src="https://source.unsplash.com/random/600x300/?${encodeURIComponent(song.title + ' ' + song.artist)},music,guitar" alt="${song.title}">
-                    <div class="song-card-content">
-                        <h3 class="song-card-title">${song.title}</h3>
-                        <p class="song-card-artist">${song.artist}</p>
-                        <div class="song-card-meta">
-                            <div class="song-card-rating">
-                                <i class="fas fa-star"></i> ${song.rating}
-                            </div>
-                            <div class="song-card-views">
-                                <i class="fas fa-eye"></i> ${song.views}
-                            </div>
+                let scrollPosition = container.scrollTop;
+                const maxScroll = container.scrollHeight - container.clientHeight;
+                const speedFactor = currentScrollSpeed / 50;
+                
+                autoScrollInterval = setInterval(() => {
+                    scrollPosition += 2 * speedFactor;
+                    
+                    if (scrollPosition >= maxScroll) {
+                        clearInterval(autoScrollInterval);
+                        scrollToggle.innerHTML = '<i class="fas fa-play"></i> Auto-Scroll Start';
+                        autoScrollInterval = null;
+                        return;
+                    }
+                    
+                    container.scrollTop = scrollPosition;
+                }, 50);
+            }
+            
+            function saveOffline() {
+                if (!currentSongData) {
+                    showError("Kein Song zum Speichern gefunden");
+                    return;
+                }
+                
+                try {
+                    const songData = {
+                        title: currentSongData.title,
+                        artist: currentSongData.artist,
+                        content: currentSongData.content,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('guitarTab', JSON.stringify(songData));
+                    
+                    resultDiv.innerHTML += `
+                        <div class="success">
+                            <i class="fas fa-check-circle"></i> 
+                            Song erfolgreich offline gespeichert!
                         </div>
+                    `;
+                } catch (e) {
+                    showError("Speichern fehlgeschlagen: " + e.message);
+                }
+            }
+            
+            function showError(message) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        ${message}
                     </div>
                 `;
-                
-                songList.appendChild(songCard);
-            });
-            
-            document.getElementById('songList').style.display = 'grid';
-        }
-        
-        // Song-Daten anzeigen
-        function displaySong(song) {
-            currentSong = song;
-            currentLineIndex = 0;
-            isPlaying = false;
-            
-            // Header-Daten setzen
-            document.getElementById('detailSongTitle').textContent = song.title;
-            document.getElementById('detailSongArtist').textContent = song.artist;
-            document.getElementById('songType').textContent = song.type;
-            document.getElementById('songRating').textContent = song.rating;
-            document.getElementById('songViews').textContent = song.views;
-            document.getElementById('bpm').value = 120;
-            
-            // Akkorde anzeigen
-            const chordGrid = document.getElementById('chordGrid');
-            chordGrid.innerHTML = '';
-            song.chords.forEach(chord => {
-                const chordElement = document.createElement('div');
-                chordElement.className = 'chord';
-                chordElement.innerHTML = `
-                    <div>${chord}</div>
-                    <div class="chord-diagram">${generateChordDiagram(chord)}</div>
-                `;
-                chordGrid.appendChild(chordElement);
-            });
-            
-            // Songtext anzeigen mit korrekter Akkordpositionierung
-            const lyricsContainer = document.getElementById('lyricsContainer');
-            lyricsContainer.innerHTML = '';
-            
-            song.sections.forEach(section => {
-                const sectionHeader = document.createElement('div');
-                sectionHeader.className = 'section-header';
-                sectionHeader.textContent = section.name;
-                lyricsContainer.appendChild(sectionHeader);
-                
-                section.lines.forEach(line => {
-                    const lineContainer = document.createElement('div');
-                    lineContainer.className = 'lyric-line';
-                    
-                    // Textzeile mit Akkorden
-                    const textLine = document.createElement('div');
-                    textLine.className = 'lyric-text';
-                    
-                    // Teile den Text in Wörter auf
-                    const words = line.lyrics.split(' ');
-                    const chords = line.chords;
-                    
-                    // Positioniere die Akkorde über den Wörtern
-                    words.forEach((word, index) => {
-                        const wordSpan = document.createElement('span');
-                        wordSpan.className = 'chord-position';
-                        
-                        // Akkord über dem Wort (wenn vorhanden)
-                        if (index < chords.length && chords[index]) {
-                            const chordSpan = document.createElement('span');
-                            chordSpan.className = 'chord-over';
-                            chordSpan.textContent = chords[index];
-                            wordSpan.appendChild(chordSpan);
-                        }
-                        
-                        // Das Wort selbst
-                        const textSpan = document.createElement('span');
-                        textSpan.textContent = word + ' ';
-                        wordSpan.appendChild(textSpan);
-                        
-                        textLine.appendChild(wordSpan);
-                    });
-                    
-                    lineContainer.appendChild(textLine);
-                    lyricsContainer.appendChild(lineContainer);
-                });
-            });
-            
-            // Ergebnis anzeigen
-            document.getElementById('songList').style.display = 'none';
-            document.getElementById('error').style.display = 'none';
-            document.getElementById('songDetail').style.display = 'block';
-            
-            // Play-Button zurücksetzen
-            document.getElementById('playBtn').innerHTML = '<i class="fas fa-play"></i>';
-            document.getElementById('playBtn').classList.remove('active');
-            
-            // Zum Anfang scrollen
-            lyricsContainer.scrollTop = 0;
-            
-            // Erste Zeile hervorheben
-            highlightCurrentLine(0);
-        }
-        
-        // Playback umschalten
-        function togglePlayback() {
-            if (isPlaying) {
-                pausePlayback();
-            } else {
-                startPlayback();
             }
-        }
-        
-        // Playback starten
-        function startPlayback() {
-            const bpm = parseInt(document.getElementById('bpm').value) || 120;
-            const playBtn = document.getElementById('playBtn');
-            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            playBtn.classList.add('active');
-            isPlaying = true;
             
-            const lyricsContainer = document.getElementById('lyricsContainer');
-            const lines = lyricsContainer.querySelectorAll('.lyric-line');
-            if (lines.length === 0) return;
-            
-            // Playback starten
-            const interval = 60000 / bpm * 4; // 4 Takte pro Zeile
-            playbackInterval = setInterval(() => {
-                // Nächste Zeile
-                currentLineIndex = (currentLineIndex + 1) % lines.length;
-                
-                // Zur neuen Zeile scrollen und hervorheben
-                scrollToLine(currentLineIndex);
-                highlightCurrentLine(currentLineIndex);
-            }, interval);
-        }
-        
-        // Playback pausieren
-        function pausePlayback() {
-            if (playbackInterval) {
-                clearInterval(playbackInterval);
-                playbackInterval = null;
+            // Versuche, gespeicherten Song zu laden
+            function loadOfflineSong() {
+                const savedData = localStorage.getItem('guitarTab');
+                if (savedData) {
+                    try {
+                        const songData = JSON.parse(savedData);
+                        currentSongData = songData;
+                        displaySong(songData);
+                        resultDiv.innerHTML += `
+                            <div class="success">
+                                <i class="fas fa-info-circle"></i> 
+                                Zuletzt gespeicherter Song geladen
+                            </div>
+                        `;
+                    } catch (e) {
+                        console.log("Kein gespeicherter Song gefunden");
+                    }
+                }
             }
-            const playBtn = document.getElementById('playBtn');
-            playBtn.innerHTML = '<i class="fas fa-play"></i>';
-            playBtn.classList.remove('active');
-            isPlaying = false;
-        }
-        
-        // Playback stoppen
-        function stopPlayback() {
-            pausePlayback();
-            const lyricsContainer = document.getElementById('lyricsContainer');
             
-            // Zur ersten Zeile springen
-            currentLineIndex = 0;
-            scrollToLine(0);
-            highlightCurrentLine(0);
-        }
-        
-        // Zur bestimmten Zeile scrollen
-        function scrollToLine(index) {
-            const lyricsContainer = document.getElementById('lyricsContainer');
-            const lines = lyricsContainer.querySelectorAll('.lyric-line');
-            
-            if (lines[index]) {
-                const containerHeight = lyricsContainer.clientHeight;
-                const lineTop = lines[index].offsetTop;
-                const lineHeight = lines[index].clientHeight;
-                
-                lyricsContainer.scrollTo({
-                    top: lineTop - containerHeight / 2 + lineHeight / 2,
-                    behavior: 'smooth'
-                });
-            }
-        }
-        
-        // Aktuelle Zeile hervorheben
-        function highlightCurrentLine(index) {
-            const lyricsContainer = document.getElementById('lyricsContainer');
-            const lines = lyricsContainer.querySelectorAll('.lyric-line');
-            
-            // Entferne Hervorhebung von allen Zeilen
-            lines.forEach(line => line.classList.remove('active-line'));
-            
-            // Hervorhebung der aktuellen Zeile
-            if (lines[index]) {
-                lines[index].classList.add('active-line');
-            }
-        }
-        
-        // Zurück zur Suchergebnisliste
-        function showSearchResults() {
-            document.getElementById('songDetail').style.display = 'none';
-            document.getElementById('songList').style.display = 'grid';
-            pausePlayback();
-        }
-        
-        // Akkorddiagramm generieren
-        function generateChordDiagram(chord) {
-            const diagrams = {
-                "C": "0 3 2 0 1 0",
-                "G": "3 2 0 0 0 3",
-                "D": "x x 0 2 3 2",
-                "Em": "0 2 2 0 0 0",
-                "Am": "x 0 2 2 1 0",
-                "F": "1 3 3 2 1 1",
-                "A7sus4": "x 0 2 0 3 0",
-                "Bm": "x 2 4 4 3 2",
-                "F#": "2 4 4 3 2 2",
-                "A": "x 0 2 2 2 0",
-                "E": "0 2 2 1 0 0",
-                "Dsus4": "x x 0 2 3 3"
-            };
-            
-            return diagrams[chord] || "x x x x x x";
-        }
-        
-        // Fehlermeldung anzeigen
-        function showError(message) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('songList').style.display = 'none';
-            document.getElementById('songDetail').style.display = 'none';
-            document.getElementById('progressBar').style.display = 'none';
-            
-            const errorElement = document.getElementById('error');
-            errorElement.style.display = 'block';
-            document.getElementById('errorMessage').textContent = message;
-        }
-        
-        // Initialisierung
-        document.getElementById('songTitle').value = 'Wonderwall';
-        document.getElementById('songArtist').value = 'Oasis';
-        
-        // Enter-Taste für Suchfelder
-        document.getElementById('songTitle').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchSongs();
-        });
-        
-        document.getElementById('songArtist').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchSongs();
+            // Beim Start geladenen Song anzeigen
+            loadOfflineSong();
         });
     </script>
 </body>
