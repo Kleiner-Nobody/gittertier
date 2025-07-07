@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner Speedrun</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    :root {
+        --ms-blue: #0078d4;
+        --ms-blue-dark: #106ebe;
+        --ms-gray: #f3f2f1;
+        --ms-gray-light: #faf9f8;
+        --ms-gray-dark: #e1dfdd;
+        --ms-dark: #201f1e;
+        --ms-light: #ffffff;
+        --ms-accent: #ffb900;
+        --ms-accent-dark: #d29200;
+        --ms-error: #d13438;
+        --ms-success: #107c10;
+        --ms-card-shadow: 0 2.4px 4.8px rgba(0,0,0,0.14), 0 0.8px 1.6px rgba(0,0,0,0.07);
+        --ms-card-shadow-hover: 0 6.4px 14.4px rgba(0,0,0,0.18), 0 1.2px 3.6px rgba(0,0,0,0.11);
+        --ms-border-radius: 8px;
+        --ms-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --ms-animation-duration: 0.4s;
+    }
+
+    .dark-mode {
+        --ms-blue: #4a69b5;
+        --ms-blue-dark: #2c3e50;
+        --ms-gray: #383333;
+        --ms-gray-light: #1e1e1e;
+        --ms-gray-dark: #252525;
+        --ms-dark: #e3e3e3;
+        --ms-light: #252525;
+        --ms-accent: #ffb900;
+        --ms-accent-dark: #ffa500;
+        --ms-error: #e74c3c;
+        --ms-success: #28a745;
+        --ms-card-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        --ms-card-shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+        background-color: var(--ms-gray);
+        color: var(--ms-dark);
+        line-height: 1.6;
+        min-height: 100vh;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(108, 117, 125, 0.03) 0%, transparent 25%),
+            radial-gradient(circle at 90% 80%, rgba(108, 117, 125, 0.03) 0%, transparent 25%);
+        overflow-x: hidden;
+        transition: var(--ms-transition);
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+        gap: 30px;
+    }
+
+    /* Header - Microsoft Style */
+    header {
+        background: linear-gradient(135deg, var(--ms-blue), var(--ms-blue-dark));
+        color: white;
+        padding: 35px 40px;
+        margin: 0 10% 40px;
+        border-radius: var(--ms-border-radius);
+        box-shadow: var(--ms-card-shadow);
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 10;
+    }
+
+    header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .logo h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .logo i {
+        font-size: 2.2rem;
+        background: rgba(255, 255, 255, 0.2);
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Card styles - Microsoft Fluent Design */
+    .card {
+        background: var(--ms-light);
+        border-radius: var(--ms-border-radius);
+        padding: 40px;
+        box-shadow: var(--ms-card-shadow);
+        margin-bottom: 0;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+        transition: var(--ms-transition);
+        animation: fadeIn var(--ms-animation-duration) ease-out;
+        animation-fill-mode: both;
+        transform-origin: center;
+    }
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--ms-card-shadow-hover);
+    }
+
+    .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--ms-blue);
+        transition: var(--ms-transition);
+    }
+
+    .card-header {
+        margin-bottom: 30px;
+        padding-bottom: 25px;
+        border-bottom: 1px solid var(--ms-gray-dark);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header h2 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--ms-dark);
+        position: relative;
+        padding-bottom: 15px;
+    }
+
+    .card-header h2::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 70px;
+        height: 4px;
+        background: var(--ms-blue);
+        border-radius: 2px;
+        transition: var(--ms-transition);
+    }
+
+    .card:hover .card-header h2::after {
+        width: 100px;
+    }
+
+    /* Scanner Container */
+    #scanner-container {
+        width: 100%;
+        height: 500px;
+        background: var(--ms-gray);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        margin: 30px 0;
+        border: 1px solid var(--ms-gray-dark);
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        transition: var(--ms-transition);
+    }
+
+    #scanner-container.active {
+        box-shadow: 0 0 0 3px var(--ms-blue);
+    }
+
+    #scanner-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--ms-transition);
+    }
+
+    #barcode-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    #barcode-box {
+        position: absolute;
+        border: 4px solid var(--ms-success);
+        box-shadow: 0 0 30px rgba(40, 167, 69, 0.6);
+        display: none;
+        z-index: 10;
+        transition: all 0.2s ease;
+        border-radius: 4px;
+    }
+
+    .scanner-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%;
+        height: 250px;
+        border: 4px solid rgba(255,255,255,0.3);
+        pointer-events: none;
+        border-radius: 12px;
+        transition: var(--ms-transition);
+    }
+
+    /* Controls Grid */
+    .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+
+    /* Buttons - Microsoft Style */
+    button {
+        padding: 25px 20px;
+        border: none;
+        border-radius: var(--ms-border-radius);
+        font-size: 1.3rem;
+        cursor: pointer;
+        transition: var(--ms-transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        font-weight: 600;
+        box-shadow: var(--ms-card-shadow);
+        position: relative;
+        overflow: hidden;
+        transform: translateY(0);
+    }
+
+    button::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+
+    button:hover::after {
+        transform: translateY(0);
+    }
+
+    button:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--ms-card-shadow-hover);
+    }
+
+    .btn-primary {
+        background: var(--ms-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--ms-blue-dark);
+    }
+
+    .btn-secondary {
+        background: var(--ms-gray);
+        color: var(--ms-dark);
+    }
+
+    .btn-secondary:hover {
+        background: var(--ms-gray-dark);
+    }
+
+    .btn-success {
+        background: var(--ms-success);
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #0d6910;
+    }
+
+    .btn-danger {
+        background: var(--ms-error);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #b0262e;
+    }
+
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: var(--ms-card-shadow);
+    }
+
+    button i {
+        font-size: 1.8rem;
+    }
+
+    /* Cart Section */
+    .cart-section {
+        background: var(--ms-light);
+        border-radius: var(--ms-border-radius);
+        padding: 40px;
+        margin-top: 0;
+        box-shadow: var(--ms-card-shadow);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+        animation: fadeIn var(--ms-animation-duration) ease-out 0.2s;
+        animation-fill-mode: both;
+    }
+
+    .cart-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--ms-success);
+        transition: var(--ms-transition);
+    }
+
+    .cart-section:hover::before {
+        background: #0d6910;
+    }
+
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 25px 0;
+        border-bottom: 1px solid var(--ms-gray-dark);
+        transition: var(--ms-transition);
+    }
+
+    .cart-item:hover {
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: var(--ms-gray);
+        border-radius: 8px;
+        padding: 12px 18px;
+        border: 1px solid var(--ms-gray-dark);
+    }
+
+    .quantity-controls button {
+        background: none;
+        border: none;
+        padding: 8px 16px;
+        font-size: 1.8rem;
+        color: var(--ms-dark);
+        box-shadow: none;
+        width: auto;
+        height: auto;
+    }
+
+    .quantity-controls button:hover {
+        background: var(--ms-gray-dark);
+        transform: none;
+    }
+
+    /* Modals - Microsoft Style */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--ms-light);
+        padding: 50px;
+        border-radius: var(--ms-border-radius);
+        width: 95%;
+        max-width: 700px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        z-index: 1000;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--ms-blue);
+    }
+
+    .modal h3 {
+        margin: 0 0 40px 0;
+        font-size: 2.2rem;
+        color: var(--ms-dark);
+        font-weight: 700;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--ms-gray-dark);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .modal-input {
+        width: 100%;
+        padding: 25px;
+        margin: 25px 0;
+        border: 2px solid var(--ms-blue);
+        border-radius: var(--ms-border-radius);
+        font-size: 1.2rem;
+        transition: var(--ms-transition);
+        background: var(--ms-gray);
+        color: var(--ms-dark);
+    }
+
+    .modal-input:focus {
+        border-color: var(--ms-blue-dark);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(0, 120, 212, 0.3);
+    }
+
+    .notification {
+        position: fixed;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--ms-dark);
+        color: white;
+        padding: 35px 60px;
+        border-radius: var(--ms-border-radius);
+        display: none;
+        animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 1001;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    #cart-total {
+        font-weight: 700;
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 1px solid var(--ms-gray-dark);
+        font-size: 1.8rem;
+        color: var(--ms-dark);
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-size: 1.3rem;
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--ms-success);
+        box-shadow: var(--ms-card-shadow);
+        transition: var(--ms-transition);
+    }
+
+    .status-indicator .dot {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: var(--ms-success);
+        box-shadow: 0 0 10px var(--ms-success);
+    }
+
+    .status-indicator.inactive .dot {
+        background: var(--ms-error);
+        box-shadow: 0 0 10px var(--ms-error);
+    }
+
+    .status-indicator.inactive {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--ms-error);
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from { transform: translateY(-100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { bottom: -100px; opacity: 0; }
+        to { bottom: 50px; opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scaleIn {
+        from { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+        to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes fadeInOut {
+        0% { opacity: 0.7; }
+        50% { opacity: 1; }
+        100% { opacity: 0.7; }
+    }
+
+    /* Game specific elements */
+    .game-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: var(--ms-gray);
+        border-radius: var(--ms-border-radius);
+    }
+    
+    .stat-box {
+        text-align: center;
+        padding: 15px;
+        background: var(--ms-light);
+        border-radius: var(--ms-border-radius);
+        box-shadow: var(--ms-card-shadow);
+        min-width: 180px;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 10px 0;
+        color: var(--ms-blue);
+    }
+    
+    .stat-label {
+        font-size: 1.1rem;
+        color: var(--ms-dark);
+        opacity: 0.8;
+    }
+    
+    .timer-container {
+        position: relative;
+        height: 20px;
+        background: var(--ms-gray-dark);
+        border-radius: 10px;
+        margin: 30px 0;
+        overflow: hidden;
+    }
+    
+    .timer-progress {
+        position: absolute;
+        height: 100%;
+        background: var(--ms-blue);
+        width: 100%;
+        transition: width 0.5s linear;
+    }
+    
+    .difficulty-selector {
+        display: flex;
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .difficulty-btn {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid var(--ms-gray-dark);
+        border-radius: var(--ms-border-radius);
+        background: var(--ms-gray);
+        cursor: pointer;
+        transition: var(--ms-transition);
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    .difficulty-btn.active {
+        background: var(--ms-blue);
+        color: white;
+        border-color: var(--ms-blue);
+    }
+    
+    .difficulty-btn:hover:not(.active) {
+        background: var(--ms-gray-dark);
+    }
+    
+    .leaderboard {
+        margin-top: 30px;
+    }
+    
+    .leaderboard-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px;
+        border-bottom: 1px solid var(--ms-gray-dark);
+    }
+    
+    .leaderboard-position {
+        font-weight: 700;
+        width: 30px;
+        color: var(--ms-blue);
+    }
+    
+    .leaderboard-name {
+        flex: 1;
+    }
+    
+    .leaderboard-score {
+        font-weight: 700;
+    }
+    
+    .theme-toggle {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--ms-accent);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        cursor: pointer;
+        box-shadow: var(--ms-card-shadow);
+        z-index: 100;
+        transition: var(--ms-transition);
+    }
+    
+    .theme-toggle:hover {
+        transform: rotate(20deg) scale(1.1);
+    }
+    
+    .scan-animation {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 10px;
+        background: var(--ms-success);
+        box-shadow: 0 0 20px var(--ms-success);
+        z-index: 20;
+        animation: scanLine 2s infinite ease-in-out;
+    }
+    
+    @keyframes scanLine {
+        0% { top: 0; }
+        50% { top: 100%; }
+        100% { top: 0; }
+    }
+    
+    .item-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+    
+    .item-card {
+        background: var(--ms-gray);
+        border-radius: var(--ms-border-radius);
+        padding: 15px;
+        text-align: center;
+        box-shadow: var(--ms-card-shadow);
+        transition: var(--ms-transition);
+    }
+    
+    .scanned-item {
+        animation: pulse 0.5s ease;
+    }
+    
+    .scanner-effects {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 15;
+    }
+    
+    .corner {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border: 3px solid var(--ms-accent);
+    }
+    
+    .corner-tl {
+        top: -5px;
+        left: -5px;
+        border-right: none;
+        border-bottom: none;
+    }
+    
+    .corner-tr {
+        top: -5px;
+        right: -5px;
+        border-left: none;
+        border-bottom: none;
+    }
+    
+    .corner-bl {
+        bottom: -5px;
+        left: -5px;
+        border-right: none;
+        border-top: none;
+    }
+    
+    .corner-br {
+        bottom: -5px;
+        right: -5px;
+        border-left: none;
+        border-top: none;
+    }
+
+    #scanned-items-list {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 20px;
+        border: 1px solid var(--ms-gray-dark);
+        border-radius: var(--ms-border-radius);
+        padding: 15px;
+    }
+
+    .scanned-item-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid var(--ms-gray-dark);
+    }
+
+    .scanned-item-row:last-child {
+        border-bottom: none;
+    }
+
+    .scanned-item-name {
+        font-weight: 600;
+    }
+
+    .scanned-item-points {
+        color: var(--ms-success);
+        font-weight: 700;
+    }
+
+    /* Responsive design */
+    @media (max-width: 1200px) {
+        .container {
+            grid-template-columns: 1fr;
+        }
+        
+        header {
+            margin: 0 5% 30px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        header {
+            padding: 25px;
+            margin: 0 0 30px;
+            border-radius: 0;
+        }
+        
+        .logo h1 {
+            font-size: 2rem;
+        }
+        
+        .logo i {
+            width: 55px;
+            height: 55px;
+            font-size: 1.8rem;
+        }
+        
+        .card, .cart-section {
+            padding: 30px;
+        }
+        
+        #scanner-container {
+            height: 400px;
+        }
+        
+        .scanner-overlay {
+            width: 85%;
+            height: 200px;
+        }
+        
+        .card-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        button {
+            padding: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .modal {
+            padding: 35px;
+        }
+        
+        .stat-box {
+            min-width: 140px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            padding: 20px 15px;
+        }
+        
+        #scanner-container {
+            height: 300px;
+        }
+        
+        .scanner-overlay {
+            height: 180px;
+        }
+        
+        button {
+            padding: 18px;
+            font-size: 1.1rem;
+        }
+        
+        .modal {
+            padding: 25px 20px;
+        }
+        
+        .modal-input {
+            padding: 20px;
+        }
+        
+        .notification {
+            padding: 30px 40px;
+            font-size: 1.1rem;
+        }
+        
+        .card, .cart-section {
+            padding: 25px 20px;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+        }
+        
+        .controls {
+            grid-template-columns: 1fr;
+        }
+        
+        .game-stats {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .difficulty-selector {
+            flex-direction: column;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+    
+    <header>
+        <div class="logo">
+            <i class="fas fa-barcode"></i>
+            <h1>Barcode Scanner Speedrun</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Game Controls</h2>
+                <div class="status-indicator" id="gameStatus">
+                    <div class="dot"></div>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="game-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Time Left</div>
+                    <div class="stat-value" id="timerValue">60s</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="scoreValue">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Items Scanned</div>
+                    <div class="stat-value" id="itemsValue">0</div>
+                </div>
+            </div>
+            
+            <div class="timer-container">
+                <div class="timer-progress" id="timerProgress"></div>
+            </div>
+            
+            <h3 style="margin-bottom: 20px;">Select Difficulty</h3>
+            <div class="difficulty-selector">
+                <div class="difficulty-btn active" data-difficulty="easy">Easy</div>
+                <div class="difficulty-btn" data-difficulty="medium">Medium</div>
+                <div class="difficulty-btn" data-difficulty="hard">Hard</div>
+            </div>
+            
+            <div id="scanner-container">
+                <div class="scanner-effects">
+                    <div class="scan-animation"></div>
+                    <div class="corner corner-tl"></div>
+                    <div class="corner corner-tr"></div>
+                    <div class="corner corner-bl"></div>
+                    <div class="corner corner-br"></div>
+                </div>
+                <div class="scanner-overlay"></div>
+                <div id="barcode-overlay">
+                    <div id="barcode-box"></div>
+                </div>
+                <video id="scanner-video" autoplay playsinline></video>
+                <canvas id="scanner-canvas" style="display: none;"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button class="btn-primary" id="startGame">
+                    <i class="fas fa-play"></i> Start Game
+                </button>
+                <button class="btn-secondary" id="resetGame" disabled>
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+                <button class="btn-danger" id="stopGame" disabled>
+                    <i class="fas fa-stop"></i> Stop Game
+                </button>
+            </div>
+        </div>
+        
+        <div class="cart-section">
+            <div class="card-header">
+                <h2>Scanned Items</h2>
+                <div class="status-indicator">
+                    <div class="dot"></div>
+                    <span>Active</span>
+                </div>
+            </div>
+            
+            <div class="item-grid" id="itemGrid">
+                <!-- Items will be generated by JavaScript -->
+            </div>
+            
+            <div id="scanned-items-list">
+                <!-- Scanned items will appear here -->
+            </div>
+            
+            <div id="cart-total">
+                <span>Total Score:</span>
+                <span id="totalScore">0</span>
+            </div>
+            
+            <h3 style="margin: 40px 0 20px;">Leaderboard</h3>
+            <div class="leaderboard" id="leaderboard">
+                <div class="leaderboard-item">
+                    <span class="leaderboard-position">1</span>
+                    <span class="leaderboard-name">Speedrun Pro</span>
+                    <span class="leaderboard-score">1850</span>
+                </div>
+                <div class="leaderboard-item">
+                    <span class="leaderboard-position">2</span>
+                    <span class="leaderboard-name">Scan Master</span>
+                    <span class="leaderboard-score">1620</span>
+                </div>
+                <div class="leaderboard-item">
+                    <span class="leaderboard-position">3</span>
+                    <span class="leaderboard-name">Barcode Ninja</span>
+                    <span class="leaderboard-score">1450</span>
+                </div>
+                <div class="leaderboard-item">
+                    <span class="leaderboard-position">4</span>
+                    <span class="leaderboard-name">Quick Scanner</span>
+                    <span class="leaderboard-score">1280</span>
+                </div>
+                <div class="leaderboard-item">
+                    <span class="leaderboard-position">5</span>
+                    <span class="leaderboard-name">New Player</span>
+                    <span class="leaderboard-score">850</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        Item scanned successfully! +50 points
+    </div>
+    
+    <div class="modal" id="gameOverModal">
+        <h3><i class="fas fa-trophy"></i> Game Over!</h3>
+        <p style="font-size: 1.4rem; margin-bottom: 30px;">Your final score: <span id="finalScore" style="font-weight: 700;">0</span></p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <button class="btn-secondary" id="closeModal">
+                <i class="fas fa-times"></i> Close
+            </button>
+            <button class="btn-primary" id="playAgain">
+                <i class="fas fa-redo"></i> Play Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+    // Game state variables
+    let gameState = {
+        isRunning: false,
+        timeLeft: 60,
+        score: 0,
+        itemsScanned: 0,
+        difficulty: 'easy',
+        timerInterval: null,
+        stream: null,
+        barcodeDetector: null,
+        lastScannedCode: '',
+        lastScannedTime: 0,
+        scannedItems: []
+    };
+
+    // Product database - using real product barcodes
+    const products = [
+        { barcode: '5449000000996', name: 'Coca-Cola', icon: 'wine-bottle', points: 100 },
+        { barcode: '5449000214911', name: 'Fanta Orange', icon: 'wine-bottle', points: 100 },
+        { barcode: '5449000130185', name: 'Sprite', icon: 'wine-bottle', points: 100 },
+        { barcode: '5053827101871', name: 'Red Bull', icon: 'battery-full', points: 150 },
+        { barcode: '4014400904171', name: 'Nescafé', icon: 'coffee', points: 200 },
+        { barcode: '7613033397610', name: 'KitKat', icon: 'candy-cane', points: 80 },
+        { barcode: '7622210449283', name: 'Oreo', icon: 'cookie', points: 90 },
+        { barcode: '5000159459228', name: 'Pringles', icon: 'utensils', points: 120 },
+        { barcode: '8000500310427', name: 'Barilla Pasta', icon: 'utensils', points: 130 },
+        { barcode: '4000539017100', name: 'Nivea Cream', icon: 'soap', points: 110 },
+        { barcode: '7311070347272', name: 'Oral-B Toothbrush', icon: 'tooth', points: 140 },
+        { barcode: '8717644012209', name: 'Dove Soap', icon: 'soap', points: 95 }
+    ];
+
+    // DOM Elements
+    const startGameBtn = document.getElementById('startGame');
+    const stopGameBtn = document.getElementById('stopGame');
+    const resetGameBtn = document.getElementById('resetGame');
+    const timerValue = document.getElementById('timerValue');
+    const scoreValue = document.getElementById('scoreValue');
+    const itemsValue = document.getElementById('itemsValue');
+    const timerProgress = document.getElementById('timerProgress');
+    const gameStatus = document.getElementById('gameStatus');
+    const notification = document.getElementById('notification');
+    const gameOverModal = document.getElementById('gameOverModal');
+    const finalScore = document.getElementById('finalScore');
+    const closeModalBtn = document.getElementById('closeModal');
+    const playAgainBtn = document.getElementById('playAgain');
+    const themeToggle = document.getElementById('themeToggle');
+    const itemGrid = document.getElementById('itemGrid');
+    const totalScore = document.getElementById('totalScore');
+    const scannerVideo = document.getElementById('scanner-video');
+    const scannerCanvas = document.getElementById('scanner-canvas');
+    const barcodeBox = document.getElementById('barcode-box');
+    const scannedItemsList = document.getElementById('scanned-items-list');
+
+    // Initialize the game
+    function initGame() {
+        renderProductGrid();
+        setupEventListeners();
+        updateUI();
+        checkBarcodeDetectorSupport();
+    }
+
+    // Check if BarcodeDetector is supported
+    function checkBarcodeDetectorSupport() {
+        if (!('BarcodeDetector' in window)) {
+            showNotification('Barcode detection not supported in this browser. Please use Chrome or Edge.');
+        } else {
+            gameState.barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'] });
+        }
+    }
+
+    // Render product grid
+    function renderProductGrid() {
+        itemGrid.innerHTML = '';
+        products.forEach(product => {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'item-card';
+            itemCard.dataset.barcode = product.barcode;
+            itemCard.innerHTML = `
+                <i class="fas fa-${product.icon}"></i>
+                <h4>${product.name}</h4>
+                <p>${product.points} points</p>
+                <small>${product.barcode}</small>
+            `;
+            itemGrid.appendChild(itemCard);
+        });
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+        startGameBtn.addEventListener('click', startGame);
+        stopGameBtn.addEventListener('click', stopGame);
+        resetGameBtn.addEventListener('click', resetGame);
+        closeModalBtn.addEventListener('click', () => gameOverModal.style.display = 'none');
+        playAgainBtn.addEventListener('click', () => {
+            gameOverModal.style.display = 'none';
+            resetGame();
+            startGame();
+        });
+        themeToggle.addEventListener('click', toggleTheme);
+        
+        // Difficulty selector
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                gameState.difficulty = this.dataset.difficulty;
+                updateDifficultySettings();
+            });
+        });
+    }
+
+    // Update difficulty settings
+    function updateDifficultySettings() {
+        switch(gameState.difficulty) {
+            case 'easy':
+                gameState.timeLeft = 90;
+                break;
+            case 'medium':
+                gameState.timeLeft = 60;
+                break;
+            case 'hard':
+                gameState.timeLeft = 45;
+                break;
+        }
+        timerValue.textContent = `${gameState.timeLeft}s`;
+    }
+
+    // Start the game
+    function startGame() {
+        if (gameState.isRunning) return;
+        
+        gameState.isRunning = true;
+        gameState.score = 0;
+        gameState.itemsScanned = 0;
+        gameState.lastScannedCode = '';
+        gameState.lastScannedTime = 0;
+        gameState.scannedItems = [];
+        scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
+        updateDifficultySettings();
+        
+        // Start the timer
+        startTimer();
+        
+        // Update UI
+        updateUI();
+        
+        // Start the camera
+        startCamera();
+        
+        // Start detection
+        startDetection();
+        
+        // Show notification
+        showNotification('Game started! Scan barcodes as fast as you can!');
+    }
+
+    // Stop the game
+    function stopGame() {
+        if (!gameState.isRunning) return;
+        
+        gameState.isRunning = false;
+        clearInterval(gameState.timerInterval);
+        
+        // Stop camera
+        stopCamera();
+        
+        // Update UI
+        updateUI();
+        
+        // Show game over modal
+        showGameOver();
+    }
+
+    // Reset the game
+    function resetGame() {
+        gameState.isRunning = false;
+        gameState.score = 0;
+        gameState.itemsScanned = 0;
+        gameState.scannedItems = [];
+        clearInterval(gameState.timerInterval);
+        stopCamera();
+        scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
+        
+        // Reset to default difficulty
+        document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.difficulty-btn[data-difficulty="medium"]').classList.add('active');
+        gameState.difficulty = 'medium';
+        updateDifficultySettings();
+        
+        // Update UI
+        updateUI();
+    }
+
+    // Start the game timer
+    function startTimer() {
+        clearInterval(gameState.timerInterval);
+        
+        gameState.timerInterval = setInterval(() => {
+            gameState.timeLeft--;
+            timerValue.textContent = `${gameState.timeLeft}s`;
+            
+            // Update progress bar
+            const maxTime = gameState.difficulty === 'easy' ? 90 : 
+                          gameState.difficulty === 'medium' ? 60 : 45;
+            const progressPercent = (gameState.timeLeft / maxTime) * 100;
+            timerProgress.style.width = `${progressPercent}%`;
+            
+            // Change color when time is running low
+            if (gameState.timeLeft <= 10) {
+                timerProgress.style.background = 'var(--ms-accent)';
+                timerProgress.style.animation = 'pulse 1s infinite';
+            } else {
+                timerProgress.style.background = 'var(--ms-blue)';
+                timerProgress.style.animation = 'none';
+            }
+            
+            // End game when time runs out
+            if (gameState.timeLeft <= 0) {
+                stopGame();
+            }
+        }, 1000);
+    }
+
+    // Start camera
+    async function startCamera() {
+        try {
+            gameState.stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            });
+            scannerVideo.srcObject = gameState.stream;
+            scannerVideo.play();
+        } catch (err) {
+            console.error('Camera error:', err);
+            showNotification('Camera access denied. Please enable camera permissions to play.');
+        }
+    }
+
+    // Stop camera
+    function stopCamera() {
+        if (gameState.stream) {
+            gameState.stream.getTracks().forEach(track => track.stop());
+            gameState.stream = null;
+        }
+    }
+
+    // Start barcode detection
+    function startDetection() {
+        if (!gameState.isRunning) return;
+        
+        // Use requestAnimationFrame for continuous detection
+        function detectBarcode() {
+            if (!gameState.isRunning) return;
+            
+            try {
+                if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
+                    scannerCanvas.width = scannerVideo.videoWidth;
+                    scannerCanvas.height = scannerVideo.videoHeight;
+                    const ctx = scannerCanvas.getContext('2d');
+                    ctx.drawImage(scannerVideo, 0, 0, scannerCanvas.width, scannerCanvas.height);
+                    
+                    if (gameState.barcodeDetector) {
+                        gameState.barcodeDetector.detect(scannerCanvas)
+                            .then(barcodes => {
+                                if (barcodes.length > 0) {
+                                    const barcode = barcodes[0];
+                                    const rawValue = barcode.rawValue;
+                                    
+                                    // Draw bounding box
+                                    barcodeBox.style.display = 'block';
+                                    barcodeBox.style.width = `${barcode.boundingBox.width}px`;
+                                    barcodeBox.style.height = `${barcode.boundingBox.height}px`;
+                                    barcodeBox.style.top = `${barcode.boundingBox.top}px`;
+                                    barcodeBox.style.left = `${barcode.boundingBox.left}px`;
+                                    
+                                    // Process barcode if new
+                                    processScannedBarcode(rawValue);
+                                } else {
+                                    barcodeBox.style.display = 'none';
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Barcode detection error:', err);
+                            });
+                    }
+                }
+            } catch (err) {
+                console.error('Detection error:', err);
+            }
+            
+            requestAnimationFrame(detectBarcode);
+        }
+        
+        detectBarcode();
+    }
+
+    // Process scanned barcode
+    function processScannedBarcode(barcodeValue) {
+        if (!gameState.isRunning) return;
+        
+        // Prevent duplicate scans within 1 second
+        const now = Date.now();
+        if (barcodeValue === gameState.lastScannedCode && (now - gameState.lastScannedTime) < 1000) {
+            return;
+        }
+        
+        gameState.lastScannedCode = barcodeValue;
+        gameState.lastScannedTime = now;
+        
+        // Find the product
+        const product = products.find(p => p.barcode === barcodeValue);
+        if (!product) {
+            showNotification('Unknown barcode! Try another product');
+            return;
+        }
+        
+        // Add points based on difficulty
+        let points = product.points;
+        if (gameState.difficulty === 'hard') {
+            points = Math.floor(points * 1.5);
+        }
+        
+        // Update game state
+        gameState.score += points;
+        gameState.itemsScanned++;
+        gameState.scannedItems.push({...product, points: points});
+        
+        // Update UI
+        updateUI();
+        
+        // Highlight scanned item
+        const itemCard = document.querySelector(`.item-card[data-barcode="${barcodeValue}"]`);
+        if (itemCard) {
+            itemCard.classList.add('scanned-item');
+            setTimeout(() => itemCard.classList.remove('scanned-item'), 500);
+        }
+        
+        // Show notification
+        showNotification(`${product.name} scanned! +${points} points`);
+        
+        // Update scanned items list
+        updateScannedItemsList();
+    }
+
+    // Update scanned items list
+    function updateScannedItemsList() {
+        if (gameState.scannedItems.length === 0) {
+            scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
+            return;
+        }
+        
+        scannedItemsList.innerHTML = '';
+        gameState.scannedItems.forEach(item => {
+            const itemRow = document.createElement('div');
+            itemRow.className = 'scanned-item-row';
+            itemRow.innerHTML = `
+                <span class="scanned-item-name">${item.name}</span>
+                <span class="scanned-item-points">+${item.points} points</span>
+            `;
+            scannedItemsList.appendChild(itemRow);
+        });
+    }
+
+    // Show notification
+    function showNotification(message) {
+        notification.textContent = message;
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+
+    // Show game over screen
+    function showGameOver() {
+        finalScore.textContent = gameState.score;
+        gameOverModal.style.display = 'block';
+        
+        // Update leaderboard if score is high enough
+        updateLeaderboard();
+    }
+
+    // Update leaderboard
+    function updateLeaderboard() {
+        // In a real game, this would be saved to a database
+        // For now, we'll just simulate it
+    }
+
+    // Update UI based on game state
+    function updateUI() {
+        scoreValue.textContent = gameState.score;
+        itemsValue.textContent = gameState.itemsScanned;
+        totalScore.textContent = gameState.score;
+        
+        // Update buttons
+        startGameBtn.disabled = gameState.isRunning;
+        stopGameBtn.disabled = !gameState.isRunning;
+        resetGameBtn.disabled = gameState.isRunning;
+        
+        // Update status indicator
+        if (gameState.isRunning) {
+            gameStatus.classList.remove('inactive');
+            gameStatus.querySelector('span').textContent = 'Running';
+        } else {
+            gameStatus.classList.add('inactive');
+            gameStatus.querySelector('span').textContent = 'Ready';
+        }
+    }
+
+    // Toggle dark mode
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const icon = themeToggle.querySelector('i');
+        if (document.body.classList.contains('dark-mode')) {
+            icon.className = 'fas fa-sun';
+        } else {
+            icon.className = 'fas fa-moon';
+        }
+    }
+
+    // Initialize the game when the page loads
+    window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
