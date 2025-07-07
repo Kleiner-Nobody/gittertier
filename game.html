@@ -6,6 +6,7 @@
     <title>Barcode Battle Royale</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <style>
     :root {
         --ms-blue: #0078d4;
@@ -688,6 +689,91 @@
         border-radius: 20px;
         font-size: 0.9rem;
     }
+    
+    /* New QR Code Modal */
+    .qr-code-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    #qrCodeCanvas {
+        width: 200px;
+        height: 200px;
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+    }
+    
+    .qr-instructions {
+        text-align: center;
+        font-size: 1.1rem;
+        line-height: 1.5;
+        color: var(--ms-dark);
+    }
+    
+    /* Already Scanned Modal */
+    .scanned-warning {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .scanned-warning i {
+        font-size: 3rem;
+        color: var(--ms-error);
+        margin-bottom: 15px;
+    }
+    
+    .scanned-warning h4 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        color: var(--ms-error);
+    }
+    
+    .scanned-warning p {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 375px) and (max-height: 812px) {
+        /* iPhone 13 Mini optimizations */
+        .card-header h2 {
+            font-size: 1.3rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+        }
+        
+        button {
+            padding: 18px 12px;
+            font-size: 1.1rem;
+        }
+        
+        .competition-btn {
+            padding: 12px 8px;
+            font-size: 0.9rem;
+        }
+        
+        .competition-btn i {
+            font-size: 1.5rem;
+        }
+        
+        #scanner-container {
+            min-height: 250px;
+        }
+        
+        .modal {
+            padding: 20px;
+        }
+        
+        .modal h3 {
+            font-size: 1.4rem;
+        }
+    }
 
     /* Animations */
     @keyframes slideDown {
@@ -714,6 +800,12 @@
         0% { transform: scale(1); }
         50% { transform: scale(1.1); }
         100% { transform: scale(1); }
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
     }
 
     /* Mobile landscape optimization */
@@ -792,7 +884,7 @@
             <i class="fas fa-barcode"></i>
             <h1>Barcode Battle</h1>
         </div>
-        <a href="/gittertier" class="home-btn">
+        <a href="/index" class="home-btn">
             <i class="fas fa-home"></i>
         </a>
     </header>
@@ -933,6 +1025,9 @@
             <div id="gameCreatedSection" style="display:none">
                 <p>Share this code with friends:</p>
                 <div class="code-display" id="gameCodeDisplay">ABCDEF</div>
+                <button class="btn-primary" id="showQRCodeBtn">
+                    <i class="fas fa-qrcode"></i> Show QR Code
+                </button>
                 <div class="player-list" id="playerList">
                     <!-- Players will be added here -->
                 </div>
@@ -961,6 +1056,34 @@
             </div>
         </div>
     </div>
+    
+    <!-- QR Code Modal -->
+    <div class="modal" id="qrCodeModal">
+        <h3><i class="fas fa-qrcode"></i> Join with QR Code</h3>
+        <div class="qr-code-container">
+            <canvas id="qrCodeCanvas"></canvas>
+            <div class="qr-instructions">
+                <p>Scan this QR code with another device to join the game instantly.</p>
+                <p>Or share this code: <strong id="qrGameCode">ABCDEF</strong></p>
+            </div>
+            <button class="btn-secondary" id="closeQRModal">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+    
+    <!-- Already Scanned Modal -->
+    <div class="modal" id="alreadyScannedModal">
+        <div class="scanned-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h4>Already Scanned!</h4>
+            <p>This item has already been scanned by another player.</p>
+            <p>Try scanning a different item!</p>
+            <button class="btn-primary" id="closeScannedModal">
+                <i class="fas fa-check"></i> OK
+            </button>
+        </div>
+    </div>
 
     <div class="theme-toggle" id="themeToggle">
         <i class="fas fa-moon"></i>
@@ -985,7 +1108,8 @@
         conn: null,
         host: false,
         roomCode: null,
-        playerName: "Player"
+        playerName: "Player",
+        scannedBarcodes: [] // Track all scanned barcodes in multiplayer
     };
 
     // DOM Elements
@@ -1026,6 +1150,13 @@
     const playerNameInput = document.getElementById('playerName');
     const joinPlayerNameInput = document.getElementById('joinPlayerName');
     const joinGameCodeInput = document.getElementById('joinGameCode');
+    const qrCodeModal = document.getElementById('qrCodeModal');
+    const qrCodeCanvas = document.getElementById('qrCodeCanvas');
+    const qrGameCode = document.getElementById('qrGameCode');
+    const closeQRModal = document.getElementById('closeQRModal');
+    const showQRCodeBtn = document.getElementById('showQRCodeBtn');
+    const alreadyScannedModal = document.getElementById('alreadyScannedModal');
+    const closeScannedModal = document.getElementById('closeScannedModal');
 
     // Initialize the game
     function initGame() {
@@ -1083,6 +1214,13 @@
         createGameBtn.addEventListener('click', createMultiplayerGame);
         joinGameBtn.addEventListener('click', joinMultiplayerGame);
         startMultiplayerGame.addEventListener('click', startMultiplayerGameHandler);
+        
+        // QR Code Modal
+        showQRCodeBtn.addEventListener('click', showQRCodeModal);
+        closeQRModal.addEventListener('click', () => qrCodeModal.style.display = 'none');
+        
+        // Already Scanned Modal
+        closeScannedModal.addEventListener('click', () => alreadyScannedModal.style.display = 'none');
     }
 
     // Set game mode
@@ -1092,6 +1230,25 @@
         // Update UI
         soloModeBtn.classList.toggle('active', mode === 'solo');
         compModeBtn.classList.toggle('active', mode === 'competition');
+    }
+
+    // Show QR Code Modal
+    function showQRCodeModal() {
+        if (!gameState.roomCode) return;
+        
+        qrGameCode.textContent = gameState.roomCode;
+        QRCode.toCanvas(qrCodeCanvas, gameState.roomCode, {
+            width: 180,
+            margin: 1,
+            color: {
+                dark: '#000',
+                light: '#fff'
+            }
+        }, (error) => {
+            if (error) console.error('QR Code error:', error);
+        });
+        
+        qrCodeModal.style.display = 'block';
     }
 
     // Create multiplayer game (host)
@@ -1140,6 +1297,10 @@
                         // Broadcast updated player list to all
                         broadcastPlayerList();
                     }
+                    else if (data.type === 'barcodeScan') {
+                        // Host receives barcode from player
+                        handlePlayerBarcodeScan(data, conn);
+                    }
                 });
             });
         });
@@ -1148,6 +1309,47 @@
             console.error('PeerJS error:', err);
             showNotification('Error creating game. Please try again.');
         });
+    }
+
+    // Handle barcode scan from player (host)
+    function handlePlayerBarcodeScan(data, conn) {
+        const barcodeValue = data.barcode;
+        
+        // Check if barcode has already been scanned
+        if (gameState.scannedBarcodes.includes(barcodeValue)) {
+            // Notify player that this barcode is already scanned
+            conn.send({
+                type: 'barcodeAlreadyScanned',
+                barcode: barcodeValue
+            });
+            return;
+        }
+        
+        // Add to scanned barcodes
+        gameState.scannedBarcodes.push(barcodeValue);
+        
+        // Calculate points
+        const points = Math.min(200, Math.max(50, barcodeValue.length * 10));
+        const itemName = `Barcode #${barcodeValue.substring(0, 6)}`;
+        
+        // Find player and update their score
+        const player = gameState.players.find(p => p.id === conn.peer);
+        if (player) {
+            player.score += points;
+            
+            // Broadcast updated scores to all players
+            broadcastPlayerList();
+            broadcastToPlayers({
+                type: 'playerScanned',
+                playerId: player.id,
+                playerName: player.name,
+                points: points,
+                itemName: itemName
+            });
+            
+            // Show notification on host screen
+            showNotification(`${player.name} scanned ${itemName}! +${points} points`);
+        }
     }
 
     // Join multiplayer game
@@ -1216,11 +1418,20 @@
                 updateLeaderboard();
             }
         }
+        else if (data.type === 'playerScanned') {
+            // Another player scanned an item
+            showNotification(`${data.playerName} scanned ${data.itemName}! +${data.points} points`);
+        }
         else if (data.type === 'gameOver') {
             // Game over
             stopGame();
             finalScore.textContent = gameState.score;
             gameOverModal.style.display = 'block';
+        }
+        else if (data.type === 'barcodeAlreadyScanned') {
+            // Show warning that this barcode has already been scanned
+            alreadyScannedModal.style.display = 'block';
+            showNotification('This item has already been scanned!');
         }
     }
 
@@ -1281,6 +1492,7 @@
         gameState.lastScannedCode = '';
         gameState.lastScannedTime = 0;
         gameState.scannedItems = [];
+        gameState.scannedBarcodes = []; // Reset scanned barcodes
         scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
         gameState.timeLeft = 60;
         timerValue.textContent = `${gameState.timeLeft}s`;
@@ -1331,6 +1543,7 @@
         gameState.score = 0;
         gameState.itemsScanned = 0;
         gameState.scannedItems = [];
+        gameState.scannedBarcodes = [];
         clearInterval(gameState.timerInterval);
         stopCamera();
         scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
@@ -1473,6 +1686,31 @@
         
         gameState.lastScannedCode = barcodeValue;
         gameState.lastScannedTime = now;
+        
+        // In multiplayer competition mode, send barcode to host for verification
+        if (gameState.mode === 'competition' && !gameState.host) {
+            if (gameState.conn && gameState.conn.open) {
+                gameState.conn.send({
+                    type: 'barcodeScan',
+                    barcode: barcodeValue
+                });
+            }
+            return;
+        }
+        
+        // For solo or host player, process locally
+        // Check if barcode already scanned (in multiplayer)
+        if (gameState.mode === 'competition' && gameState.host) {
+            if (gameState.scannedBarcodes.includes(barcodeValue)) {
+                // Already scanned by someone
+                showNotification('This item has already been scanned!');
+                alreadyScannedModal.style.display = 'block';
+                return;
+            }
+            
+            // Add to scanned barcodes
+            gameState.scannedBarcodes.push(barcodeValue);
+        }
         
         // Calculate points based on barcode length
         const points = Math.min(200, Math.max(50, barcodeValue.length * 10));
