@@ -244,8 +244,8 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 90%;
-        height: 50%;
+        width: 80%;
+        height: 40%;
         border: 4px solid rgba(255,255,255,0.3);
         pointer-events: none;
         border-radius: 12px;
@@ -277,7 +277,7 @@
         position: relative;
         overflow: hidden;
         transform: translateY(0);
-        min-height: 80px; /* Better for mobile touch */
+        min-height: 70px;
     }
 
     button::after {
@@ -563,7 +563,7 @@
         border: none;
         transition: var(--ms-transition);
         cursor: pointer;
-        min-height: 110px; /* Better for mobile */
+        min-height: 110px;
     }
 
     .competition-btn i {
@@ -843,20 +843,54 @@
         transform: rotate(90deg);
     }
     
+    /* Multiplayer Lobby Bar */
+    #multiplayerLobbyBar {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--ms-light);
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 -5px 10px rgba(0,0,0,0.1);
+        z-index: 99;
+    }
+    
+    #toggleReadyBtn {
+        min-height: 60px;
+        font-size: 1.3rem;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
     /* Mobile-specific optimizations */
     @media (max-width: 768px) {
         .controls {
             grid-template-columns: 1fr;
+            gap: 10px;
         }
         
         button {
-            min-height: 90px;
-            font-size: 1.4rem;
+            min-height: 80px;
+            font-size: 1.5rem;
             padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        button i {
+            font-size: 2rem;
+            margin-bottom: 8px;
         }
         
         .competition-btn {
             min-height: 100px;
+            font-size: 1.1rem;
         }
         
         .card-header h2 {
@@ -1096,9 +1130,6 @@
                 <button class="btn-secondary" id="chatBtn">
                     <i class="fas fa-comments"></i> Chat
                 </button>
-                <button class="btn-success" id="readyBtn" style="display: none;">
-                    <i class="fas fa-check"></i> Ready
-                </button>
                 <button class="btn-danger" id="leaveGame" style="display: none;">
                     <i class="fas fa-sign-out-alt"></i> Leave
                 </button>
@@ -1279,16 +1310,10 @@
             </button>
         </div>
     </div>
-    
-    <!-- Ready Modal -->
-    <div class="modal" id="readyModal">
-        <div class="close-btn" id="closeReadyModal">
-            <i class="fas fa-times"></i>
-        </div>
-        <h3><i class="fas fa-check-circle"></i> Player Ready</h3>
-        <div id="playerReadyList" style="margin-top: 20px;">
-            <!-- Player ready status will appear here -->
-        </div>
+
+    <!-- Multiplayer Lobby Bar -->
+    <div id="multiplayerLobbyBar">
+        <button id="toggleReadyBtn" class="btn-primary">Ready</button>
     </div>
 
     <div class="theme-toggle" id="themeToggle">
@@ -1306,6 +1331,7 @@
         timerInterval: null,
         stream: null,
         barcodeDetector: null,
+        qrCodeDetector: null,
         lastScannedCode: '',
         lastScannedTime: 0,
         scannedItems: [],
@@ -1318,7 +1344,8 @@
         globalScannedBarcodes: [],
         qrScannerStream: null,
         isReady: false,
-        syncInterval: null
+        syncInterval: null,
+        simpleDetectorActive: true // Use simpler barcode detection
     };
 
     // DOM Elements
@@ -1375,10 +1402,8 @@
     const chatInput = document.getElementById('chatInput');
     const sendChatBtn = document.getElementById('sendChatBtn');
     const leaveGameBtn = document.getElementById('leaveGame');
-    const readyBtn = document.getElementById('readyBtn');
-    const readyModal = document.getElementById('readyModal');
-    const playerReadyList = document.getElementById('playerReadyList');
-    const closeReadyModalBtn = document.getElementById('closeReadyModal');
+    const multiplayerLobbyBar = document.getElementById('multiplayerLobbyBar');
+    const toggleReadyBtn = document.getElementById('toggleReadyBtn');
     
     // Modal close buttons
     const closeGameOverModalBtn = document.getElementById('closeGameOverModal');
@@ -1397,11 +1422,15 @@
 
     // Check if BarcodeDetector is supported
     function checkBarcodeDetectorSupport() {
-        if (!('BarcodeDetector' in window)) {
-            showNotification('Barcode detection not supported in this browser. Please use Chrome or Edge.');
+        if ('BarcodeDetector' in window) {
+            try {
+                gameState.barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
+                gameState.qrCodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+            } catch (err) {
+                console.error('BarcodeDetector initialization error:', err);
+            }
         } else {
-            // Only detect barcodes (not QR codes) for main scanner
-            gameState.barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
+            showNotification('Barcode detection not supported in this browser. Please use Chrome or Edge.');
         }
     }
 
@@ -1462,16 +1491,15 @@
         // Leave game
         leaveGameBtn.addEventListener('click', leaveGame);
         
-        // Ready button
-        readyBtn.addEventListener('click', toggleReady);
-        
         // Modal close buttons
         closeGameOverModalBtn.addEventListener('click', () => gameOverModal.style.display = 'none');
         closeCompetitionModalBtn.addEventListener('click', () => competitionModal.style.display = 'none');
         closeQrScannerModalBtn.addEventListener('click', closeQrScanner);
         closeDuplicateModalBtn2.addEventListener('click', () => duplicateModal.style.display = 'none');
         closeChatModalBtn.addEventListener('click', () => chatModal.style.display = 'none');
-        closeReadyModalBtn.addEventListener('click', () => readyModal.style.display = 'none');
+        
+        // Ready button
+        toggleReadyBtn.addEventListener('click', toggleReadyStatus);
     }
 
     // Set game mode
@@ -1481,44 +1509,6 @@
         // Update UI
         soloModeBtn.classList.toggle('active', mode === 'solo');
         compModeBtn.classList.toggle('active', mode === 'competition');
-    }
-
-    // Toggle ready status
-    function toggleReady() {
-        gameState.isReady = !gameState.isReady;
-        updateReadyButton();
-        
-        if (gameState.mode === 'competition') {
-            if (gameState.host) {
-                // Host updates locally
-                const hostPlayer = gameState.players.find(p => p.id === gameState.peer.id);
-                if (hostPlayer) {
-                    hostPlayer.isReady = gameState.isReady;
-                }
-                updatePlayerListUI();
-                startMultiplayerGame.disabled = !checkAllPlayersReady();
-            } else {
-                // Player sends to host
-                gameState.conn.send({
-                    type: 'playerReady',
-                    playerId: gameState.peer.id,
-                    isReady: gameState.isReady
-                });
-            }
-        }
-    }
-
-    // Update ready button UI
-    function updateReadyButton() {
-        if (gameState.isReady) {
-            readyBtn.innerHTML = '<i class="fas fa-times"></i> Not Ready';
-            readyBtn.classList.add('btn-danger');
-            readyBtn.classList.remove('btn-success');
-        } else {
-            readyBtn.innerHTML = '<i class="fas fa-check"></i> Ready';
-            readyBtn.classList.remove('btn-danger');
-            readyBtn.classList.add('btn-success');
-        }
     }
 
     // Create multiplayer game (host)
@@ -1555,11 +1545,19 @@
             }
             
             // Add host to player list
-            addPlayerToList(playerName, true);
+            gameState.players.push({
+                id: gameState.peer.id,
+                name: gameState.playerName,
+                score: 0,
+                isReady: false
+            });
+            updatePlayerListUI();
             
             // Show leave game button
             leaveGameBtn.style.display = 'block';
-            readyBtn.style.display = 'block';
+            
+            // Show multiplayer lobby bar
+            multiplayerLobbyBar.style.display = 'block';
             
             showNotification('Game created! Share the code with friends.');
         });
@@ -1576,10 +1574,10 @@
                             isReady: false
                         };
                         gameState.players.push(newPlayer);
-                        addPlayerToList(data.playerName);
+                        updatePlayerListUI();
                         
                         // Update start button text
-                        startMultiplayerGame.textContent = `Start Game (${gameState.players.length + 1} players)`;
+                        startMultiplayerGame.textContent = `Start Game (${gameState.players.length} players)`;
                         startMultiplayerGame.disabled = !checkAllPlayersReady();
                         
                         // Broadcast updated player list to all
@@ -1624,6 +1622,36 @@
             console.error('PeerJS error:', err);
             showNotification('Error creating game. Please try again.');
         });
+    }
+
+    // Toggle player ready status
+    function toggleReadyStatus() {
+        if (gameState.host) {
+            const hostPlayer = gameState.players.find(p => p.id === gameState.peer.id);
+            if (hostPlayer) {
+                hostPlayer.isReady = !hostPlayer.isReady;
+                gameState.isReady = hostPlayer.isReady;
+            }
+        } else {
+            gameState.isReady = !gameState.isReady;
+            // Send to host
+            gameState.conn.send({
+                type: 'playerReady',
+                isReady: gameState.isReady
+            });
+        }
+
+        // Update the button
+        toggleReadyBtn.textContent = gameState.isReady ? 'Cancel Ready' : 'Ready';
+        toggleReadyBtn.classList.toggle('btn-primary', !gameState.isReady);
+        toggleReadyBtn.classList.toggle('btn-success', gameState.isReady);
+
+        if (gameState.host) {
+            // Update the UI and broadcast
+            updatePlayerListUI();
+            broadcastPlayerList();
+            startMultiplayerGame.disabled = !checkAllPlayersReady();
+        }
     }
 
     // Handle player barcode scan (host only)
@@ -1713,7 +1741,9 @@
                 
                 // Show leave game button
                 leaveGameBtn.style.display = 'block';
-                readyBtn.style.display = 'block';
+                
+                // Show multiplayer lobby bar
+                multiplayerLobbyBar.style.display = 'block';
             });
             
             gameState.conn.on('data', (data) => {
@@ -1792,14 +1822,6 @@
                 updateUI();
             }
         }
-        else if (data.type === 'playerReady') {
-            // Update player ready status
-            const player = gameState.players.find(p => p.id === data.playerId);
-            if (player) {
-                player.isReady = data.isReady;
-                updatePlayerListUI();
-            }
-        }
     }
 
     // Start multiplayer game (host only)
@@ -1872,20 +1894,6 @@
         updateLeaderboard();
     }
 
-    // Add player to list in UI
-    function addPlayerToList(name, isHost = false) {
-        const playerTag = document.createElement('div');
-        playerTag.className = 'player-tag';
-        playerTag.innerHTML = `
-            <div>${name} ${isHost ? '<i class="fas fa-crown"></i>' : ''}</div>
-            <div class="player-status">
-                <div class="ready-indicator"></div>
-                <span>Not Ready</span>
-            </div>
-        `;
-        playerList.appendChild(playerTag);
-    }
-
     // Update player list UI
     function updatePlayerListUI() {
         playerList.innerHTML = '';
@@ -1893,7 +1901,7 @@
             const playerTag = document.createElement('div');
             playerTag.className = 'player-tag';
             playerTag.innerHTML = `
-                <div>${player.name}</div>
+                <div>${player.name} ${player.id === gameState.peer.id ? '<i class="fas fa-crown"></i>' : ''}</div>
                 <div class="player-status">
                     <div class="ready-indicator ${player.isReady ? 'ready' : ''}"></div>
                     <span>${player.isReady ? 'Ready' : 'Not Ready'}</span>
@@ -1905,7 +1913,7 @@
 
     // Check if all players are ready
     function checkAllPlayersReady() {
-        return gameState.players.every(player => player.isReady) && gameState.players.length > 0;
+        return gameState.players.length > 0 && gameState.players.every(player => player.isReady);
     }
 
     // Open QR scanner for joining
@@ -1945,9 +1953,8 @@
 
     // Detect QR codes
     function detectQrCode() {
-        if (!('BarcodeDetector' in window) || !gameState.qrScannerStream) return;
+        if (!gameState.qrCodeDetector || !gameState.qrScannerStream) return;
         
-        const qrDetector = new BarcodeDetector({ formats: ['qr_code'] });
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -1959,23 +1966,25 @@
                 canvas.height = qrScannerVideo.videoHeight;
                 ctx.drawImage(qrScannerVideo, 0, 0, canvas.width, canvas.height);
                 
-                qrDetector.detect(canvas)
-                    .then(barcodes => {
-                        if (barcodes.length > 0) {
-                            const barcode = barcodes[0];
-                            if (barcode.format === 'qr_code') {
-                                const code = barcode.rawValue;
-                                joinGameCodeInput.value = code;
-                                closeQrScanner();
-                                showNotification('QR code scanned!');
+                if (gameState.qrCodeDetector) {
+                    gameState.qrCodeDetector.detect(canvas)
+                        .then(barcodes => {
+                            if (barcodes.length > 0) {
+                                const barcode = barcodes[0];
+                                if (barcode.format === 'qr_code') {
+                                    const code = barcode.rawValue;
+                                    joinGameCodeInput.value = code;
+                                    closeQrScanner();
+                                    showNotification('QR code scanned!');
+                                }
                             }
-                        }
-                        requestAnimationFrame(detect);
-                    })
-                    .catch(err => {
-                        console.error('QR detection error', err);
-                        requestAnimationFrame(detect);
-                    });
+                            requestAnimationFrame(detect);
+                        })
+                        .catch(err => {
+                            console.error('QR detection error', err);
+                            requestAnimationFrame(detect);
+                        });
+                }
             } else {
                 requestAnimationFrame(detect);
             }
@@ -1999,10 +2008,6 @@
         gameState.timeLeft = 60;
         timerValue.textContent = `${gameState.timeLeft}s`;
         
-        // Reset ready status
-        gameState.isReady = false;
-        updateReadyButton();
-        
         // Start the timer
         startTimer();
         
@@ -2017,6 +2022,9 @@
         
         // Start game state syncing
         startSync();
+        
+        // Hide multiplayer lobby bar
+        multiplayerLobbyBar.style.display = 'none';
         
         // Show notification
         showNotification('Game started! Scan barcodes as fast as you can!');
@@ -2088,10 +2096,6 @@
         timerProgress.style.background = 'var(--ms-blue)';
         timerProgress.style.animation = 'none';
         
-        // Reset ready status
-        gameState.isReady = false;
-        updateReadyButton();
-        
         // Reset players in competition mode
         if (gameState.mode === 'competition') {
             if (gameState.host) {
@@ -2104,6 +2108,12 @@
                 gameState.players = [];
             }
         }
+        
+        // Reset ready status
+        gameState.isReady = false;
+        toggleReadyBtn.textContent = 'Ready';
+        toggleReadyBtn.classList.add('btn-primary');
+        toggleReadyBtn.classList.remove('btn-success');
         
         // Update UI
         updateUI();
@@ -2164,6 +2174,59 @@
         }
     }
 
+    // Simple barcode detection using pattern recognition
+    function detectBarcodePattern(imageData) {
+        const width = scannerCanvas.width;
+        const height = scannerCanvas.height;
+        const data = imageData.data;
+        
+        // Look for alternating black and white stripes
+        const centerY = Math.floor(height / 2);
+        const centerLine = [];
+        
+        // Sample center line
+        for (let x = 0; x < width; x++) {
+            const idx = (centerY * width + x) * 4;
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+            const brightness = (r + g + b) / 3;
+            centerLine.push(brightness < 128 ? 0 : 1); // 0 for dark, 1 for light
+        }
+        
+        // Find transitions
+        const transitions = [];
+        let lastVal = centerLine[0];
+        
+        for (let i = 1; i < centerLine.length; i++) {
+            if (centerLine[i] !== lastVal) {
+                transitions.push(i);
+                lastVal = centerLine[i];
+            }
+        }
+        
+        // Need at least 10 transitions to be considered a barcode
+        if (transitions.length >= 10) {
+            // Calculate a rough position
+            const start = transitions[0];
+            const end = transitions[transitions.length - 1];
+            const centerX = (start + end) / 2;
+            
+            return {
+                format: 'custom',
+                rawValue: 'detected',
+                boundingBox: {
+                    left: start,
+                    top: centerY - 50,
+                    width: end - start,
+                    height: 100
+                }
+            };
+        }
+        
+        return null;
+    }
+
     // Start barcode detection
     function startDetection() {
         if (!gameState.isRunning) return;
@@ -2179,7 +2242,25 @@
                     const ctx = scannerCanvas.getContext('2d');
                     ctx.drawImage(scannerVideo, 0, 0, scannerCanvas.width, scannerCanvas.height);
                     
-                    if (gameState.barcodeDetector) {
+                    // Get image data for custom detection
+                    const imageData = ctx.getImageData(0, 0, scannerCanvas.width, scannerCanvas.height);
+                    
+                    // Try custom detection first
+                    const customBarcode = detectBarcodePattern(imageData);
+                    
+                    if (customBarcode) {
+                        // Draw bounding box
+                        barcodeBox.style.display = 'block';
+                        barcodeBox.style.width = `${customBarcode.boundingBox.width}px`;
+                        barcodeBox.style.height = `${customBarcode.boundingBox.height}px`;
+                        barcodeBox.style.top = `${customBarcode.boundingBox.top}px`;
+                        barcodeBox.style.left = `${customBarcode.boundingBox.left}px`;
+                        
+                        // Process as a detected barcode
+                        processScannedBarcode('custom_' + Date.now());
+                    } 
+                    else if (gameState.barcodeDetector) {
+                        // Fallback to BarcodeDetector API
                         gameState.barcodeDetector.detect(scannerCanvas)
                             .then(barcodes => {
                                 if (barcodes.length > 0) {
@@ -2193,7 +2274,7 @@
                                     barcodeBox.style.top = `${barcode.boundingBox.top}px`;
                                     barcodeBox.style.left = `${barcode.boundingBox.left}px`;
                                     
-                                    // Process barcode if new
+                                    // Process barcode
                                     processScannedBarcode(rawValue);
                                 } else {
                                     barcodeBox.style.display = 'none';
@@ -2239,7 +2320,9 @@
         
         // Fixed points per barcode
         const points = 100;
-        const itemName = `Barcode #${barcodeValue.substring(0, 6)}`;
+        const itemName = barcodeValue.startsWith('custom_') 
+            ? 'Custom Barcode' 
+            : `Barcode #${barcodeValue.substring(0, 6)}`;
         
         // Update game state
         gameState.score += points;
@@ -2395,9 +2478,11 @@
         // Reset game state
         resetGame();
         
-        // Hide buttons
+        // Hide leave button
         leaveGameBtn.style.display = 'none';
-        readyBtn.style.display = 'none';
+        
+        // Hide multiplayer lobby bar
+        multiplayerLobbyBar.style.display = 'none';
         
         // Show notification
         showNotification('Left the game');
