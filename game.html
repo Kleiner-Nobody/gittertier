@@ -1182,6 +1182,42 @@
         background: var(--ms-success);
         color: white;
     }
+    
+    /* Lobby join animation */
+    @keyframes playerJoin {
+        0% { transform: scale(0.5); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .player-join {
+        animation: playerJoin 0.5s ease;
+    }
+    
+    /* Connection quality indicator */
+    .connection-quality {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        color: white;
+        background: rgba(0,0,0,0.5);
+        padding: 3px 8px;
+        border-radius: 10px;
+    }
+    
+    .connection-bar {
+        width: 3px;
+        height: 10px;
+        background: #ddd;
+        border-radius: 2px;
+    }
+    
+    .connection-bar.active {
+        background: var(--ms-success);
+    }
     </style>
 </head>
 <body>
@@ -1336,7 +1372,7 @@
             <div id="createGameSection">
                 <div class="input-group">
                     <label>Your Name</label>
-                    <input type="text" id="playerName" placeholder="Enter your name">
+                    <input type="text" id="playerName" placeholder="Enter your name" value="Player">
                 </div>
                 <button class="btn-primary" id="createGameBtn">
                     <i class="fas fa-plus-circle"></i> Create Game
@@ -1370,7 +1406,7 @@
             <div id="joinGameSection" style="display:none">
                 <div class="input-group">
                     <label>Your Name</label>
-                    <input type="text" id="joinPlayerName" placeholder="Enter your name">
+                    <input type="text" id="joinPlayerName" placeholder="Enter your name" value="Player">
                 </div>
                 <div class="input-group">
                     <label>Game Code</label>
@@ -1702,7 +1738,8 @@
                 name: playerName,
                 score: 0,
                 isReady: true,
-                isHost: true
+                isHost: true,
+                joinedAt: Date.now()
             });
             updatePlayerListUI();
             
@@ -1728,7 +1765,8 @@
                             name: data.playerName,
                             score: 0,
                             isReady: false,
-                            isHost: false
+                            isHost: false,
+                            joinedAt: Date.now()
                         };
                         gameState.players.push(newPlayer);
                         updatePlayerListUI();
@@ -1739,6 +1777,13 @@
                         
                         // Broadcast updated player list to all
                         broadcastPlayerList();
+                        
+                        // Send welcome message to new player
+                        conn.send({
+                            type: 'welcome',
+                            players: gameState.players,
+                            hostId: gameState.peer.id
+                        });
                     } else if (data.type === 'barcode') {
                         handlePlayerBarcodeScan(data);
                     } else if (data.type === 'playerScore') {
@@ -1764,6 +1809,16 @@
                             isRunning: gameState.isRunning
                         });
                     }
+                });
+                
+                // Handle disconnection
+                conn.on('close', () => {
+                    // Remove disconnected player
+                    gameState.players = gameState.players.filter(p => p.id !== conn.peer);
+                    updatePlayerListUI();
+                    broadcastPlayerList();
+                    startMultiplayerGame.disabled = !checkAllPlayersReady();
+                    showNotification(`Player ${conn.peer} left the game.`);
                 });
             });
         });
@@ -1871,6 +1926,12 @@
             gameState.conn.on('data', (data) => {
                 handleIncomingData(data);
             });
+            
+            // Handle disconnection
+            gameState.conn.on('close', () => {
+                showNotification('Host disconnected. Returning to lobby.');
+                leaveGame();
+            });
         });
         
         gameState.peer.on('error', (err) => {
@@ -1882,7 +1943,12 @@
 
     // Handle incoming data for players
     function handleIncomingData(data) {
-        if (data.type === 'playerList') {
+        if (data.type === 'welcome') {
+            gameState.players = data.players;
+            updatePlayerListUI();
+            updateLeaderboard();
+        }
+        else if (data.type === 'playerList') {
             gameState.players = data.players;
             updatePlayerListUI();
             updateLeaderboard();
@@ -2025,7 +2091,7 @@
         playerList.innerHTML = '';
         gameState.players.forEach(player => {
             const playerCard = document.createElement('div');
-            playerCard.className = 'player-card';
+            playerCard.className = 'player-card player-join';
             if (player.isHost) {
                 playerCard.classList.add('host');
             }
@@ -2042,6 +2108,11 @@
                 <div class="player-status">
                     ${player.isHost ? '<span class="status-badge host-badge">Host</span>' : ''}
                     ${player.isReady ? '<span class="status-badge ready-badge">Ready</span>' : '<span>Not Ready</span>'}
+                </div>
+                <div class="connection-quality">
+                    <span class="connection-bar active"></span>
+                    <span class="connection-bar active"></span>
+                    <span class="connection-bar active"></span>
                 </div>
             `;
             playerList.appendChild(playerCard);
@@ -2267,26 +2338,29 @@
         
         gameState.timerInterval = setInterval(() => {
             gameState.timeLeft--;
-            timerValue.textContent = `${gameState.timeLeft}s`;
-            
-            // Update progress bar
-            const progressPercent = (gameState.timeLeft / 60) * 100;
-            timerProgress.style.width = `${progressPercent}%`;
-            
-            // Change color when time is running low
-            if (gameState.timeLeft <= 10) {
-                timerProgress.style.background = 'var(--ms-accent)';
-                timerProgress.style.animation = 'pulse 1s infinite';
-            } else {
-                timerProgress.style.background = 'var(--ms-blue)';
-                timerProgress.style.animation = 'none';
-            }
+            updateTimerUI();
             
             // End game when time runs out
             if (gameState.timeLeft <= 0) {
                 stopGame();
             }
         }, 1000);
+    }
+    
+    // Update timer UI
+    function updateTimerUI() {
+        timerValue.textContent = `${gameState.timeLeft}s`;
+        const progressPercent = (gameState.timeLeft / 60) * 100;
+        timerProgress.style.width = `${progressPercent}%`;
+        
+        // Change color when time is running low
+        if (gameState.timeLeft <= 10) {
+            timerProgress.style.background = 'var(--ms-accent)';
+            timerProgress.style.animation = 'pulse 1s infinite';
+        } else {
+            timerProgress.style.background = 'var(--ms-blue)';
+            timerProgress.style.animation = 'none';
+        }
     }
 
     // Start camera
@@ -2541,6 +2615,7 @@
         scoreValue.textContent = gameState.score;
         itemsValue.textContent = gameState.itemsScanned;
         totalScore.textContent = gameState.score;
+        updateTimerUI();
         
         // Update buttons
         startGameBtn.disabled = gameState.isRunning;
