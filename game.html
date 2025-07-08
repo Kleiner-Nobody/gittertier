@@ -847,15 +847,22 @@
     @media (max-width: 768px) {
         .controls {
             grid-template-columns: 1fr;
+            gap: 12px;
         }
         
         button {
             min-height: 80px;
             font-size: 1.3rem;
+            padding: 18px 12px;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
         }
         
         .competition-btn {
             min-height: 100px;
+            padding: 12px;
+            font-size: 1.1rem;
         }
         
         .card-header h2 {
@@ -903,6 +910,11 @@
             width: 25px;
             height: 25px;
         }
+        
+        .scanner-overlay {
+            width: 85%;
+            height: 45%;
+        }
     }
     
     /* Mobile landscape optimization */
@@ -927,6 +939,16 @@
         
         .modal {
             max-height: 85vh;
+        }
+        
+        .controls {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        button {
+            min-height: 70px;
+            padding: 15px 10px;
+            font-size: 1.1rem;
         }
     }
 
@@ -1009,6 +1031,51 @@
         0% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.2); opacity: 0.8; }
         100% { transform: scale(1); opacity: 1; }
+    }
+    
+    /* Ready modal styling */
+    #readyModal {
+        z-index: 2002;
+    }
+    
+    .ready-content {
+        text-align: center;
+        padding: 30px;
+    }
+    
+    .ready-icon {
+        font-size: 4rem;
+        color: var(--ms-success);
+        margin-bottom: 20px;
+        animation: pulse 1.5s infinite;
+    }
+    
+    .ready-text {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    
+    .ready-subtext {
+        font-size: 1.2rem;
+        opacity: 0.8;
+        margin-bottom: 30px;
+    }
+    
+    .ready-btn {
+        padding: 15px 40px;
+        font-size: 1.3rem;
+        background: var(--ms-success);
+        color: white;
+        border: none;
+        border-radius: var(--ms-border-radius);
+        cursor: pointer;
+        transition: var(--ms-transition);
+    }
+    
+    .ready-btn:hover {
+        background: #0d6910;
+        transform: translateY(-3px);
     }
     </style>
 </head>
@@ -1275,6 +1342,21 @@
             </button>
         </div>
     </div>
+    
+    <!-- Ready Modal -->
+    <div class="modal" id="readyModal">
+        <div class="close-btn" id="closeReadyModal">
+            <i class="fas fa-times"></i>
+        </div>
+        <div class="ready-content">
+            <div class="ready-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="ready-text">Ready to Scan!</div>
+            <div class="ready-subtext">Point your camera at a barcode to start scanning</div>
+            <button class="ready-btn" id="startScanningBtn">Start Scanning</button>
+        </div>
+    </div>
 
     <div class="theme-toggle" id="themeToggle">
         <i class="fas fa-moon"></i>
@@ -1303,7 +1385,9 @@
         globalScannedBarcodes: [], // Track all barcodes scanned in the lobby
         qrScannerStream: null,
         isReady: false, // Player ready status
-        syncInterval: null // For syncing game state
+        syncInterval: null, // For syncing game state
+        scanHistory: new Set(), // Track scanned barcodes
+        isCameraActive: false
     };
 
     // DOM Elements
@@ -1360,6 +1444,9 @@
     const chatInput = document.getElementById('chatInput');
     const sendChatBtn = document.getElementById('sendChatBtn');
     const leaveGameBtn = document.getElementById('leaveGame');
+    const readyModal = document.getElementById('readyModal');
+    const startScanningBtn = document.getElementById('startScanningBtn');
+    const closeReadyModalBtn = document.getElementById('closeReadyModal');
     
     // Modal close buttons
     const closeGameOverModalBtn = document.getElementById('closeGameOverModal');
@@ -1374,6 +1461,12 @@
         updateUI();
         checkBarcodeDetectorSupport();
         updateLeaderboard();
+        showReadyModal();
+    }
+
+    // Show ready modal
+    function showReadyModal() {
+        readyModal.style.display = 'block';
     }
 
     // Check if BarcodeDetector is supported
@@ -1381,7 +1474,9 @@
         if (!('BarcodeDetector' in window)) {
             showNotification('Barcode detection not supported in this browser. Please use Chrome or Edge.');
         } else {
-            gameState.barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'] });
+            // Create separate detectors for barcodes and QR codes
+            gameState.barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
+            gameState.qrBarcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
         }
     }
 
@@ -1448,6 +1543,15 @@
         closeQrScannerModalBtn.addEventListener('click', closeQrScanner);
         closeDuplicateModalBtn2.addEventListener('click', () => duplicateModal.style.display = 'none');
         closeChatModalBtn.addEventListener('click', () => chatModal.style.display = 'none');
+        closeReadyModalBtn.addEventListener('click', () => readyModal.style.display = 'none');
+        
+        // Start scanning button
+        startScanningBtn.addEventListener('click', () => {
+            readyModal.style.display = 'none';
+            if (!gameState.isRunning) {
+                startCamera();
+            }
+        });
     }
 
     // Set game mode
@@ -1873,7 +1977,7 @@
 
     // Detect QR codes
     function detectQrCode() {
-        if (!gameState.barcodeDetector || !gameState.qrScannerStream) return;
+        if (!gameState.qrBarcodeDetector || !gameState.qrScannerStream) return;
         
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -1886,8 +1990,8 @@
                 canvas.height = qrScannerVideo.videoHeight;
                 ctx.drawImage(qrScannerVideo, 0, 0, canvas.width, canvas.height);
                 
-                if (gameState.barcodeDetector) {
-                    gameState.barcodeDetector.detect(canvas)
+                if (gameState.qrBarcodeDetector) {
+                    gameState.qrBarcodeDetector.detect(canvas)
                         .then(barcodes => {
                             if (barcodes.length > 0) {
                                 const barcode = barcodes[0];
@@ -1924,6 +2028,7 @@
         gameState.lastScannedTime = 0;
         gameState.scannedItems = [];
         gameState.globalScannedBarcodes = []; // Reset global barcodes
+        gameState.scanHistory = new Set(); // Reset scan history
         scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
         gameState.timeLeft = 60;
         timerValue.textContent = `${gameState.timeLeft}s`;
@@ -2003,6 +2108,7 @@
         gameState.itemsScanned = 0;
         gameState.scannedItems = [];
         gameState.globalScannedBarcodes = []; // Reset global barcodes
+        gameState.scanHistory = new Set(); // Reset scan history
         clearInterval(gameState.timerInterval);
         clearInterval(gameState.syncInterval);
         stopCamera();
@@ -2029,6 +2135,9 @@
         // Update UI
         updateUI();
         updateLeaderboard();
+        
+        // Show ready modal again
+        showReadyModal();
     }
 
     // Start the game timer
@@ -2071,9 +2180,11 @@
             });
             scannerVideo.srcObject = gameState.stream;
             await scannerVideo.play();
+            gameState.isCameraActive = true;
         } catch (err) {
             console.error('Camera error:', err);
             showNotification('Camera access denied. Please enable camera permissions to play.');
+            gameState.isCameraActive = false;
         }
     }
 
@@ -2082,16 +2193,17 @@
         if (gameState.stream) {
             gameState.stream.getTracks().forEach(track => track.stop());
             gameState.stream = null;
+            gameState.isCameraActive = false;
         }
     }
 
     // Start barcode detection
     function startDetection() {
-        if (!gameState.isRunning) return;
+        if (!gameState.isRunning || !gameState.isCameraActive) return;
         
         // Use requestAnimationFrame for continuous detection
         function detectBarcode() {
-            if (!gameState.isRunning) return;
+            if (!gameState.isRunning || !gameState.isCameraActive) return;
             
             try {
                 if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
@@ -2104,18 +2216,24 @@
                         gameState.barcodeDetector.detect(scannerCanvas)
                             .then(barcodes => {
                                 if (barcodes.length > 0) {
-                                    const barcode = barcodes[0];
-                                    const rawValue = barcode.rawValue;
+                                    // Filter out QR codes and focus on barcodes
+                                    const barcode = barcodes.find(b => b.format !== 'qr_code');
                                     
-                                    // Draw bounding box
-                                    barcodeBox.style.display = 'block';
-                                    barcodeBox.style.width = `${barcode.boundingBox.width}px`;
-                                    barcodeBox.style.height = `${barcode.boundingBox.height}px`;
-                                    barcodeBox.style.top = `${barcode.boundingBox.top}px`;
-                                    barcodeBox.style.left = `${barcode.boundingBox.left}px`;
-                                    
-                                    // Process barcode if new
-                                    processScannedBarcode(rawValue);
+                                    if (barcode) {
+                                        const rawValue = barcode.rawValue;
+                                        
+                                        // Draw bounding box
+                                        barcodeBox.style.display = 'block';
+                                        barcodeBox.style.width = `${barcode.boundingBox.width}px`;
+                                        barcodeBox.style.height = `${barcode.boundingBox.height}px`;
+                                        barcodeBox.style.top = `${barcode.boundingBox.top}px`;
+                                        barcodeBox.style.left = `${barcode.boundingBox.left}px`;
+                                        
+                                        // Process barcode if new
+                                        processScannedBarcode(rawValue);
+                                    } else {
+                                        barcodeBox.style.display = 'none';
+                                    }
                                 } else {
                                     barcodeBox.style.display = 'none';
                                 }
@@ -2148,6 +2266,12 @@
         gameState.lastScannedCode = barcodeValue;
         gameState.lastScannedTime = now;
         
+        // Check if barcode has already been scanned
+        if (gameState.scanHistory.has(barcodeValue)) {
+            showNotification('This barcode has already been scanned!');
+            return;
+        }
+        
         // Check if barcode has already been scanned globally (in competition mode)
         if (gameState.mode === 'competition' && gameState.globalScannedBarcodes.includes(barcodeValue)) {
             duplicateModal.style.display = 'block';
@@ -2157,6 +2281,9 @@
             showNotification('This barcode has already been scanned!');
             return;
         }
+        
+        // Add to scan history
+        gameState.scanHistory.add(barcodeValue);
         
         // Fixed points per barcode
         const points = 100;
