@@ -22,9 +22,10 @@
         --ms-success: #107c10;
         --ms-card-shadow: 0 2.4px 4.8px rgba(0,0,0,0.14), 0 0.8px 1.6px rgba(0,0,0,0.07);
         --ms-card-shadow-hover: 0 6.4px 14.4px rgba(0,0,0,0.18), 0 1.2px 3.6px rgba(0,0,0,0.11);
-        --ms-border-radius: 16px; /* Increased for rounder elements */
+        --ms-border-radius: 16px;
         --ms-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         --ms-animation-duration: 0.4s;
+        --ms-sync-color: #9c27b0;
     }
 
     .dark-mode {
@@ -41,6 +42,7 @@
         --ms-success: #28a745;
         --ms-card-shadow: 0 4px 12px rgba(0,0,0,0.3);
         --ms-card-shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+        --ms-sync-color: #ba68c8;
     }
 
     * {
@@ -66,7 +68,7 @@
 
     /* Mobile-friendly header */
     header {
-        background: linear-gradient(135deg, #4a00e0, #8e2de2); /* Updated gradient */
+        background: linear-gradient(135deg, #4a00e0, #8e2de2);
         color: white;
         padding: 15px 20px;
         position: relative;
@@ -265,7 +267,7 @@
     button {
         padding: 20px 15px;
         border: none;
-        border-radius: 50px; /* Fully rounded buttons */
+        border-radius: 50px;
         font-size: 1.2rem;
         cursor: pointer;
         transition: var(--ms-transition);
@@ -278,7 +280,7 @@
         position: relative;
         overflow: hidden;
         transform: translateY(0);
-        min-height: 80px; /* Better for mobile touch */
+        min-height: 80px;
     }
 
     button::after {
@@ -335,6 +337,15 @@
 
     .btn-danger:hover {
         background: #b0262e;
+    }
+
+    .btn-sync {
+        background: var(--ms-sync-color);
+        color: white;
+    }
+
+    .btn-sync:hover {
+        background: #7b1fa2;
     }
 
     button:disabled {
@@ -581,7 +592,7 @@
         border: none;
         transition: var(--ms-transition);
         cursor: pointer;
-        min-height: 110px; /* Better for mobile */
+        min-height: 110px;
     }
 
     .competition-btn i {
@@ -861,6 +872,41 @@
         transform: rotate(90deg);
     }
     
+    /* Sync status indicator */
+    .sync-status {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        z-index: 99;
+    }
+    
+    .sync-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ccc;
+    }
+    
+    .sync-dot.connected {
+        background: var(--ms-success);
+        animation: pulse 1.5s infinite;
+    }
+    
+    /* Sync animation */
+    @keyframes syncPulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
     /* Mobile-specific optimizations */
     @media (max-width: 768px) {
         .controls {
@@ -1042,6 +1088,12 @@
         50% { transform: scale(1.2); opacity: 0.8; }
         100% { transform: scale(1); opacity: 1; }
     }
+    
+    @keyframes syncPulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+    }
 
     /* Lobby specific styles */
     .lobby-container {
@@ -1212,8 +1264,8 @@
                 <button class="btn-success" id="newGame">
                     <i class="fas fa-plus"></i> New Game
                 </button>
-                <button class="btn-secondary" id="chatBtn">
-                    <i class="fas fa-comments"></i> Chat
+                <button class="btn-sync" id="syncBtn">
+                    <i class="fas fa-sync-alt"></i> Sync
                 </button>
                 <button class="btn-success" id="readyBtn" style="display: none;">
                     <i class="fas fa-check"></i> Ready
@@ -1385,36 +1437,10 @@
         </div>
     </div>
     
-    <!-- Chat Modal -->
-    <div class="modal" id="chatModal">
-        <div class="close-btn" id="closeChatModal">
-            <i class="fas fa-times"></i>
-        </div>
-        <h3><i class="fas fa-comments"></i> Game Chat</h3>
-        <div class="chat-container" id="chatContainer">
-            <div class="chat-message">
-                <div class="sender">System</div>
-                <div class="content">Welcome to the game chat!</div>
-                <div class="time">Just now</div>
-            </div>
-        </div>
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Type your message...">
-            <button class="btn-primary" id="sendChatBtn">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Ready Modal -->
-    <div class="modal" id="readyModal">
-        <div class="close-btn" id="closeReadyModal">
-            <i class="fas fa-times"></i>
-        </div>
-        <h3><i class="fas fa-check-circle"></i> Player Ready</h3>
-        <div id="playerReadyList" style="margin-top: 20px;">
-            <!-- Player ready status will appear here -->
-        </div>
+    <!-- Sync status indicator -->
+    <div class="sync-status" id="syncStatus" style="display: none;">
+        <div class="sync-dot"></div>
+        <span>Connecting...</span>
     </div>
 
     <div class="theme-toggle" id="themeToggle">
@@ -1444,7 +1470,8 @@
         globalScannedBarcodes: [],
         qrScannerStream: null,
         isReady: false,
-        syncInterval: null
+        syncInterval: null,
+        lastSync: 0
     };
 
     // DOM Elements
@@ -1495,23 +1522,16 @@
     const countdownNumber = document.getElementById('countdownNumber');
     const duplicateModal = document.getElementById('duplicateModal');
     const closeDuplicateModalBtn = document.getElementById('closeDuplicateModal');
-    const chatBtn = document.getElementById('chatBtn');
-    const chatModal = document.getElementById('chatModal');
-    const chatContainer = document.getElementById('chatContainer');
-    const chatInput = document.getElementById('chatInput');
-    const sendChatBtn = document.getElementById('sendChatBtn');
     const leaveGameBtn = document.getElementById('leaveGame');
     const readyBtn = document.getElementById('readyBtn');
-    const readyModal = document.getElementById('readyModal');
-    const playerReadyList = document.getElementById('playerReadyList');
-    const closeReadyModalBtn = document.getElementById('closeReadyModal');
+    const syncStatus = document.getElementById('syncStatus');
+    const syncBtn = document.getElementById('syncBtn');
     
     // Modal close buttons
     const closeGameOverModalBtn = document.getElementById('closeGameOverModal');
     const closeCompetitionModalBtn = document.getElementById('closeCompetitionModal');
     const closeQrScannerModalBtn = document.getElementById('closeQrScannerModal');
     const closeDuplicateModalBtn2 = document.getElementById('closeDuplicateModalBtn');
-    const closeChatModalBtn = document.getElementById('closeChatModal');
 
     // Calculate points based on barcode
     function calculatePoints(barcodeValue) {
@@ -1537,7 +1557,6 @@
         if (!('BarcodeDetector' in window)) {
             showNotification('Barcode detection not supported in this browser. Please use Chrome or Edge.');
         } else {
-            // Only detect barcodes (not QR codes) for main scanner
             gameState.barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
         }
     }
@@ -1589,26 +1608,20 @@
         // Duplicate modal
         closeDuplicateModalBtn.addEventListener('click', () => duplicateModal.style.display = 'none');
         
-        // Chat
-        chatBtn.addEventListener('click', () => chatModal.style.display = 'block');
-        sendChatBtn.addEventListener('click', sendChatMessage);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendChatMessage();
-        });
-        
         // Leave game
         leaveGameBtn.addEventListener('click', leaveGame);
         
         // Ready button
         readyBtn.addEventListener('click', toggleReady);
         
+        // Sync button
+        syncBtn.addEventListener('click', syncGameState);
+        
         // Modal close buttons
         closeGameOverModalBtn.addEventListener('click', () => gameOverModal.style.display = 'none');
         closeCompetitionModalBtn.addEventListener('click', () => competitionModal.style.display = 'none');
         closeQrScannerModalBtn.addEventListener('click', closeQrScanner);
         closeDuplicateModalBtn2.addEventListener('click', () => duplicateModal.style.display = 'none');
-        closeChatModalBtn.addEventListener('click', () => chatModal.style.display = 'none');
-        closeReadyModalBtn.addEventListener('click', () => readyModal.style.display = 'none');
     }
 
     // Set game mode
@@ -1622,14 +1635,12 @@
 
     // Toggle ready status
     function toggleReady() {
-        // Host is always ready and cannot toggle
         if (gameState.host) return;
         
         gameState.isReady = !gameState.isReady;
         updateReadyButton();
         
         if (gameState.mode === 'competition') {
-            // Player sends to host
             gameState.conn.send({
                 type: 'playerReady',
                 playerId: gameState.peer.id,
@@ -1661,7 +1672,7 @@
         
         gameState.playerName = playerName;
         gameState.host = true;
-        gameState.isReady = true; // Host is always ready
+        gameState.isReady = true;
         
         // Initialize PeerJS
         gameState.peer = new Peer();
@@ -1690,7 +1701,7 @@
                 id: id,
                 name: playerName,
                 score: 0,
-                isReady: true, // Host is always ready
+                isReady: true,
                 isHost: true
             });
             updatePlayerListUI();
@@ -1698,12 +1709,13 @@
             // Show leave game button
             leaveGameBtn.style.display = 'block';
             readyBtn.style.display = 'block';
-            readyBtn.disabled = true; // Host cannot toggle ready status
+            readyBtn.disabled = true;
             readyBtn.innerHTML = '<i class="fas fa-crown"></i> Host';
             readyBtn.classList.remove('btn-success', 'btn-danger');
             readyBtn.classList.add('btn-secondary');
             
             showNotification('Game created! Share the code with friends.');
+            updateSyncStatus(true);
         });
         
         gameState.peer.on('connection', (conn) => {
@@ -1728,36 +1740,29 @@
                         // Broadcast updated player list to all
                         broadcastPlayerList();
                     } else if (data.type === 'barcode') {
-                        // Handle barcode scan from player
                         handlePlayerBarcodeScan(data);
                     } else if (data.type === 'playerScore') {
-                        // Update player score
                         const player = gameState.players.find(p => p.id === data.playerId);
                         if (player) {
                             player.score = data.score;
                             broadcastPlayerList();
                         }
                     } else if (data.type === 'playerReady') {
-                        // Update player ready status
                         const player = gameState.players.find(p => p.id === data.playerId);
                         if (player) {
                             player.isReady = data.isReady;
                             updatePlayerListUI();
                             startMultiplayerGame.disabled = !checkAllPlayersReady();
                         }
-                    } else if (data.type === 'chat') {
-                        // Broadcast chat message to all
-                        broadcastToPlayers({
-                            type: 'chat',
-                            playerId: data.playerId,
-                            playerName: data.playerName,
-                            message: data.message,
-                            timestamp: Date.now()
+                    } else if (data.type === 'syncRequest') {
+                        // Send full game state to requesting player
+                        conn.send({
+                            type: 'gameState',
+                            timeLeft: gameState.timeLeft,
+                            players: gameState.players,
+                            globalScannedBarcodes: gameState.globalScannedBarcodes,
+                            isRunning: gameState.isRunning
                         });
-                        addChatMessage(data.playerName, data.message, data.timestamp);
-                    } else if (data.type === 'gameState') {
-                        // Sync game state to all players
-                        broadcastToPlayers(data);
                     }
                 });
             });
@@ -1766,6 +1771,7 @@
         gameState.peer.on('error', (err) => {
             console.error('PeerJS error:', err);
             showNotification('Error creating game. Please try again.');
+            updateSyncStatus(false);
         });
     }
 
@@ -1859,6 +1865,7 @@
                 // Show leave game button
                 leaveGameBtn.style.display = 'block';
                 readyBtn.style.display = 'block';
+                updateSyncStatus(true);
             });
             
             gameState.conn.on('data', (data) => {
@@ -1869,27 +1876,24 @@
         gameState.peer.on('error', (err) => {
             console.error('PeerJS error:', err);
             showNotification('Error joining game. Please check the code.');
+            updateSyncStatus(false);
         });
     }
 
     // Handle incoming data for players
     function handleIncomingData(data) {
         if (data.type === 'playerList') {
-            // Update player list
             gameState.players = data.players;
             updatePlayerListUI();
             updateLeaderboard();
         }
         else if (data.type === 'startCountdown') {
-            // Start countdown for game
             startCountdown(data.startTime, data.duration);
         }
         else if (data.type === 'gameStart') {
-            // Start the game
             startGame();
         }
         else if (data.type === 'playerScore') {
-            // Update player score
             const player = gameState.players.find(p => p.id === data.playerId);
             if (player) {
                 player.score = data.score;
@@ -1897,24 +1901,20 @@
             }
         }
         else if (data.type === 'gameOver') {
-            // Game over
             stopGame();
             finalScore.textContent = gameState.score;
             gameOverModal.style.display = 'block';
         }
         else if (data.type === 'newBarcode') {
-            // Add to global scanned barcodes
             gameState.globalScannedBarcodes.push(data.barcode);
         }
         else if (data.type === 'duplicateBarcode') {
-            // Show duplicate warning
             duplicateModal.style.display = 'block';
             setTimeout(() => {
                 duplicateModal.style.display = 'none';
             }, 2000);
         }
         else if (data.type === 'scannedSuccess') {
-            // Update local score
             gameState.score += data.points;
             gameState.itemsScanned++;
             gameState.scannedItems.push({
@@ -1927,21 +1927,19 @@
             updateScannedItemsList();
             showNotification(`Scanned successfully! +${data.points} points`);
         }
-        else if (data.type === 'chat') {
-            // Add chat message to UI
-            addChatMessage(data.playerName, data.message, data.timestamp);
-        }
         else if (data.type === 'gameState') {
-            // Sync game state from host
             if (!gameState.host) {
                 gameState.timeLeft = data.timeLeft;
-                gameState.score = data.playerScore;
-                gameState.itemsScanned = data.itemsScanned;
+                gameState.players = data.players;
+                gameState.globalScannedBarcodes = data.globalScannedBarcodes || [];
+                gameState.isRunning = data.isRunning;
                 updateUI();
+                updatePlayerListUI();
+                updateLeaderboard();
+                showNotification('Game state synchronized!');
             }
         }
         else if (data.type === 'playerReady') {
-            // Update player ready status
             const player = gameState.players.find(p => p.id === data.playerId);
             if (player) {
                 player.isReady = data.isReady;
@@ -2019,7 +2017,6 @@
             players: gameState.players
         });
         
-        // Also update host's leaderboard
         updateLeaderboard();
     }
 
@@ -2059,7 +2056,6 @@
 
     // Check if all players are ready
     function checkAllPlayersReady() {
-        // Host is always ready, so we skip host
         const playersToCheck = gameState.players.filter(p => !p.isHost);
         return playersToCheck.every(player => player.isReady) && playersToCheck.length > 0;
     }
@@ -2155,7 +2151,6 @@
         gameState.timeLeft = 60;
         timerValue.textContent = `${gameState.timeLeft}s`;
         
-        // Reset ready status for non-host players
         if (!gameState.host) {
             gameState.isReady = false;
             updateReadyButton();
@@ -2176,10 +2171,8 @@
         // Start game state syncing
         startSync();
         
-        // Show notification
         showNotification('Game started! Scan barcodes as fast as you can!');
         
-        // Broadcast game start in competition mode
         if (gameState.mode === 'competition' && gameState.host) {
             broadcastToPlayers({
                 type: 'gameStart'
@@ -2197,11 +2190,12 @@
                 broadcastToPlayers({
                     type: 'gameState',
                     timeLeft: gameState.timeLeft,
-                    playerScore: gameState.score,
-                    itemsScanned: gameState.itemsScanned
+                    players: gameState.players,
+                    globalScannedBarcodes: gameState.globalScannedBarcodes,
+                    isRunning: gameState.isRunning
                 });
             }
-        }, 1000);
+        }, 3000); // Sync every 3 seconds
     }
 
     // Stop the game
@@ -2218,14 +2212,12 @@
         // Update UI
         updateUI();
         
-        // Broadcast game over in competition mode
         if (gameState.mode === 'competition' && gameState.host) {
             broadcastToPlayers({
                 type: 'gameOver'
             });
         }
         
-        // Show game over modal
         showGameOver();
     }
 
@@ -2246,13 +2238,11 @@
         timerProgress.style.background = 'var(--ms-blue)';
         timerProgress.style.animation = 'none';
         
-        // Reset ready status
         if (!gameState.host) {
             gameState.isReady = false;
             updateReadyButton();
         }
         
-        // Reset players in competition mode
         if (gameState.mode === 'competition') {
             if (gameState.host) {
                 gameState.players.forEach(player => {
@@ -2267,7 +2257,6 @@
             }
         }
         
-        // Update UI
         updateUI();
         updateLeaderboard();
     }
@@ -2505,59 +2494,6 @@
         });
     }
 
-    // Send chat message
-    function sendChatMessage() {
-        const message = chatInput.value.trim();
-        if (!message) return;
-        
-        if (gameState.mode === 'competition') {
-            // In multiplayer, send to host
-            if (gameState.host) {
-                // Broadcast to all players
-                broadcastToPlayers({
-                    type: 'chat',
-                    playerId: gameState.peer.id,
-                    playerName: gameState.playerName,
-                    message: message,
-                    timestamp: Date.now()
-                });
-                addChatMessage(gameState.playerName, message);
-            } else {
-                // Send to host
-                gameState.conn.send({
-                    type: 'chat',
-                    playerId: gameState.peer.id,
-                    playerName: gameState.playerName,
-                    message: message,
-                    timestamp: Date.now()
-                });
-            }
-        } else {
-            // In solo mode, just add to chat
-            addChatMessage(gameState.playerName, message);
-        }
-        
-        chatInput.value = '';
-    }
-
-    // Add chat message to UI
-    function addChatMessage(playerName, message, timestamp = Date.now()) {
-        const chatMessage = document.createElement('div');
-        chatMessage.className = 'chat-message';
-        
-        const time = new Date(timestamp);
-        const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        chatMessage.innerHTML = `
-            <div class="sender">${playerName}</div>
-            <div class="content">${message}</div>
-            <div class="time">${timeString}</div>
-        `;
-        
-        chatContainer.appendChild(chatMessage);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
     // Leave the game
     function leaveGame() {
         if (gameState.peer) {
@@ -2574,6 +2510,7 @@
         
         // Show notification
         showNotification('Left the game');
+        updateSyncStatus(false);
         
         // If in multiplayer lobby, reset UI
         gameCreatedSection.style.display = 'none';
@@ -2632,6 +2569,38 @@
         } else {
             icon.className = 'fas fa-moon';
         }
+    }
+
+    // Update sync status UI
+    function updateSyncStatus(connected) {
+        const syncDot = syncStatus.querySelector('.sync-dot');
+        const syncText = syncStatus.querySelector('span');
+        
+        if (connected) {
+            syncStatus.style.display = 'flex';
+            syncDot.classList.add('connected');
+            syncText.textContent = 'Connected';
+            syncDot.style.animation = 'syncPulse 2s infinite';
+        } else {
+            syncStatus.style.display = 'none';
+            syncDot.classList.remove('connected');
+            syncDot.style.animation = 'none';
+        }
+    }
+
+    // Manually sync game state
+    function syncGameState() {
+        if (gameState.mode !== 'competition' || !gameState.conn) {
+            showNotification('Not in multiplayer mode');
+            return;
+        }
+        
+        // Request sync from host
+        gameState.conn.send({
+            type: 'syncRequest'
+        });
+        
+        showNotification('Synchronizing game state...');
     }
 
     // Initialize the game when the page loads
