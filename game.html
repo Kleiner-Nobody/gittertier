@@ -277,6 +277,7 @@
         position: relative;
         overflow: hidden;
         transform: translateY(0);
+        min-height: 70px; /* Better for mobile touch */
     }
 
     button::after {
@@ -562,6 +563,7 @@
         border: none;
         transition: var(--ms-transition);
         cursor: pointer;
+        min-height: 110px; /* Better for mobile */
     }
 
     .competition-btn i {
@@ -589,6 +591,8 @@
         z-index: 1000;
         border: 1px solid rgba(0, 0, 0, 0.05);
         animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-height: 95vh;
+        overflow-y: auto;
     }
 
     .modal::before {
@@ -751,6 +755,72 @@
         z-index: 2001;
     }
     
+    /* Chat Modal */
+    #chatModal {
+        z-index: 1000;
+    }
+    
+    .chat-container {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+        border: 1px solid var(--ms-gray-dark);
+        border-radius: var(--ms-border-radius);
+        padding: 15px;
+        background: var(--ms-gray-light);
+    }
+    
+    .chat-message {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 12px;
+        background: var(--ms-light);
+        box-shadow: var(--ms-card-shadow);
+    }
+    
+    .chat-message .sender {
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: var(--ms-blue);
+    }
+    
+    .chat-message .time {
+        font-size: 0.8rem;
+        color: var(--ms-gray-dark);
+        text-align: right;
+    }
+    
+    .chat-input {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .chat-input input {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid var(--ms-gray-dark);
+        border-radius: var(--ms-border-radius);
+    }
+    
+    /* Player Ready Status */
+    .player-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .ready-indicator {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #ddd;
+    }
+    
+    .ready-indicator.ready {
+        background: var(--ms-success);
+    }
+    
     /* Mobile-specific optimizations */
     @media (max-width: 375px) and (max-height: 812px) {
         /* iPhone 13 mini optimizations */
@@ -826,6 +896,15 @@
             font-size: 1.5rem;
             padding: 15px;
         }
+        
+        .competition-btn {
+            min-height: 90px;
+            padding: 10px;
+        }
+        
+        #countdownNumber {
+            font-size: 8rem;
+        }
     }
     
     /* Mobile landscape optimization */
@@ -846,6 +925,10 @@
         
         .card {
             padding: 20px 15px;
+        }
+        
+        .modal {
+            max-height: 85vh;
         }
     }
 
@@ -937,7 +1020,7 @@
             <i class="fas fa-barcode"></i>
             <h1>Barcode Battle</h1>
         </div>
-        <a href="/gittertier" class="home-btn">
+        <a href="/index" class="home-btn">
             <i class="fas fa-home"></i>
         </a>
     </header>
@@ -948,7 +1031,7 @@
                 <h2>Game Controls</h2>
                 <div class="status-indicator" id="gameStatus">
                     <div class="dot"></div>
-                    <span>Ready</span>
+                    <span id="statusText">Ready</span>
                 </div>
             </div>
             
@@ -1010,6 +1093,12 @@
                 </button>
                 <button class="btn-success" id="newGame">
                     <i class="fas fa-plus"></i> New Game
+                </button>
+                <button class="btn-secondary" id="chatBtn">
+                    <i class="fas fa-comments"></i> Chat
+                </button>
+                <button class="btn-danger" id="leaveGame" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i> Leave
                 </button>
             </div>
         </div>
@@ -1155,6 +1244,24 @@
             </button>
         </div>
     </div>
+    
+    <!-- Chat Modal -->
+    <div class="modal" id="chatModal">
+        <h3><i class="fas fa-comments"></i> Game Chat</h3>
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-message">
+                <div class="sender">System</div>
+                <div class="content">Welcome to the game chat!</div>
+                <div class="time">Just now</div>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type your message...">
+            <button class="btn-primary" id="sendChatBtn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
 
     <div class="theme-toggle" id="themeToggle">
         <i class="fas fa-moon"></i>
@@ -1181,7 +1288,9 @@
         roomCode: null,
         playerName: "Player",
         globalScannedBarcodes: [], // Track all barcodes scanned in the lobby
-        qrScannerStream: null
+        qrScannerStream: null,
+        isReady: false, // Player ready status
+        syncInterval: null // For syncing game state
     };
 
     // DOM Elements
@@ -1194,6 +1303,7 @@
     const itemsValue = document.getElementById('itemsValue');
     const timerProgress = document.getElementById('timerProgress');
     const gameStatus = document.getElementById('gameStatus');
+    const statusText = document.getElementById('statusText');
     const notification = document.getElementById('notification');
     const gameOverModal = document.getElementById('gameOverModal');
     const finalScore = document.getElementById('finalScore');
@@ -1231,6 +1341,12 @@
     const countdownNumber = document.getElementById('countdownNumber');
     const duplicateModal = document.getElementById('duplicateModal');
     const closeDuplicateModalBtn = document.getElementById('closeDuplicateModal');
+    const chatBtn = document.getElementById('chatBtn');
+    const chatModal = document.getElementById('chatModal');
+    const chatContainer = document.getElementById('chatContainer');
+    const chatInput = document.getElementById('chatInput');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+    const leaveGameBtn = document.getElementById('leaveGame');
 
     // Initialize the game
     function initGame() {
@@ -1295,6 +1411,16 @@
         
         // Duplicate modal
         closeDuplicateModalBtn.addEventListener('click', () => duplicateModal.style.display = 'none');
+        
+        // Chat
+        chatBtn.addEventListener('click', () => chatModal.style.display = 'block');
+        sendChatBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+        
+        // Leave game
+        leaveGameBtn.addEventListener('click', leaveGame);
     }
 
     // Set game mode
@@ -1342,6 +1468,9 @@
             // Add host to player list
             addPlayerToList(playerName, true);
             
+            // Show leave game button
+            leaveGameBtn.style.display = 'block';
+            
             showNotification('Game created! Share the code with friends.');
         });
         
@@ -1353,14 +1482,15 @@
                         const newPlayer = {
                             id: conn.peer,
                             name: data.playerName,
-                            score: 0
+                            score: 0,
+                            isReady: false
                         };
                         gameState.players.push(newPlayer);
                         addPlayerToList(data.playerName);
                         
                         // Update start button text
                         startMultiplayerGame.textContent = `Start Game (${gameState.players.length + 1} players)`;
-                        startMultiplayerGame.disabled = gameState.players.length < 1;
+                        startMultiplayerGame.disabled = !checkAllPlayersReady();
                         
                         // Broadcast updated player list to all
                         broadcastPlayerList();
@@ -1374,6 +1504,27 @@
                             player.score = data.score;
                             broadcastPlayerList();
                         }
+                    } else if (data.type === 'playerReady') {
+                        // Update player ready status
+                        const player = gameState.players.find(p => p.id === data.playerId);
+                        if (player) {
+                            player.isReady = data.isReady;
+                            updatePlayerListUI();
+                            startMultiplayerGame.disabled = !checkAllPlayersReady();
+                        }
+                    } else if (data.type === 'chat') {
+                        // Broadcast chat message to all
+                        broadcastToPlayers({
+                            type: 'chat',
+                            playerId: data.playerId,
+                            playerName: data.playerName,
+                            message: data.message,
+                            timestamp: Date.now()
+                        });
+                        addChatMessage(data.playerName, data.message, data.timestamp);
+                    } else if (data.type === 'gameState') {
+                        // Sync game state to all players
+                        broadcastToPlayers(data);
                     }
                 });
             });
@@ -1469,6 +1620,9 @@
                 
                 competitionModal.style.display = 'none';
                 showNotification('Joined game! Waiting for host to start...');
+                
+                // Show leave game button
+                leaveGameBtn.style.display = 'block';
             });
             
             gameState.conn.on('data', (data) => {
@@ -1533,6 +1687,19 @@
             updateUI();
             updateScannedItemsList();
             showNotification(`Scanned successfully! +${data.points} points`);
+        }
+        else if (data.type === 'chat') {
+            // Add chat message to UI
+            addChatMessage(data.playerName, data.message, data.timestamp);
+        }
+        else if (data.type === 'gameState') {
+            // Sync game state from host
+            if (!gameState.host) {
+                gameState.timeLeft = data.timeLeft;
+                gameState.score = data.playerScore;
+                gameState.itemsScanned = data.itemsScanned;
+                updateUI();
+            }
         }
     }
 
@@ -1610,8 +1777,36 @@
     function addPlayerToList(name, isHost = false) {
         const playerTag = document.createElement('div');
         playerTag.className = 'player-tag';
-        playerTag.innerHTML = `${name} ${isHost ? '<i class="fas fa-crown"></i>' : ''}`;
+        playerTag.innerHTML = `
+            <div>${name} ${isHost ? '<i class="fas fa-crown"></i>' : ''}</div>
+            <div class="player-status">
+                <div class="ready-indicator"></div>
+                <span>Not Ready</span>
+            </div>
+        `;
         playerList.appendChild(playerTag);
+    }
+
+    // Update player list UI
+    function updatePlayerListUI() {
+        playerList.innerHTML = '';
+        gameState.players.forEach(player => {
+            const playerTag = document.createElement('div');
+            playerTag.className = 'player-tag';
+            playerTag.innerHTML = `
+                <div>${player.name}</div>
+                <div class="player-status">
+                    <div class="ready-indicator ${player.isReady ? 'ready' : ''}"></div>
+                    <span>${player.isReady ? 'Ready' : 'Not Ready'}</span>
+                </div>
+            `;
+            playerList.appendChild(playerTag);
+        });
+    }
+
+    // Check if all players are ready
+    function checkAllPlayersReady() {
+        return gameState.players.every(player => player.isReady) && gameState.players.length > 0;
     }
 
     // Open QR scanner for joining
@@ -1716,6 +1911,9 @@
         // Start detection
         startDetection();
         
+        // Start game state syncing
+        startSync();
+        
         // Show notification
         showNotification('Game started! Scan barcodes as fast as you can!');
         
@@ -1727,12 +1925,30 @@
         }
     }
 
+    // Start game state syncing
+    function startSync() {
+        if (gameState.syncInterval) clearInterval(gameState.syncInterval);
+        
+        gameState.syncInterval = setInterval(() => {
+            if (gameState.host) {
+                // Broadcast game state to all players
+                broadcastToPlayers({
+                    type: 'gameState',
+                    timeLeft: gameState.timeLeft,
+                    playerScore: gameState.score,
+                    itemsScanned: gameState.itemsScanned
+                });
+            }
+        }, 1000); // Sync every second
+    }
+
     // Stop the game
     function stopGame() {
         if (!gameState.isRunning) return;
         
         gameState.isRunning = false;
         clearInterval(gameState.timerInterval);
+        clearInterval(gameState.syncInterval);
         
         // Stop camera
         stopCamera();
@@ -1759,6 +1975,7 @@
         gameState.scannedItems = [];
         gameState.globalScannedBarcodes = []; // Reset global barcodes
         clearInterval(gameState.timerInterval);
+        clearInterval(gameState.syncInterval);
         stopCamera();
         scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
         gameState.timeLeft = 60;
@@ -1772,6 +1989,7 @@
             if (gameState.host) {
                 gameState.players.forEach(player => {
                     player.score = 0;
+                    player.isReady = false;
                 });
                 broadcastPlayerList();
             } else {
@@ -1993,6 +2211,83 @@
         });
     }
 
+    // Send chat message
+    function sendChatMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        if (gameState.mode === 'competition') {
+            // In multiplayer, send to host
+            if (gameState.host) {
+                // Broadcast to all players
+                broadcastToPlayers({
+                    type: 'chat',
+                    playerId: gameState.peer.id,
+                    playerName: gameState.playerName,
+                    message: message,
+                    timestamp: Date.now()
+                });
+                addChatMessage(gameState.playerName, message);
+            } else {
+                // Send to host
+                gameState.conn.send({
+                    type: 'chat',
+                    playerId: gameState.peer.id,
+                    playerName: gameState.playerName,
+                    message: message,
+                    timestamp: Date.now()
+                });
+            }
+        } else {
+            // In solo mode, just add to chat
+            addChatMessage(gameState.playerName, message);
+        }
+        
+        chatInput.value = '';
+    }
+
+    // Add chat message to UI
+    function addChatMessage(playerName, message, timestamp = Date.now()) {
+        const chatMessage = document.createElement('div');
+        chatMessage.className = 'chat-message';
+        
+        const time = new Date(timestamp);
+        const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        chatMessage.innerHTML = `
+            <div class="sender">${playerName}</div>
+            <div class="content">${message}</div>
+            <div class="time">${timeString}</div>
+        `;
+        
+        chatContainer.appendChild(chatMessage);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Leave the game
+    function leaveGame() {
+        if (gameState.peer) {
+            gameState.peer.destroy();
+            gameState.peer = null;
+        }
+        
+        // Reset game state
+        resetGame();
+        
+        // Hide leave button
+        leaveGameBtn.style.display = 'none';
+        
+        // Show notification
+        showNotification('Left the game');
+        
+        // If in multiplayer lobby, reset UI
+        gameCreatedSection.style.display = 'none';
+        createGameSection.style.display = 'block';
+        joinGameSection.style.display = 'none';
+        switchToCreate.style.display = 'none';
+        switchToJoin.style.display = 'inline-block';
+    }
+
     // Show notification
     function showNotification(message) {
         notification.textContent = message;
@@ -2023,10 +2318,10 @@
         // Update status indicator
         if (gameState.isRunning) {
             gameStatus.classList.remove('inactive');
-            gameStatus.querySelector('span').textContent = 'Running';
+            statusText.textContent = 'Running';
         } else {
             gameStatus.classList.add('inactive');
-            gameStatus.querySelector('span').textContent = 'Ready';
+            statusText.textContent = 'Ready';
         }
         
         // Update leaderboard
