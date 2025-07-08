@@ -277,7 +277,7 @@
         position: relative;
         overflow: hidden;
         transform: translateY(0);
-        min-height: 80px; /* Better for mobile touch */
+        min-height: 80px;
     }
 
     button::after {
@@ -563,7 +563,7 @@
         border: none;
         transition: var(--ms-transition);
         cursor: pointer;
-        min-height: 110px; /* Better for mobile */
+        min-height: 110px;
     }
 
     .competition-btn i {
@@ -1318,7 +1318,8 @@
         globalScannedBarcodes: [],
         qrScannerStream: null,
         isReady: false,
-        syncInterval: null
+        syncInterval: null,
+        detectionActive: false
     };
 
     // DOM Elements
@@ -1675,21 +1676,14 @@
             });
         }
     }
-    
+
     // Calculate points based on barcode
     function calculatePoints(barcode) {
-        // Points = (length of barcode) * (highest digit in barcode) * 10
+        // Points = (barcode length) * (highest digit in barcode) * 10
         const length = barcode.length;
-        let highestDigit = 0;
-        
-        for (let i = 0; i < barcode.length; i++) {
-            const digit = parseInt(barcode[i]);
-            if (!isNaN(digit)) {
-                highestDigit = Math.max(highestDigit, digit);
-            }
-        }
-        
-        return length * highestDigit * 10;
+        const digits = barcode.split('');
+        const maxDigit = Math.max(...digits.map(d => parseInt(d)));
+        return length * maxDigit * 10;
     }
 
     // Join multiplayer game
@@ -2178,15 +2172,17 @@
             gameState.stream.getTracks().forEach(track => track.stop());
             gameState.stream = null;
         }
+        gameState.detectionActive = false;
     }
 
     // Start barcode detection
     function startDetection() {
-        if (!gameState.isRunning) return;
+        if (!gameState.isRunning || gameState.detectionActive) return;
+        gameState.detectionActive = true;
         
         // Use requestAnimationFrame for continuous detection
         function detectBarcode() {
-            if (!gameState.isRunning) return;
+            if (!gameState.isRunning || !gameState.detectionActive) return;
             
             try {
                 if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
