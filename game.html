@@ -244,8 +244,8 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 80%;
-        height: 40%;
+        width: 90%;
+        height: 50%;
         border: 4px solid rgba(255,255,255,0.3);
         pointer-events: none;
         border-radius: 12px;
@@ -277,7 +277,7 @@
         position: relative;
         overflow: hidden;
         transform: translateY(0);
-        min-height: 70px; /* Better for mobile touch */
+        min-height: 80px; /* Better for mobile touch */
     }
 
     button::after {
@@ -843,23 +843,6 @@
         transform: rotate(90deg);
     }
     
-    /* Ready Modal */
-    #readyModal {
-        z-index: 2002;
-    }
-    
-    .ready-content {
-        text-align: center;
-        padding: 30px;
-    }
-    
-    .ready-icon {
-        font-size: 4rem;
-        color: var(--ms-success);
-        margin-bottom: 20px;
-        animation: pulse 1.5s infinite;
-    }
-    
     /* Mobile-specific optimizations */
     @media (max-width: 768px) {
         .controls {
@@ -867,8 +850,8 @@
         }
         
         button {
-            min-height: 80px;
-            font-size: 1.3rem;
+            min-height: 90px;
+            font-size: 1.4rem;
             padding: 25px 15px;
         }
         
@@ -920,16 +903,6 @@
             right: 10px;
             width: 25px;
             height: 25px;
-        }
-        
-        /* Center buttons on mobile */
-        .controls {
-            justify-items: center;
-        }
-        
-        button {
-            width: 90%;
-            max-width: 350px;
         }
     }
     
@@ -1046,7 +1019,7 @@
             <i class="fas fa-barcode"></i>
             <h1>Barcode Battle</h1>
         </div>
-        <a href="/gittertier" class="home-btn">
+        <a href="/" class="home-btn">
             <i class="fas fa-home"></i>
         </a>
     </header>
@@ -1122,6 +1095,9 @@
                 </button>
                 <button class="btn-secondary" id="chatBtn">
                     <i class="fas fa-comments"></i> Chat
+                </button>
+                <button class="btn-success" id="readyBtn" style="display: none;">
+                    <i class="fas fa-check"></i> Ready
                 </button>
                 <button class="btn-danger" id="leaveGame" style="display: none;">
                     <i class="fas fa-sign-out-alt"></i> Leave
@@ -1309,15 +1285,9 @@
         <div class="close-btn" id="closeReadyModal">
             <i class="fas fa-times"></i>
         </div>
-        <div class="ready-content">
-            <div class="ready-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <h3>Ready to Play?</h3>
-            <p>Make sure your camera is positioned correctly to scan barcodes</p>
-            <button class="btn-success" id="confirmReady" style="margin-top: 20px; padding: 15px 30px;">
-                <i class="fas fa-check"></i> I'm Ready!
-            </button>
+        <h3><i class="fas fa-check-circle"></i> Player Ready</h3>
+        <div id="playerReadyList" style="margin-top: 20px;">
+            <!-- Player ready status will appear here -->
         </div>
     </div>
 
@@ -1345,10 +1315,10 @@
         host: false,
         roomCode: null,
         playerName: "Player",
-        globalScannedBarcodes: new Set(), // Track all barcodes scanned in the lobby
+        globalScannedBarcodes: [],
         qrScannerStream: null,
-        isReady: false, // Player ready status
-        syncInterval: null // For syncing game state
+        isReady: false,
+        syncInterval: null
     };
 
     // DOM Elements
@@ -1405,8 +1375,9 @@
     const chatInput = document.getElementById('chatInput');
     const sendChatBtn = document.getElementById('sendChatBtn');
     const leaveGameBtn = document.getElementById('leaveGame');
+    const readyBtn = document.getElementById('readyBtn');
     const readyModal = document.getElementById('readyModal');
-    const confirmReadyBtn = document.getElementById('confirmReady');
+    const playerReadyList = document.getElementById('playerReadyList');
     const closeReadyModalBtn = document.getElementById('closeReadyModal');
     
     // Modal close buttons
@@ -1429,14 +1400,14 @@
         if (!('BarcodeDetector' in window)) {
             showNotification('Barcode detection not supported in this browser. Please use Chrome or Edge.');
         } else {
-            // Only detect barcodes (not QR codes) in the main scanner
+            // Only detect barcodes (not QR codes) for main scanner
             gameState.barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
         }
     }
 
     // Setup event listeners
     function setupEventListeners() {
-        startGameBtn.addEventListener('click', showReadyModal);
+        startGameBtn.addEventListener('click', startGame);
         stopGameBtn.addEventListener('click', stopGame);
         resetGameBtn.addEventListener('click', resetGame);
         newGameBtn.addEventListener('click', resetGame);
@@ -1491,6 +1462,9 @@
         // Leave game
         leaveGameBtn.addEventListener('click', leaveGame);
         
+        // Ready button
+        readyBtn.addEventListener('click', toggleReady);
+        
         // Modal close buttons
         closeGameOverModalBtn.addEventListener('click', () => gameOverModal.style.display = 'none');
         closeCompetitionModalBtn.addEventListener('click', () => competitionModal.style.display = 'none');
@@ -1498,14 +1472,6 @@
         closeDuplicateModalBtn2.addEventListener('click', () => duplicateModal.style.display = 'none');
         closeChatModalBtn.addEventListener('click', () => chatModal.style.display = 'none');
         closeReadyModalBtn.addEventListener('click', () => readyModal.style.display = 'none');
-        
-        // Ready modal
-        confirmReadyBtn.addEventListener('click', startGame);
-    }
-
-    // Show ready modal
-    function showReadyModal() {
-        readyModal.style.display = 'block';
     }
 
     // Set game mode
@@ -1515,6 +1481,44 @@
         // Update UI
         soloModeBtn.classList.toggle('active', mode === 'solo');
         compModeBtn.classList.toggle('active', mode === 'competition');
+    }
+
+    // Toggle ready status
+    function toggleReady() {
+        gameState.isReady = !gameState.isReady;
+        updateReadyButton();
+        
+        if (gameState.mode === 'competition') {
+            if (gameState.host) {
+                // Host updates locally
+                const hostPlayer = gameState.players.find(p => p.id === gameState.peer.id);
+                if (hostPlayer) {
+                    hostPlayer.isReady = gameState.isReady;
+                }
+                updatePlayerListUI();
+                startMultiplayerGame.disabled = !checkAllPlayersReady();
+            } else {
+                // Player sends to host
+                gameState.conn.send({
+                    type: 'playerReady',
+                    playerId: gameState.peer.id,
+                    isReady: gameState.isReady
+                });
+            }
+        }
+    }
+
+    // Update ready button UI
+    function updateReadyButton() {
+        if (gameState.isReady) {
+            readyBtn.innerHTML = '<i class="fas fa-times"></i> Not Ready';
+            readyBtn.classList.add('btn-danger');
+            readyBtn.classList.remove('btn-success');
+        } else {
+            readyBtn.innerHTML = '<i class="fas fa-check"></i> Ready';
+            readyBtn.classList.remove('btn-danger');
+            readyBtn.classList.add('btn-success');
+        }
     }
 
     // Create multiplayer game (host)
@@ -1555,6 +1559,7 @@
             
             // Show leave game button
             leaveGameBtn.style.display = 'block';
+            readyBtn.style.display = 'block';
             
             showNotification('Game created! Share the code with friends.');
         });
@@ -1627,7 +1632,7 @@
         const playerId = data.playerId;
         
         // Check if barcode has already been scanned globally
-        if (gameState.globalScannedBarcodes.has(barcodeValue)) {
+        if (gameState.globalScannedBarcodes.includes(barcodeValue)) {
             // Send duplicate warning to player
             const playerConn = gameState.peer.connections[playerId];
             if (playerConn && playerConn.open) {
@@ -1640,10 +1645,10 @@
         }
         
         // Add to global scanned barcodes
-        gameState.globalScannedBarcodes.add(barcodeValue);
+        gameState.globalScannedBarcodes.push(barcodeValue);
         
-        // Calculate points (simplified - fixed 100 points per unique barcode)
-        const points = 100;
+        // Calculate points
+        const points = calculatePoints(barcodeValue);
         
         // Update player's score
         const player = gameState.players.find(p => p.id === playerId);
@@ -1669,6 +1674,22 @@
                 points: points
             });
         }
+    }
+    
+    // Calculate points based on barcode
+    function calculatePoints(barcode) {
+        // Points = (length of barcode) * (highest digit in barcode) * 10
+        const length = barcode.length;
+        let highestDigit = 0;
+        
+        for (let i = 0; i < barcode.length; i++) {
+            const digit = parseInt(barcode[i]);
+            if (!isNaN(digit) {
+                highestDigit = Math.max(highestDigit, digit);
+            }
+        }
+        
+        return length * highestDigit * 10;
     }
 
     // Join multiplayer game
@@ -1708,6 +1729,7 @@
                 
                 // Show leave game button
                 leaveGameBtn.style.display = 'block';
+                readyBtn.style.display = 'block';
             });
             
             gameState.conn.on('data', (data) => {
@@ -1752,7 +1774,7 @@
         }
         else if (data.type === 'newBarcode') {
             // Add to global scanned barcodes
-            gameState.globalScannedBarcodes.add(data.barcode);
+            gameState.globalScannedBarcodes.push(data.barcode);
         }
         else if (data.type === 'duplicateBarcode') {
             // Show duplicate warning
@@ -1784,6 +1806,14 @@
                 gameState.score = data.playerScore;
                 gameState.itemsScanned = data.itemsScanned;
                 updateUI();
+            }
+        }
+        else if (data.type === 'playerReady') {
+            // Update player ready status
+            const player = gameState.players.find(p => p.id === data.playerId);
+            if (player) {
+                player.isReady = data.isReady;
+                updatePlayerListUI();
             }
         }
     }
@@ -1931,8 +1961,9 @@
 
     // Detect QR codes
     function detectQrCode() {
-        if (!gameState.barcodeDetector || !gameState.qrScannerStream) return;
+        if (!('BarcodeDetector' in window) || !gameState.qrScannerStream) return;
         
+        const qrDetector = new BarcodeDetector({ formats: ['qr_code'] });
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -1944,25 +1975,23 @@
                 canvas.height = qrScannerVideo.videoHeight;
                 ctx.drawImage(qrScannerVideo, 0, 0, canvas.width, canvas.height);
                 
-                if (gameState.barcodeDetector) {
-                    gameState.barcodeDetector.detect(canvas)
-                        .then(barcodes => {
-                            if (barcodes.length > 0) {
-                                const barcode = barcodes[0];
-                                if (barcode.format === 'qr_code') {
-                                    const code = barcode.rawValue;
-                                    joinGameCodeInput.value = code;
-                                    closeQrScanner();
-                                    showNotification('QR code scanned!');
-                                }
+                qrDetector.detect(canvas)
+                    .then(barcodes => {
+                        if (barcodes.length > 0) {
+                            const barcode = barcodes[0];
+                            if (barcode.format === 'qr_code') {
+                                const code = barcode.rawValue;
+                                joinGameCodeInput.value = code;
+                                closeQrScanner();
+                                showNotification('QR code scanned!');
                             }
-                            requestAnimationFrame(detect);
-                        })
-                        .catch(err => {
-                            console.error('QR detection error', err);
-                            requestAnimationFrame(detect);
-                        });
-                }
+                        }
+                        requestAnimationFrame(detect);
+                    })
+                    .catch(err => {
+                        console.error('QR detection error', err);
+                        requestAnimationFrame(detect);
+                    });
             } else {
                 requestAnimationFrame(detect);
             }
@@ -1975,17 +2004,20 @@
     function startGame() {
         if (gameState.isRunning) return;
         
-        readyModal.style.display = 'none';
         gameState.isRunning = true;
         gameState.score = 0;
         gameState.itemsScanned = 0;
         gameState.lastScannedCode = '';
         gameState.lastScannedTime = 0;
         gameState.scannedItems = [];
-        gameState.globalScannedBarcodes = new Set(); // Reset global barcodes
+        gameState.globalScannedBarcodes = [];
         scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
         gameState.timeLeft = 60;
         timerValue.textContent = `${gameState.timeLeft}s`;
+        
+        // Reset ready status
+        gameState.isReady = false;
+        updateReadyButton();
         
         // Start the timer
         startTimer();
@@ -2027,7 +2059,7 @@
                     itemsScanned: gameState.itemsScanned
                 });
             }
-        }, 1000); // Sync every second
+        }, 1000);
     }
 
     // Stop the game
@@ -2061,7 +2093,7 @@
         gameState.score = 0;
         gameState.itemsScanned = 0;
         gameState.scannedItems = [];
-        gameState.globalScannedBarcodes = new Set(); // Reset global barcodes
+        gameState.globalScannedBarcodes = [];
         clearInterval(gameState.timerInterval);
         clearInterval(gameState.syncInterval);
         stopCamera();
@@ -2071,6 +2103,10 @@
         timerProgress.style.width = '100%';
         timerProgress.style.background = 'var(--ms-blue)';
         timerProgress.style.animation = 'none';
+        
+        // Reset ready status
+        gameState.isReady = false;
+        updateReadyButton();
         
         // Reset players in competition mode
         if (gameState.mode === 'competition') {
@@ -2208,7 +2244,7 @@
         gameState.lastScannedTime = now;
         
         // Check if barcode has already been scanned globally (in competition mode)
-        if (gameState.mode === 'competition' && gameState.globalScannedBarcodes.has(barcodeValue)) {
+        if (gameState.mode === 'competition' && gameState.globalScannedBarcodes.includes(barcodeValue)) {
             duplicateModal.style.display = 'block';
             setTimeout(() => {
                 duplicateModal.style.display = 'none';
@@ -2217,8 +2253,8 @@
             return;
         }
         
-        // Fixed points per barcode
-        const points = 100;
+        // Calculate points
+        const points = calculatePoints(barcodeValue);
         const itemName = `Barcode #${barcodeValue.substring(0, 6)}`;
         
         // Update game state
@@ -2375,8 +2411,9 @@
         // Reset game state
         resetGame();
         
-        // Hide leave button
+        // Hide buttons
         leaveGameBtn.style.display = 'none';
+        readyBtn.style.display = 'none';
         
         // Show notification
         showNotification('Left the game');
