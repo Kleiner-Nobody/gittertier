@@ -265,7 +265,7 @@
 
     /* Buttons - Mobile Optimized */
     button {
-        padding: 18px 12px;
+        padding: 15px 12px;
         border: none;
         border-radius: 50px;
         font-size: 1.1rem;
@@ -653,13 +653,13 @@
         transform: translateX(-50%);
         background: var(--ms-dark);
         color: white;
-        padding: 20px 40px;
+        padding: 15px 30px;
         border-radius: var(--ms-border-radius);
         display: none;
         animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         z-index: 1001;
         box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
         width: 90%;
         max-width: 400px;
@@ -916,11 +916,11 @@
         button {
             min-height: 80px;
             font-size: 1.2rem;
-            padding: 20px 12px;
+            padding: 20px 15px;
         }
         
         .competition-btn {
-            min-height: 100px;
+            min-height: 90px;
         }
         
         .card-header h2 {
@@ -1047,8 +1047,8 @@
         }
         
         button {
-            padding: 25px 20px;
-            font-size: 1.3rem;
+            padding: 22px 18px;
+            font-size: 1.2rem;
         }
         
         .stat-value {
@@ -1218,6 +1218,63 @@
     .connection-bar.active {
         background: var(--ms-success);
     }
+    
+    /* Improved join lobby UX */
+    .join-section {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .join-options {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+    
+    .join-option {
+        flex: 1;
+        text-align: center;
+        padding: 15px;
+        border-radius: var(--ms-border-radius);
+        background: var(--ms-light);
+        cursor: pointer;
+        transition: var(--ms-transition);
+        border: 2px solid transparent;
+    }
+    
+    .join-option.active {
+        border-color: var(--ms-blue);
+        background: rgba(0, 120, 212, 0.1);
+    }
+    
+    .join-option i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: var(--ms-blue);
+    }
+    
+    .join-option h4 {
+        margin-bottom: 5px;
+    }
+    
+    .join-option p {
+        font-size: 0.9rem;
+        color: var(--ms-dark);
+        opacity: 0.7;
+    }
+    
+    /* Scanner performance improvements */
+    #scanner-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        pointer-events: none;
+    }
     </style>
 </head>
 <body>
@@ -1284,7 +1341,7 @@
                     <div id="barcode-box"></div>
                 </div>
                 <video id="scanner-video" autoplay playsinline></video>
-                <canvas id="scanner-canvas" style="display: none;"></canvas>
+                <canvas id="scanner-canvas"></canvas>
             </div>
             
             <div class="controls">
@@ -1405,16 +1462,32 @@
                     <label>Your Name</label>
                     <input type="text" id="joinPlayerName" placeholder="Enter your name" value="Player">
                 </div>
-                <div class="input-group">
-                    <label>Game Code</label>
-                    <input type="text" id="joinGameCode" placeholder="Enter game code">
-                </div>
                 
-                <div style="text-align: center; margin: 15px 0;">
-                    <p>Or use QR scanner:</p>
-                    <button class="btn-secondary" id="openQrScanner">
-                        <i class="fas fa-qrcode"></i> Open QR Scanner
-                    </button>
+                <div class="join-section">
+                    <h4>Join Method</h4>
+                    <div class="join-options">
+                        <div class="join-option active" id="joinCodeOption">
+                            <i class="fas fa-key"></i>
+                            <h4>Enter Code</h4>
+                            <p>Join with game code</p>
+                        </div>
+                        <div class="join-option" id="joinQROption">
+                            <i class="fas fa-qrcode"></i>
+                            <h4>Scan QR</h4>
+                            <p>Scan host's QR code</p>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group" id="joinCodeInput">
+                        <label>Game Code</label>
+                        <input type="text" id="joinGameCode" placeholder="Enter game code">
+                    </div>
+                    
+                    <div id="joinQRInput" style="display:none; text-align: center;">
+                        <button class="btn-primary" id="openQrScanner">
+                            <i class="fas fa-camera"></i> Open QR Scanner
+                        </button>
+                    </div>
                 </div>
                 
                 <button class="btn-primary" id="joinGameBtn">
@@ -1504,7 +1577,8 @@
         qrScannerStream: null,
         isReady: false,
         syncInterval: null,
-        lastSync: 0
+        lastSync: 0,
+        detectionActive: false
     };
 
     // DOM Elements
@@ -1558,6 +1632,10 @@
     const leaveGameBtn = document.getElementById('leaveGame');
     const readyBtn = document.getElementById('readyBtn');
     const syncStatus = document.getElementById('syncStatus');
+    const joinCodeOption = document.getElementById('joinCodeOption');
+    const joinQROption = document.getElementById('joinQROption');
+    const joinCodeInput = document.getElementById('joinCodeInput');
+    const joinQRInput = document.getElementById('joinQRInput');
     
     // Modal close buttons
     const closeGameOverModalBtn = document.getElementById('closeGameOverModal');
@@ -1636,6 +1714,21 @@
         // QR scanner
         openQrScannerBtn.addEventListener('click', openQrScanner);
         closeQrScannerBtn.addEventListener('click', closeQrScanner);
+        
+        // Join method options
+        joinCodeOption.addEventListener('click', () => {
+            joinCodeOption.classList.add('active');
+            joinQROption.classList.remove('active');
+            joinCodeInput.style.display = 'block';
+            joinQRInput.style.display = 'none';
+        });
+        
+        joinQROption.addEventListener('click', () => {
+            joinQROption.classList.add('active');
+            joinCodeOption.classList.remove('active');
+            joinCodeInput.style.display = 'none';
+            joinQRInput.style.display = 'block';
+        });
         
         // Duplicate modal
         closeDuplicateModalBtn.addEventListener('click', () => duplicateModal.style.display = 'none');
@@ -1878,15 +1971,24 @@
     // Join multiplayer game
     function joinMultiplayerGame() {
         const playerName = joinPlayerNameInput.value.trim();
-        const gameCode = joinGameCodeInput.value.trim();
+        let gameCode = '';
         
         if (!playerName) {
             showNotification('Please enter your name');
             return;
         }
         
-        if (!gameCode) {
-            showNotification('Please enter game code');
+        // Determine which join method is selected
+        if (joinCodeOption.classList.contains('active')) {
+            gameCode = joinGameCodeInput.value.trim();
+            if (!gameCode) {
+                showNotification('Please enter game code');
+                return;
+            }
+        } else {
+            // QR join method - we'll get the code from scanning
+            showNotification('Please scan the QR code to join');
+            openQrScanner();
             return;
         }
         
@@ -2184,16 +2286,22 @@
                                 joinGameCodeInput.value = code;
                                 closeQrScanner();
                                 showNotification('QR code scanned!');
+                                // Auto-join after scanning
+                                const playerName = joinPlayerNameInput.value.trim();
+                                if (playerName) {
+                                    gameState.playerName = playerName;
+                                    joinMultiplayerGame();
+                                }
                             }
                         }
-                        requestAnimationFrame(detect);
+                        setTimeout(detect, 300); // Check every 300ms for performance
                     })
                     .catch(err => {
                         console.error('QR detection error', err);
-                        requestAnimationFrame(detect);
+                        setTimeout(detect, 300);
                     });
             } else {
-                requestAnimationFrame(detect);
+                setTimeout(detect, 300);
             }
         }
         
@@ -2269,6 +2377,7 @@
         gameState.isRunning = false;
         clearInterval(gameState.timerInterval);
         clearInterval(gameState.syncInterval);
+        gameState.detectionActive = false;
         
         // Stop camera
         stopCamera();
@@ -2294,6 +2403,7 @@
         gameState.globalScannedBarcodes = [];
         clearInterval(gameState.timerInterval);
         clearInterval(gameState.syncInterval);
+        gameState.detectionActive = false;
         stopCamera();
         scannedItemsList.innerHTML = '<div class="scanned-item-row"><span>No items scanned yet</span></div>';
         gameState.timeLeft = 60;
@@ -2384,11 +2494,11 @@
 
     // Start barcode detection
     function startDetection() {
-        if (!gameState.isRunning) return;
+        if (!gameState.isRunning || gameState.detectionActive) return;
+        gameState.detectionActive = true;
         
-        // Use requestAnimationFrame for continuous detection
         function detectBarcode() {
-            if (!gameState.isRunning) return;
+            if (!gameState.isRunning || !gameState.detectionActive) return;
             
             try {
                 if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
@@ -2416,17 +2526,20 @@
                                 } else {
                                     barcodeBox.style.display = 'none';
                                 }
+                                setTimeout(detectBarcode, 200); // Check every 200ms for performance
                             })
                             .catch(err => {
                                 console.error('Barcode detection error:', err);
+                                setTimeout(detectBarcode, 200);
                             });
                     }
+                } else {
+                    setTimeout(detectBarcode, 200);
                 }
             } catch (err) {
                 console.error('Detection error:', err);
+                setTimeout(detectBarcode, 200);
             }
-            
-            requestAnimationFrame(detectBarcode);
         }
         
         detectBarcode();
