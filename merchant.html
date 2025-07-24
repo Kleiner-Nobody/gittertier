@@ -599,7 +599,8 @@
 
         // Event listeners for UI controls
         document.getElementById('confirm-btn').addEventListener('click', () => {
-            if(currentPayment?.connection?.open) {
+            // FIXED: Added safe connection check
+            if (currentPayment && currentPayment.connection && currentPayment.connection.open) {
                 saveToArchive('Bestätigt', currentPayment);
                 currentPayment.connection.send({ type: 'confirm' });
                 generateReceipt(currentPayment, 'Bestätigt');
@@ -611,7 +612,8 @@
         });
 
         document.getElementById('decline-btn').addEventListener('click', () => {
-            if(currentPayment?.connection?.open) {
+            // FIXED: Added safe connection check
+            if (currentPayment && currentPayment.connection && currentPayment.connection.open) {
                 saveToArchive('Abgelehnt', currentPayment);
                 currentPayment.connection.send({ type: 'decline' });
                 generateReceipt(currentPayment, 'Abgelehnt');
@@ -657,7 +659,6 @@
             }
         }
 
-        // FIXED: Resolved circular JSON issue
         function saveToArchive(status, payment) {
             try {
                 // Create a sanitized payment data object without circular references
