@@ -863,121 +863,160 @@
             const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
             let yPos = 20;
             
-            // Set color scheme to match admin login
-            const primaryColor = [44, 62, 80];        // #2c3e50
-            const bgColor = [235, 237, 237];          // #ebeded
-            const surfaceColor = [255, 255, 255];     // #ffffff
-            const accentColor = [108, 117, 125];      // #6c757d
-            const successColor = [40, 167, 69];       // #28a745
-            const dangerColor = [220, 53, 69];        // #dc3545
-            const infoColor = [225, 242, 254];        // #e1f2fe
+            // Color scheme matching the Gittertier Pro design
+            const primaryColor = [17, 17, 17];        // #111111 - Primary text
+            const accentColor = [37, 99, 235];        // #2563eb - Accent blue
+            const successColor = [22, 163, 74];       // #16a34a - Success green
+            const dangerColor = [220, 38, 38];        // #dc2626 - Error red
+            const lightGray = [243, 244, 246];        // #f3f4f6 - Light background
+            const borderColor = [229, 231, 235];      // #e5e7eb - Border color
             
-            // Set background color
-            doc.setFillColor(...bgColor);
-            doc.rect(0, 0, pageWidth, pageHeight, 'F');
+            // Set font - using helvetica as it's available in PDF
+            doc.setFont("helvetica");
             
-            // Header with admin-style design
-            doc.setFillColor(...surfaceColor);
-            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'F');
-            doc.setDrawColor(200, 200, 200);
-            doc.setLineWidth(0.3);
-            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'S');
+            // Header with logo and receipt info
+            doc.setFillColor(...lightGray);
+            doc.roundedRect(20, yPos, pageWidth - 40, 50, 3, 3, 'F');
             
-            doc.setFontSize(28);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text("Gittertier", pageWidth/2, yPos + 25, null, 'center');
-            
-            doc.setFontSize(12);
+            // App name
+            doc.setFontSize(20);
             doc.setTextColor(...accentColor);
-            doc.text(`Belegnummer: ${paymentId}`, pageWidth/2, yPos + 40, null, 'center');
+            doc.setFont(undefined, 'bold');
+            doc.text("Gittertier Pro", 30, yPos + 15);
             
-            yPos += 70;
+            // Receipt info
+            doc.setFontSize(10);
+            doc.setTextColor(...primaryColor);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Belegnummer: ${paymentId}`, pageWidth - 30, yPos + 10, null, 'right');
+            doc.text(`Datum: ${paymentDate}`, pageWidth - 30, yPos + 20, null, 'right');
+            doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos + 30, null, 'right');
             
-            // Receipt details
+            yPos += 60;
+            
+            // Receipt title
             doc.setFontSize(16);
             doc.setTextColor(...primaryColor);
-            doc.text(`Datum: ${paymentDate}`, 30, yPos);
-            doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos, null, 'right');
-            yPos += 25;
-            
-            // Items header
-            doc.setFillColor(...infoColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'F');
-            doc.setDrawColor(...accentColor);
-            doc.setLineWidth(0.2);
-            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'S');
-            
-            doc.setFontSize(12);
-            doc.setTextColor(...accentColor);
-            doc.text("Artikel", 35, yPos + 13);
-            doc.text("Menge", 130, yPos + 13);
-            doc.text("Preis", pageWidth - 35, yPos + 13, null, 'right');
-            
-            yPos += 25;
-            
-            // Items
-            paymentData.items.forEach((item, index) => {
-                if(yPos > pageHeight - 100) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-                
-                // Alternate row colors
-                const rowColor = index % 2 === 0 ? surfaceColor : [248, 249, 250];
-                doc.setFillColor(...rowColor);
-                doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'F');
-                doc.setDrawColor(200, 200, 200);
-                doc.setLineWidth(0.1);
-                doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'S');
-                
-                doc.setFontSize(12);
-                doc.setTextColor(...primaryColor);
-                doc.text(item.name.substring(0, 40), 35, yPos + 10);
-                
-                const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
-                doc.text(quantityPrice, 130, yPos + 10);
-                
-                const total = (item.quantity * item.price).toFixed(2);
-                doc.text(`€${total}`, pageWidth - 35, yPos + 10, null, 'right');
-                
-                yPos += 30;
-            });
+            doc.setFont(undefined, 'bold');
+            doc.text("KASSENBON", pageWidth/2, yPos, null, 'center');
             
             yPos += 15;
             
-            // Total section
-            doc.setFillColor(232, 252, 238); // Light green
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-            doc.setDrawColor(200, 200, 200);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
+            // Items header
+            doc.setFillColor(...lightGray);
+            doc.rect(30, yPos, pageWidth - 60, 10, 'F');
+            doc.setDrawColor(...borderColor);
+            doc.rect(30, yPos, pageWidth - 60, 10, 'S');
             
-            doc.setFontSize(18);
+            doc.setFontSize(10);
             doc.setTextColor(...primaryColor);
-            doc.text(`Gesamtsumme:`, 40, yPos + 12);
-            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
+            doc.setFont(undefined, 'bold');
+            doc.text("Artikel", 35, yPos + 7);
+            doc.text("Menge", 120, yPos + 7);
+            doc.text("Einzelpreis", 150, yPos + 7);
+            doc.text("Gesamt", pageWidth - 35, yPos + 7, null, 'right');
             
-            yPos += 45;
+            yPos += 15;
             
-            // Status section
+            // Items list
+            doc.setFontSize(10);
+            doc.setTextColor(...primaryColor);
+            doc.setFont(undefined, 'normal');
+            
+            paymentData.items.forEach((item, index) => {
+                if (yPos > pageHeight - 60) {
+                    doc.addPage();
+                    yPos = 20;
+                    
+                    // Add header to new page
+                    doc.setFontSize(10);
+                    doc.setTextColor(...primaryColor);
+                    doc.text("Fortsetzung Kassenbon", 30, 15);
+                }
+                
+                // Item name (with word wrapping)
+                const itemName = item.name;
+                const splitName = doc.splitTextToSize(itemName, 70);
+                doc.text(splitName, 35, yPos + 4);
+                
+                // Item details
+                doc.text(`${item.quantity}x`, 120, yPos + 4);
+                doc.text(`€ ${item.price.toFixed(2)}`, 150, yPos + 4);
+                doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 35, yPos + 4, null, 'right');
+                
+                // Calculate height needed for this item
+                const lineHeight = 5;
+                const itemHeight = Math.max(lineHeight, splitName.length * lineHeight);
+                
+                // Draw border around item
+                doc.setDrawColor(...borderColor);
+                doc.line(30, yPos - 2, pageWidth - 30, yPos - 2);
+                
+                yPos += itemHeight;
+            });
+            
+            // Total section
+            yPos += 10;
+            doc.setDrawColor(...borderColor);
+            doc.line(30, yPos, pageWidth - 30, yPos);
+            
+            yPos += 10;
+            doc.setFontSize(12);
+            doc.setTextColor(...primaryColor);
+            doc.setFont(undefined, 'bold');
+            doc.text("Zwischensumme:", pageWidth - 100, yPos);
+            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 35, yPos, null, 'right');
+            
+            yPos += 8;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(...primaryColor);
+            doc.text("Enthaltene MwSt. 19%:", pageWidth - 100, yPos);
+            const tax = paymentData.total * 0.19;
+            doc.text(`€ ${tax.toFixed(2)}`, pageWidth - 35, yPos, null, 'right');
+            
+            yPos += 15;
+            doc.setDrawColor(...accentColor);
+            doc.setLineWidth(0.5);
+            doc.line(pageWidth - 130, yPos, pageWidth - 30, yPos);
+            
+            yPos += 10;
+            doc.setFontSize(14);
+            doc.setTextColor(...primaryColor);
+            doc.setFont(undefined, 'bold');
+            doc.text("GESAMTSUMME:", pageWidth - 100, yPos);
+            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 35, yPos, null, 'right');
+            
+            // Payment status
+            yPos += 25;
             const statusColor = status === 'Bestätigt' ? successColor : dangerColor;
             doc.setFillColor(...statusColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-            doc.setDrawColor(...statusColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
+            doc.roundedRect(30, yPos, pageWidth - 60, 15, 2, 2, 'F');
             
-            doc.setFontSize(18);
-            doc.setTextColor(255, 255, 255);
-            doc.text(`Status: ${status}`, pageWidth/2, yPos + 12, null, 'center');
-            
-            yPos += 45;
-            
-            // Thank you message and receipt number
             doc.setFontSize(12);
-            doc.setTextColor(...accentColor);
-            doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont(undefined, 'bold');
+            doc.text(`ZAHLUNG ${status.toUpperCase()}`, pageWidth/2, yPos + 10, null, 'center');
             
-            doc.setFontSize(11);
+            // Footer
+            yPos += 30;
+            doc.setFontSize(8);
+            doc.setTextColor(...primaryColor);
+            doc.setFont(undefined, 'normal');
+            doc.text("Vielen Dank für Ihren Einkauf bei Gittertier Pro!", pageWidth/2, yPos, null, 'center');
+            
+            yPos += 5;
+            doc.text("Dieser Beleg dient als ordnungsgemäße Kaufquittung.", pageWidth/2, yPos, null, 'center');
+            
+            yPos += 5;
+            doc.text("Bei Fragen zu Ihrem Einkauf wenden Sie sich bitte an unseren Support.", pageWidth/2, yPos, null, 'center');
+            
+            yPos += 10;
+            doc.setDrawColor(...borderColor);
+            doc.line(30, yPos, pageWidth - 30, yPos);
+            
+            yPos += 8;
+            doc.text(`Belegnummer: ${paymentId} | ${paymentDate} ${paymentTime}`, pageWidth/2, yPos, null, 'center');
             
             // Save the PDF
             doc.save(`gittertier_beleg_${paymentId}.pdf`);
