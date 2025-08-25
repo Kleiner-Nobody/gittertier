@@ -253,6 +253,63 @@
         box-shadow: var(--focus-ring);
     }
 
+    /* Additional Controls */
+    .additional-controls {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-md);
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .action-btn:hover {
+        background-color: #f9fafb;
+        border-color: var(--color-accent);
+    }
+
+    .action-btn:focus {
+        outline: none;
+        box-shadow: var(--focus-ring);
+    }
+
+    .action-btn i {
+        font-size: var(--text-lg);
+    }
+
+    .support-btn {
+        color: var(--color-success);
+        border-color: rgba(22, 163, 74, 0.2);
+    }
+
+    .support-btn:hover {
+        background-color: rgba(22, 163, 74, 0.05);
+        border-color: var(--color-success);
+    }
+
+    .admin-btn {
+        color: var(--color-error);
+        border-color: rgba(220, 38, 38, 0.2);
+    }
+
+    .admin-btn:hover {
+        background-color: rgba(220, 38, 38, 0.05);
+        border-color: var(--color-error);
+    }
+
     /* Product Card */
     .product-card {
         background: var(--color-bg);
@@ -699,6 +756,10 @@
             justify-content: center;
         }
         
+        .additional-controls {
+            grid-template-columns: 1fr;
+        }
+        
         .product-card.visible {
             flex-direction: column;
         }
@@ -825,7 +886,7 @@
             border-color: var(--color-border);
         }
         
-        .control-btn:hover {
+        .control-btn:hover, .action-btn:hover {
             background-color: #374151;
         }
         
@@ -888,6 +949,26 @@
                     <button class="control-btn" id="manual-add">
                         <i class="fas fa-pencil-alt"></i>
                         <span>Manuell</span>
+                    </button>
+                </div>
+                
+                <!-- Additional action buttons -->
+                <div class="additional-controls">
+                    <button class="action-btn support-btn" onclick="window.location.href='support'">
+                        <i class="fas fa-headset"></i>
+                        Support
+                    </button>
+                    <button class="action-btn admin-btn" onclick="window.location.href='admin'">
+                        <i class="fas fa-cog"></i>
+                        Admin
+                    </button>
+                    <button class="action-btn" id="clear-cart">
+                        <i class="fas fa-trash-alt"></i>
+                        Warenkorb leeren
+                    </button>
+                    <button class="action-btn" id="show-qr">
+                        <i class="fas fa-qrcode"></i>
+                        QR Zahlung
                     </button>
                 </div>
             </div>
@@ -1499,6 +1580,14 @@
             currentBarcode = null;
             document.getElementById('product-modal').style.display = 'flex';
         });
+        
+        document.getElementById('clear-cart').addEventListener('click', () => {
+            cart = [];
+            updateCartDisplay();
+            showNotification('Warenkorb geleert');
+        });
+        
+        document.getElementById('show-qr').addEventListener('click', generateQR);
         
         // Initialize products from localStorage
         window.addEventListener('DOMContentLoaded', () => {
