@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bezahlung - Gittertier Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -593,6 +594,8 @@
         let paymentData = null;
         let countdownInterval = null;
         let countdownTime = 60; // seconds
+        let customerPeer = null;
+        let merchantConnection = null;
         
         // Initialize payment
         function initPayment() {
@@ -634,12 +637,85 @@
                 
                 generateQR();
                 startCountdown();
+                initializePeerJS();
                 
             } catch(error) {
                 console.error('Payment initialization error:', error);
                 document.getElementById('error-message').textContent = error.message;
                 showModal('error-modal');
             }
+        }
+        
+        // Initialize PeerJS for customer
+        function initializePeerJS() {
+            try {
+                customerPeer = new Peer(paymentId, {
+                    debug: 2,
+                    config: {
+                        'iceServers': [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:stun1.l.google.com:19302' }
+                        ]
+                    }
+                });
+
+                customerPeer.on('open', (id) => {
+                    console.log('Customer Peer ID:', id);
+                });
+
+                customerPeer.on('connection', (conn) => {
+                    console.log('Merchant connected:', conn.peer);
+                    merchantConnection = conn;
+                    
+                    conn.on('data', (data) => {
+                        console.log('Received data:', data);
+                        if (data.type === 'confirm') {
+                            handlePaymentConfirmation();
+                        } else if (data.type === 'decline') {
+                            handlePaymentDecline();
+                        }
+                    });
+
+                    conn.on('error', (err) => {
+                        console.error('Connection error:', err);
+                    });
+                });
+
+                customerPeer.on('error', (err) => {
+                    console.error('PeerJS error:', err);
+                    // Try to reinitialize if connection fails
+                    if (err.type === 'peer-unavailable') {
+                        setTimeout(initializePeerJS, 2000);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Failed to initialize PeerJS:', error);
+                // Retry initialization after a delay
+                setTimeout(initializePeerJS, 3000);
+            }
+        }
+        
+        // Handle payment confirmation from merchant
+        function handlePaymentConfirmation() {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status confirmed';
+            statusEl.innerHTML = '<i class="fas fa-check-circle"></i><span>Zahlung bestätigt!</span>';
+            
+            clearInterval(countdownInterval);
+            showModal('success-modal');
+        }
+        
+        // Handle payment decline from merchant
+        function handlePaymentDecline() {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status declined';
+            statusEl.innerHTML = '<i class="fas fa-times-circle"></i><span>Zahlung abgelehnt!</span>';
+            
+            clearInterval(countdownInterval);
+            // Show error modal with decline message
+            document.getElementById('error-message').textContent = 'Der Händler hat die Zahlung abgelehnt.';
+            showModal('error-modal');
         }
         
         // Start countdown timer
@@ -725,11 +801,101 @@
         }
         
         // Generate receipt
-        function generateReceipt() {
-            // In a real implementation, this would generate a PDF receipt
-            alert('Beleg wird generiert...');
-            window.location.href = 'index';
+        function generateReceipt(paymentData) {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const paymentDate = new Date().toLocaleDateString('de-DE');
+            const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            const paymentId = paymentData.peerId.split('-').pop().substr(0, 8);
+            let yPos = 20;
+            
+            // Header with logo
+            doc.setFontSize(20);
+            doc.setTextColor(37, 99, 235);
+            doc.setFont(undefined, 'bold');
+            doc.text("Gittertier Pro", pageWidth/2, yPos, null, 'center');
+            
+            yPos += 15;
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Belegnummer: ${paymentId}`, pageWidth/2, yPos, null, 'center');
+            
+            yPos += 10;
+            doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth/2, yPos, null, 'center');
+            
+            yPos += 20;
+            
+            // Items header
+            doc.setDrawColor(229, 231, 235);
+            doc.line(20, yPos, pageWidth - 20, yPos);
+            
+            yPos += 10;
+            doc.setFontSize(12);
+            doc.setTextColor(17, 17, 17);
+            doc.setFont(undefined, 'bold');
+            doc.text("Artikel", 25, yPos);
+            doc.text("Menge", 120, yPos);
+            doc.text("Preis", pageWidth - 25, yPos, null, 'right');
+            
+            yPos += 10;
+            
+            // Items list
+            doc.setFontSize(10);
+            doc.setTextColor(17, 17, 17);
+            doc.setFont(undefined, 'normal');
+            
+            paymentData.items.forEach((item, index) => {
+                if (yPos > pageHeight - 60) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                doc.text(item.name.substring(0, 30), 25, yPos);
+                doc.text(`${item.quantity}x`, 120, yPos);
+                doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+                
+                yPos += 8;
+            });
+            
+            yPos += 10;
+            doc.setDrawColor(229, 231, 235);
+            doc.line(20, yPos, pageWidth - 20, yPos);
+            
+            yPos += 15;
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text("Gesamtsumme:", 25, yPos);
+            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+            
+            yPos += 20;
+            doc.setFontSize(12);
+            const statusColor = status === 'Bestätigt' ? [22, 163, 74] : [220, 38, 38];
+            doc.setTextColor(...statusColor);
+            doc.text(`Status: ${status}`, pageWidth/2, yPos, null, 'center');
+            
+            yPos += 15;
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128);
+            doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
+            
+            // Save the PDF
+            doc.save(`gittertier_beleg_${paymentId}.pdf`);
+            
+            // Redirect after a short delay
+            setTimeout(() => {
+                window.location.href = 'index';
+            }, 1500);
         }
+
+        
+        // Clean up PeerJS connection when leaving the page
+        window.addEventListener('beforeunload', () => {
+            if (customerPeer) {
+                customerPeer.destroy();
+            }
+        });
         
         // Initialize payment when page loads
         window.addEventListener('DOMContentLoaded', initPayment);
