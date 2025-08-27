@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Payment</title>
+    <title>Bezahlung - Gittertier Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
-    <!-- Add Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
     :root {
@@ -47,6 +44,9 @@
         --text-xl: 1.25rem;
         --text-2xl: 1.5rem;
         --text-3xl: 1.875rem;
+        
+        --header-height: 64px;
+        --footer-height: 80px;
     }
 
     * {
@@ -61,17 +61,60 @@
         color: var(--color-text);
         line-height: 1.5;
         min-height: 100vh;
+        padding-bottom: var(--footer-height);
+    }
+
+    /* Header Styles */
+    header {
+        height: var(--header-height);
         display: flex;
-        justify-content: center;
         align-items: center;
-        padding: var(--spacing-lg);
+        justify-content: space-between;
+        padding: 0 var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
     }
 
-    .container {
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-xl);
+    }
+
+    .logo i {
+        font-size: var(--text-xl);
+        color: var(--color-accent);
+    }
+
+    .header-controls {
+        display: flex;
+        gap: var(--spacing-md);
+    }
+
+    /* Main Content */
+    main {
         max-width: 600px;
-        width: 100%;
+        margin: 0 auto;
+        padding: var(--spacing-xl) var(--spacing-lg);
     }
 
+    .section {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .section-title {
+        font-size: var(--text-lg);
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text);
+    }
+
+    /* Payment Card */
     .payment-card {
         background: var(--color-bg);
         border-radius: var(--radius);
@@ -107,6 +150,7 @@
         color: var(--color-text);
     }
 
+    /* Items List */
     .items-list {
         margin: var(--spacing-lg) 0;
         text-align: left;
@@ -132,6 +176,7 @@
         margin-bottom: var(--spacing-xs);
     }
 
+    /* QR Code */
     #qrcode {
         margin: var(--spacing-xl) auto;
         padding: var(--spacing-md);
@@ -152,6 +197,7 @@
         margin: 0 auto;
     }
 
+    /* Countdown */
     .countdown-container {
         margin: var(--spacing-lg) 0;
         font-size: var(--text-base);
@@ -170,6 +216,7 @@
         border-radius: var(--radius-sm);
     }
 
+    /* Status */
     .status {
         padding: var(--spacing-md);
         border-radius: var(--radius);
@@ -203,271 +250,154 @@
         border: 1px solid #fca5a5;
     }
 
-    .payment-footer {
-        text-align: center;
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: var(--spacing-md);
         margin-top: var(--spacing-xl);
-        color: var(--color-text-muted);
-        font-size: var(--text-sm);
-        padding-top: var(--spacing-md);
-        border-top: 1px solid var(--color-border);
+        flex-wrap: wrap;
     }
 
-    /* Error Modal Styles */
-    .error-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--color-overlay);
+    .action-btn {
+        flex: 1;
         display: flex;
-        justify-content: center;
         align-items: center;
-        z-index: 2000;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.4s ease;
-    }
-
-    .error-modal.active {
-        opacity: 1;
-        pointer-events: all;
-    }
-
-    .error-content {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        text-align: center;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--color-border);
-        transform: scale(0.9);
-        opacity: 0;
-        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
-    }
-
-    .error-modal.active .error-content {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    .error-icon {
-        font-size: var(--text-3xl);
-        margin-bottom: var(--spacing-md);
-        color: var(--color-error);
-    }
-
-    .error-title {
-        font-size: var(--text-xl);
-        color: var(--color-text);
-        margin-bottom: var(--spacing-md);
-        font-weight: 700;
-    }
-
-    .error-message {
-        font-size: var(--text-base);
-        color: var(--color-text-muted);
-        margin-bottom: var(--spacing-lg);
-        line-height: 1.6;
-    }
-
-    .error-details {
-        background: #f9fafb;
+        justify-content: center;
+        gap: var(--spacing-sm);
         padding: var(--spacing-md);
-        border-radius: var(--radius-sm);
-        margin-top: var(--spacing-md);
-        color: var(--color-text-muted);
-        font-size: var(--text-sm);
-        border-left: 4px solid var(--color-error);
-    }
-
-    .error-footer {
-        color: var(--color-text-muted);
-        margin-top: var(--spacing-md);
-        font-size: var(--text-xs);
-    }
-
-    /* Connection Modal */
-    .connection-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--color-overlay);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1500;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.4s ease;
-    }
-
-    .connection-modal.active {
-        opacity: 1;
-        pointer-events: all;
-    }
-
-    .connection-content {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        text-align: center;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: var(--shadow-md);
         border: 1px solid var(--color-border);
-        transform: scale(0.9);
-        opacity: 0;
-        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
-    }
-
-    .connection-modal.active .connection-content {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    .connection-icon {
-        font-size: var(--text-3xl);
-        margin-bottom: var(--spacing-md);
-        color: var(--color-accent);
-        animation: rotate 2s linear infinite;
-    }
-
-    .connection-title {
-        font-size: var(--text-xl);
+        border-radius: var(--radius);
+        background-color: var(--color-bg);
         color: var(--color-text);
-        margin-bottom: var(--spacing-md);
-        font-weight: 700;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        min-width: 140px;
     }
 
-    .connection-message {
-        font-size: var(--text-base);
-        color: var(--color-text-muted);
-        margin-bottom: var(--spacing-lg);
-        line-height: 1.6;
+    .action-btn:hover {
+        background-color: #f9fafb;
+        border-color: var(--color-accent);
     }
 
-    /* Status Modals */
-    .status-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--color-overlay);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1500;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.4s ease;
+    .action-btn:focus {
+        outline: none;
+        box-shadow: var(--focus-ring);
     }
 
-    .status-modal.active {
-        opacity: 1;
-        pointer-events: all;
+    .action-btn i {
+        font-size: var(--text-lg);
     }
 
-    .status-content {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        text-align: center;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--color-border);
-        transform: scale(0.9);
-        opacity: 0;
-        transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
-    }
-
-    .status-modal.active .status-content {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    .status-icon {
-        font-size: var(--text-3xl);
-        margin-bottom: var(--spacing-md);
-        animation: float 3s ease-in-out infinite;
-    }
-
-    /* Confirmed state */
-    .status-content.confirmed .status-icon {
-        color: var(--color-success);
-    }
-
-    /* Declined state */
-    .status-content.declined .status-icon {
+    .cancel-btn {
         color: var(--color-error);
+        border-color: rgba(220, 38, 38, 0.2);
     }
 
-    /* Pending state */
-    .status-content.pending .status-icon {
-        color: var(--color-warning);
-        animation: rotate 2s linear infinite;
+    .cancel-btn:hover {
+        background-color: rgba(220, 38, 38, 0.05);
+        border-color: var(--color-error);
     }
 
-    .status-title {
+    .confirm-btn {
+        color: var(--color-success);
+        border-color: rgba(22, 163, 74, 0.2);
+    }
+
+    .confirm-btn:hover {
+        background-color: rgba(22, 163, 74, 0.05);
+        border-color: var(--color-success);
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .modal-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        width: 100%;
+        max-width: 500px;
+        box-shadow: var(--shadow-md);
+        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+        text-align: center;
+    }
+
+    .modal-icon {
+        font-size: 3rem;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .modal-title {
+        font-weight: 600;
         font-size: var(--text-xl);
         margin-bottom: var(--spacing-md);
-        font-weight: 700;
-        color: var(--color-text);
     }
 
-    .status-message {
-        font-size: var(--text-base);
-        margin-bottom: var(--spacing-lg);
-        line-height: 1.6;
+    .modal-message {
         color: var(--color-text-muted);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: var(--spacing-md);
+    }
+
+    .modal-btn {
+        flex: 1;
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .modal-btn.primary {
+        background-color: var(--color-accent);
+        color: white;
+        border: none;
+    }
+
+    .modal-btn.primary:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .modal-btn.secondary {
+        background-color: transparent;
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+    }
+
+    .modal-btn.secondary:hover {
+        background-color: #f9fafb;
+        color: var(--color-text);
     }
 
     /* Animation Keyframes */
-    @keyframes pulse {
-        0% {
-            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
-        }
-        70% {
-            box-shadow: 0 0 0 15px rgba(37, 99, 235, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
-        }
-    }
-
-    @keyframes float {
-        0% {
-            transform: translateY(0px);
-        }
-        50% {
-            transform: translateY(-10px);
-        }
-        100% {
-            transform: translateY(0px);
-        }
-    }
-
-    @keyframes rotate {
-        from {
-            transform: rotate(0deg);
-        }
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
-    /* Responsive adjustments */
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Responsive Design */
     @media (max-width: 768px) {
         .payment-card {
             padding: var(--spacing-lg);
@@ -491,28 +421,22 @@
             font-size: var(--text-sm);
         }
         
-        .error-content,
-        .connection-content,
-        .status-content {
-            padding: var(--spacing-lg);
+        .action-buttons {
+            flex-direction: column;
         }
         
-        .error-title,
-        .connection-title,
-        .status-title {
-            font-size: var(--text-lg);
-        }
-        
-        .error-message,
-        .connection-message,
-        .status-message {
-            font-size: var(--text-sm);
+        .action-btn {
+            width: 100%;
         }
     }
 
     @media (max-width: 480px) {
-        body {
-            padding: var(--spacing-md);
+        header {
+            padding: 0 var(--spacing-md);
+        }
+        
+        .logo {
+            font-size: var(--text-lg);
         }
         
         .payment-card {
@@ -539,33 +463,63 @@
         .countdown-value {
             font-size: var(--text-base);
         }
-        
-        .error-content,
-        .connection-content,
-        .status-content {
-            padding: var(--spacing-md);
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-bg: #111827;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --color-border: #374151;
         }
         
-        .error-title,
-        .connection-title,
-        .status-title {
-            font-size: var(--text-lg);
+        body {
+            background-color: var(--color-bg);
         }
         
-        .error-message,
-        .connection-message,
-        .status-message {
-            font-size: var(--text-sm);
+        .payment-card {
+            background-color: #1f2937;
+            border-color: var(--color-border);
+        }
+        
+        .item-box {
+            background-color: #374151;
+        }
+        
+        .countdown-value {
+            background-color: #374151;
+        }
+        
+        #qrcode {
+            background-color: #374151;
+        }
+        
+        .action-btn:hover {
+            background-color: #374151;
         }
     }
     </style>
 </head>
 <body>
-    <div class="container">
+    <header>
+        <div class="logo">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Gittertier Pro</span>
+        </div>
+        <div class="header-controls">
+            <button class="action-btn" onclick="window.location.href='index'">
+                <i class="fas fa-arrow-left"></i>
+                <span>Zurück</span>
+            </button>
+        </div>
+    </header>
+
+    <main>
         <div class="payment-card">
             <div class="payment-header">
-                <h1 class="payment-title">Zahlung erforderlich</h1>
-                <p class="payment-subtitle">Scannen Sie den QR-Code mit dem Händlergerät</p>
+                <h1 class="payment-title">Bezahlung</h1>
+                <p class="payment-subtitle">Scannen Sie den QR-Code zur Zahlung</p>
             </div>
             
             <div class="amount" id="amount">€0.00</div>
@@ -574,7 +528,6 @@
             
             <div id="qrcode"></div>
             
-            <!-- Countdown timer -->
             <div class="countdown-container">
                 QR-Code gültig für: 
                 <span id="countdown-value" class="countdown-value">60</span>
@@ -585,152 +538,83 @@
                 <i class="fas fa-clock"></i>
                 <span>Zahlung ausstehend</span>
             </div>
+            
+            <div class="action-buttons">
+                <!-- <button class="action-btn cancel-btn" onclick="cancelPayment()">
+                    <i class="fas fa-times"></i>
+                    Abbrechen
+                </button>
+                <button class="action-btn confirm-btn" onclick="confirmPayment()">
+                    <i class="fas fa-check"></i>
+                    Manuell bestätigen
+                </button> -->
+            </div>
         </div>
-    </div>
-    
+    </main>
+
     <!-- Error Modal -->
-    <div class="error-modal" id="errorModal">
-        <div class="error-content">
-            <div class="error-icon">
+    <div id="error-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" style="color: var(--color-error);">
                 <i class="fas fa-exclamation-circle"></i>
             </div>
-            <h2 class="error-title">Kritischer Fehler</h2>
-            <p class="error-message">Die Zahlungsinformationen konnten nicht geladen werden.</p>
-            <div class="error-details">Bitte überprüfen Sie die URL oder versuchen Sie es später erneut.</div>
-            <p class="error-footer">Fehlercode: PAY-ERR-004</p>
-        </div>
-    </div>
-    
-    <!-- Merchant Connection Modal -->
-    <div class="connection-modal" id="connectionModal">
-        <div class="connection-content">
-            <div class="connection-icon">
-                <i class="fas fa-hourglass-half"></i>
+            <h2 class="modal-title">Fehler</h2>
+            <p class="modal-message" id="error-message">Die Zahlungsinformationen konnten nicht geladen werden.</p>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('error-modal')">Schließen</button>
+                <button class="modal-btn primary" onclick="window.location.href='index'">Zur Startseite</button>
             </div>
-            <h2 class="connection-title">Händler verbunden!</h2>
-            <p class="connection-message">Der Händler hat eine Verbindung hergestellt. Bitte warten Sie auf die Bestätigung der Zahlung.</p>
         </div>
     </div>
-    
-    <!-- Confirmed Status Modal -->
-    <div class="status-modal" id="confirmedModal">
-        <div class="status-content confirmed">
-            <div class="status-icon">
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" style="color: var(--color-success);">
                 <i class="fas fa-check-circle"></i>
             </div>
-            <h2 class="status-title">Bestätigt!</h2>
-            <p class="status-message">Ihre Zahlung wurde erfolgreich bestätigt.</p>
-        </div>
-    </div>
-    
-    <!-- Declined Status Modal -->
-    <div class="status-modal" id="declinedModal">
-        <div class="status-content declined">
-            <div class="status-icon">
-                <i class="fas fa-times-circle"></i>
+            <h2 class="modal-title">Bezahlung erfolgreich</h2>
+            <p class="modal-message">Ihre Zahlung wurde erfolgreich verarbeitet.</p>
+            <div class="modal-actions">
+                <button class="modal-btn primary" onclick="generateReceipt()">
+                    <i class="fas fa-receipt"></i>
+                    Beleg drucken
+                </button>
+                <button class="modal-btn secondary" onclick="window.location.href='index'">
+                    <i class="fas fa-home"></i>
+                    Zur Startseite
+                </button>
             </div>
-            <h2 class="status-title">Abgelehnt!</h2>
-            <p class="status-message">Ihre Zahlung wurde leider abgelehnt.</p>
-        </div>
-    </div>
-    
-    <!-- Pending Status Modal -->
-    <div class="status-modal" id="pendingModal">
-        <div class="status-content pending">
-            <div class="status-icon">
-                <i class="fas fa-hourglass-half"></i>
-            </div>
-            <h2 class="status-title">In Bearbeitung</h2>
-            <p class="status-message">Ihre Zahlung wird verarbeitet...</p>
         </div>
     </div>
 
     <script>
-        const { jsPDF } = window.jspdf;
         let paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
-        let peer = null;
         let paymentData = null;
-        let refreshInterval = null;
         let countdownInterval = null;
         let countdownTime = 60; // seconds
-        
-        // Get modals
-        const errorModal = document.getElementById('errorModal');
-        const connectionModal = document.getElementById('connectionModal');
-        const confirmedModal = document.getElementById('confirmedModal');
-        const declinedModal = document.getElementById('declinedModal');
-        const pendingModal = document.getElementById('pendingModal');
-        
-        // Function to show error modal
-        function showErrorModal() {
-            errorModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // Function to show connection modal
-        function showConnectionModal() {
-            connectionModal.classList.add('active');
-        }
-        
-        // Function to hide connection modal
-        function hideConnectionModal() {
-            connectionModal.classList.remove('active');
-        }
-        
-        // Function to show status modal
-        function showStatusModal(modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // Start countdown timer
-        function startCountdown() {
-            const countdownElement = document.getElementById('countdown-value');
-            countdownElement.textContent = countdownTime;
-            
-            countdownInterval = setInterval(() => {
-                countdownTime--;
-                countdownElement.textContent = countdownTime;
-                
-                if (countdownTime <= 0) {
-                    clearInterval(countdownInterval);
-                    location.reload();
-                }
-            }, 1000);
-        }
-        
-        // Stop all intervals
-        function stopAllIntervals() {
-            if (refreshInterval) clearInterval(refreshInterval);
-            if (countdownInterval) clearInterval(countdownInterval);
-        }
         
         // Initialize payment
         function initPayment() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const compressedData = urlParams.get('id');
-                if (!compressedData) throw new Error('Keine Zahlungsdaten gefunden');
+                
+                if (!compressedData) {
+                    throw new Error('Keine Zahlungsdaten gefunden');
+                }
                 
                 const jsonString = LZString.decompressFromBase64(compressedData);
-                if (!jsonString) throw new Error('Daten-Dekompression fehlgeschlagen');
+                
+                if (!jsonString) {
+                    throw new Error('Daten-Dekompression fehlgeschlagen');
+                }
                 
                 paymentData = JSON.parse(jsonString);
-                if (!paymentData?.items || !paymentData?.total) throw new Error('Ungültige Datenstruktur');
                 
-                // Initialize PeerJS
-                peer = new Peer(paymentId, {
-                    debug: 3,
-                    config: {'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }]}
-                });
-                
-                // Set up auto-refresh
-                refreshInterval = setInterval(() => {
-                    location.reload();
-                }, 60000);
-                
-                // Start countdown
-                startCountdown();
+                if (!paymentData?.items || !paymentData?.total) {
+                    throw new Error('Ungültige Datenstruktur');
+                }
                 
                 // Display payment data
                 document.getElementById('amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
@@ -749,277 +633,102 @@
                 });
                 
                 generateQR();
+                startCountdown();
                 
-                // Listen for connections
-                peer.on('connection', (conn) => {
-                    // Stop refreshing and countdown when merchant connects
-                    stopAllIntervals();
-                    showConnectionModal();
-                    
-                    conn.on('data', (data) => {
-                        hideConnectionModal();
-                        const statusEl = document.getElementById('status');
-                        
-                        if (data.type === 'confirm') {
-                            statusEl.className = 'status confirmed';
-                            statusEl.innerHTML = '<i class="fas fa-check-circle"></i><span>Zahlung bestätigt!</span>';
-                            saveToArchive('Bestätigt');
-                            generateReceipt('Bestätigt');
-                            showStatusModal(confirmedModal);
-                        } else if (data.type === 'decline') {
-                            statusEl.className = 'status declined';
-                            statusEl.innerHTML = '<i class="fas fa-times-circle"></i><span>Zahlung abgelehnt</span>';
-                            saveToArchive('Abgelehnt');
-                            generateReceipt('Abgelehnt');
-                            showStatusModal(declinedModal);
-                        } else if (data.type === 'pending') {
-                            statusEl.className = 'status pending';
-                            statusEl.innerHTML = '<i class="fas fa-clock"></i><span>Zahlung in Bearbeitung</span>';
-                            showStatusModal(pendingModal);
-                        }
-                    });
-                });
-                
-            } catch(e) {
-                showErrorModal();
-                console.error('Payment initialization error: ' + e.message);
+            } catch(error) {
+                console.error('Payment initialization error:', error);
+                document.getElementById('error-message').textContent = error.message;
+                showModal('error-modal');
             }
         }
         
-        function saveToArchive(status) {
-            const archiveEntry = {
-                data: LZString.compressToBase64(JSON.stringify({
-                    ...paymentData,
-                    peerId: paymentId,
-                    date: new Date().toISOString()
-                })),
-                date: new Date().toISOString(),
-                total: paymentData.total,
-                status: status
-            };
+        // Start countdown timer
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown-value');
+            countdownElement.textContent = countdownTime;
             
-            const shortId = paymentId.split('-').pop().substr(0, 8);
-            localStorage.setItem(`receipt_${shortId}`, JSON.stringify(archiveEntry));
+            countdownInterval = setInterval(() => {
+                countdownTime--;
+                countdownElement.textContent = countdownTime;
+                
+                if (countdownTime <= 0) {
+                    clearInterval(countdownInterval);
+                    location.reload();
+                }
+            }, 1000);
         }
-
+        
+        // Generate QR code
         function generateQR() {
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
             
-            // Maintain full data structure but optimize it
+            // Create optimized data structure for QR code
             const qrData = {
-                p: paymentId,       // Peer ID
-                t: paymentData.total, // Total amount
+                p: paymentId,           // Payment ID
+                t: paymentData.total,   // Total amount
                 i: paymentData.items.map(item => ({
-                    n: item.name,  // Shortened property names
+                    n: item.name,       // Shortened property names
                     q: item.quantity,
-                    p: item.price
+                    p: item.price,
+                    b: item.barcode
                 }))
             };
 
             try {
-                // Double compression strategy
+                // Convert to string and compress
                 const jsonStr = JSON.stringify(qrData);
                 const compressed = LZString.compressToBase64(jsonStr);
                 
-                // Split data into chunks if needed
-                const maxChunkSize = 1500;
-                const chunks = [];
-                
-                for(let i = 0; i < compressed.length; i += maxChunkSize) {
-                    chunks.push(compressed.slice(i, i + maxChunkSize));
-                }
-
                 // Calculate QR size based on viewport
                 const qrSize = Math.min(300, Math.min(window.innerWidth, window.innerHeight) * 0.7);
                 
-                // Only show first chunk if within limit
-                if(chunks.length === 1) {
-                    new QRCode(qrContainer, {
-                        text: compressed,
-                        width: qrSize,
-                        height: qrSize,
-                        colorDark: "#2c3e50",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-                } else {
-                    // Implement multi-QR system or error
-                    qrContainer.innerHTML = '<p>Zu viele Artikel für QR-Code</p>';
-                    console.error('QR data too large:', compressed.length);
-                }
+                // Generate QR code
+                new QRCode(qrContainer, {
+                    text: compressed,
+                    width: qrSize,
+                    height: qrSize,
+                    colorDark: "#2c3e50",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
                 
-            } catch(e) {
-                console.error('QR Generation Error:', e);
-                qrContainer.innerHTML = '<p>QR-Code generation fehlgeschlagen</p>';
+            } catch(error) {
+                console.error('QR Generation Error:', error);
+                qrContainer.innerHTML = '<p>QR-Code konnte nicht generiert werden</p>';
             }
         }
-
-        function generateReceipt(status) {
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.width;
-            const pageHeight = doc.internal.pageSize.height;
-            const paymentDate = new Date().toLocaleDateString('de-DE');
-            const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-            let yPos = 20;
+        
+        // Show modal
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Cancel payment
+        function cancelPayment() {
+            window.location.href = 'index';
+        }
+        
+        // Confirm payment manually
+        function confirmPayment() {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status confirmed';
+            statusEl.innerHTML = '<i class="fas fa-check-circle"></i><span>Zahlung bestätigt!</span>';
             
-            // Color scheme matching the Gittertier Pro design
-            const primaryColor = [17, 17, 17];        // #111111 - Primary text
-            const accentColor = [37, 99, 235];        // #2563eb - Accent blue
-            const successColor = [22, 163, 74];       // #16a34a - Success green
-            const dangerColor = [220, 38, 38];        // #dc2626 - Error red
-            const lightGray = [243, 244, 246];        // #f3f4f6 - Light background
-            const borderColor = [229, 231, 235];      // #e5e7eb - Border color
-            
-            // Set font - using helvetica as it's available in PDF
-            doc.setFont("helvetica");
-            
-            // Header with logo and receipt info
-            doc.setFillColor(...lightGray);
-            doc.roundedRect(20, yPos, pageWidth - 40, 50, 3, 3, 'F');
-            
-            // App name
-            doc.setFontSize(20);
-            doc.setTextColor(...accentColor);
-            doc.setFont(undefined, 'bold');
-            doc.text("Gittertier Pro", 30, yPos + 15);
-            
-            // Receipt info
-            doc.setFontSize(10);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'normal');
-            doc.text(`Belegnummer: ${paymentId}`, pageWidth - 30, yPos + 10, null, 'right');
-            doc.text(`Datum: ${paymentDate}`, pageWidth - 30, yPos + 20, null, 'right');
-            doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos + 30, null, 'right');
-            
-            yPos += 60;
-            
-            // Receipt title
-            doc.setFontSize(16);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text("KASSENBON", pageWidth/2, yPos, null, 'center');
-            
-            yPos += 15;
-            
-            // Items header
-            doc.setFillColor(...lightGray);
-            doc.rect(30, yPos, pageWidth - 60, 10, 'F');
-            doc.setDrawColor(...borderColor);
-            doc.rect(30, yPos, pageWidth - 60, 10, 'S');
-            
-            doc.setFontSize(10);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text("Artikel", 35, yPos + 7);
-            doc.text("Menge", 120, yPos + 7);
-            doc.text("Einzelpreis", 150, yPos + 7);
-            doc.text("Gesamt", pageWidth - 35, yPos + 7, null, 'right');
-            
-            yPos += 15;
-            
-            // Items list
-            doc.setFontSize(10);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'normal');
-            
-            paymentData.items.forEach((item, index) => {
-                if (yPos > pageHeight - 60) {
-                    doc.addPage();
-                    yPos = 20;
-                    
-                    // Add header to new page
-                    doc.setFontSize(10);
-                    doc.setTextColor(...primaryColor);
-                    doc.text("Fortsetzung Kassenbon", 30, 15);
-                }
-                
-                // Item name (with word wrapping)
-                const itemName = item.name;
-                const splitName = doc.splitTextToSize(itemName, 70);
-                doc.text(splitName, 35, yPos + 4);
-                
-                // Item details
-                doc.text(`${item.quantity}x`, 120, yPos + 4);
-                doc.text(`€ ${item.price.toFixed(2)}`, 150, yPos + 4);
-                doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 35, yPos + 4, null, 'right');
-                
-                // Calculate height needed for this item
-                const lineHeight = 5;
-                const itemHeight = Math.max(lineHeight, splitName.length * lineHeight);
-                
-                // Draw border around item
-                doc.setDrawColor(...borderColor);
-                doc.line(30, yPos - 2, pageWidth - 30, yPos - 2);
-                
-                yPos += itemHeight;
-            });
-            
-            // Total section
-            yPos += 10;
-            doc.setDrawColor(...borderColor);
-            doc.line(30, yPos, pageWidth - 30, yPos);
-            
-            yPos += 10;
-            doc.setFontSize(12);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text("Zwischensumme:", pageWidth - 100, yPos);
-            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 35, yPos, null, 'right');
-            
-            yPos += 8;
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            doc.setTextColor(...primaryColor);
-            doc.text("Enthaltene MwSt. 19%:", pageWidth - 100, yPos);
-            const tax = paymentData.total * 0.19;
-            doc.text(`€ ${tax.toFixed(2)}`, pageWidth - 35, yPos, null, 'right');
-            
-            yPos += 15;
-            doc.setDrawColor(...accentColor);
-            doc.setLineWidth(0.5);
-            doc.line(pageWidth - 130, yPos, pageWidth - 30, yPos);
-            
-            yPos += 10;
-            doc.setFontSize(14);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text("GESAMTSUMME:", pageWidth - 100, yPos);
-            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 35, yPos, null, 'right');
-            
-            // Payment status
-            yPos += 25;
-            const statusColor = status === 'Bestätigt' ? successColor : dangerColor;
-            doc.setFillColor(...statusColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 15, 2, 2, 'F');
-            
-            doc.setFontSize(12);
-            doc.setTextColor(255, 255, 255);
-            doc.setFont(undefined, 'bold');
-            doc.text(`ZAHLUNG ${status.toUpperCase()}`, pageWidth/2, yPos + 10, null, 'center');
-            
-            // Footer
-            yPos += 30;
-            doc.setFontSize(8);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'normal');
-            doc.text("Vielen Dank für Ihren Einkauf bei Gittertier Pro!", pageWidth/2, yPos, null, 'center');
-            
-            yPos += 5;
-            doc.text("Dieser Beleg dient als ordnungsgemäße Kaufquittung.", pageWidth/2, yPos, null, 'center');
-            
-            yPos += 5;
-            doc.text("Bei Fragen zu Ihrem Einkauf wenden Sie sich bitte an unseren Support.", pageWidth/2, yPos, null, 'center');
-            
-            yPos += 10;
-            doc.setDrawColor(...borderColor);
-            doc.line(30, yPos, pageWidth - 30, yPos);
-            
-            yPos += 8;
-            doc.text(`Belegnummer: ${paymentId} | ${paymentDate} ${paymentTime}`, pageWidth/2, yPos, null, 'center');
-            
-            // Save the PDF
-            doc.save(`gittertier_beleg_${paymentId}.pdf`);
+            clearInterval(countdownInterval);
+            showModal('success-modal');
+        }
+        
+        // Generate receipt
+        function generateReceipt() {
+            // In a real implementation, this would generate a PDF receipt
+            alert('Beleg wird generiert...');
+            window.location.href = 'index';
         }
         
         // Initialize payment when page loads
