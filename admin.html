@@ -2,1010 +2,1007 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Gittertier Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <style>
-        /* Modern Apple-inspired design system */
-        :root {
-            /* Light theme variables */
-            --primary-bg: #ffffff;
-            --secondary-bg: #f5f5f7;
-            --card-bg: #ffffff;
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --text-tertiary: #aeaeb2;
-            --accent: #0071e3;
-            --accent-hover: #0077ed;
-            --accent-active: #0062b9;
-            --success: #34c759;
-            --warning: #ff9500;
-            --error: #ff3b30;
-            --border-color: #e5e5e7;
-            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
-            --border-radius: 14px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --sidebar-width: 280px;
-            --header-height: 70px;
-            --section-spacing: 28px;
-        }
+    :root {
+        --color-bg: #ffffff;
+        --color-bg-secondary: #f5f7fa;
+        --color-text: #111111;
+        --color-text-muted: #6b7280;
+        --color-border: #e5e7eb;
+        --color-accent: #2563eb;
+        --color-accent-hover: #1d4ed8;
+        --color-success: #16a34a;
+        --color-error: #dc2626;
+        --color-warning: #d97706;
+        --color-overlay: rgba(0, 0, 0, 0.5);
+        --color-sidebar: #f8fafc;
+        --color-sidebar-hover: #e2e8f0;
+        --color-sidebar-active: #dbeafe;
+        --color-sidebar-text: #334155;
+        
+        --radius: 12px;
+        --radius-sm: 6px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+        
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+        
+        --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --text-base: 1rem;
+        --text-lg: 1.125rem;
+        --text-xl: 1.25rem;
+        --text-2xl: 1.5rem;
+        --text-3xl: 1.875rem;
+        
+        --header-height: 64px;
+        --sidebar-width: 280px;
+        --sidebar-collapsed: 80px;
+    }
 
-        .dark-mode {
-            /* Dark theme variables */
-            --primary-bg: #000000;
-            --secondary-bg: #1c1c1e;
-            --card-bg: #1c1c1e;
-            --text-primary: #f5f5f7;
-            --text-secondary: #98989d;
-            --text-tertiary: #636366;
-            --accent: #0a84ff;
-            --accent-hover: #409cff;
-            --accent-active: #0062b9;
-            --border-color: #38383a;
-            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-            --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
+    /* Dark mode variables */
+    [data-theme="dark"] {
+        --color-bg: #0f172a;
+        --color-bg-secondary: #1e293b;
+        --color-text: #f1f5f9;
+        --color-text-muted: #94a3b8;
+        --color-border: #334155;
+        --color-sidebar: #1e293b;
+        --color-sidebar-hover: #334155;
+        --color-sidebar-active: #1e40af;
+        --color-sidebar-text: #cbd5e1;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-            background-color: var(--primary-bg);
-            color: var(--text-primary);
-            line-height: 1.5;
-            font-weight: 400;
-            transition: background-color 0.3s ease;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
+    body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        transition: var(--transition-slow);
+    }
 
-        /* Header Styles */
-        .admin-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            height: var(--header-height);
-            background-color: var(--primary-bg);
-            border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
+    /* Header Styles */
+    .admin-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        box-shadow: var(--shadow);
+    }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
 
-        .logo {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent), #42a1ec);
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 18px;
-        }
+    .sidebar-toggle {
+        display: none;
+        background: none;
+        border: none;
+        font-size: var(--text-xl);
+        color: var(--color-text);
+        cursor: pointer;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+    }
 
-        .logo-text {
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
+    .sidebar-toggle:hover {
+        background-color: var(--color-bg-secondary);
+    }
 
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-xl);
+    }
 
-        .time-display {
-            background: rgba(128, 128, 128, 0.1);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
+    .logo i {
+        font-size: var(--text-xl);
+        color: var(--color-accent);
+    }
 
-        .notification-btn {
-            position: relative;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--secondary-bg);
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: var(--transition);
-        }
+    .header-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        align-items: center;
+    }
 
-        .notification-btn:hover {
-            background-color: var(--border-color);
-        }
+    .theme-toggle {
+        background: none;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+    }
 
-        .notification-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 18px;
-            height: 18px;
-            background: var(--error);
-            color: white;
-            border-radius: 50%;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse 1.5s infinite;
-        }
+    .theme-toggle:hover {
+        background-color: var(--color-bg-secondary);
+    }
 
-        .logout-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ff2d78, #ff4e8c);
-            border: none;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .notification-btn {
+        position: relative;
+        background: none;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+    }
 
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 24px;
-            cursor: pointer;
-            margin-right: 16px;
-        }
+    .notification-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
 
-        /* Main Layout */
-        .admin-container {
-            display: flex;
-            min-height: calc(100vh - var(--header-height));
-        }
+    .notification-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 18px;
+        height: 18px;
+        background-color: var(--color-error);
+        color: white;
+        border-radius: 50%;
+        font-size: var(--text-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        /* Sidebar */
+    .user-menu {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .user-menu:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: var(--color-accent);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    .user-name {
+        font-weight: 500;
+        font-size: var(--text-sm);
+    }
+
+    /* Main Layout */
+    .admin-container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* Sidebar Styles */
+    .admin-sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--color-sidebar);
+        border-right: 1px solid var(--color-border);
+        padding: var(--spacing-lg) 0;
+        display: flex;
+        flex-direction: column;
+        transition: var(--transition-slow);
+        overflow-y: auto;
+        height: calc(100vh - var(--header-height));
+        position: sticky;
+        top: var(--header-height);
+    }
+
+    .sidebar-section {
+        margin-bottom: var(--spacing-xl);
+        padding: 0 var(--spacing-lg);
+    }
+
+    .sidebar-title {
+        font-size: var(--text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        letter-spacing: 0.5px;
+        margin-bottom: var(--spacing-md);
+        padding: 0 var(--spacing-md);
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        margin-bottom: var(--spacing-xs);
+        color: var(--color-sidebar-text);
+        text-decoration: none;
+        transition: var(--transition);
+        font-weight: 500;
+    }
+
+    .nav-item:hover {
+        background-color: var(--color-sidebar-hover);
+        color: var(--color-text);
+    }
+
+    .nav-item.active {
+        background-color: var(--color-sidebar-active);
+        color: var(--color-accent);
+    }
+
+    .nav-item i {
+        font-size: var(--text-lg);
+        margin-right: var(--spacing-md);
+        width: 24px;
+        text-align: center;
+    }
+
+    .nav-badge {
+        margin-left: auto;
+        background-color: var(--color-accent);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 8px;
+        border-radius: 20px;
+    }
+
+    /* Main Content */
+    .admin-content {
+        flex: 1;
+        padding: var(--spacing-xl);
+        overflow-y: auto;
+        background-color: var(--color-bg-secondary);
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .page-title {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: var(--spacing-md);
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    /* Stat Cards */
+    .stat-card {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+    }
+
+    .stat-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--spacing-md);
+        font-size: var(--text-xl);
+    }
+
+    .stat-icon.revenue {
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--color-accent);
+    }
+
+    .stat-icon.transactions {
+        background-color: rgba(22, 163, 74, 0.1);
+        color: var(--color-success);
+    }
+
+    .stat-icon.products {
+        background-color: rgba(217, 119, 6, 0.1);
+        color: var(--color-warning);
+    }
+
+    .stat-icon.customers {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+
+    .stat-value {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-label {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    /* Content Sections */
+    .content-section {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+        box-shadow: var(--shadow);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .section-title {
+        font-size: var(--text-lg);
+        font-weight: 600;
+    }
+
+    /* Table Styles */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        text-align: left;
+        padding: var(--spacing-md);
+        font-weight: 600;
+        color: var(--color-text-muted);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .data-table td {
+        padding: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .data-table tr:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: var(--text-xs);
+        font-weight: 600;
+    }
+
+    .status-confirmed {
+        background-color: rgba(22, 163, 74, 0.1);
+        color: var(--color-success);
+    }
+
+    .status-pending {
+        background-color: rgba(217, 119, 6, 0.1);
+        color: var(--color-warning);
+    }
+
+    .status-declined {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        font-size: var(--text-sm);
+    }
+
+    .btn:focus {
+        outline: none;
+        box-shadow: var(--focus-ring);
+    }
+
+    .btn-primary {
+        background-color: var(--color-accent);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .btn-secondary {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--color-border);
+    }
+
+    .btn-sm {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--text-xs);
+    }
+
+    /* Search and Filters */
+    .search-container {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .search-input {
+        flex: 1;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-sm);
+        transition: var(--transition);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: var(--spacing-lg);
+        display: none;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        width: 100%;
+        max-width: 500px;
+        box-shadow: var(--shadow-lg);
+        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: var(--text-xl);
+        cursor: pointer;
+        color: var(--color-text-muted);
+        padding: var(--spacing-xs);
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+    }
+
+    .modal-close:hover {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-text);
+    }
+
+    .modal-body {
+        padding: var(--spacing-lg);
+    }
+
+    .modal-field {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .modal-label {
+        display: block;
+        margin-bottom: var(--spacing-xs);
+        font-weight: 500;
+        font-size: var(--text-sm);
+    }
+
+    .modal-input {
+        width: 100%;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-sm);
+        transition: var(--transition);
+    }
+
+    .modal-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-lg);
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-md);
+    }
+
+    /* Notification Center */
+    .notification-center {
+        position: fixed;
+        top: var(--header-height);
+        right: var(--spacing-lg);
+        width: 90%;
+        max-width: 400px;
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        z-index: 100;
+        overflow: hidden;
+        transform: translateY(-20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: var(--transition-slow);
+    }
+
+    .notification-center.active {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .notification-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        font-size: var(--text-lg);
+    }
+
+    .notification-clear {
+        background: none;
+        border: none;
+        color: var(--color-accent);
+        font-weight: 500;
+        cursor: pointer;
+        font-size: var(--text-sm);
+    }
+
+    .notification-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .notification-item {
+        padding: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        gap: var(--spacing-md);
+        transition: var(--transition);
+    }
+
+    .notification-item:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--color-bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notification-content {
+        flex: 1;
+    }
+
+    .notification-message {
+        margin-bottom: var(--spacing-xs);
+        font-size: var(--text-sm);
+    }
+
+    .notification-time {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+    }
+
+    .notification-unread {
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: var(--spacing-xxl) var(--spacing-xl);
+        color: var(--color-text-muted);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: var(--spacing-lg);
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
         .admin-sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--primary-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 24px 0;
-            height: calc(100vh - var(--header-height));
-            position: sticky;
+            position: fixed;
+            left: 0;
             top: var(--header-height);
-            overflow-y: auto;
-            transition: var(--transition);
+            height: calc(100vh - var(--header-height));
+            z-index: 40;
+            transform: translateX(-100%);
+            box-shadow: var(--shadow-lg);
         }
 
-        .sidebar-section {
-            margin-bottom: 24px;
-        }
-
-        .sidebar-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0 24px;
-            margin-bottom: 12px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 24px;
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: var(--transition);
-            border-left: 4px solid transparent;
-            margin-bottom: 4px;
-        }
-
-        .nav-link:hover {
-            background-color: var(--secondary-bg);
-        }
-
-        .nav-link.active {
-            background-color: rgba(10, 132, 255, 0.1);
-            color: var(--accent);
-            border-left-color: var(--accent);
-        }
-
-        .nav-link i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-            font-size: 18px;
-        }
-
-        .nav-link.active i {
-            color: var(--accent);
-        }
-
-        .new-feature {
-            background-color: var(--success);
-            color: white;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: auto;
-        }
-
-        /* Main Content */
-        .admin-content {
-            flex: 1;
-            padding: 32px;
-            background-color: var(--secondary-bg);
-        }
-
-        .dashboard-header {
-            margin-bottom: 32px;
-        }
-
-        .dashboard-title {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .dashboard-subtitle {
-            font-size: 17px;
-            color: var(--text-secondary);
-        }
-
-        /* Dashboard Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        /* Cards */
-        .dashboard-card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-        }
-
-        .dashboard-card:hover {
-            box-shadow: var(--card-shadow-hover);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .card-title i {
-            color: var(--accent);
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background-color: var(--accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .btn-primary:active {
-            background-color: var(--accent-active);
-        }
-
-        .btn-success {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #30b352;
-        }
-
-        /* Stats Cards */
-        .stat-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background-color: var(--secondary-bg);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-icon {
-            font-size: 2rem;
-            color: var(--accent);
-            margin-bottom: 12px;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 8px 0;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        /* Search Container */
-        .search-container {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 14px 16px;
-            background-color: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 15px;
-            color: var(--text-primary);
-            transition: var(--transition);
-        }
-
-        .search-bar:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
-        }
-
-        /* Receipts Section */
-        .receipts-section {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            box-shadow: var(--card-shadow);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .section-title i {
-            color: var(--accent);
-        }
-
-        /* Receipt List */
-        .receipt-list-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .receipt-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            margin-bottom: 12px;
-            background-color: var(--secondary-bg);
-            border-radius: 12px;
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        .receipt-item:hover {
-            background-color: var(--border-color);
-            transform: translateX(5px);
-        }
-
-        .receipt-details {
-            flex: 1;
-        }
-
-        .receipt-id {
-            font-family: monospace;
-            color: var(--accent);
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .receipt-date {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        .receipt-total {
-            font-weight: bold;
-            font-size: 18px;
-            color: var(--text-primary);
-            margin-right: 16px;
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .confirmed {
-            background: var(--success);
-        }
-
-        .declined {
-            background: var(--error);
-        }
-
-        .pending {
-            background: var(--warning);
-        }
-
-        .empty-receipts {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-            font-size: 16px;
-            background-color: var(--secondary-bg);
-            border-radius: var(--border-radius);
-        }
-
-        .empty-receipts i {
-            font-size: 3rem;
-            color: var(--accent);
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .view-more {
-            display: block;
-            text-align: center;
-            padding: 16px;
-            background-color: var(--secondary-bg);
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-            border-radius: var(--border-radius);
-            margin-top: 20px;
-            transition: var(--transition);
-        }
-
-        .view-more:hover {
-            background-color: var(--border-color);
-        }
-
-        /* Notification Center */
-        .notification-center {
-            position: fixed;
-            top: 90px;
-            right: 24px;
-            width: 380px;
-            max-width: calc(100% - 48px);
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--card-shadow-hover);
-            z-index: 101;
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-            display: none;
-            transform: translateX(20px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-        }
-
-        .notification-center.active {
-            display: block;
+        .admin-sidebar.active {
             transform: translateX(0);
-            opacity: 1;
         }
 
-        .notification-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notification-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .clear-notifications {
-            background: transparent;
-            border: none;
-            color: var(--error);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            padding: 8px 12px;
-        }
-
-        .clear-notifications:hover {
-            color: #ff4d44;
-        }
-
-        .notification-list {
-            padding: 10px 0;
-        }
-
-        .notification-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            gap: 15px;
-            transition: background 0.2s;
-        }
-
-        .notification-item:hover {
-            background: rgba(108, 117, 125, 0.05);
-        }
-
-        .notification-icon {
-            font-size: 18px;
-            color: var(--accent);
-            min-width: 30px;
-            text-align: center;
-        }
-
-        .notification-content {
-            flex: 1;
-        }
-
-        .notification-time {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-top: 6px;
-        }
-
-        .notification-unread {
-            background: rgba(10, 132, 255, 0.05);
-        }
-
-        /* Modal styles */
-        .modal-overlay {
+        .sidebar-overlay {
             position: fixed;
-            top: 0;
+            top: var(--header-height);
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            background-color: var(--color-overlay);
+            z-index: 30;
             display: none;
-            animation: fadeIn 0.3s ease;
         }
 
-        .modal-overlay.active {
-            display: flex;
+        .sidebar-overlay.active {
+            display: block;
         }
 
-        .product-modal {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            width: calc(100% - 40px);
-            max-width: 500px;
-            box-shadow: var(--card-shadow-hover);
-            animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 1px solid var(--border-color);
-            position: relative;
+        .sidebar-toggle {
+            display: block;
+        }
+    }
+
+    @media (max-width: 768px) {
+        :root {
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
+        .admin-header {
+            padding: 0 var(--spacing-md);
         }
 
-        .modal-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-primary);
+        .user-name {
+            display: none;
         }
 
-        .close-modal {
-            background: transparent;
-            border: none;
-            font-size: 28px;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: var(--transition);
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
+        .admin-content {
+            padding: var(--spacing-md);
         }
 
-        .close-modal:hover {
-            color: var(--error);
-            background: rgba(0,0,0,0.05);
+        .dashboard-grid {
+            grid-template-columns: 1fr;
         }
 
-        .modal-input {
+        .content-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+        }
+
+        .page-actions {
             width: 100%;
-            padding: 14px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 16px;
-            margin-bottom: 18px;
-            transition: var(--transition);
-            background: var(--secondary-bg);
-            color: var(--text-primary);
+            justify-content: space-between;
         }
 
-        .modal-input:focus {
-            border-color: var(--accent);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
+        .search-container {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .modal-overlay {
+            padding: var(--spacing-md);
         }
 
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
+        .modal-header,
+        .modal-body,
+        .modal-footer {
+            padding: var(--spacing-md);
         }
+    }
 
-        .modal-btn {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 
-        .btn-save {
-            background: var(--success);
-            color: white;
-        }
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
 
-        .btn-save:hover {
-            background: #30b352;
-        }
-
-        .btn-cancel {
-            background: var(--error);
-            color: white;
-        }
-
-        .btn-cancel:hover {
-            background: #ff4d44;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .admin-sidebar {
-                position: fixed;
-                left: -100%;
-                top: var(--header-height);
-                z-index: 90;
-                height: calc(100vh - var(--header-height));
-                box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
-                transition: left 0.3s ease;
-            }
-            
-            .admin-sidebar.active {
-                left: 0;
-            }
-            
-            .menu-toggle {
-                display: block;
-            }
-            
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 80;
-                display: none;
-            }
-            
-            .overlay.active {
-                display: block;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .admin-content {
-                padding: 24px 16px;
-            }
-            
-            .dashboard-title {
-                font-size: 28px;
-            }
-            
-            .stat-cards {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .time-display {
-                display: none;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .admin-header {
-                padding: 0 16px;
-            }
-            
-            .stat-cards {
-                grid-template-columns: 1fr;
-            }
-            
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-            
-            .modal-actions {
-                flex-direction: column;
-            }
-        }
+    @keyframes slideInRight {
+        from { transform: translateX(20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="admin-header">
-        <div class="logo-container">
-            <button class="menu-toggle" id="menuToggle">
+        <div class="header-left">
+            <button class="sidebar-toggle" id="sidebarToggle">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="logo">GP</div>
-            <div class="logo-text">Gittertier Pro</div>
+            <div class="logo">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Admin</span>
+            </div>
         </div>
-        
         <div class="header-controls">
-            <div class="time-display" id="timeDisplay"></div>
-            
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
             <button class="notification-btn" id="notificationBtn">
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge" id="notificationBadge">3</span>
             </button>
-            
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
+            <div class="user-menu" id="userMenu">
+                <div class="user-avatar">A</div>
+                <div class="user-name">Admin</div>
+            </div>
         </div>
     </header>
 
-    <!-- Overlay for mobile sidebar -->
-    <div class="overlay" id="overlay"></div>
-
     <div class="admin-container">
-        <!-- Sidebar Navigation -->
-        <aside class="admin-sidebar" id="sidebar">
+        <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-section">
-                <div class="sidebar-title">Hauptmenü</div>
-                <a href="control" class="nav-link">
-                    <i class="fas fa-cogs"></i>
-                    Steuerung
-                    <span class="new-feature">NEU</span>
-                </a>
-                
-                <a href="navi" class="nav-link">
-                    <i class="fas fa-map-marked-alt"></i>
-                    Navigation
-                </a>
-                
-                <a href="admin" class="nav-link active">
+                <div class="sidebar-title">Hauptnavigation</div>
+                <a href="admin" class="nav-item active">
                     <i class="fas fa-tachometer-alt"></i>
-                    Dashboard
+                    <span>Dashboard</span>
                 </a>
-                
-                <a href="products" class="nav-link">
+                <a href="products" class="nav-item">
                     <i class="fas fa-box"></i>
-                    Produktverwaltung
+                    <span>Produkte</span>
+                    <span class="nav-badge" id="productsCount">0</span>
                 </a>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Ansichten</div>
-                <a href="index" class="nav-link">
-                    <i class="fas fa-cash-register"></i>
-                    Kassenansicht
+                <a href="transactions" class="nav-item">
+                    <i class="fas fa-receipt"></i>
+                    <span>Transaktionen</span>
                 </a>
-                
-                <a href="archive" class="nav-link">
-                    <i class="fas fa-archive"></i>
-                    Archiv
-                </a>
-                
-                <a href="merchant" class="nav-link">
-                    <i class="fas fa-store"></i>
-                    Händleransicht
-                </a>
-                
-                <a href="analytics" class="nav-link">
+                <a href="analytics" class="nav-item">
                     <i class="fas fa-chart-line"></i>
-                    Analysen
+                    <span>Analysen</span>
                 </a>
             </div>
             
             <div class="sidebar-section">
                 <div class="sidebar-title">System</div>
-                <a href="settings" class="nav-link">
+                <a href="settings" class="nav-item">
                     <i class="fas fa-cog"></i>
-                    Einstellungen
+                    <span>Einstellungen</span>
+                </a>
+                <a href="control" class="nav-item">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Steuerung</span>
+                </a>
+                <a href="archive" class="nav-item">
+                    <i class="fas fa-archive"></i>
+                    <span>Archiv</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Schnellzugriff</div>
+                <a href="index" class="nav-item">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Zur Kasse</span>
+                </a>
+                <a href="merchant" class="nav-item">
+                    <i class="fas fa-store"></i>
+                    <span>Händleransicht</span>
+                </a>
+                <a href="support" class="nav-item">
+                    <i class="fas fa-headset"></i>
+                    <span>Support</span>
                 </a>
             </div>
         </aside>
+        
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- Main Content -->
         <main class="admin-content">
-            <div class="dashboard-header">
-                <h1 class="dashboard-title">Admin Dashboard</h1>
-                <p class="dashboard-subtitle">Überblick über Verkäufe und Transaktionen</p>
+            <div class="content-header">
+                <h1 class="page-title">Dashboard</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" id="addProductBtn">
+                        <i class="fas fa-plus"></i>
+                        Produkt hinzufügen
+                    </button>
+                    <button class="btn btn-secondary" id="refreshDataBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Aktualisieren
+                    </button>
+                </div>
             </div>
 
             <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2 class="card-title"><i class="fas fa-chart-pie"></i> Übersicht</h2>
-                        <button class="btn btn-primary" id="addProductBtn">
-                            <i class="fas fa-plus"></i>
-                            Produkt hinzufügen
-                        </button>
+                <div class="stat-card">
+                    <div class="stat-icon revenue">
+                        <i class="fas fa-euro-sign"></i>
                     </div>
-                    
-                    <div class="stat-cards">
-                        <div class="stat-card">
-                            <i class="fas fa-euro-sign stat-icon"></i>
-                            <div class="stat-value" id="totalRevenue">€0.00</div>
-                            <div class="stat-label">Gesamtumsatz</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <i class="fas fa-receipt stat-icon"></i>
-                            <div class="stat-value" id="totalTransactions">0</div>
-                            <div class="stat-label">Transaktionen</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <i class="fas fa-shopping-cart stat-icon"></i>
-                            <div class="stat-value" id="avgOrder">€0.00</div>
-                            <div class="stat-label">Durchschn. Bestellung</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <i class="fas fa-box stat-icon"></i>
-                            <div class="stat-value" id="totalProducts">0</div>
-                            <div class="stat-label">Produkte</div>
-                        </div>
-                    </div>
+                    <div class="stat-value" id="totalRevenue">€0.00</div>
+                    <div class="stat-label">Gesamtumsatz</div>
                 </div>
                 
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2 class="card-title"><i class="fas fa-search"></i> Suche</h2>
+                <div class="stat-card">
+                    <div class="stat-icon transactions">
+                        <i class="fas fa-receipt"></i>
                     </div>
-                    
-                    <div class="search-container">
-                        <input type="text" class="search-bar" id="searchInput" placeholder="Transaktionen durchsuchen...">
+                    <div class="stat-value" id="totalTransactions">0</div>
+                    <div class="stat-label">Transaktionen</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon products">
+                        <i class="fas fa-box"></i>
                     </div>
+                    <div class="stat-value" id="totalProducts">0</div>
+                    <div class="stat-label">Produkte</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon customers">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="avgOrderValue">€0.00</div>
+                    <div class="stat-label">Durchschn. Bestellung</div>
                 </div>
             </div>
 
-            <div class="receipts-section">
+            <div class="content-section">
                 <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-file-invoice"></i> Aktuelle Transaktionen</h2>
-                    <button class="btn btn-success" id="refreshReceipts">
-                        <i class="fas fa-sync-alt"></i> Aktualisieren
-                    </button>
+                    <h2 class="section-title">Aktuelle Transaktionen</h2>
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="transactionSearch" placeholder="Transaktionen durchsuchen...">
+                        <button class="btn btn-secondary btn-sm">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="receipt-list-container" id="receiptListContainer">
-                    <!-- Receipts will be loaded here -->
-                    <div class="empty-receipts">
-                        <i class="fas fa-receipt"></i>
-                        <p>Keine Transaktionen gefunden</p>
-                    </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Datum</th>
+                                <th>Betrag</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- Transactions will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="empty-state" id="emptyTransactions" style="display: none;">
+                    <i class="fas fa-receipt"></i>
+                    <p>Keine Transaktionen gefunden</p>
+                    <button class="btn btn-primary" id="emptyStateBtn">
+                        Erste Transaktion erstellen
+                    </button>
                 </div>
             </div>
         </main>
@@ -1014,28 +1011,34 @@
     <!-- Notification Center -->
     <div class="notification-center" id="notificationCenter">
         <div class="notification-header">
-            <div class="notification-title">Benachrichtigungen</div>
-            <button class="clear-notifications">Alle löschen</button>
+            <h3 class="notification-title">Benachrichtigungen</h3>
+            <button class="notification-clear" id="clearNotifications">Alle löschen</button>
         </div>
-        <div class="notification-list">
+        <div class="notification-list" id="notificationList">
             <div class="notification-item notification-unread">
-                <div class="notification-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="notification-icon">
+                    <i class="fas fa-exclamation-circle" style="color: var(--color-accent);"></i>
+                </div>
                 <div class="notification-content">
-                    <div>Neue Transaktion abgeschlossen: €42.75</div>
+                    <div class="notification-message">Neue Transaktion abgeschlossen: €42.75</div>
                     <div class="notification-time">Vor 5 Minuten</div>
                 </div>
             </div>
             <div class="notification-item">
-                <div class="notification-icon"><i class="fas fa-shopping-cart"></i></div>
+                <div class="notification-icon">
+                    <i class="fas fa-shopping-cart" style="color: var(--color-warning);"></i>
+                </div>
                 <div class="notification-content">
-                    <div>Produkt "Premium Kaffee" ist fast ausverkauft</div>
+                    <div class="notification-message">Produkt "Premium Kaffee" ist fast ausverkauft</div>
                     <div class="notification-time">Vor 2 Stunden</div>
                 </div>
             </div>
             <div class="notification-item">
-                <div class="notification-icon"><i class="fas fa-user"></i></div>
+                <div class="notification-icon">
+                    <i class="fas fa-user" style="color: var(--color-success);"></i>
+                </div>
                 <div class="notification-content">
-                    <div>Neuer Benutzer registriert: max.muster</div>
+                    <div class="notification-message">Systemaktualisierung abgeschlossen</div>
                     <div class="notification-time">Gestern, 14:30</div>
                 </div>
             </div>
@@ -1044,34 +1047,51 @@
 
     <!-- Add Product Modal -->
     <div class="modal-overlay" id="modalOverlay">
-        <div class="product-modal">
+        <div class="modal">
             <div class="modal-header">
                 <h2 class="modal-title">Neues Produkt hinzufügen</h2>
-                <button class="close-modal" id="closeModal">&times;</button>
+                <button class="modal-close" id="modalClose">&times;</button>
             </div>
-            <input type="text" class="modal-input" id="productName" placeholder="Produktname">
-            <input type="number" class="modal-input" id="productPrice" placeholder="Preis (€)" step="0.01">
-            <input type="text" class="modal-input" id="productBarcode" placeholder="Barcode">
-            <div class="modal-actions">
-                <button class="modal-btn btn-cancel" id="cancelBtn">Abbrechen</button>
-                <button class="modal-btn btn-save" id="saveProductBtn">Speichern</button>
+            <div class="modal-body">
+                <div class="modal-field">
+                    <label class="modal-label" for="productName">Produktname</label>
+                    <input type="text" class="modal-input" id="productName" placeholder="Produktname">
+                </div>
+                <div class="modal-field">
+                    <label class="modal-label" for="productPrice">Preis (€)</label>
+                    <input type="number" class="modal-input" id="productPrice" placeholder="0.00" step="0.01">
+                </div>
+                <div class="modal-field">
+                    <label class="modal-label" for="productBarcode">Barcode</label>
+                    <input type="text" class="modal-input" id="productBarcode" placeholder="Barcode">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modalCancel">Abbrechen</button>
+                <button class="btn btn-primary" id="modalSave">Speichern</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Apply dark mode if enabled in localStorage
-        function applyDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        }
-
-        // Apply dark mode on page load
-        applyDarkMode();
+        // DOM Elements
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const adminSidebar = document.getElementById('adminSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const themeToggle = document.getElementById('themeToggle');
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationCenter = document.getElementById('notificationCenter');
+        const clearNotifications = document.getElementById('clearNotifications');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const addProductBtn = document.getElementById('addProductBtn');
+        const refreshDataBtn = document.getElementById('refreshDataBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalSave = document.getElementById('modalSave');
+        const emptyTransactions = document.getElementById('emptyTransactions');
+        const emptyStateBtn = document.getElementById('emptyStateBtn');
+        const transactionsTableBody = document.getElementById('transactionsTableBody');
 
         // Token verification (existing functionality)
         (function() {
@@ -1091,107 +1111,83 @@
             }
         })();
 
-        // DOM Elements
-        const menuToggle = document.getElementById('menuToggle');
-        const overlay = document.getElementById('overlay');
-        const sidebar = document.getElementById('sidebar');
-        const timeDisplay = document.getElementById('timeDisplay');
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationCenter = document.getElementById('notificationCenter');
-        const notificationBadge = document.getElementById('notificationBadge');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const addProductBtn = document.getElementById('addProductBtn');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const closeModal = document.getElementById('closeModal');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const saveProductBtn = document.getElementById('saveProductBtn');
-        const searchInput = document.getElementById('searchInput');
-        const refreshReceiptsBtn = document.getElementById('refreshReceipts');
-        
-        // Time display function
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            const dateString = now.toLocaleDateString('de-DE', {
-                weekday: 'long',
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-            });
-            timeDisplay.textContent = `${dateString}, ${timeString}`;
-        }
-        
-        // Update time every second
-        updateTime();
-        setInterval(updateTime, 1000);
-        
-        // Mobile menu toggle
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.body.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                document.body.removeAttribute('data-theme');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                localStorage.setItem('adminTheme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                localStorage.setItem('adminTheme', 'dark');
+            }
         });
 
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
+        // Apply saved theme
+        const savedTheme = localStorage.getItem('adminTheme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        // Sidebar Toggle for Mobile
+        sidebarToggle.addEventListener('click', () => {
+            adminSidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
         });
-        
-        // Notification center toggle
+
+        sidebarOverlay.addEventListener('click', () => {
+            adminSidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        // Notification Center Toggle
         notificationBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             notificationCenter.classList.toggle('active');
-            notificationBadge.textContent = '0';
             notificationBadge.style.display = 'none';
         });
-        
-        // Close notification center when clicking outside
+
         document.addEventListener('click', (e) => {
             if (!notificationBtn.contains(e.target) && !notificationCenter.contains(e.target)) {
                 notificationCenter.classList.remove('active');
             }
         });
-        
-        // Logout functionality
-        logoutBtn.addEventListener('click', () => {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            
-            if (settings.logoutConfirmation) {
-                if (!confirm('Möchten Sie sich wirklich abmelden?')) {
-                    return;
-                }
-            }
-            
-            sessionStorage.removeItem('validTokens');
-            localStorage.removeItem('authToken');
-            window.location.reload();
+
+        clearNotifications.addEventListener('click', () => {
+            document.getElementById('notificationList').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>Keine Benachrichtigungen</p>
+                </div>
+            `;
+            notificationCenter.classList.remove('active');
         });
-        
-        // Modal open/close functionality
+
+        // Modal Controls
         addProductBtn.addEventListener('click', () => {
             modalOverlay.classList.add('active');
         });
-        
-        closeModal.addEventListener('click', () => {
+
+        const closeModal = () => {
             modalOverlay.classList.remove('active');
-        });
-        
-        cancelBtn.addEventListener('click', () => {
-            modalOverlay.classList.remove('active');
-        });
-        
-        // Close modal when clicking outside
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productBarcode').value = '';
+        };
+
+        modalClose.addEventListener('click', closeModal);
+        modalCancel.addEventListener('click', closeModal);
+
         modalOverlay.addEventListener('click', (e) => {
             if (e.target === modalOverlay) {
-                modalOverlay.classList.remove('active');
+                closeModal();
             }
         });
-        
-        // Save product functionality
-        saveProductBtn.addEventListener('click', () => {
+
+        modalSave.addEventListener('click', () => {
             const name = document.getElementById('productName').value.trim();
             const price = parseFloat(document.getElementById('productPrice').value);
             const barcode = document.getElementById('productBarcode').value.trim();
@@ -1215,35 +1211,45 @@
             // Save back to localStorage
             localStorage.setItem('products', JSON.stringify(products));
             
-            // Add notification
-            addNotification(`Produkt "${name}" hinzugefügt`, 'fas fa-check-circle');
-            
-            // Update stats
+            // Update UI
+            updateProductsCount();
             updateStats();
             
+            // Add notification
+            addNotification(`Produkt "${name}" hinzugefügt`, 'fas fa-check-circle', 'success');
+            
             // Close modal
-            modalOverlay.classList.remove('active');
-
-            
-            // Reset form
-            document.getElementById('productName').value = '';
-            document.getElementById('productPrice').value = '';
-            document.getElementById('productBarcode').value = '';
-            
+            closeModal();
         });
-        
-        // Add notification function
-        function addNotification(message, icon = 'fas fa-info-circle') {
-            const notificationList = document.querySelector('.notification-list');
+
+        // Empty state button
+        emptyStateBtn.addEventListener('click', () => {
+            addProductBtn.click();
+        });
+
+        // Function to add notification
+        function addNotification(message, icon = 'fas fa-info-circle', type = 'info') {
+            const notificationList = document.getElementById('notificationList');
             const now = new Date();
+            const timeString = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            let iconColor = 'var(--color-accent)';
+            if (type === 'success') iconColor = 'var(--color-success)';
+            if (type === 'warning') iconColor = 'var(--color-warning)';
+            if (type === 'error') iconColor = 'var(--color-error)';
             
             const notification = document.createElement('div');
             notification.className = 'notification-item notification-unread';
             notification.innerHTML = `
-                <div class="notification-icon"><i class="${icon}"></i></div>
+                <div class="notification-icon">
+                    <i class="${icon}" style="color: ${iconColor};"></i>
+                </div>
                 <div class="notification-content">
-                    <div>${message}</div>
-                    <div class="notification-time">Gerade eben</div>
+                    <div class="notification-message">${message}</div>
+                    <div class="notification-time">${timeString}</div>
                 </div>
             `;
             
@@ -1254,18 +1260,7 @@
             notificationBadge.textContent = currentCount + 1;
             notificationBadge.style.display = 'block';
         }
-        
-        // Search functionality
-        searchInput.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const items = document.querySelectorAll('.receipt-item');
-            
-            items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(searchTerm) ? 'flex' : 'none';
-            });
-        });
-        
+
         // Function to load receipts from localStorage
         function loadReceipts() {
             const receipts = [];
@@ -1298,7 +1293,7 @@
                             id: key.replace('receipt_', ''),
                             date: transactionDate,
                             total: stored.total,
-                            status: stored.status || 'Bestätigt'
+                            status: stored.status || 'confirmed'
                         });
                     } catch (e) {
                         console.error('Error processing receipt:', e);
@@ -1309,18 +1304,14 @@
         }
 
         // Function to generate receipt list
-        function generateReceiptList(receipts, maxItems = 10) {
-            const container = document.getElementById('receiptListContainer');
-            
+        function generateReceiptList(receipts, maxItems = 5) {
             if (receipts.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-receipts">
-                        <i class="fas fa-receipt"></i>
-                        <p>Keine Transaktionen gefunden</p>
-                    </div>
-                `;
+                transactionsTableBody.innerHTML = '';
+                emptyTransactions.style.display = 'block';
                 return;
             }
+            
+            emptyTransactions.style.display = 'none';
             
             // Show only recent receipts
             const recentReceipts = receipts.slice(0, maxItems);
@@ -1330,30 +1321,33 @@
                 const date = new Date(receipt.date);
                 const dateStr = `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
                 
+                let statusClass = 'status-confirmed';
+                let statusText = 'Bestätigt';
+                
+                if (receipt.status === 'pending') {
+                    statusClass = 'status-pending';
+                    statusText = 'Ausstehend';
+                } else if (receipt.status === 'declined') {
+                    statusClass = 'status-declined';
+                    statusText = 'Abgelehnt';
+                }
+                
                 html += `
-                    <div class="receipt-item">
-                        <div class="receipt-details">
-                            <div class="receipt-id">${receipt.id}</div>
-                            <div class="receipt-date">${dateStr}</div>
-                        </div>
-                        <div class="receipt-total">€${receipt.total.toFixed(2)}</div>
-                        <div class="status-badge ${receipt.status === 'Bestätigt' ? 'confirmed' : receipt.status === 'Abgelehnt' ? 'declined' : 'pending'}">
-                            ${receipt.status}
-                        </div>
-                    </div>
+                    <tr>
+                        <td>${receipt.id}</td>
+                        <td>${dateStr}</td>
+                        <td>€${receipt.total.toFixed(2)}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
                 `;
             });
             
-            container.innerHTML = html;
-            
-            // Add "view more" link if needed
-            if (receipts.length > maxItems) {
-                container.innerHTML += `
-                    <a href="archive" class="view-more">
-                        <i class="fas fa-archive"></i> Alle Transaktionen anzeigen
-                    </a>
-                `;
-            }
+            transactionsTableBody.innerHTML = html;
         }
 
         // Function to update stats from receipts
@@ -1364,7 +1358,7 @@
             let confirmedCount = 0;
             
             receipts.forEach(receipt => {
-                if (receipt.status === 'Bestätigt') {
+                if (receipt.status === 'confirmed') {
                     totalRevenue += parseFloat(receipt.total);
                     confirmedCount++;
                 }
@@ -1376,36 +1370,42 @@
             // Update stats cards
             document.getElementById('totalRevenue').textContent = `€${totalRevenue.toFixed(2)}`;
             document.getElementById('totalTransactions').textContent = transactionCount;
-            document.getElementById('avgOrder').textContent = `€${avgOrder.toFixed(2)}`;
-            
-            // Update products count
-            const products = JSON.parse(localStorage.getItem('products')) || {};
-            document.getElementById('totalProducts').textContent = Object.keys(products).length;
+            document.getElementById('avgOrderValue').textContent = `€${avgOrder.toFixed(2)}`;
         }
 
-        // Function to load and display receipts
-        function loadAndDisplayReceipts() {
-            const receipts = loadReceipts();
-            generateReceiptList(receipts);
-            updateStatsFromReceipts(receipts);
+        // Function to update products count
+        function updateProductsCount() {
+            const products = JSON.parse(localStorage.getItem('products')) || {};
+            document.getElementById('totalProducts').textContent = Object.keys(products).length;
+            document.getElementById('productsCount').textContent = Object.keys(products).length;
         }
+
+        // Function to update all stats
+        function updateStats() {
+            const receipts = loadReceipts();
+            updateStatsFromReceipts(receipts);
+            updateProductsCount();
+            generateReceiptList(receipts);
+        }
+
+        // Refresh data button
+        refreshDataBtn.addEventListener('click', () => {
+            refreshDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            setTimeout(() => {
+                updateStats();
+                refreshDataBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Aktualisieren';
+                addNotification('Daten aktualisiert', 'fas fa-sync-alt', 'success');
+            }, 800);
+        });
 
         // Initial load
         document.addEventListener('DOMContentLoaded', () => {
-            // Load receipts
-            loadAndDisplayReceipts();
-            
-            // Add event listener for refresh button
-            refreshReceiptsBtn.addEventListener('click', loadAndDisplayReceipts);
+            updateStats();
             
             // Add sample notifications after delay
             setTimeout(() => {
-                addNotification('Systemaktualisierung abgeschlossen', 'fas fa-sync-alt');
-            }, 5000);
-            
-            setTimeout(() => {
-                addNotification('Neuer Benutzer angemeldet: admin', 'fas fa-user-plus');
-            }, 10000);
+                addNotification('Willkommen im Admin-Bereich', 'fas fa-info-circle', 'info');
+            }, 1000);
         });
     </script>
 </body>
