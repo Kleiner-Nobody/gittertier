@@ -3,46 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Belegarchiv</title>
+    <title>Belegarchiv - Gittertier Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* === START OF OPTIMIZED MOBILE-FIRST CSS === */
         :root {
-            --ms-blue: #0078d4;
-            --ms-blue-dark: #106ebe;
-            --ms-gray: #f3f2f1;
-            --ms-gray-light: #faf9f8;
-            --ms-gray-dark: #e1dfdd;
-            --ms-dark: #201f1e;
-            --ms-light: #ffffff;
-            --ms-accent: #ffb900;
-            --ms-accent-dark: #d29200;
-            --ms-error: #d13438;
-            --ms-success: #107c10;
-            --ms-card-shadow: 0 2.4px 4.8px rgba(0,0,0,0.14), 0 0.8px 1.6px rgba(0,0,0,0.07);
-            --ms-card-shadow-hover: 0 6.4px 14.4px rgba(0,0,0,0.18), 0 1.2px 3.6px rgba(0,0,0,0.11);
-            --ms-border-radius: 8px;
-            --ms-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --ms-animation-duration: 0.4s;
+            --color-bg: #ffffff;
+            --color-text: #111111;
+            --color-text-muted: #6b7280;
+            --color-border: #e5e7eb;
+            --color-accent: #2563eb;
+            --color-accent-hover: #1d4ed8;
+            --color-success: #16a34a;
+            --color-error: #dc2626;
+            --color-warning: #ff9900;
+            --color-overlay: rgba(0, 0, 0, 0.5);
+            
+            --radius: 12px;
+            --radius-sm: 6px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+            
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
+            
+            --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+            
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+            
+            --header-height: 64px;
             --sidebar-width: 280px;
         }
 
-        .dark-mode {
-            --ms-blue: #4a69b5;
-            --ms-blue-dark: #2c3e50;
-            --ms-gray: #1e1e1e;
-            --ms-gray-light: #252525;
-            --ms-gray-dark: #383838;
-            --ms-dark: #e3e3e3;
-            --ms-light: #252525;
-            --ms-accent: #ffb900;
-            --ms-accent-dark: #ffa500;
-            --ms-error: #e74c3c;
-            --ms-success: #28a745;
-            --ms-card-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            --ms-card-shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg: #111827;
+                --color-text: #f3f4f6;
+                --color-text-muted: #9ca3af;
+                --color-border: #374151;
+            }
         }
 
         * {
@@ -52,1982 +66,1047 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
-            background-color: var(--ms-gray);
-            color: var(--ms-dark);
+            font-family: var(--font-family);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
-            font-size: 15px;
         }
 
-        /* Header - Microsoft Style */
-        .admin-header {
-            background: linear-gradient(135deg, var(--ms-blue), var(--ms-blue-dark));
-            color: white;
-            padding: 14px 16px;
+        /* Header Styles */
+        header {
+            height: var(--header-height);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            justify-content: space-between;
+            padding: 0 var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            background-color: var(--color-bg);
             position: sticky;
             top: 0;
-            z-index: 100;
-            animation: slideDown 0.5s ease-out;
+            z-index: 50;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-
-        .logo h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            gap: var(--spacing-md);
+            font-weight: 700;
+            font-size: var(--text-xl);
         }
 
         .logo i {
-            font-size: 1.4rem;
-            background: rgba(255, 255, 255, 0.2);
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            font-size: var(--text-xl);
+            color: var(--color-accent);
         }
 
         .header-controls {
             display: flex;
-            gap: 8px;
+            gap: var(--spacing-md);
             align-items: center;
         }
 
         .time-display {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 6px 10px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            backdrop-filter: blur(5px);
-            display: none;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: var(--text-sm);
+            color: var(--color-text-muted);
         }
 
         .notification-btn {
             position: relative;
-            background: transparent;
+            background: none;
             border: none;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: var(--color-text);
             cursor: pointer;
-            color: white;
-            font-size: 1rem;
-            transition: var(--ms-transition);
+            transition: var(--transition);
         }
 
         .notification-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         .notification-badge {
             position: absolute;
             top: 4px;
             right: 4px;
-            width: 16px;
-            height: 16px;
-            background: var(--ms-error);
+            width: 18px;
+            height: 18px;
+            background: var(--color-error);
             color: white;
             border-radius: 50%;
             font-size: 0.65rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: pulse 1.5s infinite;
         }
 
-        .logout-btn {
-            background: var(--ms-light);
-            color: var(--ms-blue);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
+        .action-btn {
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: var(--ms-transition);
-            box-shadow: var(--ms-card-shadow);
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
         }
 
-        .logout-btn:hover {
-            background: var(--ms-light);
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
+        .action-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-color: var(--color-accent);
         }
 
         .hamburger {
-            display: block;
-            background: transparent;
+            display: none;
+            background: none;
             border: none;
-            font-size: 1.4rem;
-            color: white;
+            font-size: var(--text-xl);
+            color: var(--color-text);
             cursor: pointer;
-            transition: var(--ms-transition);
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
         }
 
         .hamburger:hover {
-            transform: scale(1.1);
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
-        /* Main layout */
-        .admin-container {
+        /* Main Layout */
+        .main-container {
             display: flex;
             flex: 1;
-            width: 100%;
-            max-width: 1800px;
-            margin: 0 auto;
-            position: relative;
+            overflow: hidden;
         }
 
-        /* Sidebar - Microsoft Fluent */
-        .admin-sidebar {
-            width: 100%;
-            background: var(--ms-light);
-            padding: 16px;
-            transition: transform 0.3s ease;
-            z-index: 99;
-            height: calc(100vh - 72px);
-            position: fixed;
-            top: 72px;
-            left: -100%;
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--color-bg);
+            border-right: 1px solid var(--color-border);
+            padding: var(--spacing-lg);
             overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            border-right: 1px solid var(--ms-gray-dark);
-        }
-
-        .admin-sidebar.active {
-            left: 0;
-            width: 100%;
+            transition: transform 0.3s ease;
+            z-index: 40;
         }
 
         .nav-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-xl);
         }
 
         .nav-link {
-            background: var(--ms-gray-light);
-            padding: 16px;
-            border-radius: var(--ms-border-radius);
-            text-decoration: none;
-            color: var(--ms-dark);
-            font-weight: 600;
-            font-size: 1rem;
-            transition: var(--ms-transition);
             display: flex;
-            flex-direction: row;
             align-items: center;
-            gap: 12px;
-            width: 100%;
-            border-left: 4px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--ms-blue);
-            transform: scaleY(0);
-            transform-origin: bottom;
-            transition: transform 0.3s ease;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
         }
 
         .nav-link:hover {
-            background: var(--ms-gray);
-            transform: translateX(5px);
-        }
-
-        .nav-link:hover::before {
-            transform: scaleY(1);
-            transform-origin: top;
-        }
-
-        .nav-link i {
-            font-size: 1.3rem;
-            color: var(--ms-blue);
-            width: 24px;
-            text-align: center;
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         .nav-link.active {
-            background: rgba(0, 120, 212, 0.1);
-            border-left: 4px solid var(--ms-blue);
-            color: var(--ms-blue);
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--color-accent);
         }
 
-        .nav-link.active i {
-            color: var(--ms-blue);
+        .nav-link i {
+            width: 20px;
+            text-align: center;
         }
 
         .new-feature {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: var(--ms-success);
+            background-color: var(--color-success);
             color: white;
-            font-size: 0.6rem;
-            padding: 2px 6px;
+            font-size: var(--text-xs);
+            padding: 2px 8px;
             border-radius: 10px;
-            animation: pulse 1.5s infinite;
+            margin-left: auto;
         }
 
-        /* Main content */
-        .admin-content {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            width: 100%;
+        .sidebar-section {
+            margin-bottom: var(--spacing-xl);
         }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        /* Cards - Microsoft Fluent */
-        .dashboard-card {
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            padding: 18px;
-            box-shadow: var(--ms-card-shadow);
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            transition: var(--ms-transition);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--ms-gray-dark);
-        }
-
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        .dashboard-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--ms-blue);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
-        }
-
-        .dashboard-card:hover::after {
-            transform: scaleX(1);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .card-header h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--ms-dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-header i {
-            color: var(--ms-blue);
-            font-size: 1.3rem;
-        }
-
-        .add-product-btn {
-            background: var(--ms-success);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: var(--ms-border-radius);
-            font-size: 0.95rem;
+        .sidebar-title {
+            font-size: var(--text-sm);
             font-weight: 600;
-            cursor: pointer;
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-md);
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: var(--ms-transition);
-            box-shadow: var(--ms-card-shadow);
-        }
-
-        .add-product-btn:hover {
-            background: #0d6910;
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        .stat-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 14px;
-            margin-top: 14px;
-            width: 100%;
-        }
-
-        .stat-card {
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            padding: 16px;
-            box-shadow: var(--ms-card-shadow);
-            text-align: center;
-            border-top: 4px solid var(--ms-blue);
-            transition: var(--ms-transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        .stat-card i {
-            font-size: 1.8rem;
-            color: var(--ms-blue);
-            margin-bottom: 10px;
-            transition: var(--ms-transition);
-        }
-
-        .stat-card:hover i {
-            transform: scale(1.1);
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--ms-dark);
-            margin: 10px 0;
-        }
-
-        .stat-label {
-            font-size: 0.95rem;
-            color: var(--ms-dark);
-            opacity: 0.8;
-        }
-
-        .search-container {
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            padding: 16px;
-            margin: 16px 0;
-            box-shadow: var(--ms-card-shadow);
-            width: 100%;
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid var(--ms-blue);
-            border-radius: var(--ms-border-radius);
-            font-size: 1rem;
-            display: block;
-            background: var(--ms-gray);
-            transition: var(--ms-transition);
-            color: var(--ms-dark);
-        }
-
-        .search-bar:focus {
-            border-color: var(--ms-blue-dark);
-            box-shadow: 0 0 0 4px rgba(0, 120, 212, 0.3);
-            background: var(--ms-light);
-            outline: none;
-        }
-
-        .receipt-list {
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            padding: 16px;
-            box-shadow: var(--ms-card-shadow);
-            margin-top: 16px;
-            width: 100%;
-        }
-
-        .receipt-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px;
-            margin: 10px 0;
-            background: rgba(0, 120, 212, 0.05);
-            border-radius: var(--ms-border-radius);
-            transition: var(--ms-transition);
-            cursor: pointer;
-            border-left: 4px solid var(--ms-blue);
-            box-shadow: var(--ms-card-shadow);
-        }
-
-        .receipt-item:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-            background: rgba(0, 120, 212, 0.1);
-        }
-
-        .receipt-details {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .receipt-id {
-            font-family: monospace;
-            color: var(--ms-blue);
-            font-size: 1rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .receipt-date {
-            font-size: 0.85rem;
-            color: var(--ms-dark);
-            opacity: 0.7;
-            margin-top: 6px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .receipt-total {
-            font-weight: bold;
-            font-size: 1rem;
-            white-space: nowrap;
-            margin-left: 12px;
-            color: var(--ms-dark);
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 30px;
-            color: white;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            white-space: nowrap;
-            margin-left: 12px;
-        }
-
-        .confirmed {
-            background: var(--ms-success);
-        }
-
-        .declined {
-            background: var(--ms-error);
-        }
-
-        .pending {
-            background: var(--ms-accent);
-            color: var(--ms-dark);
-        }
-
-        /* Notification center */
-        .notification-center {
-            position: fixed;
-            top: 80px;
-            right: 16px;
-            width: calc(100% - 32px);
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            box-shadow: var(--ms-card-shadow-hover);
-            z-index: 101;
-            max-height: 60vh;
-            overflow-y: auto;
-            display: none;
-            transform: translateX(20px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            border: 1px solid var(--ms-gray-dark);
-        }
-
-        .notification-center.active {
-            display: block;
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        .notification-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--ms-gray-dark);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notification-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--ms-dark);
-        }
-
-        .clear-notifications {
-            background: transparent;
-            border: none;
-            color: var(--ms-error);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--ms-transition);
-        }
-
-        .clear-notifications:hover {
-            color: var(--ms-error);
-            transform: scale(1.05);
-        }
-
-        .notification-list {
-            padding: 8px 0;
-        }
-
-        .notification-item {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--ms-gray-dark);
-            display: flex;
-            gap: 12px;
-            transition: background 0.2s;
-        }
-
-        .notification-item:hover {
-            background: rgba(108, 117, 125, 0.05);
-        }
-
-        .notification-icon {
-            font-size: 1.1rem;
-            color: var(--ms-blue);
-            min-width: 24px;
-            text-align: center;
-        }
-
-        .notification-content {
-            flex: 1;
-        }
-
-        .notification-time {
-            font-size: 0.8rem;
-            color: var(--ms-dark);
-            opacity: 0.7;
-            margin-top: 6px;
-        }
-
-        .notification-unread {
-            background: rgba(0, 120, 212, 0.05);
-        }
-
-        /* Modal styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .product-modal {
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            padding: 20px;
-            width: calc(100% - 32px);
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--ms-card-shadow-hover);
-            animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 1px solid var(--ms-gray-dark);
-            position: relative;
-        }
-
-        .product-modal::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--ms-blue);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .modal-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--ms-dark);
-        }
-
-        .close-modal {
-            background: transparent;
-            border: none;
-            font-size: 1.6rem;
-            color: var(--ms-dark);
-            cursor: pointer;
-            transition: var(--ms-transition);
-        }
-
-        .close-modal:hover {
-            color: var(--ms-error);
-            transform: scale(1.1);
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--ms-gray-dark);
-            border-radius: var(--ms-border-radius);
-            font-size: 1rem;
-            margin-bottom: 16px;
-            transition: var(--ms-transition);
-            background: var(--ms-gray);
-            color: var(--ms-dark);
-        }
-
-        .modal-input:focus {
-            border-color: var(--ms-blue);
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(0, 120, 212, 0.3);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: var(--ms-border-radius);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--ms-transition);
-            box-shadow: var(--ms-card-shadow);
-        }
-
-        .btn-save {
-            background: var(--ms-success);
-            color: white;
-        }
-
-        .btn-save:hover {
-            background: #0d6910;
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        .btn-cancel {
-            background: var(--ms-error);
-            color: white;
-        }
-
-        .btn-cancel:hover {
-            background: #b0262e;
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        /* Animations */
-        @keyframes slideDown {
-            from { transform: translateY(-100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        /* New styles for receipt display */
-        .recent-receipts-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .refresh-btn {
-            background: var(--ms-blue);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: var(--ms-border-radius);
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: var(--ms-transition);
-            box-shadow: var(--ms-card-shadow);
-        }
-        
-        .refresh-btn:hover {
-            background: var(--ms-blue-dark);
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-        
-        .receipt-list-container {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 8px;
-        }
-        
-        .receipt-list-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .receipt-list-container::-webkit-scrollbar-track {
-            background: var(--ms-gray);
-            border-radius: 4px;
-        }
-        
-        .receipt-list-container::-webkit-scrollbar-thumb {
-            background: var(--ms-blue);
-            border-radius: 4px;
-        }
-        
-        .empty-receipts {
-            text-align: center;
-            padding: 30px;
-            color: var(--ms-dark);
-            opacity: 0.7;
-            font-size: 1rem;
-            background: var(--ms-gray);
-            border-radius: var(--ms-border-radius);
-            box-shadow: var(--ms-card-shadow);
-        }
-        
-        .empty-receipts i {
-            font-size: 2.2rem;
-            color: var(--ms-blue);
-            margin-bottom: 12px;
-            display: block;
-        }
-        
-        /* View more link */
-        .view-more {
-            display: block;
-            text-align: center;
-            padding: 12px;
-            background: var(--ms-gray);
-            color: var(--ms-blue);
-            text-decoration: none;
-            font-weight: 600;
-            border-radius: var(--ms-border-radius);
-            margin-top: 16px;
-            transition: var(--ms-transition);
-            box-shadow: var(--ms-card-shadow);
-        }
-        
-        .view-more:hover {
-            background: var(--ms-gray-dark);
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        /* Mobile-first responsive adjustments */
-        @media (min-width: 768px) {
-            .admin-header {
-                padding: 16px 24px;
-            }
-            
-            .logo h1 {
-                font-size: 1.5rem;
-            }
-            
-            .time-display {
-                display: block;
-            }
-            
-            .admin-content {
-                padding: 20px;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 20px;
-            }
-            
-            .nav-link {
-                padding: 16px;
-                font-size: 1rem;
-            }
-            
-            .nav-link i {
-                font-size: 1.3rem;
-            }
-            
-            .search-container {
-                padding: 18px;
-            }
-            
-            .search-bar {
-                padding: 16px;
-                font-size: 1rem;
-            }
-            
-            .dashboard-card {
-                padding: 20px;
-            }
-            
-            .card-header h2 {
-                font-size: 1.3rem;
-            }
-            
-            .admin-sidebar {
-                position: sticky;
-                top: 72px;
-                left: 0;
-                width: var(--sidebar-width);
-                height: calc(100vh - 72px);
-            }
-            
-            .admin-content {
-                margin-left: var(--sidebar-width);
-                width: calc(100% - var(--sidebar-width));
-            }
-            
-            .admin-sidebar.active {
-                left: 0;
-            }
-        }
-
-        @media (min-width: 992px) {
-            .admin-header {
-                padding: 18px 30px;
-            }
-            
-            .logo h1 {
-                font-size: 1.7rem;
-            }
-            
-            .hamburger {
-                display: none;
-            }
-            
-            .admin-content {
-                padding: 24px;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            }
-            
-            .nav-link {
-                padding: 16px 18px;
-                font-size: 1.05rem;
-            }
-            
-            .nav-link i {
-                font-size: 1.4rem;
-            }
-            
-            .search-container {
-                padding: 20px;
-            }
-            
-            .search-bar {
-                padding: 16px;
-                font-size: 1rem;
-            }
-            
-            .dashboard-card {
-                padding: 24px;
-            }
-            
-            .card-header h2 {
-                font-size: 1.4rem;
-            }
-            
-            .notification-center {
-                width: 380px;
-                max-height: 500px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .stat-cards {
-                grid-template-columns: 1fr;
-            }
-            
-            .stat-card {
-                padding: 16px;
-            }
-            
-            .stat-value {
-                font-size: 1.4rem;
-            }
-            
-            .header-controls {
-                gap: 8px;
-            }
-            
-            .logout-btn span {
-                display: none;
-            }
-            
-            .logout-btn {
-                padding: 8px;
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-            }
-            
-            .receipt-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            
-            .receipt-total, .status-badge {
-                margin-left: 0;
-                margin-top: 8px;
-            }
-        }
-        /* === END OF ADMIN.HTML CSS === */
-
-        /* === ARCHIVE-SPECIFIC STYLES === */
-        .settings-container {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 16px;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .settings-section {
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            padding: 18px;
-            box-shadow: var(--ms-card-shadow);
-            margin-bottom: 20px;
-            transition: var(--ms-transition);
-        }
-
-        .settings-section:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid var(--ms-gray-dark);
-        }
-
-        .section-header i {
-            font-size: 1.4rem;
-            color: var(--ms-blue);
-        }
-
-        .section-header h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--ms-dark);
-        }
-
-        /* Filter section */
-        .filter-section {
-            margin-bottom: 14px;
-        }
-
-        .filter-title {
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--ms-dark);
-            font-size: 1rem;
+            gap: var(--spacing-sm);
         }
 
         .filter-options {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
         }
 
         .filter-option {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            padding: 10px;
-            border-radius: 8px;
-            background: var(--ms-gray-light);
-            transition: var(--ms-transition);
-            font-size: 0.95rem;
+            transition: var(--transition);
         }
 
         .filter-option:hover {
-            background: var(--ms-gray);
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         .date-filter {
-            margin-top: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
         }
 
-        .date-input {
-            padding: 12px;
-            border: 2px solid var(--ms-gray-dark);
-            border-radius: var(--ms-border-radius);
-            font-size: 0.95rem;
-            background: var(--ms-gray);
-            color: var(--ms-dark);
-            transition: var(--ms-transition);
+        .form-input {
             width: 100%;
+            padding: var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            transition: var(--transition);
         }
 
-        .date-input:focus {
-            border-color: var(--ms-blue);
+        .form-input:focus {
             outline: none;
-            box-shadow: 0 0 0 4px rgba(0, 120, 212, 0.3);
+            border-color: var(--color-accent);
+            box-shadow: var(--focus-ring);
         }
 
-        .bulk-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--ms-gray-dark);
-        }
-
-        .bulk-actions button {
-            flex: 1;
-            min-width: 140px;
-            font-size: 0.95rem;
-            padding: 12px;
-        }
-
-        /* Receipt items */
-        .receipt-item-archive {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px;
-            margin: 8px 0;
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-            box-shadow: var(--ms-card-shadow);
-            border: 1px solid var(--ms-gray-dark);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .receipt-item-archive:hover {
-            box-shadow: var(--ms-card-shadow-hover);
-            transform: translateY(-3px);
-        }
-
-        .receipt-item-archive.selected {
-            border: 1px solid var(--ms-blue);
-            background: rgba(0, 120, 212, 0.1);
-        }
-
-        .receipt-checkbox {
-            margin-right: 10px;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        .receipt-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            color: var(--ms-dark);
-            cursor: pointer;
-            transition: var(--ms-transition);
-            font-size: 1rem;
-        }
-
-        .action-btn:hover {
-            background: rgba(0,0,0,0.05);
-            transform: scale(1.1);
-        }
-
-        .receipt-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 0;
-        }
-
-        .receipt-id {
-            font-family: monospace;
-            color: var(--ms-blue);
-            font-size: 0.95rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .receipt-date {
-            font-size: 0.8rem;
-            color: var(--ms-dark);
-            opacity: 0.8;
-        }
-
-        .receipt-note {
-            font-size: 0.8rem;
-            color: var(--ms-dark);
-            opacity: 0.8;
-            margin-top: 4px;
-            display: -webkit-box;
-            -webkit-line-clamp: 1;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
-        .receipt-total {
-            font-weight: bold;
-            font-size: 1rem;
-            margin-left: 8px;
-            color: var(--ms-dark);
-        }
-
-        .receipt-details-archive {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
-        }
-
-        .status-badge-archive {
-            padding: 6px 12px;
-            border-radius: 20px;
-            color: white;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .confirmed {
-            background: var(--ms-success);
-        }
-
-        .declined {
-            background: var(--ms-error);
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 24px;
-            color: var(--ms-dark);
-            opacity: 0.7;
-            font-size: 0.95rem;
-        }
-
-        .income-total {
-            padding: 14px;
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            text-align: center;
-            font-size: 1rem;
-            box-shadow: var(--ms-card-shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .income-label {
-            font-weight: 500;
-            color: var(--ms-dark);
-            font-size: 1rem;
-        }
-
-        .income-total span {
-            color: var(--ms-success);
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .button-group button, 
-        .button-group label {
-            flex: 1;
-            min-width: 140px;
-            padding: 12px;
-            font-size: 0.95rem;
-        }
-
-        .error-message {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--ms-error);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 12px 0;
-            font-weight: 500;
-            border: 1px solid rgba(220, 53, 69, 0.2);
-            font-size: 0.95rem;
-        }
-
-        .success-message {
-            background: rgba(25, 135, 84, 0.1);
-            color: var(--ms-success);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 12px 0;
-            font-weight: 500;
-            border: 1px solid rgba(25, 135, 84, 0.2);
-            font-size: 0.95rem;
-        }
-
-        .debug-info {
-            background: rgba(13, 110, 253, 0.1);
-            padding: 12px;
-            border-radius: var(--ms-border-radius);
-            margin: 12px 0;
-            font-family: monospace;
-            font-size: 0.8rem;
-            white-space: pre-wrap;
-            max-height: 200px;
-            overflow: auto;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            overflow-y: auto;
-        }
-
-        .modal-content {
-            background: var(--ms-light);
-            border-radius: var(--ms-border-radius);
-            box-shadow: var(--ms-card-shadow-hover);
-            width: 100%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .modal-content::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--ms-blue);
-        }
-
-        .modal-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--ms-gray-dark);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            font-size: 1.2rem;
-            color: var(--ms-dark);
-        }
-
-        .close-modal {
-            background: none;
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
             border: none;
-            font-size: 1.3rem;
-            color: var(--ms-dark);
+            border-radius: var(--radius);
+            font-weight: 500;
             cursor: pointer;
-            transition: var(--ms-transition);
-        }
-
-        .close-modal:hover {
-            color: var(--ms-error);
-            transform: scale(1.1);
-        }
-
-        .modal-body {
-            padding: 16px;
-        }
-
-        .receipt-detail-row {
+            transition: var(--transition);
             display: flex;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
         }
 
-        .detail-col {
-            flex: 1;
-            min-width: 140px;
+        .btn-primary {
+            background-color: var(--color-accent);
+            color: white;
         }
 
-        .detail-label {
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: var(--ms-dark);
-            opacity: 0.8;
-            font-size: 0.8rem;
+        .btn-primary:hover {
+            background-color: var(--color-accent-hover);
         }
 
-        .detail-value {
-            font-size: 0.95rem;
-            color: var(--ms-dark);
+        .btn-success {
+            background-color: var(--color-success);
+            color: white;
         }
 
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 14px 0;
-            font-size: 0.85rem;
+        .btn-success:hover {
+            background-color: #15803d;
         }
 
-        .items-table th {
-            background: rgba(0,0,0,0.03);
-            padding: 8px;
-            text-align: left;
-            color: var(--ms-dark);
-            font-weight: 500;
-            border-bottom: 1px solid var(--ms-gray-dark);
-            font-size: 0.85rem;
+        .btn-danger {
+            background-color: var(--color-error);
+            color: white;
         }
 
-        .items-table td {
-            padding: 8px;
-            border-bottom: 1px solid var(--ms-gray-dark);
-            color: var(--ms-dark);
-            font-size: 0.85rem;
+        .btn-danger:hover {
+            background-color: #b91c1c;
         }
 
-        .note-section {
-            margin-top: 16px;
+        .btn-warning {
+            background-color: var(--color-warning);
+            color: var(--color-text);
         }
 
-        #note-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--ms-gray-dark);
-            border-radius: var(--ms-border-radius);
-            font-size: 0.9rem;
-            background: var(--ms-gray);
-            color: var(--ms-dark);
-            min-height: 80px;
-            margin-top: 8px;
-            transition: var(--ms-transition);
+        .btn-warning:hover {
+            background-color: #e08600;
         }
 
-        #note-input:focus {
-            border-color: var(--ms-blue);
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(0, 120, 212, 0.3);
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
         }
 
-        .modal-footer {
-            padding: 16px;
-            border-top: 1px solid var(--ms-gray-dark);
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
+        .btn-secondary:hover {
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         .backup-reminder {
-            background: rgba(255, 193, 7, 0.1);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-left: 3px solid var(--ms-accent);
+            background-color: rgba(255, 153, 0, 0.1);
+            border-left: 3px solid var(--color-warning);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-top: var(--spacing-lg);
         }
 
-        .backup-content {
-            flex: 1;
+        .backup-content h4 {
+            font-size: var(--text-sm);
+            margin-bottom: var(--spacing-xs);
         }
 
-        .backup-reminder h4 {
-            font-size: 0.95rem;
-            margin-bottom: 4px;
-            color: var(--ms-dark);
-        }
-
-        .backup-reminder p {
-            color: var(--ms-dark);
-            opacity: 0.8;
-            font-size: 0.8rem;
+        .backup-content p {
+            font-size: var(--text-xs);
+            color: var(--color-text-muted);
         }
 
         .close-reminder {
             background: none;
             border: none;
-            color: var(--ms-dark);
+            color: var(--color-text-muted);
             cursor: pointer;
-            transition: var(--ms-transition);
+            margin-left: auto;
         }
 
-        .close-reminder:hover {
-            color: var(--ms-error);
-            transform: scale(1.1);
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: var(--spacing-lg);
+            overflow-y: auto;
         }
 
-        footer {
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .page-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            padding-left: 40px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            font-size: var(--text-sm);
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: var(--focus-ring);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-value {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--color-text-muted);
+        }
+
+        .income-card {
+            background-color: rgba(22, 163, 74, 0.1);
+            border: 1px solid rgba(22, 163, 74, 0.2);
+        }
+
+        .income-card .stat-value {
+            color: var(--color-success);
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-tag {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            font-size: var(--text-sm);
+        }
+
+        .filter-tag button {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .receipts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .receipt-card {
+            background-color: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .receipt-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .receipt-card.selected {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .receipt-id {
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+
+        .receipt-date {
+            font-size: var(--text-xs);
+            color: var(--color-text-muted);
+        }
+
+        .receipt-total {
+            font-weight: 700;
+            font-size: var(--text-lg);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .receipt-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-confirmed {
+            background-color: rgba(22, 163, 74, 0.1);
+            color: var(--color-success);
+        }
+
+        .status-declined {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--color-error);
+        }
+
+        .status-pending {
+            background-color: rgba(255, 153, 0, 0.1);
+            color: var(--color-warning);
+        }
+
+        .receipt-note {
+            margin-top: var(--spacing-sm);
+            font-size: var(--text-sm);
+            color: var(--color-text-muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .receipt-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-md);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .receipt-card:hover .receipt-actions {
+            opacity: 1;
+        }
+
+        .action-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--color-text);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-icon:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .checkbox-container {
+            position: absolute;
+            top: var(--spacing-md);
+            left: var(--spacing-md);
+        }
+
+        .receipt-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .receipt-checkbox:checked {
+            background-color: var(--color-accent);
+            border-color: var(--color-accent);
+        }
+
+        .receipt-checkbox:checked::after {
+            content: "✓";
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .bulk-actions-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--color-bg);
+            border-top: 1px solid var(--color-border);
+            padding: var(--spacing-md) var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+            z-index: 30;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .bulk-actions-bar.visible {
+            transform: translateY(0);
+        }
+
+        .selected-count {
+            font-weight: 500;
+        }
+
+        .bulk-actions-group {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
             text-align: center;
-            padding: 18px 0;
-            margin-top: 24px;
-            color: var(--ms-dark);
-            opacity: 0.7;
-            font-size: 0.8rem;
-            border-top: 1px solid var(--ms-gray-dark);
+            padding: var(--spacing-xxl);
+            color: var(--color-text-muted);
         }
 
-        /* Mobile sidebar toggle */
-        .mobile-overlay {
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-border);
+        }
+
+        .empty-state p {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        /* Modal Styles */
+        .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 98;
-        }
-        
-        .mobile-overlay-visible {
-            display: block;
-        }
-
-        /* Animation for receipt items */
-        .receipt-item-archive {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeInItem {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Styling for search box */
-        .search-box-archive {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        #search-input {
-            flex: 1;
-            padding: 14px;
-            border: 2px solid var(--ms-blue);
-            border-radius: var(--ms-border-radius);
-            font-size: 0.95rem;
-            background: var(--ms-gray);
-            color: var(--ms-dark);
-            transition: var(--ms-transition);
-        }
-
-        #search-input:focus {
-            border-color: var(--ms-blue-dark);
-            box-shadow: 0 0 0 4px rgba(0, 120, 212, 0.3);
-            background: var(--ms-light);
-            outline: none;
-        }
-
-        /* Button styling */
-        .btn {
-            padding: 12px 16px;
-            border: none;
-            border-radius: var(--ms-border-radius);
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--ms-transition);
-            display: flex;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-overlay);
+            z-index: 100;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            box-shadow: var(--ms-card-shadow);
-            min-height: 44px;
+            padding: var(--spacing-lg);
         }
 
-        .btn-primary {
-            background: var(--ms-blue);
-            color: white;
+        .modal-content {
+            background-color: var(--color-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing-xl);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-md);
+            animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
         }
 
-        .btn-primary:hover {
-            background: var(--ms-blue-dark);
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
+        .modal-header {
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .btn-success {
-            background: var(--ms-success);
-            color: white;
+        .modal-title {
+            font-weight: 600;
+            font-size: var(--text-xl);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
         }
 
-        .btn-success:hover {
-            background: #218838;
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        .btn-danger {
-            background: var(--ms-error);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        .btn-warning {
-            background: var(--ms-accent);
-            color: var(--ms-dark);
-        }
-
-        .btn-warning:hover {
-            background: #e0ac00;
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        .btn-secondary {
-            background: var(--ms-gray);
-            color: var(--ms-dark);
-        }
-
-        .btn-secondary:hover {
-            background: var(--ms-gray-dark);
-            transform: translateY(-3px);
-            box-shadow: var(--ms-card-shadow-hover);
-        }
-
-        /* Responsive adjustments */
-        @media (min-width: 768px) {
-            .settings-section {
-                padding: 20px;
-            }
-            
-            .search-box-archive {
-                flex-direction: row;
-            }
-            
-            .receipt-item-archive {
-                flex-direction: row;
-                align-items: center;
-            }
-            
-            .receipt-details-archive {
-                flex-direction: row;
-                align-items: center;
-                width: auto;
-                margin-top: 0;
-                padding-top: 0;
-                border-top: none;
-            }
-            
-            .button-group {
-                flex-direction: row;
-            }
-            
-            .income-total {
-                flex-direction: row;
-                gap: 0;
-                text-align: left;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .admin-content {
-                padding: 0 12px 16px;
-            }
-            
-            .settings-section {
-                padding: 14px;
-            }
-            
-            .modal-header, .modal-body, .modal-footer {
-                padding: 12px;
-            }
-            
-            .admin-sidebar {
-                width: 100%;
-            }
-            
-            .receipt-item-archive {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            
-            .receipt-details-archive {
-                align-items: flex-start;
-                width: 100%;
-                margin-top: 8px;
-                padding-top: 8px;
-                border-top: 1px solid var(--ms-gray-dark);
-            }
-            
-            .button-group button, 
-            .button-group label {
-                min-width: 100%;
-            }
-            
-            .bulk-actions button {
-                min-width: 100%;
-            }
-            
-            .detail-col {
-                min-width: 100%;
-            }
-        }
-        
-        /* Mobile specific adjustments */
-        .mobile-hide {
-            display: none;
-        }
-        
-        @media (min-width: 768px) {
-            .mobile-hide {
-                display: inline;
-            }
-        }
-        
-        .mobile-overlay-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: transparent;
+        .close-modal {
+            background: none;
             border: none;
-            color: white;
-            font-size: 1.6rem;
+            font-size: var(--text-lg);
+            color: var(--color-text-muted);
             cursor: pointer;
-            z-index: 99;
-            display: none;
+            padding: var(--spacing-xs);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
         }
-        
-        @media (max-width: 767px) {
-            .mobile-overlay-close {
+
+        .close-modal:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--color-text);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .detail-label {
+            font-size: var(--text-xs);
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: var(--text-sm);
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-lg) 0;
+            font-size: var(--text-sm);
+        }
+
+        .items-table th {
+            text-align: left;
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        .items-table td {
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .note-section {
+            margin-top: var(--spacing-lg);
+        }
+
+        .note-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            font-size: var(--text-sm);
+            min-height: 100px;
+            margin-top: var(--spacing-sm);
+            transition: var(--transition);
+        }
+
+        .note-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: var(--focus-ring);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            justify-content: flex-end;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--color-text);
+            color: white;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius);
+            z-index: 60;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+            font-weight: 500;
+        }
+
+        .notification.success {
+            background-color: var(--color-success);
+        }
+
+        .notification.error {
+            background-color: var(--color-error);
+        }
+
+        /* Animations */
+        @keyframes slideUp {
+            from { transform: translateY(20px) translateX(-50%); opacity: 0; }
+            to { transform: translateY(0) translateX(-50%); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .receipts-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
                 display: block;
             }
-            
-            .admin-sidebar {
-                width: 100%;
-                max-width: 100%;
+
+            .sidebar {
+                position: fixed;
+                top: var(--header-height);
+                left: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                z-index: 50;
+                width: 80%;
+                max-width: 300px;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: var(--color-overlay);
+                z-index: 40;
+            }
+
+            .overlay.active {
+                display: block;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
             }
         }
-        
-        /* Mobile-specific optimizations */
-        @media (max-width: 767px) {
-            /* Make buttons larger for touch */
-            .btn, .modal-btn, .bulk-actions button, .button-group button, 
-            .button-group label, .add-product-btn, .refresh-btn {
-                padding: 14px;
-                min-height: 50px;
-                font-size: 1rem;
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
-            
-            /* Adjust modal for small screens */
+
+            .receipts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .bulk-actions-bar {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                align-items: flex-start;
+            }
+
+            .bulk-actions-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
             .modal-content {
-                max-height: 95vh;
-                width: calc(100% - 20px);
+                padding: var(--spacing-lg);
             }
-            
+
             .modal-footer {
                 flex-direction: column;
-                gap: 10px;
             }
-            
+
             .modal-footer .btn {
                 width: 100%;
             }
-            
-            /* Adjust receipt details */
-            .receipt-info {
-                min-width: 0;
-            }
-            
-            .receipt-id, .receipt-date, .receipt-note {
-                max-width: 100%;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            
-            /* Center content */
-            .admin-container {
-                justify-content: center;
-            }
-            
-            /* Reduce font sizes for small screens */
-            .card-header h2, .section-header h2, .modal-title {
-                font-size: 1.2rem;
-            }
-            
-            .stat-value {
-                font-size: 1.3rem;
-            }
-            
-            .stat-label {
-                font-size: 0.9rem;
-            }
-            
-            /* Stack header elements on very small screens */
-            @media (max-width: 360px) {
-                .admin-header {
-                    flex-wrap: wrap;
-                    justify-content: center;
-                    gap: 10px;
-                }
-                
-                .logo {
-                    width: 100%;
-                    justify-content: center;
-                    margin-bottom: 10px;
-                }
-                
-                .header-controls {
-                    width: 100%;
-                    justify-content: center;
-                }
-                
-                body {
-                    font-size: 14px;
-                }
-            }
+        }
+
+        /* Debug info */
+        .debug-info {
+            background: rgba(13, 110, 253, 0.1);
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            margin: var(--spacing-md) 0;
+            font-family: monospace;
+            font-size: var(--text-xs);
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow: auto;
+            display: none;
+        }
+
+        /* Disabled state for deletion */
+        .deletion-disabled .btn-danger,
+        .deletion-disabled .action-icon[onclick*="delete"],
+        .deletion-disabled #bulk-delete {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <div class="admin-header">
+    <header>
         <div class="logo">
             <button class="hamburger" id="hamburger">
                 <i class="fas fa-bars"></i>
             </button>
-            <h1>Belegarchiv</h1>
+            <i class="fas fa-archive"></i>
+            <span>Belegarchiv</span>
         </div>
         <div class="header-controls">
-            <div class="time-display" id="timeDisplay"></div>
-            <button class="notification-btn" id="notificationBtn">
+            <!-- <div class="time-display" id="timeDisplay"></div>
+             <button class="notification-btn" id="notificationBtn">
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge" id="notificationBadge">0</span>
             </button>
-            <button class="logout-btn" id="logoutBtn">
+            <button class="action-btn" onclick="window.location.href='index'">
+                <i class="fas fa-cash-register"></i>
+                <span>Zur Kasse</span>
+            </button> -->
+            <button class="action-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
-                <span class="mobile-hide">Abmelden</span>
+                <span>Abmelden</span>
             </button>
         </div>
-    </div>
+    </header>
 
-    <div class="mobile-overlay" id="mobile-overlay"></div>
-    <button class="mobile-overlay-close" id="mobile-overlay-close">
-        <i class="fas fa-times"></i>
-    </button>
+    <div class="overlay" id="overlay"></div>
 
-    <div class="admin-container">
-        <aside class="admin-sidebar" id="sidebar">
+    <div class="main-container">
+        <aside class="sidebar" id="sidebar">
             <div class="nav-container">
-                <a href="control" class="nav-link" style="color:#218838; font-weight: bold;">
+                <a href="control" class="nav-link">
                     <i class="fas fa-cogs"></i>
-                    (NEU!) Steuerung
-                </a>
-                <a href="navi" class="nav-link">
-                    <i class="fas fa-map-marked-alt"></i>
-                    Navigation
+                    <span>Steuerung</span>
+                    <span class="new-feature">NEU</span>
                 </a>
                 <a href="admin" class="nav-link">
                     <i class="fas fa-tachometer-alt"></i>
-                    Dashboard
+                    <span>Dashboard</span>
                 </a>
                 <a href="products" class="nav-link">
                     <i class="fas fa-box"></i>
-                    Produktverwaltung
+                    <span>Produkte</span>
                 </a>
                 <a href="index" class="nav-link">
                     <i class="fas fa-cash-register"></i>
-                    Kassenansicht
+                    <span>Kasse</span>
                 </a>
                 <a href="archive" class="nav-link active">
                     <i class="fas fa-archive"></i>
-                    Archiv
+                    <span>Archiv</span>
                 </a>
                 <a href="merchant" class="nav-link">
                     <i class="fas fa-store"></i>
-                    Händleransicht
+                    <span>Händler</span>
                 </a>
                 <a href="analytics" class="nav-link">
                     <i class="fas fa-chart-line"></i>
-                    Analysen
+                    <span>Analysen</span>
                 </a>
                 <a href="settings" class="nav-link">
                     <i class="fas fa-cog"></i>
-                    Einstellungen
+                    <span>Einstellungen</span>
                 </a>
             </div>
-            
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-filter"></i> Filter</h2>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="fas fa-filter"></i>
+                    Filter
+                </h3>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="checkbox" id="filter-confirmed" checked>
+                        <span>Bestätigt</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" id="filter-declined" checked>
+                        <span>Abgelehnt</span>
+                    </label>
                 </div>
-                
-                <div class="filter-section">
-                    <div class="filter-title">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Status</span>
-                    </div>
-                    <div class="filter-options">
-                        <label class="filter-option">
-                            <input type="checkbox" id="filter-confirmed" checked> 
-                            <span>Bestätigt</span>
-                        </label>
-                        <label class="filter-option">
-                            <input type="checkbox" id="filter-declined" checked> 
-                            <span>Abgelehnt</span>
-                        </label>
-                    </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="fas fa-calendar"></i>
+                    Zeitraum
+                </h3>
+                <div class="date-filter">
+                    <input type="date" id="start-date" class="form-input">
+                    <input type="date" id="end-date" class="form-input">
                 </div>
-                
-                <div class="filter-section">
-                    <div class="filter-title">
-                        <i class="fas fa-calendar"></i>
-                        <span>Zeitraum</span>
-                    </div>
-                    <div class="date-filter">
-                        <input type="date" id="start-date" class="date-input">
-                        <input type="date" id="end-date" class="date-input">
-                        <button class="btn btn-primary" id="apply-date-filter">
-                            <i class="fas fa-check"></i> Anwenden
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="filter-section">
-                    <div class="filter-title">
-                        <i class="fas fa-search"></i>
-                        <span>Notizen suchen</span>
-                    </div>
-                    <div class="search-box-archive">
-                        <input type="text" id="note-search" class="form-input" placeholder="Suche in Notizen...">
-                    </div>
-                </div>
-                
-                <div class="bulk-actions">
-                    <button id="bulk-delete" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Löschen
+                <button class="btn btn-primary" id="apply-date-filter" style="margin-top: 12px; width: 100%;">
+                    <i class="fas fa-check"></i> Anwenden
+                </button>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="fas fa-search"></i>
+                    Notizen durchsuchen
+                </h3>
+                <input type="text" id="note-search" class="form-input" placeholder="Notizinhalt suchen...">
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="fas fa-tools"></i>
+                    Verwaltung
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button id="auto-delete" class="btn btn-warning">
+                        <i class="fas fa-clock"></i> Alte Belege löschen
                     </button>
-                    <button id="bulk-export" class="btn btn-success">
-                        <i class="fas fa-file-export"></i> Export
+                    <button id="export-all" class="btn btn-success">
+                        <i class="fas fa-file-export"></i> Alle exportieren
+                    </button>
+                    <label for="import-input" class="btn btn-secondary">
+                        <i class="fas fa-file-import"></i> Importieren
+                    </label>
+                    <input type="file" id="import-input" accept=".txt" style="display: none;">
+                    <button id="debug-btn" class="btn btn-secondary">
+                        <i class="fas fa-bug"></i> Debug Info
                     </button>
                 </div>
-                
-                <div class="backup-reminder" id="backup-reminder">
-                    <i class="fas fa-exclamation-triangle"></i>
+            </div>
+
+            <div class="backup-reminder" id="backup-reminder">
+                <div style="display: flex; align-items: flex-start;">
                     <div class="backup-content">
                         <h4>Backup empfohlen</h4>
                         <p>Ihr letztes Backup war vor 12 Tagen</p>
@@ -2036,126 +1115,127 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-            </div>
-            
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-tools"></i> Verwaltung</h2>
-                </div>
-                
-                <div class="button-group">
-                    <button id="auto-delete" class="btn btn-warning">
-                        <i class="fas fa-clock"></i> Alte Belege
-                    </button>
-                    <button id="export-all" class="btn btn-success">
-                        <i class="fas fa-file-export"></i> Alle exportieren
-                    </button>
-                    <label for="import-input" class="btn btn-primary">
-                        <i class="fas fa-file-import"></i> Import
-                    </label>
-                    <input type="file" id="import-input" accept=".txt" style="display: none;">
-                    <button id="debug-btn" class="btn btn-secondary">
-                        <i class="fas fa-bug"></i> Debug
-                    </button>
-                </div>
+                <button class="btn btn-success" style="width: 100%; margin-top: 12px;">
+                    <i class="fas fa-download"></i> Backup erstellen
+                </button>
             </div>
         </aside>
-        
-        <main class="admin-content">
-            <div class="search-box-archive">
-                <input type="text" id="search-input" placeholder="🔎 Suche nach Belegnummer, Datum oder Status...">
-            </div>
-            
-            <div id="error-container" style="display: none;" class="error-message"></div>
-            <div id="success-container" style="display: none;" class="success-message"></div>
-            <div id="debug-container" style="display: none;" class="debug-info"></div>
-            
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-receipt"></i> Archivierte Belege</h2>
-                    <div class="receipt-count" id="receipt-count">0 Belege</div>
+
+        <main class="content">
+            <div class="content-header">
+                <h1 class="page-title">Archivierte Belege</h1>
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="Belege durchsuchen...">
                 </div>
-                <div class="receipt-list" id="receipt-list"></div>
             </div>
-            
-            <div class="income-total" id="income-total">
-                <div class="income-label">Gesamteinnahmen:</div>
-                <span id="total-amount">€0.00</span>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-receipts">0</div>
+                    <div class="stat-label">Gesamtbelege</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="confirmed-receipts">0</div>
+                    <div class="stat-label">Bestätigte Belege</div>
+                </div>
+                <div class="stat-card income-card">
+                    <div class="stat-value" id="total-income">€0.00</div>
+                    <div class="stat-label">Gesamteinnahmen</div>
+                </div>
+            </div>
+
+            <div class="filters-bar" id="active-filters">
+                <!-- Active filters will be displayed here -->
+            </div>
+
+            <div class="debug-info" id="debug-container"></div>
+
+            <div class="receipts-grid" id="receipts-container">
+                <!-- Receipt cards will be generated here -->
             </div>
         </main>
     </div>
-    
+
+    <div class="bulk-actions-bar" id="bulk-actions-bar">
+        <div class="selected-count" id="selected-count">0 Belege ausgewählt</div>
+        <div class="bulk-actions-group">
+            <button class="btn btn-danger" id="bulk-delete">
+                <i class="fas fa-trash"></i> Löschen
+            </button>
+            <button class="btn btn-success" id="bulk-export">
+                <i class="fas fa-file-export"></i> Exportieren
+            </button>
+        </div>
+    </div>
+
     <div class="modal" id="receipt-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modal-title">Beleg Details</h3>
+                <h2 class="modal-title">
+                    <i class="fas fa-receipt"></i>
+                    Belegdetails
+                </h2>
                 <button class="close-modal" id="close-modal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="receipt-detail-row">
-                    <div class="detail-col">
-                        <div class="detail-label">Belegnummer</div>
-                        <div class="detail-value" id="detail-id">-</div>
-                    </div>
-                    <div class="detail-col">
-                        <div class="detail-label">Datum</div>
-                        <div class="detail-value" id="detail-date">-</div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Belegnummer</div>
+                    <div class="detail-value" id="detail-id">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Datum & Uhrzeit</div>
+                    <div class="detail-value" id="detail-date">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">
+                        <span id="detail-status" class="receipt-status status-confirmed">-</span>
                     </div>
                 </div>
-                
-                <div class="receipt-detail-row">
-                    <div class="detail-col">
-                        <div class="detail-label">Status</div>
-                        <div class="detail-value">
-                            <span id="detail-status" class="status-badge-archive">-</span>
-                        </div>
-                    </div>
-                    <div class="detail-col">
-                        <div class="detail-label">Gesamtbetrag</div>
-                        <div class="detail-value" id="detail-total">-</div>
-                    </div>
-                </div>
-                
-                <h4>Artikel</h4>
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th>Artikel</th>
-                            <th>Menge</th>
-                            <th>Preis</th>
-                            <th>Gesamt</th>
-                        </tr>
-                    </thead>
-                    <tbody id="items-list">
-                        <!-- Items will be populated here -->
-                    </tbody>
-                </table>
-                
-                <div class="note-section">
-                    <div class="detail-label">Notizen</div>
-                    <textarea id="note-input" placeholder="Notizen zu diesem Beleg hinzufügen..."></textarea>
+                <div class="detail-item">
+                    <div class="detail-label">Gesamtbetrag</div>
+                    <div class="detail-value" id="detail-total">-</div>
                 </div>
             </div>
+
+            <h3>Artikel</h3>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Artikel</th>
+                        <th>Menge</th>
+                        <th>Preis</th>
+                        <th>Gesamt</th>
+                    </tr>
+                </thead>
+                <tbody id="items-list">
+                    <!-- Items will be populated here -->
+                </tbody>
+            </table>
+
+            <div class="note-section">
+                <div class="detail-label">Notizen</div>
+                <textarea id="note-input" class="note-input" placeholder="Notizen zu diesem Beleg hinzufügen..."></textarea>
+            </div>
+
             <div class="modal-footer">
-                <button id="toggle-status" class="btn btn-secondary">
+                <button class="btn btn-secondary" id="toggle-status">
                     <i class="fas fa-sync"></i> Status ändern
                 </button>
-                <button id="save-note" class="btn btn-success">
+                <button class="btn btn-success" id="save-note">
                     <i class="fas fa-save"></i> Speichern
                 </button>
-                <button id="print-receipt" class="btn btn-primary">
+                <button class="btn btn-primary" id="print-receipt">
                     <i class="fas fa-print"></i> Drucken
                 </button>
             </div>
         </div>
     </div>
 
-    <footer>
-        <p>© 2023 Gittertier GmbH. Alle Rechte vorbehalten.</p>
-        <p>Version 3.0 | Zuletzt aktualisiert: 15.11.2023</p>
-    </footer>
+    <div class="notification" id="notification"></div>
 
     <script>
         // Initialize jsPDF
@@ -2163,14 +1243,21 @@
         
         let currentReceipt = null;
         let selectedReceipts = new Set();
+        let allReceipts = [];
         
         // Apply dark mode if enabled in localStorage
         function applyDarkMode() {
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
             if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
+                document.documentElement.style.setProperty('--color-bg', '#111827');
+                document.documentElement.style.setProperty('--color-text', '#f3f4f6');
+                document.documentElement.style.setProperty('--color-text-muted', '#9ca3af');
+                document.documentElement.style.setProperty('--color-border', '#374151');
             } else {
-                document.body.classList.remove('dark-mode');
+                document.documentElement.style.setProperty('--color-bg', '#ffffff');
+                document.documentElement.style.setProperty('--color-text', '#111111');
+                document.documentElement.style.setProperty('--color-text-muted', '#6b7280');
+                document.documentElement.style.setProperty('--color-border', '#e5e7eb');
             }
         }
 
@@ -2195,47 +1282,39 @@
             }
         })();
 
-        // Initialize theme
-        function initTheme() {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-            }
-        }
-        
         // Mobile sidebar toggle
         document.getElementById('hamburger').addEventListener('click', function() {
             document.getElementById('sidebar').classList.add('active');
-            document.getElementById('mobile-overlay').classList.add('mobile-overlay-visible');
+            document.getElementById('overlay').classList.add('active');
         });
         
-        document.getElementById('mobile-overlay').addEventListener('click', function() {
-            this.classList.remove('mobile-overlay-visible');
+        document.getElementById('overlay').addEventListener('click', function() {
+            this.classList.remove('active');
             document.getElementById('sidebar').classList.remove('active');
         });
-        
-        document.getElementById('mobile-overlay-close').addEventListener('click', function() {
-            document.getElementById('mobile-overlay').classList.remove('mobile-overlay-visible');
-            document.getElementById('sidebar').classList.remove('active');
-        });
-        
+
         // Show success message
         function showSuccess(message) {
-            const container = document.getElementById('success-container');
-            container.textContent = message;
-            container.style.display = 'block';
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification success';
+            notification.style.display = 'block';
+            
             setTimeout(() => {
-                container.style.display = 'none';
-            }, 5000);
+                notification.style.display = 'none';
+            }, 3000);
         }
         
         // Show error message
         function showError(message) {
-            const container = document.getElementById('error-container');
-            container.textContent = message;
-            container.style.display = 'block';
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification error';
+            notification.style.display = 'block';
+            
             setTimeout(() => {
-                container.style.display = 'none';
-            }, 5000);
+                notification.style.display = 'none';
+            }, 3000);
         }
         
         // Enhanced debug information
@@ -2315,13 +1394,13 @@
                 
                 keysToRemove.forEach(key => localStorage.removeItem(key));
                 showSuccess(`${keysToRemove.length} Belege gelöscht`);
-                generateReceiptList(loadReceipts());
+                loadAndDisplayReceipts();
             }
         });
 
         // Export all functionality
         document.getElementById('export-all').addEventListener('click', function() {
-            exportReceipts(loadReceipts());
+            exportReceipts(allReceipts);
         });
         
         // Export selected receipts
@@ -2331,7 +1410,7 @@
                 return;
             }
             
-            const receipts = loadReceipts().filter(r => selectedReceipts.has(r.id));
+            const receipts = allReceipts.filter(r => selectedReceipts.has(r.id));
             exportReceipts(receipts);
         });
         
@@ -2377,7 +1456,7 @@
                     });
 
                     showSuccess(`${importedCount} Belege importiert`);
-                    generateReceiptList(loadReceipts());
+                    loadAndDisplayReceipts();
                 } catch (error) {
                     showError('Ungültiges Dateiformat');
                 }
@@ -2442,12 +1521,17 @@
             return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
-        // Update income total display
-        function updateIncomeTotal(receipts) {
-            const total = receipts
+        // Update stats display
+        function updateStats(receipts) {
+            const total = receipts.length;
+            const confirmed = receipts.filter(r => r.status === 'Bestätigt').length;
+            const income = receipts
                 .filter(r => r.status === 'Bestätigt')
                 .reduce((sum, r) => sum + r.total, 0);
-            document.getElementById('total-amount').textContent = `€${total.toFixed(2)}`;
+            
+            document.getElementById('total-receipts').textContent = total;
+            document.getElementById('confirmed-receipts').textContent = confirmed;
+            document.getElementById('total-income').textContent = `€${income.toFixed(2)}`;
         }
 
         function applyArchiveSettings() {
@@ -2456,12 +1540,17 @@
             
             // Apply dark mode
             if (archiveSettings.darkMode) {
-                document.body.classList.add('dark-mode');
+                document.documentElement.style.setProperty('--color-bg', '#111827');
+                document.documentElement.style.setProperty('--color-text', '#f3f4f6');
+                document.documentElement.style.setProperty('--color-text-muted', '#9ca3af');
+                document.documentElement.style.setProperty('--color-border', '#374151');
             }
             
-            // Apply full note display
-            if (archiveSettings.showFullNote) {
-                document.body.classList.add('show-full-note');
+            // Apply deletion restriction
+            if (archiveSettings.disableDeletion) {
+                document.body.classList.add('deletion-disabled');
+            } else {
+                document.body.classList.remove('deletion-disabled');
             }
             
             // Apply default date range
@@ -2493,146 +1582,108 @@
                 filterReceipts();
             }
         }
-        
-        // Disable deletion if setting is enabled
-        function disableDeletionIfNeeded() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.archiveSettings?.disableDeletion) {
-                // Hide delete buttons
-                document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = 'none');
-                
-                // Hide bulk delete button
-                const bulkDelete = document.getElementById('bulk-delete');
-                if (bulkDelete) bulkDelete.style.display = 'none';
-            }
-        }
-
-        function exportAllReceipts() {
-            const receipts = loadReceipts();
-            if(receipts.length === 0) return;
-            
-            const exportData = receipts.map(receipt => {
-                const stored = JSON.parse(localStorage.getItem(`receipt_${receipt.id}`));
-                return {
-                    key: `receipt_${receipt.id}`,
-                    value: stored
-                };
-            });
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([dataStr], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `belege_backup_${new Date().toISOString().split('T')[0]}.txt`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            
-            console.log('Automatisches Backup erstellt');
-        }
-        
-        // Check for auto backup
-        function checkAutoBackup() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.archiveSettings?.autoBackup) {
-                const lastBackup = localStorage.getItem('lastArchiveBackup');
-                const today = new Date().toISOString().split('T')[0];
-                
-                if (!lastBackup || lastBackup !== today) {
-                    localStorage.setItem('lastArchiveBackup', today);
-                    exportAllReceipts();
-                }
-            }
-        }
 
         // Generate receipt list UI
-        function generateReceiptList(receipts) {
-            const list = document.getElementById('receipt-list');
-            list.innerHTML = '';
+        function displayReceipts(receipts) {
+            const container = document.getElementById('receipts-container');
+            container.innerHTML = '';
             
-            // Update receipt count
-            document.getElementById('receipt-count').textContent = `${receipts.length} Belege`;
+            // Update stats
+            updateStats(receipts);
 
             if(receipts.length === 0) {
-                list.innerHTML = `
-                    <div class="no-results">
+                container.innerHTML = `
+                    <div class="empty-state">
                         <i class="fas fa-inbox"></i>
                         <p>Keine gespeicherten Belege</p>
-                        <button id="add-sample" class="btn btn-primary" style="margin-top: 20px; padding: 14px 20px;">
+                        <button id="add-sample" class="btn btn-primary">
                             <i class="fas fa-plus-circle"></i> Testbeleg hinzufügen
                         </button>
                     </div>
                 `;
                 
-                document.getElementById('add-sample')?.addEventListener('click', addSampleReceipt);
-                updateIncomeTotal([]);
+                document.getElementById('add-sample').addEventListener('click', addSampleReceipt);
                 return;
             }
 
             receipts.forEach(receipt => {
                 const date = new Date(receipt.date);
-                const item = document.createElement('div');
-                item.className = 'receipt-item-archive';
-                item.dataset.id = receipt.id;
+                const card = document.createElement('div');
+                card.className = 'receipt-card';
+                card.dataset.id = receipt.id;
                 
-                item.innerHTML = `
-                    <div class="receipt-info">
-                        <input type="checkbox" class="receipt-checkbox" data-id="${receipt.id}">
+                if (selectedReceipts.has(receipt.id)) {
+                    card.classList.add('selected');
+                }
+                
+                const statusClass = receipt.status === 'Bestätigt' ? 'status-confirmed' : 
+                                  receipt.status === 'Abgelehnt' ? 'status-declined' : 'status-pending';
+                
+                card.innerHTML = `
+                    <div class="checkbox-container">
+                        <input type="checkbox" class="receipt-checkbox" data-id="${receipt.id}" ${selectedReceipts.has(receipt.id) ? 'checked' : ''}>
+                    </div>
+                    <div class="receipt-header">
                         <div>
                             <div class="receipt-id">${receipt.id}</div>
                             <div class="receipt-date">${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}</div>
-                            ${receipt.note ? `<div class="receipt-note">${receipt.note}</div>` : ''}
                         </div>
+                        <span class="receipt-status ${statusClass}">${receipt.status}</span>
                     </div>
-                    <div class="receipt-details-archive">
-                        <div class="receipt-total">€ ${receipt.total.toFixed(2)}</div>
-                        <div class="status-badge-archive ${receipt.status === 'Bestätigt' ? 'confirmed' : 'declined'}">${receipt.status}</div>
-                    </div>
+                    <div class="receipt-total">€ ${receipt.total.toFixed(2)}</div>
+                    ${receipt.note ? `<div class="receipt-note">${receipt.note}</div>` : ''}
                     <div class="receipt-actions">
-                        <div class="action-btn delete-btn" title="Beleg löschen">
+                        <button class="action-icon" onclick="event.stopPropagation(); showReceiptDetails('${receipt.id}')" title="Details anzeigen">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-icon" onclick="event.stopPropagation(); generateArchiveReceipt('${receipt.id}')" title="PDF erstellen">
+                            <i class="fas fa-file-pdf"></i>
+                        </button>
+                        <button class="action-icon" onclick="event.stopPropagation(); deleteReceipt('${receipt.id}')" title="Beleg löschen">
                             <i class="fas fa-trash"></i>
-                        </div>
+                        </button>
                     </div>
                 `;
                 
                 // Click handler for the entire receipt
-                item.addEventListener('click', (e) => {
+                card.addEventListener('click', (e) => {
                     if (!e.target.classList.contains('receipt-checkbox') && 
-                        !e.target.classList.contains('delete-btn') &&
-                        !e.target.closest('.delete-btn')) {
-                        
-                        // PDF generation with Alt+Click
-                        if (e.altKey) {
-                            generateArchiveReceipt(receipt.data, receipt.status);
-                        } else {
-                            showReceiptDetails(receipt);
-                        }
+                        !e.target.closest('.action-icon')) {
+                        showReceiptDetails(receipt.id);
                     }
                 });
                 
-                // Delete button handler
-                item.querySelector('.delete-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteReceipt(receipt.id);
-                });
-                
                 // Checkbox handler
-                const checkbox = item.querySelector('.receipt-checkbox');
+                const checkbox = card.querySelector('.receipt-checkbox');
                 checkbox.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (checkbox.checked) {
                         selectedReceipts.add(receipt.id);
-                        item.classList.add('selected');
+                        card.classList.add('selected');
                     } else {
                         selectedReceipts.delete(receipt.id);
-                        item.classList.remove('selected');
+                        card.classList.remove('selected');
                     }
+                    updateBulkActionsBar();
                 });
 
-                list.appendChild(item);
+                container.appendChild(card);
             });
-
-            updateIncomeTotal(receipts);
+        }
+        
+        // Update bulk actions bar
+        function updateBulkActionsBar() {
+            const bar = document.getElementById('bulk-actions-bar');
+            const countElement = document.getElementById('selected-count');
+            const count = selectedReceipts.size;
+            
+            countElement.textContent = `${count} Belege ausgewählt`;
+            
+            if (count > 0) {
+                bar.classList.add('visible');
+            } else {
+                bar.classList.remove('visible');
+            }
         }
         
         // Delete a single receipt
@@ -2641,7 +1692,7 @@
                 localStorage.removeItem(`receipt_${id}`);
                 selectedReceipts.delete(id);
                 showSuccess(`Beleg ${id} gelöscht`);
-                generateReceiptList(loadReceipts());
+                loadAndDisplayReceipts();
             }
         }
         
@@ -2660,12 +1711,15 @@
                 const count = selectedReceipts.size;
                 selectedReceipts.clear();
                 showSuccess(`${count} Belege gelöscht`);
-                generateReceiptList(loadReceipts());
+                loadAndDisplayReceipts();
             }
         });
         
         // Show receipt details in modal
-        function showReceiptDetails(receipt) {
+        function showReceiptDetails(receiptId) {
+            const receipt = allReceipts.find(r => r.id === receiptId);
+            if (!receipt) return;
+            
             currentReceipt = receipt;
             const modal = document.getElementById('receipt-modal');
             
@@ -2680,7 +1734,9 @@
             
             const statusBadge = document.getElementById('detail-status');
             statusBadge.textContent = receipt.status;
-            statusBadge.className = 'status-badge-archive ' + (receipt.status === 'Bestätigt' ? 'confirmed' : 'declined');
+            statusBadge.className = 'receipt-status ' + 
+                (receipt.status === 'Bestätigt' ? 'status-confirmed' : 
+                 receipt.status === 'Abgelehnt' ? 'status-declined' : 'status-pending');
             
             // Populate items
             const itemsList = document.getElementById('items-list');
@@ -2702,7 +1758,7 @@
                 // Show message if items are missing
                 itemsList.innerHTML = `
                     <tr>
-                        <td colspan="4" style="text-align: center; padding: 20px; color: var(--ms-dark); opacity: 0.7;">
+                        <td colspan="4" style="text-align: center; padding: 20px; color: var(--color-text-muted);">
                             <i class="fas fa-exclamation-circle"></i> Artikelinformationen nicht verfügbar
                         </td>
                     </tr>
@@ -2735,10 +1791,11 @@
             // Update UI
             const statusBadge = document.getElementById('detail-status');
             statusBadge.textContent = currentReceipt.status;
-            statusBadge.className = 'status-badge-archive ' + (currentReceipt.status === 'Bestätigt' ? 'confirmed' : 'declined');
+            statusBadge.className = 'receipt-status ' + 
+                (currentReceipt.status === 'Bestätigt' ? 'status-confirmed' : 'status-declined');
             
             showSuccess(`Status geändert zu "${currentReceipt.status}"`);
-            generateReceiptList(loadReceipts());
+            loadAndDisplayReceipts();
         });
         
         // Save note
@@ -2754,7 +1811,7 @@
             localStorage.setItem(`receipt_${currentReceipt.id}`, JSON.stringify(stored));
             
             showSuccess("Notiz gespeichert");
-            generateReceiptList(loadReceipts());
+            loadAndDisplayReceipts();
         });
         
         // Print receipt
@@ -2849,15 +1906,16 @@
                 
                 localStorage.setItem(`receipt_${id}`, JSON.stringify(sampleEntry));
                 showSuccess("Testbeleg hinzugefügt");
-                generateReceiptList(loadReceipts());
+                loadAndDisplayReceipts();
             } catch (e) {
                 showError(`Fehler: ${e.message}`);
             }
         }
         
         // Generate archive receipt PDF
-        function generateArchiveReceipt(receiptData, status) {
-            if (!receiptData) {
+        function generateArchiveReceipt(receiptId) {
+            const receipt = allReceipts.find(r => r.id === receiptId);
+            if (!receipt || !receipt.data) {
                 showError("Belegdaten nicht verfügbar");
                 return;
             }
@@ -2865,8 +1923,8 @@
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
-            const paymentDate = new Date(receiptData.date).toLocaleDateString('de-DE');
-            const paymentTime = new Date(receiptData.date).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            const paymentDate = new Date(receipt.date).toLocaleDateString('de-DE');
+            const paymentTime = new Date(receipt.date).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
             let yPos = 20;
 
             // Set colors
@@ -2891,7 +1949,7 @@
 
             doc.setFontSize(12);
             doc.setTextColor(...accentColor);
-            doc.text(`Belegnummer: ${receiptData.id}`, pageWidth/2, yPos + 40, null, 'center');
+            doc.text(`Belegnummer: ${receipt.id}`, pageWidth/2, yPos + 40, null, 'center');
 
             yPos += 70;
 
@@ -2918,8 +1976,8 @@
             yPos += 25;
 
             // Items
-            if (receiptData.items) {
-                receiptData.items.forEach((item, index) => {
+            if (receipt.data.items) {
+                receipt.data.items.forEach((item, index) => {
                     if(yPos > pageHeight - 100) {
                         doc.addPage();
                         yPos = 20;
@@ -2958,12 +2016,12 @@
             doc.setFontSize(18);
             doc.setTextColor(...primaryColor);
             doc.text(`Gesamtsumme:`, 40, yPos + 12);
-            doc.text(`€ ${receiptData.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
+            doc.text(`€ ${receipt.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
 
             yPos += 45;
 
             // Status section
-            const statusColor = status === 'Bestätigt' ? successColor : dangerColor;
+            const statusColor = receipt.status === 'Bestätigt' ? successColor : dangerColor;
             doc.setFillColor(...statusColor);
             doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
             doc.setDrawColor(...statusColor);
@@ -2971,7 +2029,7 @@
 
             doc.setFontSize(18);
             doc.setTextColor(255, 255, 255);
-            doc.text(`Status: ${status}`, pageWidth/2, yPos + 12, null, 'center');
+            doc.text(`Status: ${receipt.status}`, pageWidth/2, yPos + 12, null, 'center');
 
             yPos += 45;
 
@@ -2981,7 +2039,7 @@
             doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
 
             // Save the PDF
-            doc.save(`gittertier_beleg_${receiptData.id}.pdf`);
+            doc.save(`gittertier_beleg_${receipt.id}.pdf`);
         }
 
         // Search functionality
@@ -3010,8 +2068,6 @@
             
             const startDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
-            
-            const allReceipts = loadReceipts();
             
             const filtered = allReceipts.filter(r => {
                 // Status filter
@@ -3047,7 +2103,88 @@
                 return true;
             });
             
-            generateReceiptList(filtered);
+            displayReceipts(filtered);
+            
+            // Update active filters display
+            updateActiveFiltersDisplay();
+        }
+        
+        function updateActiveFiltersDisplay() {
+            const filtersContainer = document.getElementById('active-filters');
+            filtersContainer.innerHTML = '';
+            
+            const showConfirmed = document.getElementById('filter-confirmed').checked;
+            const showDeclined = document.getElementById('filter-declined').checked;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const searchTerm = document.getElementById('search-input').value;
+            const noteSearch = document.getElementById('note-search').value;
+            
+            // Status filters
+            if (!showConfirmed || !showDeclined) {
+                const statusFilter = document.createElement('div');
+                statusFilter.className = 'filter-tag';
+                statusFilter.innerHTML = `
+                    <span>Status: ${!showConfirmed ? 'Nur abgelehnt' : 'Nur bestätigt'}</span>
+                    <button onclick="resetStatusFilter()"><i class="fas fa-times"></i></button>
+                `;
+                filtersContainer.appendChild(statusFilter);
+            }
+            
+            // Date filter
+            if (startDate || endDate) {
+                const dateFilter = document.createElement('div');
+                dateFilter.className = 'filter-tag';
+                dateFilter.innerHTML = `
+                    <span>Zeitraum: ${startDate || 'Anfang'} bis ${endDate || 'Ende'}</span>
+                    <button onclick="resetDateFilter()"><i class="fas fa-times"></i></button>
+                `;
+                filtersContainer.appendChild(dateFilter);
+            }
+            
+            // Search term
+            if (searchTerm) {
+                const searchFilter = document.createElement('div');
+                searchFilter.className = 'filter-tag';
+                searchFilter.innerHTML = `
+                    <span>Suche: "${searchTerm}"</span>
+                    <button onclick="resetSearch()"><i class="fas fa-times"></i></button>
+                `;
+                filtersContainer.appendChild(searchFilter);
+            }
+            
+            // Note search
+            if (noteSearch) {
+                const noteFilter = document.createElement('div');
+                noteFilter.className = 'filter-tag';
+                noteFilter.innerHTML = `
+                    <span>Notiz: "${noteSearch}"</span>
+                    <button onclick="resetNoteSearch()"><i class="fas fa-times"></i></button>
+                `;
+                filtersContainer.appendChild(noteFilter);
+            }
+        }
+        
+        function resetStatusFilter() {
+            document.getElementById('filter-confirmed').checked = true;
+            document.getElementById('filter-declined').checked = true;
+            filterReceipts();
+        }
+        
+        function resetDateFilter() {
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            filterReceipts();
+        }
+        
+        function resetSearch() {
+            document.getElementById('search-input').value = '';
+            filterReceipts();
+        }
+        
+        function resetNoteSearch() {
+            document.getElementById('note-search').value = '';
+            filterReceipts();
         }
 
         // Time display function
@@ -3082,19 +2219,21 @@
             window.location.reload();
         });
 
+        // Load and display receipts
+        function loadAndDisplayReceipts() {
+            allReceipts = loadReceipts();
+            filterReceipts();
+        }
+
         // Initial load
-        initTheme();
         applyArchiveSettings();
-        filterReceipts();
-        disableDeletionIfNeeded();
-        checkAutoBackup();
+        loadAndDisplayReceipts();
         updateTime();
         setInterval(updateTime, 1000);
         
         // Simulate backup reminder if not already set
         if (!localStorage.getItem('lastBackupReminder')) {
             localStorage.setItem('lastBackupReminder', new Date().toISOString());
-            document.getElementById('backup-reminder').style.display = 'flex';
         }
     </script>
 </body>
