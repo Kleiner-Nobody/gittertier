@@ -1505,6 +1505,9 @@
         <div class="tutorial-content">
             <div class="tutorial-header">
                 <h2 class="tutorial-title"><i class="fas fa-graduation-cap"></i> Willkommen zum Gittertier Pro Tutorial</h2>
+                <button class="tutorial-close" onclick="closeTutorial()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
             <div class="tutorial-body">
@@ -1536,6 +1539,9 @@
         <div class="tutorial-content">
             <div class="tutorial-header">
                 <h2 class="tutorial-title"><i class="fas fa-check-circle"></i> Tutorial abgeschlossen</h2>
+                <button class="tutorial-close" onclick="closeTutorial()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
             <div class="tutorial-body">
@@ -1571,6 +1577,34 @@
         // Enhanced Tutorial functionality
         let tutorialCurrentStep = 0;
         const tutorialSteps = [
+            {
+                title: "Header-Buttons",
+                content: "Oben rechts finden Sie verschiedene Funktionen: Das Zahnrad für Admin-Einstellungen, das Fragezeichen für dieses Tutorial und das Info-Symbol für Informationen zur App.",
+                element: ".header-controls",
+                position: "bottom",
+                action: null
+            },
+            {
+                title: "Admin-Zugang",
+                content: "Das Zahnrad-Symbol führt zur Admin-Seite, auf der Sie Einstellungen vornehmen können. Diese Funktion ist nur für berechtigte Benutzer zugänglich.",
+                element: ".header-controls .control-btn:nth-child(1)",
+                position: "bottom",
+                action: null
+            },
+            {
+                title: "Tutorial erneut öffnen",
+                content: "Das Fragezeichen-Symbol öffnet dieses Tutorial erneut, falls Sie Hilfe benötigen oder eine Funktion noch einmal erklärt haben möchten.",
+                element: ".header-controls .control-btn:nth-child(2)",
+                position: "bottom",
+                action: null
+            },
+            {
+                title: "Informationen zur App",
+                content: "Das Info-Symbol führt zur 'Über'-Seite mit Informationen zur App, Version und weiteren Details.",
+                element: ".header-controls .control-btn:nth-child(3)",
+                position: "bottom",
+                action: null
+            },
             {
                 title: "Scanner-Bereich",
                 content: "Dies ist der Scanner-Bereich. Hier scannen Sie Barcodes von Produkten, um sie zum Warenkorb hinzuzufügen.",
@@ -1656,7 +1690,7 @@
             },
             {
                 title: "Zum Warenkorb hinzufügen",
-                content: "Klicken Sie auf 'In Warenkorb', um das Produkt mit der eingestellten Menge zum Warenkorb hinzuzufügen.",
+                content: "Klicken Sie auf 'In Warenkorb', um das Produkt mit der eingestellten Menge zum Warenkorb hinzufügen.",
                 element: ".add-to-cart-btn",
                 position: "top",
                 action: "click",
@@ -1677,21 +1711,6 @@
                 position: "top",
                 action: null
             },
-            /* {
-                 title: "Artikel bearbeiten",
-                content: "Sie können die Menge jedes Artikels anpassen oder Artikel komplett entfernen.",
-                element: ".cart-item-quantity",
-                position: "top",
-                action: "click",
-                simulate: function() {
-                    // Find the cart item and simulate increasing quantity
-                    const quantityElement = document.querySelector('.cart-item-quantity .quantity-value');
-                    if (quantityElement) {
-                        quantityElement.textContent = '3';
-                    }
-                    setTimeout(nextTutorialStep, 800);
-                } 
-            }, */
             {
                 title: "Warenkorb leeren",
                 content: "Mit diesem Button können Sie den gesamten Warenkorb auf einmal leeren.",
@@ -1722,18 +1741,12 @@
                         showTutorialCompletion();
                     }, 2000);
                 }
-            },
-            /* {
-                title: "Hilfe und Support",
-                content: "Bei Fragen oder Problemen finden Sie hier Hilfe und Support.",
-                element: ".support-btn",
-                position: "left",
-                action: null
-            } */
+            }
         ];
 
         let tutorialBubble = null;
         let tutorialHighlight = null;
+        let tutorialClickHandler = null;
         
         function showTutorial() {
             document.getElementById('tutorial-welcome-modal').style.display = 'flex';
@@ -1756,6 +1769,15 @@
             if (tutorialHighlight) {
                 tutorialHighlight.remove();
                 tutorialHighlight = null;
+            }
+            
+            // Remove previous click handler
+            if (tutorialClickHandler) {
+                const element = document.querySelector(tutorialSteps[tutorialCurrentStep].element);
+                if (element && tutorialSteps[tutorialCurrentStep].action === 'click') {
+                    element.removeEventListener('click', tutorialClickHandler);
+                }
+                tutorialClickHandler = null;
             }
             
             const step = tutorialSteps[stepIndex];
@@ -1809,15 +1831,14 @@
             if (step.action === 'click' && step.element) {
                 const element = document.querySelector(step.element);
                 if (element) {
-                    const clickHandler = function() {
-                        element.removeEventListener('click', clickHandler);
+                    tutorialClickHandler = function() {
                         if (step.simulate) {
                             step.simulate();
                         } else {
                             nextTutorialStep();
                         }
                     };
-                    element.addEventListener('click', clickHandler);
+                    element.addEventListener('click', tutorialClickHandler);
                 }
             }
             
@@ -1914,6 +1935,15 @@
                 tutorialHighlight = null;
             }
             
+            // Remove any click handlers
+            if (tutorialClickHandler) {
+                const element = document.querySelector(tutorialSteps[tutorialCurrentStep].element);
+                if (element && tutorialSteps[tutorialCurrentStep].action === 'click') {
+                    element.removeEventListener('click', tutorialClickHandler);
+                }
+                tutorialClickHandler = null;
+            }
+            
             document.getElementById('tutorial-overlay').style.display = 'none';
             document.getElementById('tutorial-welcome-modal').style.display = 'none';
             document.getElementById('tutorial-completion-modal').style.display = 'none';
@@ -1971,12 +2001,6 @@
             if (tutorialShown !== 'true') {
                 setTimeout(showTutorial, 1000);
             }
-            
-            // Make sure the help button always shows the tutorial
-            document.querySelector('.help-btn').addEventListener('click', function(e) {
-                e.preventDefault();
-                showTutorial();
-            });
         });
 
         // All the original JavaScript functionality remains exactly the same
