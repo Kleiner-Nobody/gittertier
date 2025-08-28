@@ -1323,6 +1323,54 @@
             display: none;
         }
     }
+
+    /* New tutorial styles to fix the issue */
+    .tutorial-interactive-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: none;
+    }
+    
+    .tutorial-focus-element {
+        position: relative;
+        z-index: 10001;
+    }
+    
+    .tutorial-explanation {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: white;
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        box-shadow: var(--shadow-md);
+        z-index: 10002;
+        max-width: 90%;
+        width: 500px;
+        text-align: center;
+    }
+    
+    .tutorial-explanation h3 {
+        color: var(--color-tutorial);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .tutorial-explanation p {
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text);
+    }
+    
+    .tutorial-explanation-buttons {
+        display: flex;
+        justify-content: center;
+        gap: var(--spacing-md);
+    }
     </style>
 </head>
 <body>
@@ -1499,8 +1547,17 @@
     </div>
 
     <!-- New Tutorial Elements -->
-    <div class="tutorial-overlay" id="tutorial-overlay"></div>
+    <div class="tutorial-interactive-overlay" id="tutorial-overlay"></div>
     
+    <div class="tutorial-explanation" id="tutorial-explanation">
+        <h3 id="tutorial-title">Willkommen zum Tutorial</h3>
+        <p id="tutorial-description">Hier erfahren Sie, wie die App funktioniert.</p>
+        <div class="tutorial-explanation-buttons">
+            <button class="tutorial-bubble-btn secondary" id="tutorial-prev">Zurück</button>
+            <button class="tutorial-bubble-btn primary" id="tutorial-next">Weiter</button>
+        </div>
+    </div>
+
     <div class="tutorial-modal" id="tutorial-welcome-modal">
         <div class="tutorial-content">
             <div class="tutorial-header">
@@ -1527,9 +1584,13 @@
             </div>
             
             <div class="tutorial-actions">
+                <div class="tutorial-checkbox">
+                    <input type="checkbox" id="dont-show-again">
+                    <label for="dont-show-again">Tutorial nicht mehr anzeigen</label>
+                </div>
                 <div class="tutorial-buttons">
                     <button class="tutorial-btn secondary" onclick="closeTutorial()">Überspringen</button>
-                    <button class="tutorial-btn primary" onclick="startBubbleTutorial()">Tutorial starten</button>
+                    <button class="tutorial-btn primary" onclick="startInteractiveTutorial()">Tutorial starten</button>
                 </div>
             </div>
         </div>
@@ -1560,11 +1621,6 @@
                 </div>
             </div>
             
-            <div class="tutorial-checkbox">
-                <input type="checkbox" id="dont-show-again">
-                <label for="dont-show-again">Tutorial nicht mehr anzeigen</label>
-            </div>
-            
             <div class="tutorial-actions">
                 <div class="tutorial-buttons">
                     <button class="tutorial-btn primary" onclick="closeTutorial()">Verstanden</button>
@@ -1578,317 +1634,140 @@
         let tutorialCurrentStep = 0;
         const tutorialSteps = [
             {
-                title: "Header-Buttons",
-                content: "Oben rechts finden Sie verschiedene Funktionen: Das Zahnrad für Admin-Einstellungen, das Fragezeichen für dieses Tutorial und das Info-Symbol für Informationen zur App.",
+                title: "Willkommen bei Gittertier Pro",
+                description: "Diese App hilft Ihnen beim Scannen von Produkten, Verwalten Ihres Warenkorbs und Abwickeln von Bezahlvorgängen. Folgen Sie diesem Tutorial, um die Funktionen kennenzulernen.",
+                element: null,
+                action: null
+            },
+            {
+                title: "Header-Buttons erklärt",
+                description: "Oben rechts sehen Sie drei Buttons: Zahnrad (Einstellungen für Administratoren), Fragezeichen (öffnet dieses Tutorial) und Info (Informationen über die App).",
                 element: ".header-controls",
-                position: "bottom",
-                action: null
-            },
-            {
-                title: "Admin-Zugang",
-                content: "Das Zahnrad-Symbol führt zur Admin-Seite, auf der Sie Einstellungen vornehmen können. Diese Funktion ist nur für berechtigte Benutzer zugänglich.",
-                element: ".header-controls .control-btn:nth-child(1)",
-                position: "bottom",
-                action: null
-            },
-            {
-                title: "Tutorial erneut öffnen",
-                content: "Das Fragezeichen-Symbol öffnet dieses Tutorial erneut, falls Sie Hilfe benötigen oder eine Funktion noch einmal erklärt haben möchten.",
-                element: ".header-controls .control-btn:nth-child(2)",
-                position: "bottom",
-                action: null
-            },
-            {
-                title: "Informationen zur App",
-                content: "Das Info-Symbol führt zur 'Über'-Seite mit Informationen zur App, Version und weiteren Details.",
-                element: ".header-controls .control-btn:nth-child(3)",
-                position: "bottom",
                 action: null
             },
             {
                 title: "Scanner-Bereich",
-                content: "Dies ist der Scanner-Bereich. Hier scannen Sie Barcodes von Produkten, um sie zum Warenkorb hinzuzufügen.",
+                description: "Dies ist der Scanner-Bereich. Hier scannen Sie Barcodes von Produkten, um sie zum Warenkorb hinzuzufügen.",
                 element: "#scanner-container",
-                position: "top",
                 action: null
             },
             {
                 title: "Scanner starten",
-                content: "Klicken Sie auf 'Scanner starten', um die Kamera zu aktivieren und Barcodes zu erkennen.",
+                description: "Klicken Sie auf 'Scanner starten', um die Kamera zu aktivieren und Barcodes zu erkennen.",
                 element: "#toggle-scanner",
-                position: "top",
                 action: "click",
-                simulate: function() {
-                    document.getElementById('toggle-scanner').click();
-                    setTimeout(() => {
-                        // Simulate scanner starting
-                        document.getElementById('scanner-status').innerHTML = '<span class="dot"></span><span>Scannt...</span>';
-                        document.getElementById('scanner-status').classList.remove('inactive');
-                        document.getElementById('toggle-scanner').innerHTML = '<i class="fas fa-stop"></i> Scanner stoppen';
-                        
-                        // Show a fake barcode box for demonstration
-                        const box = document.getElementById('barcode-box');
-                        box.style.display = 'block';
-                        box.style.left = '40%';
-                        box.style.top = '40%';
-                        box.style.width = '20%';
-                        box.style.height = '20%';
-                        
-                        // After a moment, simulate a scan
-                        setTimeout(() => {
-                            simulateBarcodeScan();
-                        }, 1500);
-                    }, 500);
-                }
+                waitForAction: true
             },
             {
                 title: "Manuelle Eingabe",
-                content: "Falls ein Produkt keinen Barcode hat, können Sie es manuell hinzufügen.",
+                description: "Falls ein Produkt keinen Barcode hat, können Sie es manuell hinzufügen.",
                 element: "#manual-add",
-                position: "top",
                 action: "click",
-                simulate: function() {
-                    // Show product modal
-                    document.getElementById('product-modal').style.display = 'flex';
-                    
-                    // Fill with example data
-                    document.getElementById('product-name-input').value = "Beispielprodukt";
-                    document.getElementById('product-price-input').value = "9.99";
-                    document.getElementById('product-barcode-input').value = "123456789";
-                    
-                    // After a moment, close the modal
-                    setTimeout(() => {
-                        closeModal();
-                        nextTutorialStep();
-                    }, 2000);
-                }
+                waitForAction: true
             },
             {
                 title: "Produktinformationen",
-                content: "Hier werden die Details des gescannten Produkts angezeigt. Sie können die Menge anpassen und das Produkt zum Warenkorb hinzufügen.",
+                description: "Hier werden die Details des gescannten Produkts angezeigt. Sie können die Menge anpassen und das Produkt zum Warenkorb hinzufügen.",
                 element: "#product-card",
-                position: "top",
-                action: null,
-                prepare: function() {
-                    // Make sure product card is visible
-                    document.getElementById('product-name').textContent = 'Beispielprodukt';
-                    document.getElementById('product-price').textContent = '9,99€';
-                    document.getElementById('product-card').classList.add('visible');
-                }
+                action: null
             },
             {
                 title: "Mengensteuerung",
-                content: "Passen Sie hier die Menge des Produkts an, bevor Sie es zum Warenkorb hinzufügen.",
+                description: "Passen Sie hier die Menge des Produkts an, bevor Sie es zum Warenkorb hinzufügen.",
                 element: ".quantity-controls",
-                position: "top",
-                action: "click",
-                simulate: function() {
-                    // Simulate increasing quantity
-                    document.getElementById('product-quantity').textContent = '2';
-                    setTimeout(nextTutorialStep, 800);
-                }
+                action: null
             },
             {
                 title: "Zum Warenkorb hinzufügen",
-                content: "Klicken Sie auf 'In Warenkorb', um das Produkt mit der eingestellten Menge zum Warenkorb hinzufügen.",
+                description: "Klicken Sie auf 'In Warenkorb', um das Produkt mit der eingestellten Menge zum Warenkorb hinzuzufügen.",
                 element: ".add-to-cart-btn",
-                position: "top",
                 action: "click",
-                simulate: function() {
-                    // Add example product to cart
-                    addToCart({
-                        name: 'Beispielprodukt',
-                        price: 9.99,
-                        barcode: '123456789'
-                    });
-                    setTimeout(nextTutorialStep, 800);
-                }
+                waitForAction: true
             },
             {
                 title: "Warenkorb",
-                content: "Hier sehen Sie alle Artikel in Ihrem Warenkorb. Sie können Mengen anpassen oder Artikel entfernen.",
+                description: "Hier sehen Sie alle Artikel in Ihrem Warenkorb. Sie können Mengen anpassen oder Artikel entfernen.",
                 element: ".cart-section",
-                position: "top",
                 action: null
             },
             {
                 title: "Warenkorb leeren",
-                content: "Mit diesem Button können Sie den gesamten Warenkorb auf einmal leeren.",
+                description: "Mit diesem Button können Sie den gesamten Warenkorb auf einmal leeren.",
                 element: "#clear-cart",
-                position: "top",
-                action: "click",
-                simulate: function() {
-                    // Clear the cart but keep the tutorial item
-                    const exampleItem = cart.find(item => item.name === 'Beispielprodukt');
-                    cart = exampleItem ? [exampleItem] : [];
-                    updateCartDisplay();
-                    setTimeout(nextTutorialStep, 800);
-                }
+                action: null
             },
             {
                 title: "Bezahlvorgang",
-                content: "Klicken Sie auf 'Bezahlen', um einen QR-Code zu generieren und den Bezahlvorgang abzuschließen.",
+                description: "Klicken Sie auf 'Bezahlen', um einen QR-Code zu generieren und den Bezahlvorgang abzuschließen.",
                 element: ".pay-btn",
-                position: "top",
-                action: "click",
-                simulate: function() {
-                    // Show QR modal
-                    document.getElementById('qr-modal').style.display = 'flex';
-                    
-                    // After a moment, close the modal
-                    setTimeout(() => {
-                        closeModal();
-                        showTutorialCompletion();
-                    }, 2000);
-                }
+                action: null
+            },
+            {
+                title: "Tutorial abgeschlossen",
+                description: "Sie haben alle wichtigen Funktionen kennengelernt. Viel Erfolg mit Gittertier Pro!",
+                element: null,
+                action: null
             }
         ];
 
-        let tutorialBubble = null;
-        let tutorialHighlight = null;
-        let tutorialClickHandler = null;
-        
-        function showTutorial() {
-            document.getElementById('tutorial-welcome-modal').style.display = 'flex';
-        }
-        
-        function startBubbleTutorial() {
+        // Interactive tutorial functionality
+        function startInteractiveTutorial() {
             document.getElementById('tutorial-welcome-modal').style.display = 'none';
-            document.getElementById('tutorial-overlay').style.display = 'block';
             tutorialCurrentStep = 0;
             showTutorialStep(tutorialCurrentStep);
         }
         
         function showTutorialStep(stepIndex) {
-            // Remove previous bubble and highlight
-            if (tutorialBubble) {
-                tutorialBubble.remove();
-                tutorialBubble = null;
-            }
-            
-            if (tutorialHighlight) {
-                tutorialHighlight.remove();
-                tutorialHighlight = null;
-            }
-            
-            // Remove previous click handler
-            if (tutorialClickHandler) {
-                const element = document.querySelector(tutorialSteps[tutorialCurrentStep].element);
-                if (element && tutorialSteps[tutorialCurrentStep].action === 'click') {
-                    element.removeEventListener('click', tutorialClickHandler);
-                }
-                tutorialClickHandler = null;
-            }
-            
             const step = tutorialSteps[stepIndex];
-            if (!step) return;
-            
-            // Prepare the step if needed
-            if (step.prepare) {
-                step.prepare();
+            if (!step) {
+                showTutorialCompletion();
+                return;
             }
             
-            // Create highlight
+            // Update tutorial explanation
+            document.getElementById('tutorial-title').textContent = step.title;
+            document.getElementById('tutorial-description').textContent = step.description;
+            
+            // Show or hide navigation buttons
+            document.getElementById('tutorial-prev').style.display = stepIndex > 0 ? 'block' : 'none';
+            document.getElementById('tutorial-next').textContent = stepIndex < tutorialSteps.length - 1 ? 'Weiter' : 'Fertig';
+            
+            // Show overlay and explanation
+            document.getElementById('tutorial-overlay').style.display = 'block';
+            document.getElementById('tutorial-explanation').style.display = 'block';
+            
+            // Highlight element if specified
             if (step.element) {
                 const element = document.querySelector(step.element);
                 if (element) {
-                    const rect = element.getBoundingClientRect();
-                    tutorialHighlight = document.createElement('div');
-                    tutorialHighlight.className = 'tutorial-highlight';
-                    tutorialHighlight.style.width = `${rect.width + 20}px`;
-                    tutorialHighlight.style.height = `${rect.height + 20}px`;
-                    tutorialHighlight.style.top = `${rect.top - 10 + window.scrollY}px`;
-                    tutorialHighlight.style.left = `${rect.left - 10 + window.scrollX}px`;
-                    document.body.appendChild(tutorialHighlight);
+                    // Add highlight class
+                    element.classList.add('tutorial-focus-element');
                     
-                    // Scroll to element if needed
+                    // Scroll to element
                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-            
-            // Create speech bubble
-            tutorialBubble = document.createElement('div');
-            tutorialBubble.className = `tutorial-bubble-step ${step.position}`;
-            
-            const bubbleContent = `
-                <div class="tutorial-bubble-content">
-                    <div class="tutorial-bubble-title">${step.title}</div>
-                    <div>${step.content}</div>
-                </div>
-                <div class="tutorial-bubble-actions">
-                    ${stepIndex > 0 ? `<button class="tutorial-bubble-btn secondary" onclick="prevTutorialStep()">Zurück</button>` : ''}
-                    <button class="tutorial-bubble-btn primary" onclick="nextTutorialStep()">${step.action ? 'Verstanden' : 'Weiter'}</button>
-                </div>
-            `;
-            
-            tutorialBubble.innerHTML = bubbleContent;
-            document.body.appendChild(tutorialBubble);
-            
-            // Position the bubble
-            positionBubble(step.element, step.position);
-            
-            // If the step has an action, set up the event listener
-            if (step.action === 'click' && step.element) {
-                const element = document.querySelector(step.element);
-                if (element) {
-                    tutorialClickHandler = function() {
-                        if (step.simulate) {
-                            step.simulate();
-                        } else {
+                    
+                    // Set up event listener if action is required
+                    if (step.action && step.waitForAction) {
+                        const handler = function() {
+                            element.removeEventListener(step.action, handler);
                             nextTutorialStep();
-                        }
-                    };
-                    element.addEventListener('click', tutorialClickHandler);
-                }
-            }
-            
-            // For steps with simulation but no user action
-            if (step.simulate && !step.action) {
-                step.simulate();
-            }
-        }
-        
-        function positionBubble(elementSelector, position) {
-            const element = document.querySelector(elementSelector);
-            if (!element || !tutorialBubble) return;
-            
-            const rect = element.getBoundingClientRect();
-            const bubbleRect = tutorialBubble.getBoundingClientRect();
-            
-            switch(position) {
-                case 'top':
-                    tutorialBubble.style.top = `${rect.top - bubbleRect.height - 20 + window.scrollY}px`;
-                    tutorialBubble.style.left = `${rect.left + (rect.width / 2) - (bubbleRect.width / 2) + window.scrollX}px`;
-                    break;
-                case 'bottom':
-                    tutorialBubble.style.top = `${rect.bottom + 20 + window.scrollY}px`;
-                    tutorialBubble.style.left = `${rect.left + (rect.width / 2) - (bubbleRect.width / 2) + window.scrollX}px`;
-                    break;
-                case 'left':
-                    tutorialBubble.style.top = `${rect.top + (rect.height / 2) - (bubbleRect.height / 2) + window.scrollY}px`;
-                    tutorialBubble.style.left = `${rect.left - bubbleRect.width - 20 + window.scrollX}px`;
-                    break;
-                case 'right':
-                    tutorialBubble.style.top = `${rect.top + (rect.height / 2) - (bubbleRect.height / 2) + window.scrollY}px`;
-                    tutorialBubble.style.left = `${rect.right + 20 + window.scrollX}px`;
-                    break;
-            }
-            
-            // Adjust for mobile
-            if (window.innerWidth <= 768) {
-                tutorialBubble.style.left = '50%';
-                tutorialBubble.style.transform = 'translateX(-50%)';
-                
-                if (position === 'top') {
-                    tutorialBubble.style.top = '20px';
-                } else {
-                    tutorialBubble.style.bottom = '20px';
-                    tutorialBubble.style.top = 'auto';
+                        };
+                        element.addEventListener(step.action, handler);
+                    }
                 }
             }
         }
         
         function nextTutorialStep() {
+            // Remove highlight from current element
+            const currentStep = tutorialSteps[tutorialCurrentStep];
+            if (currentStep && currentStep.element) {
+                const element = document.querySelector(currentStep.element);
+                if (element) {
+                    element.classList.remove('tutorial-focus-element');
+                }
+            }
+            
             tutorialCurrentStep++;
             if (tutorialCurrentStep >= tutorialSteps.length) {
                 showTutorialCompletion();
@@ -1898,58 +1777,44 @@
         }
         
         function prevTutorialStep() {
-            if (tutorialCurrentStep > 0) {
-                tutorialCurrentStep--;
-                showTutorialStep(tutorialCurrentStep);
+            // Remove highlight from current element
+            const currentStep = tutorialSteps[tutorialCurrentStep];
+            if (currentStep && currentStep.element) {
+                const element = document.querySelector(currentStep.element);
+                if (element) {
+                    element.classList.remove('tutorial-focus-element');
+                }
             }
+            
+            tutorialCurrentStep--;
+            showTutorialStep(tutorialCurrentStep);
         }
         
         function showTutorialCompletion() {
-            // Clean up tutorial elements
-            if (tutorialBubble) {
-                tutorialBubble.remove();
-                tutorialBubble = null;
-            }
-            
-            if (tutorialHighlight) {
-                tutorialHighlight.remove();
-                tutorialHighlight = null;
-            }
-            
+            // Hide tutorial elements
             document.getElementById('tutorial-overlay').style.display = 'none';
-            document.getElementById('tutorial-completion-modal').style.display = 'flex';
+            document.getElementById('tutorial-explanation').style.display = 'none';
             
-            // Reset any tutorial changes
-            resetTutorialChanges();
+            // Remove any highlights
+            document.querySelectorAll('.tutorial-focus-element').forEach(el => {
+                el.classList.remove('tutorial-focus-element');
+            });
+            
+            // Show completion modal
+            document.getElementById('tutorial-completion-modal').style.display = 'flex';
         }
         
         function closeTutorial() {
-            // Clean up tutorial elements
-            if (tutorialBubble) {
-                tutorialBubble.remove();
-                tutorialBubble = null;
-            }
-            
-            if (tutorialHighlight) {
-                tutorialHighlight.remove();
-                tutorialHighlight = null;
-            }
-            
-            // Remove any click handlers
-            if (tutorialClickHandler) {
-                const element = document.querySelector(tutorialSteps[tutorialCurrentStep].element);
-                if (element && tutorialSteps[tutorialCurrentStep].action === 'click') {
-                    element.removeEventListener('click', tutorialClickHandler);
-                }
-                tutorialClickHandler = null;
-            }
-            
+            // Hide all tutorial elements
             document.getElementById('tutorial-overlay').style.display = 'none';
+            document.getElementById('tutorial-explanation').style.display = 'none';
             document.getElementById('tutorial-welcome-modal').style.display = 'none';
             document.getElementById('tutorial-completion-modal').style.display = 'none';
             
-            // Reset any tutorial changes
-            resetTutorialChanges();
+            // Remove any highlights
+            document.querySelectorAll('.tutorial-focus-element').forEach(el => {
+                el.classList.remove('tutorial-focus-element');
+            });
             
             // Save user preference if "don't show again" is checked
             if (document.getElementById('dont-show-again') && document.getElementById('dont-show-again').checked) {
@@ -1957,43 +1822,13 @@
             }
         }
         
-        function resetTutorialChanges() {
-            // Stop scanner if it was started during tutorial
-            if (scannerActive) {
-                toggleScanner();
-            }
-            
-            // Hide product card
-            document.getElementById('product-card').classList.remove('visible');
-            
-            // Remove example items from cart
-            cart = cart.filter(item => item.name !== 'Beispielprodukt');
-            updateCartDisplay();
-            
-            // Hide barcode box if shown
-            document.getElementById('barcode-box').style.display = 'none';
+        function showTutorial() {
+            document.getElementById('tutorial-welcome-modal').style.display = 'flex';
         }
         
-        function simulateBarcodeScan() {
-            // Simulate a barcode scan
-            handleBarcode('123456789');
-            
-            // Add the product to our products list if not already there
-            if (!products['123456789']) {
-                products['123456789'] = {
-                    name: 'Beispielprodukt',
-                    price: 9.99,
-                    barcode: '123456789'
-                };
-                localStorage.setItem('products', JSON.stringify(products));
-            }
-            
-            // Show the product card
-            showProduct(products['123456789']);
-            
-            // After a moment, move to next step
-            setTimeout(nextTutorialStep, 1500);
-        }
+        // Set up event listeners for tutorial navigation
+        document.getElementById('tutorial-next').addEventListener('click', nextTutorialStep);
+        document.getElementById('tutorial-prev').addEventListener('click', prevTutorialStep);
         
         // Initialize tutorial on first visit
         document.addEventListener('DOMContentLoaded', function() {
