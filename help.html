@@ -1,55 +1,479 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Hilfe & Anleitung – Gittertier</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 2em; background: #f4f4f4; }
-        h1, h2 { color: #222e3c; }
-        .section { background: #fff; padding: 1em; border-radius: 8px; margin-bottom: 1.5em; box-shadow: 0 2px 8px rgba(0,0,0,0.06);}
-        ul { line-height: 1.6; }
-        code { background: #eef; padding: 2px 4px; border-radius: 4px; }
-    </style>
-</head>
-<body>
-    <h1>Gittertier – Hilfe & Übersicht</h1>
-    <div class="section">
-        <h2>Was ist Gittertier?</h2>
-        <p>
-            Gittertier ist ein vielseitiges Webprojekt mit verschiedenen Modulen für Verwaltung, Analyse, Spiele und mehr.
-        </p>
+<!-- BEGIN: Interactive Help / Guided Tour Modal -->
+<style>
+  /* --- Help Modal styles (keine externen Abhängigkeiten) --- */
+  :root {
+    --help-bg: rgba(2,6,23,0.6);
+    --help-accent: #2563eb;
+    --help-white: #fff;
+    --help-radius: 12px;
+    --help-shadow: 0 10px 30px rgba(2,6,23,0.35);
+  }
+
+  .help-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--help-bg);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: helpFadeIn 260ms ease;
+  }
+
+  .help-spot {
+    position: absolute;
+    border-radius: 12px;
+    box-shadow: 0 0 0 9999px var(--help-bg);
+    transition: all 300ms cubic-bezier(.2,.9,.2,1);
+    pointer-events: none;
+    transform-origin: center;
+    will-change: top,left,width,height,box-shadow;
+    outline: 3px solid rgba(37,99,235,0.95);
+    animation: spotPulse 1400ms infinite;
+  }
+
+  @keyframes spotPulse {
+    0% { outline-width: 2px; filter: drop-shadow(0 4px 20px rgba(37,99,235,0.06)); }
+    50% { outline-width: 4px; filter: drop-shadow(0 8px 30px rgba(37,99,235,0.12)); }
+    100% { outline-width: 2px; filter: drop-shadow(0 4px 20px rgba(37,99,235,0.06)); }
+  }
+
+  .help-panel {
+    width: min(820px, calc(100% - 48px));
+    max-height: 82vh;
+    overflow: auto;
+    background: linear-gradient(180deg,var(--help-white),#fbfdff);
+    border-radius: var(--help-radius);
+    box-shadow: var(--help-shadow);
+    padding: 20px;
+    z-index: 2010;
+    transform: translateY(12px);
+    animation: panelIn 320ms cubic-bezier(.2,.9,.2,1);
+    position: relative;
+  }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(20px) scale(.995); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes helpFadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  .help-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:12px;
+  }
+
+  .help-title {
+    font-size:1.05rem;
+    font-weight:700;
+    color: #0f172a;
+  }
+
+  .help-sub {
+    font-size:0.9rem;
+    color: #374151;
+  }
+
+  .help-content {
+    margin-top:12px;
+    color: #0b1220;
+    font-size:0.95rem;
+  }
+
+  .help-step-title {
+    font-weight:700;
+    margin-bottom:6px;
+    color: var(--help-accent);
+  }
+
+  .help-controls {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-top:16px;
+    justify-content: flex-end;
+  }
+
+  .help-btn {
+    background: var(--help-accent);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight:600;
+  }
+  .help-btn.ghost {
+    background: transparent;
+    color: #0b1220;
+    border: 1px solid #e6eefb;
+  }
+  .help-progress {
+    height:8px;
+    background:#eef2ff;
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:12px;
+  }
+  .help-progress > i {
+    display:block;
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg,#60a5fa,#2563eb);
+    transition: width 280ms ease;
+  }
+
+  .help-footer-note {
+    margin-top:12px;
+    text-align:left;
+    color:#6b7280;
+    font-size:0.85rem;
+  }
+
+  /* Small screen tweaks */
+  @media (max-width:640px) {
+    .help-panel { width: calc(100% - 28px); padding:14px; }
+  }
+
+  /* help button added to header */
+  #help-fab {
+    position: fixed;
+    right: 20px;
+    bottom: 110px;
+    z-index: 2050;
+    background: var(--help-accent);
+    color: white;
+    border-radius: 999px;
+    width:52px;
+    height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.18);
+    cursor:pointer;
+    border:none;
+  }
+
+  #help-fab:active { transform: translateY(1px); }
+</style>
+
+<!-- HTML structure -->
+<div id="help-overlay" class="help-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+  <div id="help-spot" class="help-spot" style="display:none;"></div>
+
+  <div class="help-panel" role="document" aria-labelledby="help-title">
+    <div class="help-header">
+      <div>
+        <div id="help-title" class="help-title">Gittertier Pro — Interaktive Anleitung</div>
+        <div id="help-sub" class="help-sub">Schritt-für-Schritt: ich zeige dir alle Buttons, Zustände und was im Hintergrund passiert.</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="help-close" class="help-btn ghost" title="Schließen (Esc)">Schließen</button>
+      </div>
     </div>
-    <div class="section">
-        <h2>Wichtige Bereiche</h2>
+
+    <div class="help-content" id="help-content">
+      <!-- content injected by JS -->
+    </div>
+
+    <div class="help-progress" aria-hidden="true">
+      <i id="help-progress-bar"></i>
+    </div>
+
+    <div class="help-controls" style="margin-top:14px;">
+      <button id="help-prev" class="help-btn ghost" aria-label="Vorheriger Schritt">← Zurück</button>
+      <button id="help-next" class="help-btn" aria-label="Nächster Schritt">Weiter →</button>
+    </div>
+
+    <div class="help-footer-note" id="help-footer-note">
+      Tipp: Du kannst mit <strong>Esc</strong> schließen, mit <strong>←</strong> / <strong>→</strong> navigieren.
+    </div>
+  </div>
+</div>
+
+<!-- Floating quick-help button (falls du ihn nicht in header einbaust) -->
+<button id="help-fab" title="Hilfe anzeigen" aria-label="Hilfe anzeigen">
+  <i class="fas fa-question"></i>
+</button>
+
+<script>
+(function(){
+  // Steps: selector = element to highlight (null = centered panel)
+  const steps = [
+    {
+      title: "Willkommen",
+      selector: null,
+      content: `
+        <div class="help-step-title">Kurzüberblick</div>
+        <div>
+          Diese Tour erklärt alle Funktionen in Gittertier Pro: Scanner, manuelles Erfassen, Warenkorb, Zahlungsmethode (QR) und Einstellungen.
+          Wir heben die relevanten Elemente hervor und erklären, was im Hintergrund passiert.
+        </div>`
+    },
+    {
+      title: "Header: Admin / Support / Info",
+      selector: ".header-controls",
+      content: `
+        <div class="help-step-title">Header-Kontrollen</div>
         <ul>
-            <li><b>Startseite (<a href="index.html">index.html</a>)</b>: Einstiegspunkt ins Projekt.</li>
-            <li><b>Login (<a href="login.html">login.html</a>)</b>: Anmeldung für Benutzer.</li>
-            <li><b>Über das Projekt (<a href="about.html">about.html</a>)</b>: Hintergrundinformationen.</li>
-            <li><b>Admin-Bereich (<a href="admin.html">admin.html</a>)</b>: Einstellungen und Benutzerverwaltung für Administratoren.</li>
-            <li><b>Einstellungen (<a href="settings.html">settings.html</a>)</b>: Individuelle Konfigurationen.</li>
-            <li><b>Support (<a href="support.html">support.html</a>)</b>: Hilfe und Kontakt bei Problemen.</li>
-            <li><b>Produkte (<a href="products.html">products.html</a>)</b>: Produktübersicht und Verwaltung.</li>
-            <li><b>Kunden (<a href="customer.html">customer.html</a>), Händler (<a href="merchant.html">merchant.html</a>)</b>: Verwaltung und Übersicht.</li>
-            <li><b>Archiv (<a href="archive.html">archive.html</a>)</b>: Archivierte Daten.</li>
-            <li><b>Statistiken (<a href="analytics.html">analytics.html</a>)</b>: Auswertungen und Analysen.</li>
-            <li><b>Spiel-Modul (<a href="game.html">game.html</a>)</b>: Interaktiver Bereich.</li>
+          <li><strong>Zahnrad (Admin):</strong> Link zu Verwaltung & Einstellungen (nur für Mitarbeiter/Betreiber).</li>
+          <li><strong>Headset (Support):</strong> Hilfe-/Support-Seite.</li>
+          <li><strong>Info:</strong> Kurze Informationen über den Shop.</li>
         </ul>
-    </div>
-    <div class="section">
-        <h2>Bedienung</h2>
+        <div>Diese Buttons führen zu weiteren Seiten; sie verändern nicht den aktuellen Warenkorb.</div>`
+    },
+    {
+      title: "Scanner starten",
+      selector: "#toggle-scanner",
+      content: `
+        <div class="help-step-title">Scanner</div>
+        <p>Mit <strong>„Scanner starten“</strong> wird die Kamera geöffnet (Browser-Zugriffsanfrage). Erlaubte Kamera-Zugriffe sind nötig.</p>
         <ul>
-            <li>Wähle im Hauptmenü die gewünschte Seite aus.</li>
-            <li>Melde dich ggf. an, um Zugriff auf geschützte Bereiche zu erhalten.</li>
-            <li>Verwalte Daten über die jeweiligen Seiten (Produkte, Kunden, Händler etc.).</li>
-            <li>Nutze die Einstellungen zur Anpassung deiner Nutzererfahrung.</li>
+          <li><strong>Status:</strong> Die Leiste unter dem Video zeigt „Scannt...“ oder „Scanner pausiert“.</li>
+          <li><strong>Erkennung:</strong> Barcodes werden erkannt und visuell mit einem Rahmen versehen.</li>
+          <li><strong>Privatsphäre:</strong> Kamerastream wird gestoppt, wenn du den Scanner stoppst.</li>
         </ul>
-    </div>
-    <div class="section">
-        <h2>Support & Hilfe</h2>
+        <div style="margin-top:8px;color:#6b7280;font-size:0.9rem;">
+          Hinweis: Der Scanner fragt die Kamera nur an, wenn du explizit startest.
+        </div>`
+    },
+    {
+      title: "Visuelles Feedback beim Scannen",
+      selector: "#barcode-box",
+      content: `
+        <div class="help-step-title">Visuelle Rückmeldung</div>
+        <p>Wenn ein Barcode erkannt wird, erscheint ein grüner Rahmen (das ist das <code>#barcode-box</code> Element). Das hilft dir zu sehen, welches Objekt gerade erkannt wird.</p>
+        <p>Back-end Logik: erkannte Codes werden kurz in einem Set gehalten, damit der gleiche Barcode nicht mehrfach hintereinander verarbeitet wird.</p>`
+    },
+    {
+      title: "Kein Produkt gefunden → Manuell erfassen",
+      selector: "#manual-add",
+      content: `
+        <div class="help-step-title">Manuell hinzufügen</div>
+        <p>Wenn ein Barcode noch nicht in der Datenbank ist, kannst du <strong>Manuell</strong> drücken und ein Produkt erfassen.</p>
         <ul>
-            <li>Bei Fragen oder Problemen nutze die <a href="support.html">Support-Seite</a>.</li>
-            <li>Weitere Informationen findest du auf der <a href="about.html">Über-Seite</a>.</li>
+          <li>Produktname, Preis (muss &gt; 0) und Barcode werden gespeichert.</li>
+          <li>Gespeichert wird in <code>localStorage</code> unter <code>products</code>.</li>
+          <li>Das Feld <strong>Barcode</strong> ist im Modal schreibgeschützt, wenn es vom Scanner kommt.</li>
+        </ul>`
+    },
+    {
+      title: "Produktkarte & Menge",
+      selector: "#product-card",
+      content: `
+        <div class="help-step-title">Produktkarte</div>
+        <p>Nach dem Scannen erscheint die Produktkarte mit:</p>
+        <ul>
+          <li><strong>Name & Preis</strong></li>
+          <li><strong>+ / −</strong> zur Mengeneinstellung (mindestens 1)</li>
+          <li><strong>In Warenkorb</strong> fügt das Produkt dem Warenkorb hinzu</li>
+          <li><strong>Erneut scannen</strong> setzt die Karte zurück und öffnet wieder den Scanner</li>
+        </ul>`
+    },
+    {
+      title: "Warenkorb verwalten",
+      selector: ".cart-section",
+      content: `
+        <div class="help-step-title">Warenkorb</div>
+        <p>Hier werden alle gewählten Artikel aufgelistet:</p>
+        <ul>
+          <li>Jeder Eintrag zeigt Name, Einzelpreis, Menge und Zwischensumme.</li>
+          <li>+ / − verändert die Menge. Entfernen löscht den Artikel.</li>
+          <li>“Warenkorb leeren” entfernt alle Einträge.</li>
+        </ul>`
+    },
+    {
+      title: "Bezahlen via QR-Code",
+      selector: ".pay-btn",
+      content: `
+        <div class="help-step-title">Bezahlen</div>
+        <p>Der <strong>Bezahlen</strong>-Button generiert einen QR-Link für den Kunden:</p>
+        <ul>
+          <li>Es wird ein JSON mit Items, Gesamtbetrag und einer Payment-ID erstellt.</li>
+          <li>Dieses JSON wird mit <code>LZString.compressToBase64</code> komprimiert und als URL-Parameter an <code>customer?id=...</code> übergeben.</li>
+          <li>Der Kunde scannt diesen QR und gelangt zur Bezahlseite.</li>
         </ul>
-    </div>
-</body>
-</html>
+        <div style="color:#7f1d1d;font-weight:600;margin-top:6px;">Achtung:</div>
+        <div style="color:#6b7280;font-size:0.9rem;">
+          Sehr lange Artikelnamen oder extrem viele Positionen können die URL länger machen. In dem Fall: kurze Namen verwenden oder per POS-Backend abrechnen.
+        </div>`
+    },
+    {
+      title: "Einstellungen & Öffnungszeiten",
+      selector: null,
+      content: `
+        <div class="help-step-title">Einstellungen (localStorage)</div>
+        <p>Die App liest Einstellungen aus <code>appSettings</code> im <code>localStorage</code>:</p>
+        <ul>
+          <li><strong>currency:</strong> Symbol (z.B. "€").</li>
+          <li><strong>autoScanner:</strong> startet den Scanner automatisch beim Laden.</li>
+          <li><strong>manualAdd:</strong> erlaubt/verbietet manuelle Erfassung.</li>
+          <li><strong>notificationDuration:</strong> Anzeigezeit für Meldungen (Sekunden).</li>
+          <li><strong>soundEffects:</strong> true/false für akustische Rückmeldungen.</li>
+          <li><strong>shopHours:</strong> Öffnungszeiten (enabled/openingTime/closingTime). Wenn außerhalb, erscheint der "Geschlossen"-Screen.</li>
+        </ul>`
+    },
+    {
+      title: "Benachrichtigungen & Sounds",
+      selector: "#notification",
+      content: `
+        <div class="help-step-title">Benachrichtigungen</div>
+        <p>Meldungen (z.B. „Produkt gespeichert“ oder Fehler) erscheinen unten als Toast. Sound-Effekte werden nur abgespielt, wenn <code>soundEffects</code> aktiviert ist.</p>
+        <p>Fehler beim Kamerazugriff werden ebenfalls als Fehlermeldung angezeigt.</p>`
+    },
+    {
+      title: "Fehlerbehebung & Tipps",
+      selector: null,
+      content: `
+        <div class="help-step-title">Tipps & Troubleshooting</div>
+        <ul>
+          <li>Wenn die Kamera nicht startet: Prüfe Browser-Berechtigung und schließe andere Tabs/Apps, die Kamera verwenden.</li>
+          <li>Wenn Produkte nicht erkannt werden: Barcode sauber halten / anderer Winkel / manuell erfassen.</li>
+          <li>Zum Zurücksetzen der Produktdaten: <code>localStorage.removeItem('products')</code> in der Console.</li>
+          <li>Zum Testen der Bezahlseite kannst du eine sehr kleine Warenkorb-Liste erstellen, um URL-Längenprobleme zu vermeiden.</li>
+        </ul>`
+    },
+    {
+      title: "Ende der Tour",
+      selector: null,
+      content: `
+        <div class="help-step-title">Fertig</div>
+        <p>Das war die komplette Tour. Du kannst jederzeit mit dem Hilfe-Button (unten rechts) die Tour neu starten.</p>
+        <p>Viel Erfolg — sag Bescheid, wenn du noch eine kürzere „Schnell-Tour“ oder ein gedrucktes PDF möchtest.</p>`
+    }
+  ];
+
+  const overlay = document.getElementById('help-overlay');
+  const panel = overlay.querySelector('.help-panel');
+  const contentEl = document.getElementById('help-content');
+  const spot = document.getElementById('help-spot');
+  const progressBar = document.getElementById('help-progress-bar');
+  const prevBtn = document.getElementById('help-prev');
+  const nextBtn = document.getElementById('help-next');
+  const closeBtn = document.getElementById('help-close');
+  const helpFab = document.getElementById('help-fab');
+
+  let current = 0;
+
+  function showOverlay() {
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    showStep(0);
+  }
+
+  function hideOverlay() {
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    spot.style.display = 'none';
+  }
+
+  function safeQuery(sel) {
+    try { return document.querySelector(sel); } catch(e) { return null; }
+  }
+
+  function showStep(index) {
+    current = Math.max(0, Math.min(index, steps.length - 1));
+    const step = steps[current];
+    // fill content
+    contentEl.innerHTML = step.content;
+
+    // progress
+    const pct = Math.round(((current+1)/steps.length)*100);
+    progressBar.style.width = pct + '%';
+    document.getElementById('help-progress-bar').style.width = pct + '%';
+
+    // prev/next button states
+    prevBtn.disabled = current === 0;
+    nextBtn.textContent = current === steps.length - 1 ? 'Fertig' : 'Weiter →';
+
+    // highlight element if selector provided
+    if (step.selector) {
+      const el = safeQuery(step.selector);
+      if (el) {
+        // scroll target into view (smooth)
+        el.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
+
+        // compute bounding rect after scroll + small delay for layout
+        setTimeout(() => {
+          const rect = el.getBoundingClientRect();
+          const pad = 10;
+          const top = rect.top + window.scrollY - pad;
+          const left = rect.left + window.scrollX - pad;
+          const width = rect.width + pad*2;
+          const height = rect.height + pad*2;
+
+          spot.style.display = 'block';
+          spot.style.top = top + 'px';
+          spot.style.left = left + 'px';
+          spot.style.width = width + 'px';
+          spot.style.height = height + 'px';
+          // ensure panel is visible and reposition if it overlaps
+          setTimeout(() => {
+            // if panel overlaps spot, nudge it
+            const panelRect = panel.getBoundingClientRect();
+            // If panel overlaps the target strongly, scroll a bit
+            if (panelRect.top < rect.top && (panelRect.bottom > rect.top)) {
+              window.scrollBy({ top: Math.sign(rect.top - panelRect.top) * 80, behavior: 'smooth' });
+            }
+          }, 80);
+        }, 220);
+      } else {
+        // fallback: center panel and hide spot
+        spot.style.display = 'none';
+      }
+    } else {
+      // no selector: center panel, hide spot
+      spot.style.display = 'none';
+    }
+  }
+
+  // handlers
+  prevBtn.addEventListener('click', () => showStep(current - 1));
+  nextBtn.addEventListener('click', () => {
+    if (current === steps.length - 1) { hideOverlay(); }
+    else showStep(current + 1);
+  });
+  closeBtn.addEventListener('click', hideOverlay);
+  helpFab.addEventListener('click', showOverlay);
+
+  // keyboard navigation
+  window.addEventListener('keydown', (e) => {
+    if (overlay.style.display !== 'flex') return;
+    if (e.key === 'Escape') hideOverlay();
+    if (e.key === 'ArrowRight') { e.preventDefault(); if (current < steps.length - 1) showStep(current+1); else hideOverlay(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); if (current > 0) showStep(current-1); }
+  });
+
+  // add a small help icon in header if header exists (non intrusive)
+  try {
+    const headerControls = document.querySelector('.header-controls');
+    if (headerControls && !document.getElementById('help-header-btn')) {
+      const btn = document.createElement('button');
+      btn.id = 'help-header-btn';
+      btn.className = 'action-btn';
+      btn.style.display = 'flex';
+      btn.style.alignItems = 'center';
+      btn.style.gap = '8px';
+      btn.title = 'Hilfe / Tour starten';
+      btn.innerHTML = '<i class="fas fa-question-circle"></i>';
+      btn.addEventListener('click', showOverlay);
+      headerControls.insertBefore(btn, headerControls.firstChild);
+    }
+  } catch(e) { /* ignore if header not found */ }
+
+  // try to keep progress width updated (init)
+  document.getElementById('help-progress-bar').style.width = (1/steps.length*100)+'%';
+
+  // Expose optionally for console debugging
+  window.GittertierHelp = { open: showOverlay, close: hideOverlay, goTo: showStep };
+})();
+</script>
+<!-- END: Interactive Help / Guided Tour Modal -->
