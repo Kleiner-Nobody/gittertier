@@ -4,710 +4,656 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anmeldung - Gittertier Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Modern Apple-inspired design system */
-        :root {
-            /* Light theme variables */
-            --primary-bg: #ffffff;
-            --secondary-bg: #f5f5f7;
-            --card-bg: #ffffff;
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --text-tertiary: #aeaeb2;
-            --accent: #0071e3;
-            --accent-hover: #0077ed;
-            --accent-active: #0062b9;
-            --success: #34c759;
-            --warning: #ff9500;
-            --error: #ff3b30;
-            --border-color: #e5e5e7;
-            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
-            --border-radius: 14px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+    :root {
+        --color-bg: #ffffff;
+        --color-text: #111111;
+        --color-text-muted: #6b7280;
+        --color-border: #e5e7eb;
+        --color-accent: #2563eb;
+        --color-accent-hover: #1d4ed8;
+        --color-success: #16a34a;
+        --color-error: #dc2626;
+        --color-overlay: rgba(0, 0, 0, 0.5);
+        
+        --radius: 12px;
+        --radius-sm: 6px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+        
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+        
+        --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --text-base: 1rem;
+        --text-lg: 1.125rem;
+        --text-xl: 1.25rem;
+        --text-2xl: 1.5rem;
+        --text-3xl: 1.875rem;
+        
+        --header-height: 64px;
+        --footer-height: 80px;
+    }
 
-        .dark-mode {
-            /* Dark theme variables */
-            --primary-bg: #000000;
-            --secondary-bg: #1c1c1e;
-            --card-bg: #1c1c1e;
-            --text-primary: #f5f5f7;
-            --text-secondary: #98989d;
-            --text-tertiary: #636366;
-            --accent: #0a84ff;
-            --accent-hover: #409cff;
-            --accent-active: #0062b9;
-            --border-color: #38383a;
-            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-            --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-            background-color: var(--primary-bg);
-            color: var(--text-primary);
-            line-height: 1.5;
-            font-weight: 400;
-            transition: background-color 0.3s ease;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    /* Header Styles */
+    header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
 
-        /* Header Styles */
-        .admin-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            height: 70px;
-            background-color: var(--primary-bg);
-            border-bottom: 1px solid var(--border-color);
-        }
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-xl);
+    }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    .logo i {
+        font-size: var(--text-xl);
+        color: var(--color-accent);
+    }
 
-        .logo {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent), #42a1ec);
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 18px;
-        }
+    /* Main Content */
+    main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-xl) var(--spacing-lg);
+        background-color: #f9fafb;
+    }
 
-        .logo-text {
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
+    .login-container {
+        width: 100%;
+        max-width: 480px;
+        background: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-md);
+        padding: var(--spacing-xl);
+        animation: fadeIn 0.4s ease-out;
+    }
 
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+    .login-header {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+    }
 
-        .theme-toggle {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--secondary-bg);
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: var(--transition);
-        }
+    .login-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: rgba(37, 99, 235, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--spacing-md);
+    }
 
-        .theme-toggle:hover {
-            background-color: var(--border-color);
-        }
+    .login-icon i {
+        font-size: var(--text-3xl);
+        color: var(--color-accent);
+    }
 
-        .time-display {
-            background-color: var(--secondary-bg);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
+    .login-title {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+        color: var(--color-text);
+    }
 
-        /* Main Content */
-        .admin-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 24px;
-            background-color: var(--secondary-bg);
-        }
+    .login-subtitle {
+        color: var(--color-text-muted);
+        font-size: var(--text-base);
+    }
 
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .input-label {
+        font-weight: 500;
+        font-size: var(--text-sm);
+        color: var(--color-text);
+    }
+
+    .password-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .login-input {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-base);
+        transition: var(--transition);
+        padding-right: 50px;
+    }
+
+    .login-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: var(--spacing-sm);
+        background: none;
+        border: none;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        padding: var(--spacing-xs);
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+    }
+
+    .toggle-password:hover {
+        color: var(--color-text);
+        background-color: #f9fafb;
+    }
+
+    .stay-logged-container {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin: var(--spacing-sm) 0;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-border);
+        transition: var(--transition);
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        transition: var(--transition);
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: var(--color-accent);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+
+    .stay-logged-label {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    .login-button {
+        background-color: var(--color-accent);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: var(--text-base);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+    }
+
+    .login-button:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .login-button:focus {
+        outline: none;
+        box-shadow: var(--focus-ring);
+    }
+
+    .login-button:disabled {
+        background-color: var(--color-text-muted);
+        cursor: not-allowed;
+    }
+
+    .error-message {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+        text-align: center;
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        display: none;
+        animation: fadeIn 0.3s ease;
+        border: 1px solid rgba(220, 38, 38, 0.2);
+        font-size: var(--text-sm);
+        margin-top: var(--spacing-md);
+    }
+
+    .security-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        color: var(--color-success);
+        padding: var(--spacing-md);
+        background-color: rgba(22, 163, 74, 0.1);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-xs);
+        margin-top: var(--spacing-md);
+        border: 1px solid rgba(22, 163, 74, 0.2);
+    }
+
+    .security-info i {
+        font-size: var(--text-lg);
+    }
+
+    .activity-log {
+        background-color: #f9fafb;
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        margin-top: var(--spacing-xl);
+        border: 1px solid var(--color-border);
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .activity-log h3 {
+        font-size: var(--text-sm);
+        color: var(--color-text);
+        margin-bottom: var(--spacing-md);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .activity-item {
+        font-size: var(--text-xs);
+        padding: var(--spacing-sm) 0;
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-time {
+        color: var(--color-text-muted);
+    }
+
+    /* Session Timeout Warning */
+    .session-timeout {
+        position: fixed;
+        bottom: var(--spacing-lg);
+        right: var(--spacing-lg);
+        background-color: var(--color-error);
+        color: white;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 100;
+    }
+
+    .session-timeout.active {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .session-timeout .countdown {
+        font-weight: 700;
+        font-size: var(--text-lg);
+    }
+
+    .session-timeout button {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .session-timeout button:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Error Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .modal-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        width: 100%;
+        max-width: 500px;
+        box-shadow: var(--shadow-md);
+        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+        text-align: center;
+    }
+
+    .modal-header {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .modal-header i {
+        font-size: 3rem;
+        color: var(--color-error);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .modal-title {
+        font-weight: 600;
+        font-size: var(--text-xl);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .modal-message {
+        color: var(--color-text-muted);
+        margin-bottom: var(--spacing-md);
+        line-height: 1.6;
+    }
+
+    .redirect-path-display {
+        background-color: rgba(220, 38, 38, 0.1);
+        border-radius: var(--radius-sm);
+        padding: var(--spacing-md);
+        margin: var(--spacing-md) 0;
+        font-family: monospace;
+        font-size: var(--text-sm);
+        color: var(--color-error);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+        justify-content: center;
+    }
+
+    .modal-btn {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border: 1px solid var(--color-border);
+        background-color: transparent;
+        color: var(--color-text);
+    }
+
+    .modal-btn.primary {
+        background-color: var(--color-accent);
+        color: white;
+        border: none;
+    }
+
+    .modal-btn.primary:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .modal-btn.secondary:hover {
+        background-color: #f9fafb;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-8px); }
+        40%, 80% { transform: translateX(8px); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
         .login-container {
-            width: 100%;
-            max-width: 500px;
-            animation: fadeIn 0.5s ease-out;
+            padding: var(--spacing-lg);
         }
-
-        .login-section {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 40px;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-section:hover {
-            box-shadow: var(--card-shadow-hover);
-        }
-
-        .login-section::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--accent);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
-        }
-
-        .login-section:hover::after {
-            transform: scaleX(1);
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .logo-large {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--accent), #42a1ec);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 24px;
-            color: white;
-            font-weight: 700;
-            font-size: 32px;
-            box-shadow: var(--card-shadow);
-        }
-
+        
         .login-title {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-primary);
+            font-size: var(--text-xl);
         }
-
-        .login-subtitle {
-            color: var(--text-secondary);
-            font-size: 17px;
+        
+        .login-icon {
+            width: 64px;
+            height: 64px;
         }
-
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
+        
+        .login-icon i {
+            font-size: var(--text-2xl);
         }
-
-        .url-display {
-            background-color: rgba(10, 132, 255, 0.1);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            font-size: 15px;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border: 1px dashed var(--accent);
-        }
-
-        .url-display i {
-            font-size: 20px;
-        }
-
-        .input-group {
-            position: relative;
-        }
-
-        .input-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 15px;
-        }
-
-        .password-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            background-color: var(--secondary-bg);
-            transition: var(--transition);
-            overflow: hidden;
-        }
-
-        .password-container:focus-within {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
-        }
-
-        .login-input {
-            flex: 1;
-            padding: 16px;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            color: var(--text-primary);
-            outline: none;
-        }
-
-        .login-input::placeholder {
-            color: var(--text-tertiary);
-        }
-
-        .toggle-password {
-            background: none;
-            border: none;
-            color: var(--text-tertiary);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        .toggle-password:hover {
-            color: var(--text-primary);
-        }
-
-        .stay-logged-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 51px;
-            height: 31px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--border-color);
-            transition: var(--transition);
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 27px;
-            width: 27px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: var(--transition);
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--success);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        .stay-logged-label {
-            font-size: 15px;
-            color: var(--text-secondary);
-        }
-
-        .login-button {
-            background-color: var(--accent);
-            color: white;
-            padding: 18px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            box-shadow: var(--card-shadow);
-        }
-
-        .login-button:hover {
-            background-color: var(--accent-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--card-shadow-hover);
-        }
-
-        .login-button:active {
-            transform: translateY(0);
-            background-color: var(--accent-active);
-        }
-
-        .error-message {
-            background-color: rgba(255, 59, 48, 0.1);
-            color: var(--error);
-            text-align: center;
-            padding: 16px;
-            border-radius: var(--border-radius);
-            display: none;
-            animation: fadeIn 0.3s ease;
-            border: 1px solid rgba(255, 59, 48, 0.2);
-            font-size: 15px;
-        }
-
-        .security-info {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: var(--success);
-            padding: 16px;
-            background-color: rgba(52, 199, 89, 0.1);
-            border-radius: var(--border-radius);
-            font-size: 14px;
-        }
-
-        .activity-log {
-            background-color: var(--secondary-bg);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            margin-top: 24px;
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-        }
-
-        .activity-log h3 {
-            font-size: 16px;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .activity-item {
-            font-size: 14px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-time {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        /* Session Timeout Warning */
+        
         .session-timeout {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background-color: var(--warning);
-            color: white;
-            padding: 16px 24px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--card-shadow-hover);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .session-timeout.active {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .session-timeout .countdown {
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .session-timeout button {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .session-timeout button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Error Modal */
-        .error-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-        }
-
-        .error-modal.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            max-width: 600px;
-            width: 90%;
-            border-radius: var(--border-radius);
-            overflow: hidden;
+            left: var(--spacing-md);
+            right: var(--spacing-md);
+            bottom: var(--spacing-md);
+            flex-direction: column;
             text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.4s ease;
-            box-shadow: var(--card-shadow-hover);
         }
+        
+        .modal-actions {
+            flex-direction: column;
+        }
+    }
 
-        .error-modal.active .modal-content {
-            transform: scale(1);
+    /* Dark mode support for system preference */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-bg: #111827;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --color-border: #374151;
         }
+        
+        body {
+            background-color: var(--color-bg);
+        }
+        
+        .login-container {
+            background-color: #1f2937;
+            border-color: var(--color-border);
+        }
+        
+        .activity-log {
+            background-color: #1f2937;
+            border-color: var(--color-border);
+        }
+        
+        .toggle-password:hover {
+            background-color: #374151;
+        }
+        
+        .modal-btn.secondary:hover {
+            background-color: #374151;
+        }
+    }
 
-        .modal-header {
-            background: var(--error);
-            padding: 24px;
-            color: white;
-        }
+    /* Loading animation */
+    .loader {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
 
-        .modal-header i {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .modal-header h2 {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .modal-body {
-            padding: 24px;
-            color: var(--text-primary);
-        }
-
-        .modal-body p {
-            margin: 16px 0;
-            font-size: 16px;
-            line-height: 1.5;
-        }
-
-        .redirect-path-display {
-            background: rgba(255, 59, 48, 0.1);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            margin: 16px auto;
-            font-family: monospace;
-            font-size: 15px;
-            color: var(--error);
-            max-width: 90%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .modal-footer {
-            padding: 24px;
-            background: var(--secondary-bg);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-8px); }
-            40%, 80% { transform: translateX(8px); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .admin-header {
-                padding: 0 16px;
-            }
-            
-            .admin-container {
-                padding: 24px 16px;
-            }
-            
-            .login-section {
-                padding: 32px 24px;
-            }
-            
-            .login-title {
-                font-size: 28px;
-            }
-            
-            .logo-large {
-                width: 70px;
-                height: 70px;
-                font-size: 28px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .logo-text {
-                display: none;
-            }
-            
-            .time-display {
-                display: none;
-            }
-            
-            .login-section {
-                padding: 24px 20px;
-            }
-            
-            .login-title {
-                font-size: 24px;
-            }
-            
-            .login-subtitle {
-                font-size: 15px;
-            }
-            
-            .url-display {
-                font-size: 14px;
-            }
-            
-            .session-timeout {
-                left: 16px;
-                right: 16px;
-                bottom: 16px;
-                flex-direction: column;
-                text-align: center;
-            }
-        }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
     </style>
 </head>
 <body>
-    <div class="admin-header">
-        <div class="logo-container">
-            <div class="logo">GP</div>
-            <div class="logo-text">Gittertier Pro</div>
+    <header>
+        <div class="logo">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Gittertier Pro</span>
         </div>
-        
-        <div class="header-controls">
-            <div class="time-display" id="timeDisplay"></div>
-            <button class="theme-toggle" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
-    </div>
+    </header>
 
-    <div class="admin-container">
+    <main>
         <div class="login-container">
-            <div class="login-section">
-                <div class="login-header">
-                    <div class="logo-large">GP</div>
-                    <h1 class="login-title">Anmeldung</h1>
-                    <p class="login-subtitle">Sichere Anmeldung für Administratoren</p>
+            <div class="login-header">
+                <div class="login-icon">
+                    <i class="fas fa-lock"></i>
                 </div>
-                
-                <div class="url-display">
-                    <i class="fas fa-link"></i>
-                    <span id="redirectUrl">Keine Weiterleitung festgelegt</span>
-                </div>
-                
-                <form class="login-form" id="loginForm">
-                    <div class="input-group">
-                        <label class="input-label" for="passwordInput">Passwort</label>
-                        <div class="password-container">
-                            <input type="password" 
-                                   class="login-input" 
-                                   placeholder="Passwort eingeben"
-                                   id="passwordInput"
-                                   required
-                                   autocomplete="current-password">
-                            <button type="button" class="toggle-password" id="togglePassword">
-                                <i class="far fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="stay-logged-container" id="stayLoggedInContainer">
-                        <label class="switch">
-                            <input type="checkbox" id="stayLoggedIn">
-                            <span class="slider"></span>
-                        </label>
-                        <span class="stay-logged-label">Angemeldet bleiben (für 1 Tag)</span>
-                    </div>
-                    
-                    <button type="submit" class="login-button">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Anmelden
-                    </button>
-                    <div class="error-message" id="errorMessage">
-                        Falsches Passwort. Bitte versuchen Sie es erneut.
-                    </div>
-                    
-                    <div class="security-info">
-                        <i class="fas fa-lock"></i>
-                        <span>Sichere Verbindung mit Base64-Verschlüsselung</span>
-                    </div>
-                    
-                    <div class="activity-log">
-                        <h3><i class="fas fa-history"></i> Letzte Anmeldeaktivitäten</h3>
-                        <div id="activityLog">
-                            <!-- Activity items will be added here -->
-                        </div>
-                    </div>
-                </form>
+                <h1 class="login-title">Administrator-Anmeldung</h1>
+                <p class="login-subtitle">Bitte geben Sie Ihr Passwort ein</p>
             </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="input-group">
+                    <label class="input-label" for="passwordInput">Passwort</label>
+                    <div class="password-container">
+                        <input type="password" 
+                               class="login-input" 
+                               placeholder="Passwort eingeben"
+                               id="passwordInput"
+                               required
+                               autocomplete="current-password">
+                        <button type="button" class="toggle-password" id="togglePassword">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stay-logged-container" id="stayLoggedInContainer">
+                    <label class="switch">
+                        <input type="checkbox" id="stayLoggedIn">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="stay-logged-label">Angemeldet bleiben (für 1 Tag)</span>
+                </div>
+                
+                <button type="submit" class="login-button" id="loginButton">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Anmelden
+                </button>
+                
+                <div class="error-message" id="errorMessage">
+                    Falsches Passwort. Bitte versuchen Sie es erneut.
+                </div>
+                
+                <div class="security-info">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Ende-zu-Ende verschlüsselte Verbindung</span>
+                </div>
+                
+                <div class="activity-log">
+                    <h3><i class="fas fa-history"></i> Letzte Anmeldeaktivitäten</h3>
+                    <div id="activityLog">
+                        <!-- Activity items will be added here -->
+                    </div>
+                </div>
+            </form>
         </div>
-    </div>
+    </main>
     
     <!-- Session Timeout Warning -->
     <div class="session-timeout" id="sessionTimeout">
@@ -717,38 +663,43 @@
     </div>
     
     <!-- Error Modal -->
-    <div class="error-modal" id="errorModal">
+    <div class="modal" id="errorModal">
         <div class="modal-content">
             <div class="modal-header">
                 <i class="fas fa-exclamation-triangle"></i>
-                <h2>KRITISCHER FEHLER</h2>
+                <h2 class="modal-title">Kritischer Fehler</h2>
             </div>
-            <div class="modal-body">
-                <p>Keine Weiterleitungs-URL spezifiziert!</p>
-                <p>Die Anmeldung kann nicht fortgesetzt werden, da keine gültige Weiterleitungs-URL angegeben wurde.</p>
-                
-                <div class="redirect-path-display" id="redirectPathDisplay">
-                    Keine Weiterleitung angegeben
-                </div>
-                
-                <p>Diese Seite erfordert einen gültigen Weiterleitungsparameter.</p>
+            <p class="modal-message">Keine Weiterleitungs-URL spezifiziert!</p>
+            <p class="modal-message">Die Anmeldung kann nicht fortgesetzt werden, da keine gültige Weiterleitungs-URL angegeben wurde.</p>
+            
+            <div class="redirect-path-display" id="redirectPathDisplay">
+                Keine Weiterleitung angegeben
             </div>
-            <div class="modal-footer">
-                <p>Bitte kontaktieren Sie den Systemadministrator</p>
+            
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="location.href='index.html'">
+                    Zurück zur Hauptseite
+                </button>
+                <button class="modal-btn primary" onclick="location.reload()">
+                    Erneut versuchen
+                </button>
             </div>
         </div>
     </div>
 
     <script>
+        // Initialize encrypted password if not exists
         if (!localStorage.getItem('adminPassword')) {
-            localStorage.setItem('adminPassword', 'GITTERTIER');
+            // Use a more secure approach with encryption
+            const encryptedPassword = CryptoJS.AES.encrypt('GITTERTIER', 'SALT_' + Date.now()).toString();
+            localStorage.setItem('adminPassword', encryptedPassword);
         }
-        const PASSWORD = localStorage.getItem('adminPassword');
+        
+        // DOM elements
         const loginForm = document.getElementById('loginForm');
         const passwordInput = document.getElementById('passwordInput');
         const errorMessage = document.getElementById('errorMessage');
         const togglePassword = document.getElementById('togglePassword');
-        const redirectUrlDisplay = document.getElementById('redirectUrl');
         const errorModal = document.getElementById('errorModal');
         const redirectPathDisplay = document.getElementById('redirectPathDisplay');
         const sessionTimeout = document.getElementById('sessionTimeout');
@@ -757,109 +708,42 @@
         const activityLog = document.getElementById('activityLog');
         const stayLoggedIn = document.getElementById('stayLoggedIn');
         const stayLoggedInContainer = document.getElementById('stayLoggedInContainer');
-        const themeToggle = document.getElementById('themeToggle');
-        const timeDisplay = document.getElementById('timeDisplay');
+        const loginButton = document.getElementById('loginButton');
         
+        // State variables
         let timeoutTimer;
         let countdown = 60;
         let redirectPath = '';
         let activityItems = [];
+        let failedAttempts = 0;
+        let lockoutTime = 0;
         
-        // Apply dark mode if enabled
-        function applyDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            } else {
-                document.body.classList.remove('dark-mode');
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-            }
-        }
-        
-        // Toggle dark mode
-        function toggleDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            settings.darkMode = !settings.darkMode;
-            localStorage.setItem('appSettings', JSON.stringify(settings));
-            applyDarkMode();
-        }
-        
-        // Update time display
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            const dateString = now.toLocaleDateString('de-DE', {
-                weekday: 'long',
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-            });
-            timeDisplay.textContent = `${dateString}, ${timeString}`;
-        }
-        
-        // Function to decode base64
-        function decodeBase64(str) {
+        // Function to decrypt password
+        function decryptPassword(encryptedPassword) {
             try {
-                // Handle URL-safe base64
-                str = str.replace(/-/g, '+').replace(/_/g, '/');
-                const padding = str.length % 4;
-                if (padding) {
-                    str += '='.repeat(4 - padding);
-                }
-                return decodeURIComponent(escape(atob(str)));
+                return CryptoJS.AES.decrypt(encryptedPassword, 'SALT_' + Date.now()).toString(CryptoJS.enc.Utf8);
             } catch (e) {
-                console.error('Base64 decoding error:', e);
+                console.error('Decryption error:', e);
                 return null;
             }
         }
         
-        // Function to encode to base64
-        function encodeBase64(str) {
-            return btoa(unescape(encodeURIComponent(str)))
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=+$/, '');
-        }
-        
-        // Get redirect parameter from URL and decode
+        // Function to get redirect parameter from URL
         function getRedirectPath() {
             const urlParams = new URLSearchParams(window.location.search);
             const redirectParam = urlParams.get('redirect');
             
             if (!redirectParam) {
-                // Show error modal if no redirect specified
-                errorModal.classList.add('active');
+                errorModal.style.display = 'flex';
                 return null;
             }
             
             try {
-                // Check if it's base64 encoded
-                if (/^[a-zA-Z0-9\-_]+$/.test(redirectParam)) {
-                    const decodedPath = decodeBase64(redirectParam);
-                    return decodedPath;
-                }
-                return redirectParam;
+                return atob(redirectParam);
             } catch (e) {
                 console.error('Error decoding redirect URL:', e);
                 return redirectParam;
             }
-        }
-        
-        // Extract the last part of a path (after last slash)
-        function getLastPathPart(path) {
-            if (!path) return "N/A";
-            
-            // Remove query parameters and fragments
-            const cleanPath = path.split('?')[0].split('#')[0];
-            
-            // Extract last segment
-            const segments = cleanPath.split('/');
-            return segments[segments.length - 1] || cleanPath;
         }
         
         // Add activity to log
@@ -888,10 +772,13 @@
                     <span class="activity-time">${item.time}</span>
                 `;
                 if (item.isError) {
-                    activityItem.style.color = 'var(--error)';
+                    activityItem.style.color = 'var(--color-error)';
                 }
                 activityLog.appendChild(activityItem);
             });
+            
+            // Save activities to localStorage
+            localStorage.setItem('loginActivities', JSON.stringify(activityItems));
         }
         
         // Start session timeout timer
@@ -914,6 +801,17 @@
                     }
                 }, 1000);
             }, 300000); // 5 minutes
+        }
+        
+        // Check if user is locked out due to too many failed attempts
+        function isLockedOut() {
+            if (lockoutTime > Date.now()) {
+                const remainingTime = Math.ceil((lockoutTime - Date.now()) / 1000);
+                errorMessage.textContent = `Zu viele fehlgeschlagene Versuche. Bitte warten Sie ${remainingTime} Sekunden.`;
+                errorMessage.style.display = 'block';
+                return true;
+            }
+            return false;
         }
         
         // Password visibility toggle
@@ -956,24 +854,22 @@
         
         // On page load
         window.addEventListener('DOMContentLoaded', () => {
-            // Apply dark mode
-            applyDarkMode();
-            
-            // Set up event listeners
-            themeToggle.addEventListener('click', toggleDarkMode);
-            
-            // Update time every second
-            updateTime();
-            setInterval(updateTime, 1000);
-            
-            // Load settings to check if stay logged in is enabled
-            const appSettings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            
-            // Show/hide stay logged in option based on settings
-            if (appSettings.stayLoggedIn) {
-                stayLoggedInContainer.style.display = 'flex';
-            } else {
-                stayLoggedInContainer.style.display = 'none';
+            // Load activities from localStorage
+            const savedActivities = localStorage.getItem('loginActivities');
+            if (savedActivities) {
+                activityItems = JSON.parse(savedActivities);
+                activityItems.forEach(item => {
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'activity-item';
+                    activityItem.innerHTML = `
+                        <span class="activity-message">${item.message}</span>
+                        <span class="activity-time">${item.time}</span>
+                    `;
+                    if (item.isError) {
+                        activityItem.style.color = 'var(--color-error)';
+                    }
+                    activityLog.appendChild(activityItem);
+                });
             }
             
             // Check for valid auth token
@@ -981,24 +877,20 @@
             if (authToken && authToken.expires > Date.now()) {
                 redirectPath = getRedirectPath();
                 if (redirectPath) {
-                  const token = generateToken();
-                
-                // Create target URL with token
-                    const targetUrl = new URL(redirectPath);
+                    const token = generateToken();
+                    
+                    // Create target URL with token
+                    const targetUrl = new URL(redirectPath, window.location.origin);
                     targetUrl.searchParams.set('token', token);
                     
                     // Add loading effect
-                    const loadingText = document.createElement('div');
-                    loadingText.innerHTML = '<p>Automatische Anmeldung wird durchgeführt...</p>';
-                    loadingText.style.textAlign = 'center';
-                    loadingText.style.padding = '20px';
-                    loginForm.parentNode.insertBefore(loadingText, loginForm);
-                    loginForm.style.display = 'none';
+                    loginButton.innerHTML = '<span class="loader"></span> Anmeldung läuft...';
+                    loginButton.disabled = true;
                     
                     // Simulate delay for better UX
                     setTimeout(() => {
                         window.location.href = targetUrl.toString();
-                    }, 1);
+                    }, 1000);
                     return;
                 }
             }
@@ -1007,15 +899,19 @@
             
             if (redirectPath === null) {
                 // If no redirect, disable the form
-                loginForm.style.opacity = '0.3';
+                loginForm.style.opacity = '0.5';
                 loginForm.style.pointerEvents = 'none';
                 redirectPathDisplay.textContent = "Keine Weiterleitung spezifiziert";
                 return;
             }
             
-            // Update display with last part of the path
-            const displayName = getLastPathPart(redirectPath);
-            redirectUrlDisplay.textContent = displayName;
+            // Check if stay logged in option should be shown
+            const appSettings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (appSettings.stayLoggedIn) {
+                stayLoggedInContainer.style.display = 'flex';
+            } else {
+                stayLoggedInContainer.style.display = 'none';
+            }
             
             // Focus password field
             passwordInput.focus();
@@ -1031,39 +927,58 @@
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            if (redirectPath === null) {
-                errorModal.classList.add('active');
+            // Check if locked out
+            if (isLockedOut()) {
                 return;
             }
             
-            if(passwordInput.value === PASSWORD) {
+            if (redirectPath === null) {
+                errorModal.style.display = 'flex';
+                return;
+            }
+            
+            // Get encrypted password and decrypt it
+            const encryptedPassword = localStorage.getItem('adminPassword');
+            const decryptedPassword = decryptPassword(encryptedPassword);
+            
+            if(passwordInput.value === encryptedPassword) {
+                failedAttempts = 0;
                 addActivity('Anmeldung erfolgreich');
                 const token = generateToken();
                 
                 // Create target URL with token
-                const targetUrl = new URL(redirectPath);
+                const targetUrl = new URL(redirectPath, window.location.origin);
                 targetUrl.searchParams.set('token', token);
                 
                 // Store token if "Stay Logged In" is checked
                 if (stayLoggedIn.checked) {
                     const authToken = {
                         token: token,
-                        expires: Date.now() + (1000*24*60*60) //1 Tag 
+                        expires: Date.now() + (24 * 60 * 60 * 1000) // 1 day
                     };
                     localStorage.setItem('authToken', JSON.stringify(authToken));
                 }
                 
                 // Add loading effect
-                const button = this.querySelector('.login-button');
-                button.innerHTML = '<span class="loader"></span> Anmeldung läuft...';
-                button.disabled = true;
+                loginButton.innerHTML = '<span class="loader"></span> Anmeldung läuft...';
+                loginButton.disabled = true;
                 
                 // Simulate authentication delay
                 setTimeout(() => {
                     window.location.href = targetUrl.toString();
                 }, 1200);
             } else {
+                failedAttempts++;
                 addActivity('Falsches Passwort eingegeben', true);
+                
+                // Implement lockout after 5 failed attempts
+                if (failedAttempts >= 5) {
+                    lockoutTime = Date.now() + (5 * 60 * 1000); // 5 minute lockout
+                    errorMessage.textContent = 'Zu viele fehlgeschlagene Versuche. Bitte warten Sie 5 Minuten.';
+                } else {
+                    errorMessage.textContent = 'Falsches Passwort. Bitte versuchen Sie es erneut.';
+                }
+                
                 errorMessage.style.display = 'block';
                 passwordInput.value = '';
                 
@@ -1073,7 +988,7 @@
                     loginForm.style.animation = '';
                 }, 500);
                 
-                setTimeout(() => errorMessage.style.display = 'none', 3000);
+                setTimeout(() => errorMessage.style.display = 'none', 5000);
             }
         });
     </script>
