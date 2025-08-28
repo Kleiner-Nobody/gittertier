@@ -7,6 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <!-- Add jsPDF library for receipt generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
     :root {
@@ -19,6 +21,8 @@
         --color-success: #16a34a;
         --color-error: #dc2626;
         --color-warning: #f59e0b;
+        --color-warning-bg: #fffbeb;
+        --color-warning-border: #fcd34d;
         --color-overlay: rgba(0, 0, 0, 0.5);
         
         --radius: 12px;
@@ -562,7 +566,11 @@
             <h2 class="modal-title">Fehler</h2>
             <p class="modal-message" id="error-message">Die Zahlungsinformationen konnten nicht geladen werden.</p>
             <div class="modal-actions">
-                <button class="modal-btn secondary" onclick="closeModal('error-modal')">Schließen</button>
+                <!-- <button class="modal-btn secondary" onclick="closeModal('error-modal')">Schließen</button> -->
+                <button class="modal-btn secondary" onclick="generateReceipt()">
+                    <i class="fas fa-receipt"></i>
+                    Beleg drucken
+                </button>
                 <button class="modal-btn primary" onclick="window.location.href='index'">Zur Startseite</button>
             </div>
         </div>
@@ -589,7 +597,24 @@
         </div>
     </div>
 
+    <!-- Connecting Modal (Yellow) -->
+    <div id="connecting-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" style="color: var(--color-warning);">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <h2 class="modal-title">Verbindung hergestellt</h2>
+            <p class="modal-message">Warten auf Bestätigung vom Händler...</p>
+            <div class="modal-actions">
+               <!--<button class="modal-btn secondary" onclick="closeModal('connecting-modal')">Schließen</button> -->
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
         let paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         let paymentData = null;
         let countdownInterval = null;
@@ -667,6 +692,12 @@
                     console.log('Merchant connected:', conn.peer);
                     merchantConnection = conn;
                     
+                    // Show connecting modal when merchant connects
+                    showModal('connecting-modal');
+                    
+                    // Stop the countdown timer
+                    clearInterval(countdownInterval);
+                    
                     conn.on('data', (data) => {
                         console.log('Received data:', data);
                         if (data.type === 'confirm') {
@@ -703,6 +734,7 @@
             statusEl.innerHTML = '<i class="fas fa-check-circle"></i><span>Zahlung bestätigt!</span>';
             
             clearInterval(countdownInterval);
+            closeModal('connecting-modal');
             showModal('success-modal');
         }
         
@@ -713,6 +745,7 @@
             statusEl.innerHTML = '<i class="fas fa-times-circle"></i><span>Zahlung abgelehnt!</span>';
             
             clearInterval(countdownInterval);
+            closeModal('connecting-modal');
             // Show error modal with decline message
             document.getElementById('error-message').textContent = 'Der Händler hat die Zahlung abgelehnt.';
             showModal('error-modal');
@@ -801,36 +834,38 @@
         }
         
         // Generate receipt
-        function generateReceipt(paymentData) {
+        function generateReceipt() {
+            const statusEl = document.getElementById('status');
+            const statusText = statusEl.textContent.trim();
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
             const paymentDate = new Date().toLocaleDateString('de-DE');
             const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-            const paymentId = paymentData.peerId.split('-').pop().substr(0, 8);
+            const shortPaymentId = paymentId.split('-').pop().substr(0, 8);
             let yPos = 20;
-            
+
             // Header with logo
             doc.setFontSize(20);
             doc.setTextColor(37, 99, 235);
             doc.setFont(undefined, 'bold');
             doc.text("Gittertier Pro", pageWidth/2, yPos, null, 'center');
-            
+
             yPos += 15;
             doc.setFontSize(10);
             doc.setTextColor(107, 114, 128);
             doc.setFont(undefined, 'normal');
-            doc.text(`Belegnummer: ${paymentId}`, pageWidth/2, yPos, null, 'center');
-            
+            doc.text(`Belegnummer: ${shortPaymentId}`, pageWidth/2, yPos, null, 'center');
+
             yPos += 10;
             doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth/2, yPos, null, 'center');
-            
+
             yPos += 20;
-            
+
             // Items header
             doc.setDrawColor(229, 231, 235);
             doc.line(20, yPos, pageWidth - 20, yPos);
-            
+
             yPos += 10;
             doc.setFontSize(12);
             doc.setTextColor(17, 17, 17);
@@ -838,51 +873,52 @@
             doc.text("Artikel", 25, yPos);
             doc.text("Menge", 120, yPos);
             doc.text("Preis", pageWidth - 25, yPos, null, 'right');
-            
+
             yPos += 10;
-            
+
             // Items list
             doc.setFontSize(10);
             doc.setTextColor(17, 17, 17);
             doc.setFont(undefined, 'normal');
-            
-            paymentData.items.forEach((item, index) => {
+
+            paymentData.items.forEach((item) => {
                 if (yPos > pageHeight - 60) {
                     doc.addPage();
                     yPos = 20;
                 }
-                
+
                 doc.text(item.name.substring(0, 30), 25, yPos);
                 doc.text(`${item.quantity}x`, 120, yPos);
                 doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
-                
+
                 yPos += 8;
             });
-            
+
             yPos += 10;
             doc.setDrawColor(229, 231, 235);
             doc.line(20, yPos, pageWidth - 20, yPos);
-            
+
             yPos += 15;
             doc.setFontSize(14);
             doc.setFont(undefined, 'bold');
             doc.text("Gesamtsumme:", 25, yPos);
             doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
-            
+
             yPos += 20;
             doc.setFontSize(12);
-            const statusColor = status === 'Bestätigt' ? [22, 163, 74] : [220, 38, 38];
+            // Use the same color as the status element
+            const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
             doc.setTextColor(...statusColor);
-            doc.text(`Status: ${status}`, pageWidth/2, yPos, null, 'center');
-            
+            doc.text(`Status: ${statusText}`, pageWidth/2, yPos, null, 'center');
+
             yPos += 15;
             doc.setFontSize(10);
             doc.setTextColor(107, 114, 128);
             doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
-            
+
             // Save the PDF
-            doc.save(`gittertier_beleg_${paymentId}.pdf`);
-            
+            doc.save(`gittertier_beleg_${shortPaymentId}.pdf`);
+
             // Redirect after a short delay
             setTimeout(() => {
                 window.location.href = 'index';
