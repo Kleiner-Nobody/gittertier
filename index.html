@@ -870,43 +870,6 @@
         margin-bottom: var(--spacing-xl);
     }
 
-    /* Dark mode support for system preference */
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --color-bg: #111827;
-            --color-text: #f3f4f6;
-            --color-text-muted: #9ca3af;
-            --color-border: #374151;
-            --color-tutorial-light: #cc5c00;
-        }
-        
-        body {
-            background-color: var(--color-bg);
-        }
-        
-        .scanner-card, .product-card, .cart-section {
-            background-color: #1f2937;
-            border-color: var(--color-border);
-        }
-        
-        .control-btn:hover, .action-btn:hover {
-            background-color: #374151;
-        }
-        
-        .product-image, .cart-item-image {
-            background-color: #374151;
-        }
-        
-        .cart-item:hover {
-            background-color: #374151;
-        }
-        
-        .payment-footer {
-            background-color: #1f2937;
-            border-color: var(--color-border);
-        }
-    }
-
     /* NEW: Tutorial Cutout Overlay */
     .tutorial-cutout-overlay {
         position: fixed;
@@ -962,7 +925,7 @@
     }
     
     /* Tutorial Speech Bubble */
-    .tutorial-bubble-step {
+    .tutorial-bubble {
         position: fixed;
         background-color: white;
         border-radius: var(--radius);
@@ -973,7 +936,23 @@
         border: 2px solid var(--color-tutorial);
     }
     
-    .tutorial-bubble-step:after {
+    .tutorial-bubble.top {
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
+        max-width: none;
+    }
+    
+    .tutorial-bubble.bottom {
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
+        max-width: none;
+    }
+    
+    .tutorial-bubble:after {
         content: '';
         position: absolute;
         width: 0;
@@ -981,32 +960,18 @@
         border: 12px solid transparent;
     }
     
-    .tutorial-bubble-step.top:after {
+    .tutorial-bubble.top:after {
         bottom: -24px;
         left: 50%;
         transform: translateX(-50%);
         border-top-color: var(--color-tutorial);
     }
     
-    .tutorial-bubble-step.bottom:after {
+    .tutorial-bubble.bottom:after {
         top: -24px;
         left: 50%;
         transform: translateX(-50%);
         border-bottom-color: var(--color-tutorial);
-    }
-    
-    .tutorial-bubble-step.left:after {
-        right: -24px;
-        top: 50%;
-        transform: translateY(-50%);
-        border-left-color: var(--color-tutorial);
-    }
-    
-    .tutorial-bubble-step.right:after {
-        left: -24px;
-        top: 50%;
-        transform: translateY(-50%);
-        border-right-color: var(--color-tutorial);
     }
     
     .tutorial-bubble-content {
@@ -1160,23 +1125,23 @@
     
     /* Mobile adjustments for tutorial */
     @media (max-width: 768px) {
-        .tutorial-bubble-step {
+        .tutorial-bubble {
             max-width: 80%;
             left: 50% !important;
             transform: translateX(-50%);
             margin: 0 var(--spacing-md);
         }
         
-        .tutorial-bubble-step.top {
+        .tutorial-bubble.top {
             top: var(--spacing-xl) !important;
         }
         
-        .tutorial-bubble-step.bottom {
+        .tutorial-bubble.bottom {
             bottom: var(--spacing-xl) !important;
             top: auto !important;
         }
         
-        .tutorial-bubble-step:after {
+        .tutorial-bubble:after {
             display: none;
         }
         
@@ -1197,7 +1162,7 @@
             background-color: #374151;
         }
         
-        .tutorial-bubble-step {
+        .tutorial-bubble {
             background-color: #1f2937;
             color: var(--color-text);
         }
@@ -1510,17 +1475,24 @@
         let tutorialCurrentStep = 0;
         const tutorialSteps = [
             {
+                title: "Header-Bedienelemente",
+                content: "Hier finden Sie wichtige Funktionen: Zahnrad (nur für Admins), Fragezeichen (öffnet dieses Tutorial) und Info (zeigt Informationen zur App).",
+                element: ".header-controls",
+                position: "bottom",
+                action: null
+            },
+            {
                 title: "Scanner-Bereich",
                 content: "Dies ist der Scanner-Bereich. Hier scannen Sie Barcodes von Produkten, um sie zum Warenkorb hinzuzufügen.",
                 element: "#scanner-container",
-                position: "top",
+                position: "bottom",
                 action: null
             },
             {
                 title: "Scanner starten",
                 content: "Klicken Sie auf 'Scanner starten', um die Kamera zu aktivieren und Barcodes zu erkennen.",
                 element: "#toggle-scanner",
-                position: "top",
+                position: "bottom",
                 action: "click",
                 simulate: function() {
                     document.getElementById('toggle-scanner').click();
@@ -1549,7 +1521,7 @@
                 title: "Manuelle Eingabe",
                 content: "Falls ein Produkt keinen Barcode hat, können Sie es manuell hinzufügen.",
                 element: "#manual-add",
-                position: "top",
+                position: "bottom",
                 action: "click",
                 simulate: function() {
                     // Show product modal
@@ -1741,22 +1713,19 @@
         
         function createTutorialBubble(step, element, rect) {
             // Remove any existing tutorial bubble
-            const existingBubble = document.querySelector('.tutorial-bubble-step');
+            const existingBubble = document.querySelector('.tutorial-bubble');
             if (existingBubble) {
                 existingBubble.remove();
             }
             
             // Create speech bubble
             const tutorialBubble = document.createElement('div');
-            tutorialBubble.className = `tutorial-bubble-step ${step.position}`;
+            tutorialBubble.className = `tutorial-bubble ${step.position}`;
             
             const bubbleContent = `
                 <div class="tutorial-bubble-content">
                     <div class="tutorial-bubble-title">${step.title}</div>
                     <div>${step.content}</div>
-                </div>
-                <div class="tutorial-bubble-actions">
-                    <button class="tutorial-bubble-btn primary" onclick="nextTutorialStep()">Verstanden</button>
                 </div>
             `;
             
@@ -1772,33 +1741,26 @@
             
             switch(step.position) {
                 case 'top':
-                    bubble.style.top = `${rect.top - bubbleRect.height - 20 + window.scrollY}px`;
-                    bubble.style.left = `${rect.left + (rect.width / 2) - (bubbleRect.width / 2) + window.scrollX}px`;
+                    bubble.style.top = '20px';
+                    bubble.style.left = '20px';
+                    bubble.style.width = 'calc(100% - 40px)';
                     break;
                 case 'bottom':
-                    bubble.style.top = `${rect.bottom + 20 + window.scrollY}px`;
-                    bubble.style.left = `${rect.left + (rect.width / 2) - (bubbleRect.width / 2) + window.scrollX}px`;
-                    break;
-                case 'left':
-                    bubble.style.top = `${rect.top + (rect.height / 2) - (bubbleRect.height / 2) + window.scrollY}px`;
-                    bubble.style.left = `${rect.left - bubbleRect.width - 20 + window.scrollX}px`;
-                    break;
-                case 'right':
-                    bubble.style.top = `${rect.top + (rect.height / 2) - (bubbleRect.height / 2) + window.scrollY}px`;
-                    bubble.style.left = `${rect.right + 20 + window.scrollX}px`;
+                    bubble.style.bottom = '20px';
+                    bubble.style.left = '20px';
+                    bubble.style.width = 'calc(100% - 40px)';
                     break;
             }
             
             // Adjust for mobile
-            if (window.innerWidth <= 768) {
-                bubble.style.left = '50%';
-                bubble.style.transform = 'translateX(-50%)';
+            if (window.innerWidth <= '768px') {
+                bubble.style.left = '20px';
+                bubble.style.width = 'calc(100% - 40px)';
                 
                 if (step.position === 'top') {
                     bubble.style.top = '20px';
                 } else {
                     bubble.style.bottom = '20px';
-                    bubble.style.top = 'auto';
                 }
             }
         }
@@ -1828,7 +1790,7 @@
             document.getElementById('tutorial-continue-btn').style.display = 'none';
             document.getElementById('tutorial-step-indicator').style.display = 'none';
             
-            const existingBubble = document.querySelector('.tutorial-bubble-step');
+            const existingBubble = document.querySelector('.tutorial-bubble');
             if (existingBubble) {
                 existingBubble.remove();
             }
@@ -1845,7 +1807,7 @@
             document.getElementById('tutorial-continue-btn').style.display = 'none';
             document.getElementById('tutorial-step-indicator').style.display = 'none';
             
-            const existingBubble = document.querySelector('.tutorial-bubble-step');
+            const existingBubble = document.querySelector('.tutorial-bubble');
             if (existingBubble) {
                 existingBubble.remove();
             }

@@ -322,24 +322,6 @@
         color: var(--color-accent);
     }
 
-    .add-product-btn {
-        background-color: var(--color-accent);
-        color: white;
-        border: none;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .add-product-btn:hover {
-        background-color: var(--color-accent-hover);
-    }
-
     .stat-cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -376,31 +358,37 @@
         color: var(--color-text-muted);
     }
 
-    .search-container {
-        margin-bottom: var(--spacing-lg);
+    .chart-container {
+        height: 250px;
+        position: relative;
+        margin-top: 20px;
     }
 
-    .search-bar {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius);
-        font-size: var(--text-base);
-        background-color: var(--color-bg);
-        color: var(--color-text);
+    .chart-expand {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 6px 12px;
+        font-size: var(--text-xs);
+        cursor: pointer;
+        z-index: 10;
         transition: var(--transition);
     }
 
-    .search-bar:focus {
-        outline: none;
-        border-color: var(--color-accent);
-        box-shadow: var(--focus-ring);
+    .chart-expand:hover {
+        background-color: rgba(255, 255, 255, 1);
     }
 
-    .chart-container {
-        height: 300px;
-        position: relative;
-        margin-top: 20px;
+    .dark-mode .chart-expand {
+        background-color: rgba(31, 41, 55, 0.8);
+        color: var(--color-text);
+    }
+
+    .dark-mode .chart-expand:hover {
+        background-color: rgba(31, 41, 55, 1);
     }
 
     .data-controls {
@@ -424,6 +412,35 @@
         outline: none;
         border-color: var(--color-accent);
         box-shadow: var(--focus-ring);
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .action-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .action-btn.primary {
+        background-color: var(--color-accent);
+        color: white;
+        border-color: var(--color-accent);
+    }
+
+    .action-btn.primary:hover {
+        background-color: var(--color-accent-hover);
     }
 
     table {
@@ -465,35 +482,67 @@
         color: var(--color-error);
     }
 
-    .file-input-label {
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius);
-        font-size: var(--text-base);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        background: var(--color-bg);
-        color: var(--color-accent);
-        border: 1px solid var(--color-accent);
-    }
-
-    .file-input-label:hover {
-        background: var(--color-accent);
-        color: white;
-    }
-
-    .file-input {
-        display: none;
-    }
-
     .analytics-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         gap: var(--spacing-lg);
         margin-top: 30px;
+    }
+
+    .expandable-chart {
+        position: relative;
+    }
+
+    .expandable-chart.expanded .chart-container {
+        height: 400px;
+    }
+
+    .chart-fullscreen {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .chart-fullscreen.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .chart-fullscreen-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        width: 100%;
+        max-width: 800px;
+        max-height: 80vh;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+    }
+
+    .chart-fullscreen-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
     /* Responsive Design */
@@ -549,10 +598,23 @@
         .data-controls {
             flex-direction: column;
         }
+        
+        .chart-container {
+            height: 200px;
+        }
+        
+        table {
+            display: block;
+            overflow-x: auto;
+        }
     }
 
     @media (max-width: 480px) {
         .stat-cards {
+            grid-template-columns: 1fr;
+        }
+        
+        .analytics-grid {
             grid-template-columns: 1fr;
         }
     }
@@ -580,10 +642,6 @@
         </div>
         <div class="header-controls">
             <div class="time-display" id="timeDisplay"></div>
-            <!-- <button class="notification-btn" id="notificationBtn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge" id="notificationBadge">3</span>
-            </button> -->
             <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Abmelden</span>
@@ -660,44 +718,49 @@
                     <div class="card-header">
                         <h2 class="card-title">
                             <i class="fas fa-filter"></i>
-                            Filter
+                            Zeitraum
                         </h2>
                     </div>
                     <div class="data-controls">
                         <input type="date" id="startDate" class="date-input">
                         <input type="date" id="endDate" class="date-input">
-                        <button class="add-product-btn" id="exportBtn">
+                        <button class="action-btn primary" id="applyFilter">
+                            <i class="fas fa-check"></i>
+                            Anwenden
+                        </button>
+                        <button class="action-btn" id="exportBtn">
                             <i class="fas fa-file-export"></i>
                             Export
                         </button>
-                        <!-- <label class="file-input-label" for="fileInput">
-                            <i class="fas fa-file-import"></i>
-                            Import
-                            <input type="file" id="fileInput" class="file-input" accept=".csv">
-                        </label> -->
                     </div>
                 </div>
             </div>
 
             <div class="analytics-grid">
-                <div class="dashboard-card">
+                <div class="dashboard-card expandable-chart" id="revenueChartContainer">
                     <div class="card-header">
                         <h2 class="card-title">
                             <i class="fas fa-euro-sign"></i>
                             Umsatzentwicklung
                         </h2>
+                        <button class="chart-expand" data-chart="revenue">
+                            <i class="fas fa-expand"></i> Mehr anzeigen
+                        </button>
                     </div>
                     <div class="chart-container">
                         <canvas id="revenueChart"></canvas>
                     </div>
                 </div>
 
-                <div class="dashboard-card">
+                <div class="dashboard-card expandable-chart" id="productsChartContainer">
                     <div class="card-header">
                         <h2 class="card-title">
                             <i class="fas fa-star"></i>
                             Top Produkte
                         </h2>
+                        <button class="chart-expand" data-chart="products">
+                            <i class="fas fa-expand"></i> Mehr anzeigen
+                        </button>
                     </div>
                     <div class="chart-container">
                         <canvas id="productsChart"></canvas>
@@ -711,7 +774,7 @@
                         <i class="fas fa-receipt"></i>
                         Letzte Transaktionen
                     </h2>
-                    <button class="add-product-btn" id="refreshTransactions">
+                    <button class="action-btn" id="refreshTransactions">
                         <i class="fas fa-sync-alt"></i>
                         Aktualisieren
                     </button>
@@ -731,6 +794,16 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Chart Fullscreen Modal -->
+    <div class="chart-fullscreen" id="chartFullscreen">
+        <div class="chart-fullscreen-content">
+            <button class="chart-fullscreen-close" id="closeFullscreen">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="chart-container" style="height: 70vh;" id="fullscreenChartContainer"></div>
+        </div>
     </div>
 
     <script>
@@ -773,6 +846,11 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const exportBtn = document.getElementById('exportBtn');
         const refreshTransactionsBtn = document.getElementById('refreshTransactions');
+        const applyFilterBtn = document.getElementById('applyFilter');
+        const chartExpandBtns = document.querySelectorAll('.chart-expand');
+        const chartFullscreen = document.getElementById('chartFullscreen');
+        const closeFullscreen = document.getElementById('closeFullscreen');
+        const fullscreenChartContainer = document.getElementById('fullscreenChartContainer');
         
         // Time display function
         function updateTime() {
@@ -821,6 +899,139 @@
             localStorage.removeItem('authToken');
             window.location.reload();
         });
+
+        // Chart expand functionality
+        chartExpandBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const chartType = this.getAttribute('data-chart');
+                const chartCanvas = document.getElementById(`${chartType}Chart`);
+                
+                // Clone the chart to fullscreen
+                fullscreenChartContainer.innerHTML = '';
+                const clone = chartCanvas.cloneNode(true);
+                clone.id = `${chartType}ChartFullscreen`;
+                fullscreenChartContainer.appendChild(clone);
+                
+                // Initialize chart in fullscreen
+                initFullscreenChart(chartType, clone);
+                
+                // Show fullscreen
+                chartFullscreen.classList.add('active');
+            });
+        });
+
+        // Close fullscreen
+        closeFullscreen.addEventListener('click', () => {
+            chartFullscreen.classList.remove('active');
+        });
+
+        // Initialize chart in fullscreen
+        function initFullscreenChart(chartType, canvas) {
+            const data = getChartData(chartType);
+            
+            switch(chartType) {
+                case 'revenue':
+                    new Chart(canvas, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Tagesumsatz',
+                                data: data.data,
+                                borderColor: 'var(--color-accent)',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Umsatzentwicklung',
+                                    font: {
+                                        size: 18
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'var(--color-border)'
+                                    },
+                                    ticks: {
+                                        color: 'var(--color-text-muted)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        color: 'var(--color-border)'
+                                    },
+                                    ticks: {
+                                        color: 'var(--color-text-muted)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    break;
+                    
+                case 'products':
+                    new Chart(canvas, {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Verkaufte Menge',
+                                data: data.data,
+                                backgroundColor: 'var(--color-accent)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Top Produkte',
+                                    font: {
+                                        size: 18
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'var(--color-border)'
+                                    },
+                                    ticks: {
+                                        color: 'var(--color-text-muted)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        color: 'var(--color-border)'
+                                    },
+                                    ticks: {
+                                        color: 'var(--color-text-muted)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    break;
+            }
+        }
 
         // Data processing functions
         function getTransactionData() {
@@ -887,27 +1098,46 @@
             };
         }
 
+        // Get chart data
+        function getChartData(chartType) {
+            const transactionData = getTransactionData();
+            
+            if (chartType === 'revenue') {
+                const revenueDates = transactionData.transactions
+                    .map(t => t.date.toISOString().split('T')[0])
+                    .filter((v, i, a) => a.indexOf(v) === i)
+                    .slice(-30);
+
+                const revenueData = revenueDates.map(date => 
+                    transactionData.transactions
+                        .filter(t => t.date.toISOString().startsWith(date))
+                        .reduce((sum, t) => sum + parseFloat(t.amount), 0)
+                );
+
+                return {
+                    labels: revenueDates,
+                    data: revenueData
+                };
+            } else if (chartType === 'products') {
+                const topProducts = transactionData.productSales.slice(0, 5);
+                return {
+                    labels: topProducts.map(p => p[0]),
+                    data: topProducts.map(p => p[1])
+                };
+            }
+        }
+
         // Chart initialization
         function initCharts(data) {
             // Revenue Chart
-            const revenueDates = data.transactions
-                .map(t => t.date.toISOString().split('T')[0])
-                .filter((v, i, a) => a.indexOf(v) === i)
-                .slice(-30);
-
-            const revenueData = revenueDates.map(date => 
-                data.transactions
-                    .filter(t => t.date.toISOString().startsWith(date))
-                    .reduce((sum, t) => sum + parseFloat(t.amount), 0)
-            );
-
+            const revenueData = getChartData('revenue');
             new Chart(document.getElementById('revenueChart'), {
                 type: 'line',
                 data: {
-                    labels: revenueDates,
+                    labels: revenueData.labels,
                     datasets: [{
                         label: 'Tagesumsatz',
-                        data: revenueData,
+                        data: revenueData.data,
                         borderColor: 'var(--color-accent)',
                         backgroundColor: 'rgba(37, 99, 235, 0.1)',
                         tension: 0.4,
@@ -945,14 +1175,14 @@
             });
 
             // Products Chart
-            const topProducts = data.productSales.slice(0, 5);
+            const productsData = getChartData('products');
             new Chart(document.getElementById('productsChart'), {
                 type: 'bar',
                 data: {
-                    labels: topProducts.map(p => p[0]),
+                    labels: productsData.labels,
                     datasets: [{
                         label: 'Verkaufte Menge',
-                        data: topProducts.map(p => p[1]),
+                        data: productsData.data,
                         backgroundColor: 'var(--color-accent)'
                     }]
                 },
@@ -1052,54 +1282,56 @@
             link.click();
         });
 
-        // Import functionality
-        /* document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        // Apply filter functionality
+        applyFilterBtn.addEventListener('click', function() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
             
-            const reader = new FileReader();
+            if (!startDate || !endDate) {
+                alert('Bitte wählen Sie einen Start- und Endzeitraum aus.');
+                return;
+            }
             
-            reader.onload = function(event) {
-                const csvData = event.target.result.split('\n').slice(1);
-                let importedCount = 0;
-                
-                csvData.forEach(row => {
-                    if(!row.trim()) return;
-                    const [date, amount, status, items] = row.split(',');
-                    
-                    // Generate unique ID
-                    const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
-                    
-                    // Create receipt entry
-                    const receiptData = {
-                        peerId: paymentId,
-                        date: new Date(date).toISOString(),
-                        total: parseFloat(amount),
-                        items: items ? items.replace(/"/g, '').split(', ').map(name => ({
-                            name,
-                            quantity: 1,
-                            price: 0
-                        })) : []
-                    };
-
-                    // Save to localStorage
-                    const archiveEntry = {
-                        data: LZString.compressToBase64(JSON.stringify(receiptData)),
-                        date: new Date().toISOString(),
-                        total: receiptData.total,
-                        status: status || 'Bestätigt'
-                    };
-
-                    localStorage.setItem(`receipt_${paymentId.split('-').pop().substr(0, 8)}`, JSON.stringify(archiveEntry));
-                    importedCount++;
-                });
-
-                alert(`${importedCount} Transaktionen erfolgreich importiert!`);
-                location.reload();
-            };
+            // Filter transactions by date
+            const transactionData = getTransactionData();
+            const filteredTransactions = transactionData.transactions.filter(t => {
+                const transactionDate = t.date.toISOString().split('T')[0];
+                return transactionDate >= startDate && transactionDate <= endDate;
+            });
             
-            reader.readAsText(file);
-        }); */
+            // Update table with filtered data
+            updateTable(filteredTransactions);
+            
+            // Show notification
+            showNotification(`Zeitraum: ${startDate} bis ${endDate}`);
+        });
+
+        // Show notification function
+        function showNotification(message) {
+            // Create notification element if it doesn't exist
+            let notification = document.getElementById('analyticsNotification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'analyticsNotification';
+                notification.style.position = 'fixed';
+                notification.style.bottom = '20px';
+                notification.style.right = '20px';
+                notification.style.padding = '12px 20px';
+                notification.style.backgroundColor = 'var(--color-success)';
+                notification.style.color = 'white';
+                notification.style.borderRadius = 'var(--radius)';
+                notification.style.zIndex = '1000';
+                notification.style.boxShadow = 'var(--shadow-md)';
+                document.body.appendChild(notification);
+            }
+            
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
 
         // Refresh transactions
         refreshTransactionsBtn.addEventListener('click', function() {
@@ -1107,6 +1339,7 @@
             updateStats(transactionData);
             initCharts(transactionData);
             updateTable(transactionData.transactions);
+            showNotification('Daten aktualisiert');
         });
 
         // Initial load

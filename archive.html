@@ -1670,6 +1670,33 @@
             generateReceiptList(filtered);
         }
 
+                function checkForReceiptToOpen() {
+            const receiptIdToOpen = sessionStorage.getItem('openReceiptId');
+            
+            if (receiptIdToOpen) {
+                // Find the receipt in the loaded receipts
+                const receipt = allReceipts.find(r => r.id === receiptIdToOpen);
+                
+                if (receipt) {
+                    // Show the receipt details
+                    showReceiptDetails(receipt);
+                    
+                    // Clear the stored receipt ID
+                    sessionStorage.removeItem('openReceiptId');
+                }
+            }
+        }
+
+        // Modify the loadAndDisplayReceipts function
+        function loadAndDisplayReceipts() {
+            const receipts = loadReceipts();
+            generateReceiptList(receipts);
+            updateIncomeTotal(receipts);
+            
+            // Check if a specific receipt needs to be opened
+            checkForReceiptToOpen();
+        }
+
         // Show notification function
         function showNotification(message, type = 'success') {
             // Create notification element if it doesn't exist
