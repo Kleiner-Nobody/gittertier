@@ -1627,3 +1627,1239 @@
     </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gittertier Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    /* Previous CSS remains unchanged, adding tutorial-specific styles below */
+
+    /* Tutorial Welcome Modal */
+    .tutorial-welcome-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .tutorial-welcome-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        max-width: 500px;
+        text-align: center;
+        box-shadow: var(--shadow-md);
+    }
+
+    .tutorial-welcome-icon {
+        font-size: 3rem;
+        color: var(--color-accent);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .tutorial-welcome-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .tutorial-welcome-text {
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-text-muted);
+        line-height: 1.6;
+    }
+
+    .tutorial-welcome-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .tutorial-welcome-btn {
+        flex: 1;
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .tutorial-welcome-btn.primary {
+        background-color: var(--color-accent);
+        color: white;
+        border: none;
+    }
+
+    .tutorial-welcome-btn.primary:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .tutorial-welcome-btn.secondary {
+        background-color: transparent;
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+    }
+
+    .tutorial-welcome-btn.secondary:hover {
+        background-color: #f9fafb;
+        color: var(--color-text);
+    }
+
+    .do-not-show-again {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+        font-size: var(--text-sm);
+    }
+
+    /* Tutorial Overlay */
+    .tutorial-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        display: none;
+    }
+
+    /* Tutorial Bubble */
+    .tutorial-bubble {
+        position: absolute;
+        background-color: var(--color-tutorial-bubble);
+        border: 1px solid var(--color-tutorial-bubble-border);
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        max-width: 300px;
+        box-shadow: var(--shadow-md);
+        z-index: 2001;
+        display: none;
+        transition: all 0.3s ease;
+    }
+
+    .tutorial-bubble:after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 0;
+        border: 10px solid transparent;
+    }
+
+    .tutorial-bubble.top:after {
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-top-color: var(--color-tutorial-bubble);
+    }
+
+    .tutorial-bubble.bottom:after {
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-bottom-color: var(--color-tutorial-bubble);
+    }
+
+    .tutorial-bubble.left:after {
+        right: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+        border-left-color: var(--color-tutorial-bubble);
+    }
+
+    .tutorial-bubble.right:after {
+        left: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+        border-right-color: var(--color-tutorial-bubble);
+    }
+
+    .tutorial-bubble-content {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .tutorial-bubble-title {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        font-size: var(--text-base);
+    }
+
+    .tutorial-bubble-text {
+        font-size: var(--text-sm);
+        line-height: 1.4;
+    }
+
+    .tutorial-bubble-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--spacing-md);
+    }
+
+    .tutorial-bubble-btn {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        background-color: var(--color-accent);
+        color: white;
+    }
+
+    .tutorial-bubble-btn:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .tutorial-progress {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    .tutorial-skip {
+        color: var(--color-text-muted);
+        cursor: pointer;
+        font-size: var(--text-sm);
+    }
+
+    .tutorial-skip:hover {
+        color: var(--color-text);
+        text-decoration: underline;
+    }
+
+    /* Tutorial Highlight */
+    .tutorial-highlight {
+        position: relative;
+        z-index: 2002;
+        box-shadow: 0 0 0 4px var(--color-accent), 0 0 20px 10px rgba(0, 0, 0, 0.2);
+        border-radius: var(--radius-sm);
+    }
+
+    .tutorial-block-interaction {
+        pointer-events: none;
+        opacity: 0.6;
+        user-select: none;
+    }
+
+    .tutorial-allow-interaction {
+        pointer-events: auto !important;
+        z-index: 2003 !important;
+        opacity: 1 !important;
+    }
+
+    /* Tutorial Error Message */
+    .tutorial-error {
+        background-color: rgba(220, 38, 38, 0.1);
+        border-left: 3px solid var(--color-error);
+        padding: var(--spacing-sm);
+        margin-top: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-sm);
+    }
+
+    /* Storage Warning Banner */
+    .storage-warning {
+        position: fixed;
+        bottom: var(--spacing-md);
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #fbbf24;
+        color: #78350f;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        z-index: 100;
+        font-size: var(--text-sm);
+        display: none;
+    }
+
+    /* Debug Overlay */
+    .tutorial-debug {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        z-index: 3000;
+        font-size: var(--text-sm);
+        display: none;
+    }
+
+    /* SVG Mask Overlay (for cutout effect) */
+    .tutorial-svg-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1999;
+        pointer-events: none;
+        display: none;
+    }
+
+    .tutorial-svg-overlay rect {
+        fill: rgba(0, 0, 0, 0.7);
+    }
+
+    /* Fallback overlay for browsers that don't support SVG */
+    .tutorial-fallback-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 1999;
+        display: none;
+    }
+
+    .tutorial-cutout {
+        position: absolute;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
+        border-radius: var(--radius);
+    }
+
+    /* Completion Modal */
+    .tutorial-complete-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .tutorial-complete-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        max-width: 500px;
+        text-align: center;
+        box-shadow: var(--shadow-md);
+    }
+
+    .tutorial-complete-icon {
+        font-size: 3rem;
+        color: var(--color-success);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .tutorial-complete-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .tutorial-complete-text {
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-text-muted);
+    }
+
+    .tutorial-complete-actions {
+        display: flex;
+        gap: var(--spacing-md);
+    }
+
+    /* Animation for hint pulse */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .tutorial-pulse {
+        animation: pulse 0.5s ease-in-out 2;
+    }
+
+    .tutorial-shake {
+        animation: shake 0.4s ease-in-out;
+    }
+
+    /* Responsive adjustments for tutorial */
+    @media (max-width: 768px) {
+        .tutorial-bubble {
+            max-width: 250px;
+        }
+        
+        .tutorial-welcome-actions {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .tutorial-bubble {
+            max-width: 200px;
+            font-size: var(--text-sm);
+        }
+    }
+    </style>
+</head>
+<body>
+    <!-- Existing HTML structure remains the same -->
+    
+    <!-- Tutorial Welcome Modal -->
+    <div class="tutorial-welcome-modal" id="tutorial-welcome-modal">
+        <div class="tutorial-welcome-content">
+            <div class="tutorial-welcome-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h2 class="tutorial-welcome-title">Willkommen bei Gittertier Pro!</h2>
+            <p class="tutorial-welcome-text">
+                Möchten Sie eine kurze Einführung in die Funktionen der App? 
+                Dieses Tutorial zeigt Ihnen, wie Sie Produkte scannen, zum Warenkorb hinzufügen und Bezahlvorgänge durchführen.
+            </p>
+            <div class="tutorial-welcome-actions">
+                <button class="tutorial-welcome-btn secondary" id="tutorial-decline-btn">Jetzt nicht</button>
+                <button class="tutorial-welcome-btn primary" id="tutorial-accept-btn">Tutorial starten</button>
+            </div>
+            <div class="do-not-show-again">
+                <input type="checkbox" id="do-not-show-again">
+                <label for="do-not-show-again">Nicht wieder anzeigen</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Overlay -->
+    <div class="tutorial-overlay" id="tutorial-overlay"></div>
+
+    <!-- SVG Mask Overlay -->
+    <svg class="tutorial-svg-overlay" id="tutorial-svg-overlay" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <mask id="tutorial-mask" x="0" y="0" width="100%" height="100%">
+                <rect x="0" y="0" width="100%" height="100%" fill="white"/>
+                <rect id="tutorial-cutout" x="0" y="0" width="100" height="100" rx="8" ry="8" fill="black"/>
+            </mask>
+        </defs>
+        <rect x="0" y="0" width="100%" height="100%" mask="url(#tutorial-mask)" fill="rgba(0, 0, 0, 0.7)"/>
+    </svg>
+
+    <!-- Fallback Overlay (for browsers without SVG support) -->
+    <div class="tutorial-fallback-overlay" id="tutorial-fallback-overlay"></div>
+
+    <!-- Tutorial Bubble -->
+    <div class="tutorial-bubble" id="tutorial-bubble">
+        <div class="tutorial-bubble-content">
+            <h4 class="tutorial-bubble-title" id="tutorial-bubble-title">Titel</h4>
+            <p class="tutorial-bubble-text" id="tutorial-bubble-text">Inhalt</p>
+            <div class="tutorial-error" id="tutorial-error" style="display: none;"></div>
+        </div>
+        <div class="tutorial-bubble-actions">
+            <span class="tutorial-progress" id="tutorial-progress">1/7</span>
+            <button class="tutorial-bubble-btn" id="tutorial-action-btn">Weiter</button>
+            <span class="tutorial-skip" id="tutorial-skip-btn">Überspringen</span>
+        </div>
+    </div>
+
+    <!-- Storage Warning Banner -->
+    <div class="storage-warning" id="storage-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        Einstellungen können nicht dauerhaft gespeichert werden
+    </div>
+
+    <!-- Debug Overlay -->
+    <div class="tutorial-debug" id="tutorial-debug"></div>
+
+    <!-- Tutorial Completion Modal -->
+    <div class="tutorial-complete-modal" id="tutorial-complete-modal">
+        <div class="tutorial-complete-content">
+            <div class="tutorial-complete-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="tutorial-complete-title">Tutorial abgeschlossen!</h2>
+            <p class="tutorial-complete-text">
+                Sie haben alle Schritte erfolgreich absolviert. Sie können nun die App normal nutzen.
+                Das Tutorial kann jederzeit über die Schaltfläche in der Kopfzeile neu gestartet werden.
+            </p>
+            <div class="tutorial-complete-actions">
+                <button class="tutorial-welcome-btn secondary" id="tutorial-repeat-btn">Tutorial wiederholen</button>
+                <button class="tutorial-welcome-btn primary" id="tutorial-finish-btn">Zur App</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Tutorial Manager
+    const TutorialManager = {
+        // Configuration
+        steps: [
+            {
+                id: 'step-1-start-scanner',
+                element: '#toggle-scanner',
+                position: 'top',
+                title: 'Scanner starten',
+                content: 'Klicken Sie hier, um den Barcode-Scanner zu aktivieren. Halten Sie den Barcode vor die Kamera, um ein Produkt zu erfassen.',
+                action: 'click',
+                validate: () => scannerActive
+            },
+            {
+                id: 'step-2-detect-product',
+                element: '#scanner-container',
+                position: 'top',
+                title: 'Produkt scannen',
+                content: 'Halten Sie einen Barcode vor die Kamera. Im Tutorial simulieren wir einen Scan, da wir keinen echten Barcode haben.',
+                action: 'simulate-scan',
+                validate: () => currentBarcode !== null
+            },
+            {
+                id: 'step-3-enter-name',
+                element: '#product-modal',
+                position: 'top',
+                title: 'Produktdetails eingeben',
+                content: 'Da der Barcode nicht in der Datenbank ist, können Sie hier die Produktdetails manuell eingeben.',
+                action: 'fill-form',
+                validate: () => document.getElementById('product-name-input').value.trim() !== '' && 
+                              document.getElementById('product-price-input').value > 0
+            },
+            {
+                id: 'step-4-save',
+                element: '.modal-btn.primary',
+                position: 'top',
+                title: 'Produkt speichern',
+                content: 'Klicken Sie auf "Speichern", um das Produkt zur Datenbank hinzuzufügen.',
+                action: 'click',
+                validate: () => products[currentBarcode] !== undefined
+            },
+            {
+                id: 'step-5-edit-count',
+                element: '.quantity-controls',
+                position: 'top',
+                title: 'Menge anpassen',
+                content: 'Passen Sie die Menge des Produkts mit den Plus- und Minus-Schaltflächen an.',
+                action: 'adjust-quantity',
+                validate: () => parseInt(document.getElementById('product-quantity').textContent) > 1
+            },
+            {
+                id: 'step-6-add-to-cart',
+                element: '.add-to-cart-btn',
+                position: 'top',
+                title: 'Zum Warenkorb hinzufügen',
+                content: 'Klicken Sie hier, um das Produkt mit der angegebenen Menge zum Warenkorb hinzuzufügen.',
+                action: 'click',
+                validate: () => cart.length > 0
+            },
+            {
+                id: 'step-7-generate-qr',
+                element: '.pay-btn',
+                position: 'top',
+                title: 'Bezahlvorgang',
+                content: 'Klicken Sie hier, um einen QR-Code für die Bezahlung zu generieren. Dies schließt das Tutorial ab.',
+                action: 'click',
+                validate: () => true // QR generation is handled separately
+            }
+        ],
+        
+        // State
+        currentStep: 0,
+        active: false,
+        storageAvailable: true,
+        debugMode: false,
+        
+        // Elements
+        elements: {
+            welcomeModal: null,
+            overlay: null,
+            bubble: null,
+            svgOverlay: null,
+            fallbackOverlay: null,
+            cutout: null,
+            debug: null,
+            storageWarning: null,
+            completeModal: null
+        },
+        
+        // Observers
+        observers: {
+            resize: null,
+            mutation: null,
+            intersection: null
+        },
+        
+        // Initialize the tutorial system
+        init() {
+            // Get DOM elements
+            this.elements.welcomeModal = document.getElementById('tutorial-welcome-modal');
+            this.elements.overlay = document.getElementById('tutorial-overlay');
+            this.elements.bubble = document.getElementById('tutorial-bubble');
+            this.elements.svgOverlay = document.getElementById('tutorial-svg-overlay');
+            this.elements.fallbackOverlay = document.getElementById('tutorial-fallback-overlay');
+            this.elements.cutout = document.getElementById('tutorial-cutout');
+            this.elements.debug = document.getElementById('tutorial-debug');
+            this.elements.storageWarning = document.getElementById('storage-warning');
+            this.elements.completeModal = document.getElementById('tutorial-complete-modal');
+            
+            // Check for debug mode
+            const urlParams = new URLSearchParams(window.location.search);
+            this.debugMode = urlParams.has('tutorialDebug');
+            if (this.debugMode) {
+                this.elements.debug.style.display = 'block';
+                this.log('Debug mode enabled');
+            }
+            
+            // Set up event listeners
+            document.getElementById('tutorial-accept-btn').addEventListener('click', () => this.startTutorial());
+            document.getElementById('tutorial-decline-btn').addEventListener('click', () => this.declineTutorial());
+            document.getElementById('tutorial-skip-btn').addEventListener('click', () => this.skipTutorial());
+            document.getElementById('tutorial-action-btn').addEventListener('click', () => this.advanceStep());
+            document.getElementById('tutorial-repeat-btn').addEventListener('click', () => this.restartTutorial());
+            document.getElementById('tutorial-finish-btn').addEventListener('click', () => this.finishTutorial());
+            
+            // Check if tutorial should be shown
+            this.checkTutorialStatus();
+        },
+        
+        // Check if tutorial should be shown
+        checkTutorialStatus() {
+            try {
+                const tutorialSeen = localStorage.getItem('gittertier_tutorial_seen');
+                
+                if (tutorialSeen === null) {
+                    // Check if we can write to localStorage
+                    localStorage.setItem('gittertier_tutorial_test', 'test');
+                    localStorage.removeItem('gittertier_tutorial_test');
+                    
+                    // Show welcome modal
+                    this.showWelcomeModal();
+                }
+            } catch (e) {
+                // localStorage not available, fall back to sessionStorage
+                this.storageAvailable = false;
+                this.elements.storageWarning.style.display = 'block';
+                
+                const tutorialSeen = sessionStorage.getItem('gittertier_tutorial_seen');
+                if (tutorialSeen === null) {
+                    this.showWelcomeModal();
+                }
+            }
+        },
+        
+        // Show the welcome modal
+        showWelcomeModal() {
+            this.elements.welcomeModal.style.display = 'flex';
+        },
+        
+        // Hide the welcome modal
+        hideWelcomeModal() {
+            this.elements.welcomeModal.style.display = 'none';
+        },
+        
+        // User declines the tutorial
+        declineTutorial() {
+            const doNotShowAgain = document.getElementById('do-not-show-again').checked;
+            
+            if (doNotShowAgain) {
+                this.setTutorialSeen();
+            }
+            
+            this.hideWelcomeModal();
+        },
+        
+        // Start the tutorial
+        startTutorial() {
+            const doNotShowAgain = document.getElementById('do-not-show-again').checked;
+            
+            if (doNotShowAgain) {
+                this.setTutorialSeen();
+            }
+            
+            this.hideWelcomeModal();
+            this.active = true;
+            this.currentStep = 0;
+            
+            // Show overlay
+            this.elements.overlay.style.display = 'block';
+            
+            // Check if SVG is supported
+            if (typeof SVGRect !== 'undefined') {
+                this.elements.svgOverlay.style.display = 'block';
+            } else {
+                this.elements.fallbackOverlay.style.display = 'block';
+            }
+            
+            // Start with first step
+            this.showStep(0);
+            
+            // Save progress
+            this.saveProgress();
+            
+            this.log('Tutorial started');
+        },
+        
+        // Show a specific step
+        showStep(stepIndex) {
+            if (stepIndex >= this.steps.length) {
+                this.completeTutorial();
+                return;
+            }
+            
+            this.currentStep = stepIndex;
+            const step = this.steps[stepIndex];
+            
+            // Update progress display
+            document.getElementById('tutorial-progress').textContent = `${stepIndex + 1}/${this.steps.length}`;
+            
+            // Find the target element
+            const targetElement = document.querySelector(step.element);
+            if (!targetElement) {
+                this.log(`Element not found: ${step.element}`);
+                
+                // Show error in bubble
+                this.showBubble({
+                    title: 'Element nicht gefunden',
+                    content: 'Das Tutorial kann nicht fortgesetzt werden, da ein benötigtes Element nicht gefunden wurde.',
+                    error: 'Bitte laden Sie die Seite neu und versuchen Sie es erneut.'
+                });
+                
+                return;
+            }
+            
+            // Position and show bubble
+            this.positionBubble(targetElement, step.position);
+            this.showBubble({
+                title: step.title,
+                content: step.content
+            });
+            
+            // Highlight the target element
+            this.highlightElement(targetElement);
+            
+            // Set up the required action
+            this.setupAction(step.action, targetElement, step);
+            
+            // Set up observers to keep bubble positioned correctly
+            this.setupObservers(targetElement);
+            
+            // Save progress
+            this.saveProgress();
+            
+            this.log(`Showing step: ${step.id}`);
+        },
+        
+        // Position the bubble relative to an element
+        positionBubble(element, preferredPosition) {
+            const rect = element.getBoundingClientRect();
+            const bubbleRect = this.elements.bubble.getBoundingClientRect();
+            
+            // Determine the best position based on element location and viewport
+            let position = preferredPosition;
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            
+            // Adjust position if element is near edges
+            if (preferredPosition === 'top' && rect.top - bubbleRect.height - 20 < 0) {
+                position = 'bottom';
+            } else if (preferredPosition === 'bottom' && rect.bottom + bubbleRect.height + 20 > viewportHeight) {
+                position = 'top';
+            } else if (preferredPosition === 'left' && rect.left - bubbleRect.width - 20 < 0) {
+                position = 'right';
+            } else if (preferredPosition === 'right' && rect.right + bubbleRect.width + 20 > viewportWidth) {
+                position = 'left';
+            }
+            
+            // Set position classes
+            this.elements.bubble.className = 'tutorial-bubble';
+            this.elements.bubble.classList.add(position);
+            
+            // Calculate positions
+            let top, left;
+            
+            switch (position) {
+                case 'top':
+                    top = rect.top - bubbleRect.height - 15;
+                    left = rect.left + (rect.width / 2) - (bubbleRect.width / 2);
+                    break;
+                case 'bottom':
+                    top = rect.bottom + 15;
+                    left = rect.left + (rect.width / 2) - (bubbleRect.width / 2);
+                    break;
+                case 'left':
+                    top = rect.top + (rect.height / 2) - (bubbleRect.height / 2);
+                    left = rect.left - bubbleRect.width - 15;
+                    break;
+                case 'right':
+                    top = rect.top + (rect.height / 2) - (bubbleRect.height / 2);
+                    left = rect.right + 15;
+                    break;
+            }
+            
+            // Ensure bubble stays within viewport
+            top = Math.max(10, Math.min(top, viewportHeight - bubbleRect.height - 10));
+            left = Math.max(10, Math.min(left, viewportWidth - bubbleRect.width - 10));
+            
+            // Apply positions
+            this.elements.bubble.style.top = `${top}px`;
+            this.elements.bubble.style.left = `${left}px`;
+            
+            // Update cutout for overlay
+            this.updateCutout(element);
+        },
+        
+        // Update the cutout to highlight the current element
+        updateCutout(element) {
+            const rect = element.getBoundingClientRect();
+            
+            // Check if we're using SVG overlay
+            if (this.elements.svgOverlay.style.display === 'block') {
+                this.elements.cutout.setAttribute('x', rect.left);
+                this.elements.cutout.setAttribute('y', rect.top);
+                this.elements.cutout.setAttribute('width', rect.width);
+                this.elements.cutout.setAttribute('height', rect.height);
+                this.elements.cutout.setAttribute('rx', '8');
+                this.elements.cutout.setAttribute('ry', '8');
+            } else {
+                // Fallback for browsers without SVG support
+                const cutout = document.createElement('div');
+                cutout.className = 'tutorial-cutout';
+                cutout.style.left = `${rect.left}px`;
+                cutout.style.top = `${rect.top}px`;
+                cutout.style.width = `${rect.width}px`;
+                cutout.style.height = `${rect.height}px`;
+                
+                // Remove existing cutout
+                const existingCutout = this.elements.fallbackOverlay.querySelector('.tutorial-cutout');
+                if (existingCutout) {
+                    existingCutout.remove();
+                }
+                
+                // Add new cutout
+                this.elements.fallbackOverlay.appendChild(cutout);
+            }
+        },
+        
+        // Show the bubble with content
+        showBubble(content) {
+            document.getElementById('tutorial-bubble-title').textContent = content.title;
+            document.getElementById('tutorial-bubble-text').textContent = content.content;
+            
+            // Show error if provided
+            if (content.error) {
+                document.getElementById('tutorial-error').textContent = content.error;
+                document.getElementById('tutorial-error').style.display = 'block';
+            } else {
+                document.getElementById('tutorial-error').style.display = 'none';
+            }
+            
+            this.elements.bubble.style.display = 'block';
+        },
+        
+        // Highlight an element for the tutorial
+        highlightElement(element) {
+            // Remove previous highlights
+            document.querySelectorAll('.tutorial-highlight').forEach(el => {
+                el.classList.remove('tutorial-highlight');
+            });
+            
+            // Add highlight to current element
+            element.classList.add('tutorial-highlight');
+            
+            // Scroll element into view if needed
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Enable interaction with this element only
+            this.disableOtherInteractions(element);
+        },
+        
+        // Disable all interactions except for the target element
+        disableOtherInteractions(targetElement) {
+            // Add block class to all interactive elements
+            document.querySelectorAll('button, input, a, select, textarea').forEach(el => {
+                if (el !== targetElement && !targetElement.contains(el)) {
+                    el.classList.add('tutorial-block-interaction');
+                } else {
+                    el.classList.add('tutorial-allow-interaction');
+                    el.setAttribute('tabindex', '0');
+                }
+            });
+        },
+        
+        // Set up the action required for the current step
+        setupAction(action, targetElement, step) {
+            // Remove previous event listeners
+            targetElement.onclick = null;
+            
+            switch (action) {
+                case 'click':
+                    targetElement.onclick = () => {
+                        if (this.validateStep(step)) {
+                            this.advanceStep();
+                        } else {
+                            this.showValidationError(step);
+                        }
+                    };
+                    break;
+                    
+                case 'simulate-scan':
+                    // Show simulation option in bubble
+                    this.showBubble({
+                        title: step.title,
+                        content: step.content,
+                        error: 'Kamera nicht verfügbar. Klicken Sie auf "Simulieren", um fortzufahren.'
+                    });
+                    
+                    // Change button text
+                    document.getElementById('tutorial-action-btn').textContent = 'Simulieren';
+                    
+                    // Set up simulation action
+                    document.getElementById('tutorial-action-btn').onclick = () => {
+                        handleBarcode('TUTORIAL123');
+                        this.advanceStep();
+                    };
+                    break;
+                    
+                case 'fill-form':
+                    // Show the product modal
+                    showProductModal('TUTORIAL123');
+                    
+                    // Set up the save button to advance tutorial
+                    const saveBtn = document.querySelector('.modal-btn.primary');
+                    saveBtn.onclick = () => {
+                        if (this.validateStep(step)) {
+                            saveProduct();
+                            this.advanceStep();
+                        } else {
+                            this.showValidationError(step);
+                        }
+                    };
+                    break;
+                    
+                case 'adjust-quantity':
+                    // Set up the quantity buttons
+                    const minusBtn = targetElement.querySelector('.quantity-btn:first-child');
+                    const plusBtn = targetElement.querySelector('.quantity-btn:last-child');
+                    
+                    minusBtn.onclick = () => {
+                        adjustProductQuantity(-1);
+                        if (this.validateStep(step)) {
+                            this.advanceStep();
+                        }
+                    };
+                    
+                    plusBtn.onclick = () => {
+                        adjustProductQuantity(1);
+                        if (this.validateStep(step)) {
+                            this.advanceStep();
+                        }
+                    };
+                    break;
+            }
+        },
+        
+        // Set up observers to keep the bubble positioned correctly
+        setupObservers(targetElement) {
+            // Clean up existing observers
+            this.cleanupObservers();
+            
+            // Resize observer
+            this.observers.resize = () => {
+                this.positionBubble(targetElement, this.steps[this.currentStep].position);
+            };
+            
+            window.addEventListener('resize', this.observers.resize);
+            
+            // Mutation observer (for DOM changes)
+            this.observers.mutation = new MutationObserver(() => {
+                this.positionBubble(targetElement, this.steps[this.currentStep].position);
+            });
+            
+            this.observers.mutation.observe(targetElement, { 
+                attributes: true,
+                childList: true,
+                subtree: true
+            });
+            
+            // Intersection observer (for scroll)
+            this.observers.intersection = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        this.positionBubble(targetElement, this.steps[this.currentStep].position);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            this.observers.intersection.observe(targetElement);
+        },
+        
+        // Clean up observers
+        cleanupObservers() {
+            if (this.observers.resize) {
+                window.removeEventListener('resize', this.observers.resize);
+            }
+            
+            if (this.observers.mutation) {
+                this.observers.mutation.disconnect();
+            }
+            
+            if (this.observers.intersection) {
+                this.observers.intersection.disconnect();
+            }
+        },
+        
+        // Validate the current step
+        validateStep(step) {
+            if (typeof step.validate === 'function') {
+                return step.validate();
+            }
+            return true;
+        },
+        
+        // Show validation error
+        showValidationError(step) {
+            this.showBubble({
+                title: step.title,
+                content: step.content,
+                error: 'Bitte führen Sie die angezeigte Aktion aus, um fortzufahren.'
+            });
+            
+            // Pulse animation on the target element
+            const targetElement = document.querySelector(step.element);
+            if (targetElement) {
+                targetElement.classList.add('tutorial-pulse');
+                setTimeout(() => {
+                    targetElement.classList.remove('tutorial-pulse');
+                }, 1000);
+            }
+        },
+        
+        // Advance to the next step
+        advanceStep() {
+            this.currentStep++;
+            this.showStep(this.currentStep);
+        },
+        
+        // Skip the tutorial
+        skipTutorial() {
+            this.cleanup();
+            this.log('Tutorial skipped');
+        },
+        
+        // Complete the tutorial
+        completeTutorial() {
+            this.cleanup();
+            this.elements.completeModal.style.display = 'flex';
+            this.setTutorialSeen();
+            this.log('Tutorial completed');
+        },
+        
+        // Restart the tutorial
+        restartTutorial() {
+            this.elements.completeModal.style.display = 'none';
+            this.startTutorial();
+        },
+        
+        // Finish the tutorial
+        finishTutorial() {
+            this.elements.completeModal.style.display = 'none';
+        },
+        
+        // Clean up tutorial elements and event listeners
+        cleanup() {
+            // Hide overlay and bubble
+            this.elements.overlay.style.display = 'none';
+            this.elements.svgOverlay.style.display = 'none';
+            this.elements.fallbackOverlay.style.display = 'none';
+            this.elements.bubble.style.display = 'none';
+            
+            // Remove highlights and interaction blocks
+            document.querySelectorAll('.tutorial-highlight, .tutorial-block-interaction, .tutorial-allow-interaction').forEach(el => {
+                el.classList.remove('tutorial-highlight', 'tutorial-block-interaction', 'tutorial-allow-interaction');
+            });
+            
+            // Clean up observers
+            this.cleanupObservers();
+            
+            // Reset tabindex attributes
+            document.querySelectorAll('[tabindex="0"]').forEach(el => {
+                el.removeAttribute('tabindex');
+            });
+            
+            this.active = false;
+        },
+        
+        // Save tutorial progress
+        saveProgress() {
+            try {
+                if (this.storageAvailable) {
+                    localStorage.setItem('gittertier_tutorial_progress', JSON.stringify({
+                        step: this.currentStep,
+                        timestamp: Date.now()
+                    }));
+                } else {
+                    sessionStorage.setItem('gittertier_tutorial_progress', JSON.stringify({
+                        step: this.currentStep,
+                        timestamp: Date.now()
+                    }));
+                }
+            } catch (e) {
+                this.log('Failed to save progress: ' + e.message);
+            }
+        },
+        
+        // Load tutorial progress
+        loadProgress() {
+            try {
+                let progress = null;
+                
+                if (this.storageAvailable) {
+                    progress = localStorage.getItem('gittertier_tutorial_progress');
+                } else {
+                    progress = sessionStorage.getItem('gittertier_tutorial_progress');
+                }
+                
+                if (progress) {
+                    const data = JSON.parse(progress);
+                    
+                    // Check if progress is too old (more than 30 minutes)
+                    if (Date.now() - data.timestamp > 30 * 60 * 1000) {
+                        this.log('Progress too old, starting from beginning');
+                        return 0;
+                    }
+                    
+                    return data.step;
+                }
+            } catch (e) {
+                this.log('Failed to load progress: ' + e.message);
+            }
+            
+            return 0;
+        },
+        
+        // Set the tutorial as seen
+        setTutorialSeen() {
+            try {
+                if (this.storageAvailable) {
+                    localStorage.setItem('gittertier_tutorial_seen', 'true');
+                } else {
+                    sessionStorage.setItem('gittertier_tutorial_seen', 'true');
+                }
+            } catch (e) {
+                this.log('Failed to set tutorial seen: ' + e.message);
+            }
+        },
+        
+        // Log message for debugging
+        log(message) {
+            if (this.debugMode) {
+                this.elements.debug.textContent = message;
+                console.log('[Tutorial] ' + message);
+            }
+        },
+        
+        // Handle camera error
+        handleCameraError(error) {
+            if (!this.active) return;
+            
+            this.log('Camera error: ' + error.message);
+            
+            // Show error in bubble
+            this.showBubble({
+                title: 'Kamera nicht verfügbar',
+                content: 'Die Kamera konnte nicht gestartet werden. Mögliche Ursachen:',
+                error: '- Kamera-Berechtigung wurde nicht erteilt\n- Kamera wird von einer anderen App verwendet\n- Ihr Gerät hat keine Kamera'
+            });
+            
+            // Change button text
+            document.getElementById('tutorial-action-btn').textContent = 'Simulieren';
+            
+            // Set up simulation action
+            document.getElementById('tutorial-action-btn').onclick = () => {
+                handleBarcode('TUTORIAL123');
+                this.advanceStep();
+            };
+        },
+        
+        // Handle Quagga error
+        handleQuaggaError(error) {
+            if (!this.active) return;
+            
+            this.log('Quagga error: ' + error.message);
+            
+            // Show error in bubble
+            this.showBubble({
+                title: 'Scanner konnte nicht gestartet werden',
+                content: 'Der Barcode-Scanner konnte nicht initialisiert werden. Mögliche Ursachen:',
+                error: '- Ihr Browser unterstützt die benötigten Codecs nicht\n- Ein technisches Problem ist aufgetreten'
+            });
+            
+            // Change button text
+            document.getElementById('tutorial-action-btn').textContent = 'Simulieren';
+            
+            // Set up simulation action
+            document.getElementById('tutorial-action-btn').onclick = () => {
+                handleBarcode('TUTORIAL123');
+                this.advanceStep();
+            };
+        }
+    };
+
+    // Initialize the tutorial manager when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        TutorialManager.init();
+    });
+
+    // Modify the existing handleBarcode function to work with the tutorial
+    const originalHandleBarcode = handleBarcode;
+    handleBarcode = function(barcode) {
+        originalHandleBarcode(barcode);
+        
+        // If we're in the tutorial and this is step 2, advance
+        if (TutorialManager.active && TutorialManager.currentStep === 1) {
+            setTimeout(() => {
+                TutorialManager.advanceStep();
+            }, 1000);
+        }
+    };
+
+    // Modify the existing toggleScanner function to handle errors
+    const originalToggleScanner = toggleScanner;
+    toggleScanner = async function() {
+        try {
+            await originalToggleScanner();
+        } catch (error) {
+            TutorialManager.handleCameraError(error);
+        }
+    };
+
+    // Modify the existing initScanner function to handle errors
+    const originalInitScanner = initScanner;
+    initScanner = function() {
+        return new Promise((resolve, reject) => {
+            originalInitScanner()
+                .then(resolve)
+                .catch(error => {
+                    TutorialManager.handleQuaggaError(error);
+                    reject(error);
+                });
+        });
+    };
+
+    // The rest of the original JavaScript remains unchanged
+    </script>
+</body>
+</html>
