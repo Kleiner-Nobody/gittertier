@@ -2,984 +2,855 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Belegarchiv - Gittertier Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --color-bg: #ffffff;
-            --color-text: #111111;
-            --color-text-muted: #6b7280;
-            --color-border: #e5e7eb;
-            --color-accent: #2563eb;
-            --color-accent-hover: #1d4ed8;
-            --color-success: #16a34a;
-            --color-error: #dc2626;
-            --color-warning: #ff9900;
-            --color-overlay: rgba(0, 0, 0, 0.5);
-            
-            --radius: 12px;
-            --radius-sm: 6px;
-            --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
-            
-            --spacing-xs: 4px;
-            --spacing-sm: 8px;
-            --spacing-md: 16px;
-            --spacing-lg: 24px;
-            --spacing-xl: 32px;
-            --spacing-xxl: 48px;
-            
-            --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-            --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-            
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
-            --text-xs: 0.75rem;
-            --text-sm: 0.875rem;
-            --text-base: 1rem;
-            --text-lg: 1.125rem;
-            --text-xl: 1.25rem;
-            --text-2xl: 1.5rem;
-            --text-3xl: 1.875rem;
-            
-            --header-height: 64px;
-            --sidebar-width: 280px;
-        }
+    :root {
+        --color-bg: #ffffff;
+        --color-text: #111111;
+        --color-text-muted: #6b7280;
+        --color-border: #e5e7eb;
+        --color-accent: #2563eb;
+        --color-accent-hover: #1d4ed8;
+        --color-success: #16a34a;
+        --color-error: #dc2626;
+        --color-warning: #d97706;
+        --color-overlay: rgba(0, 0, 0, 0.5);
+        
+        --radius: 12px;
+        --radius-sm: 6px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+        
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+        
+        --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --text-base: 1rem;
+        --text-lg: 1.125rem;
+        --text-xl: 1.25rem;
+        --text-2xl: 1.5rem;
+        --text-3xl: 1.875rem;
+        
+        --header-height: 64px;
+        --sidebar-width: 280px;
+        --sidebar-width-collapsed: 80px;
+    }
 
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --color-bg: #111827;
-                --color-text: #f3f4f6;
-                --color-text-muted: #9ca3af;
-                --color-border: #374151;
-            }
-        }
+    .dark-mode {
+        --color-bg: #111827;
+        --color-bg-secondary: #1f2937;
+        --color-text: #f3f4f6;
+        --color-text-muted: #9ca3af;
+        --color-border: #374151;
+        --color-accent: #3b82f6;
+        --color-accent-hover: #2563eb;
+        --color-success: #10b981;
+        --color-error: #ef4444;
+        --color-warning: #f59e0b;
+        --color-overlay: rgba(0, 0, 0, 0.7);
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        body {
-            font-family: var(--font-family);
-            background-color: var(--color-bg);
-            color: var(--color-text);
-            line-height: 1.5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-        /* Header Styles */
-        header {
-            height: var(--header-height);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 var(--spacing-lg);
-            border-bottom: 1px solid var(--color-border);
-            background-color: var(--color-bg);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
+    /* Header Styles */
+    .admin-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            font-weight: 700;
-            font-size: var(--text-xl);
-        }
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-xl);
+    }
 
-        .logo i {
-            font-size: var(--text-xl);
-            color: var(--color-accent);
-        }
+    .logo i {
+        font-size: var(--text-xl);
+        color: var(--color-accent);
+    }
 
-        .header-controls {
-            display: flex;
-            gap: var(--spacing-md);
-            align-items: center;
-        }
+    .header-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        align-items: center;
+    }
 
+    .time-display {
+        background-color: var(--color-bg-secondary);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        display: none;
+    }
+
+    .notification-btn {
+        position: relative;
+        background: transparent;
+        border: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--color-text);
+        font-size: var(--text-lg);
+        transition: var(--transition);
+    }
+
+    .notification-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        background: var(--color-error);
+        color: white;
+        border-radius: 50%;
+        font-size: var(--text-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logout-btn {
+        background-color: transparent;
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .logout-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .hamburger {
+        display: block;
+        background: transparent;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        transition: var(--transition);
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hamburger:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    /* Main layout */
+    .admin-container {
+        display: flex;
+        flex: 1;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--color-bg);
+        border-right: 1px solid var(--color-border);
+        height: calc(100vh - var(--header-height));
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+        z-index: 40;
+        padding: var(--spacing-lg) 0;
+    }
+
+    .nav-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        padding: 0 var(--spacing-md);
+    }
+
+    .nav-link {
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        text-decoration: none;
+        color: var(--color-text);
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .nav-link:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .nav-link.active {
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--color-accent);
+    }
+
+    .nav-link i {
+        width: 24px;
+        text-align: center;
+    }
+
+    .nav-link.active i {
+        color: var(--color-accent);
+    }
+
+    .new-feature {
+        background-color: var(--color-success);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 35;
+        display: none;
+    }
+
+    /* Main content */
+    .admin-content {
+        flex: 1;
+        padding: var(--spacing-lg);
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.3s ease;
+    }
+
+    /* Search and Filter Section */
+    .search-filter-section {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .search-container {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .search-bar {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        transition: var(--transition);
+    }
+
+    .search-bar:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .filter-toggle {
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .filter-toggle:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .filter-panel {
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+        box-shadow: var(--shadow-md);
+        display: none;
+    }
+
+    .filter-panel.active {
+        display: block;
+        animation: slideIn 0.3s ease;
+    }
+
+    .filter-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .filter-title {
+        font-weight: 600;
+        margin-bottom: var(--spacing-sm);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .filter-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: var(--spacing-sm);
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .date-filter {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .date-input {
+        padding: var(--spacing-sm);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-sm);
+    }
+
+    .apply-filter-btn {
+        background-color: var(--color-accent);
+        color: white;
+        border: none;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-top: var(--spacing-md);
+    }
+
+    .apply-filter-btn:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    /* Action buttons */
+    .action-buttons {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .action-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .btn-primary {
+        background-color: var(--color-accent);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .btn-success {
+        background-color: var(--color-success);
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #0f9c5a;
+    }
+
+    .btn-danger {
+        background-color: var(--color-error);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c53030;
+    }
+
+    /* Cards */
+    .dashboard-card {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .card-title i {
+        color: var(--color-accent);
+    }
+
+    /* Receipt list */
+    .receipt-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .receipt-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md);
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        transition: var(--transition);
+        border-left: 3px solid var(--color-accent);
+    }
+
+    .receipt-item:hover {
+        background-color: var(--color-bg);
+        box-shadow: var(--shadow-md);
+    }
+
+    .receipt-details {
+        flex: 1;
+    }
+
+    .receipt-id {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        color: var(--color-accent);
+    }
+
+    .receipt-date {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    .receipt-note {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        margin-top: var(--spacing-xs);
+        font-style: italic;
+    }
+
+    .receipt-total {
+        font-weight: 700;
+        font-size: var(--text-lg);
+        margin-right: var(--spacing-md);
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: var(--text-xs);
+        font-weight: 600;
+    }
+
+    .status-confirmed {
+        background-color: rgba(22, 163, 74, 0.1);
+        color: var(--color-success);
+    }
+
+    .status-declined {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+
+    .receipt-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+
+    .receipt-action-btn {
+        background: transparent;
+        border: none;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        padding: var(--spacing-xs);
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+    }
+
+    .receipt-action-btn:hover {
+        background-color: var(--color-bg);
+        color: var(--color-accent);
+    }
+
+    .empty-receipts {
+        text-align: center;
+        padding: var(--spacing-xl);
+        color: var(--color-text-muted);
+    }
+
+    .empty-receipts i {
+        font-size: var(--text-3xl);
+        color: var(--color-accent);
+        margin-bottom: var(--spacing-md);
+        display: block;
+    }
+
+    /* Summary section */
+    .summary-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md);
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        margin-top: var(--spacing-lg);
+    }
+
+    .summary-label {
+        font-weight: 600;
+    }
+
+    .summary-value {
+        font-weight: 700;
+        font-size: var(--text-lg);
+        color: var(--color-success);
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        display: none;
+        padding: var(--spacing-md);
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-lg);
+        animation: scaleIn 0.3s ease;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .modal-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+    }
+
+    .close-modal {
+        background: transparent;
+        border: none;
+        font-size: var(--text-xl);
+        color: var(--color-text);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+
+    .close-modal:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .modal-body {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .detail-row {
+        display: flex;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .detail-label {
+        font-weight: 600;
+        width: 120px;
+        color: var(--color-text-muted);
+    }
+
+    .detail-value {
+        flex: 1;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: var(--spacing-lg) 0;
+    }
+
+    .items-table th,
+    .items-table td {
+        padding: var(--spacing-sm);
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .items-table th {
+        font-weight: 600;
+        color: var(--color-text-muted);
+    }
+
+    .note-input {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        margin-top: var(--spacing-sm);
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .note-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: flex-end;
+    }
+
+    /* Notification Center */
+    .notification-center {
+        position: fixed;
+        top: calc(var(--header-height) + var(--spacing-md));
+        right: var(--spacing-md);
+        width: calc(100% - var(--spacing-md) * 2);
+        max-width: 400px;
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-lg);
+        z-index: 100;
+        display: none;
+        max-height: calc(100vh - var(--header-height) - var(--spacing-md) * 2);
+        overflow-y: auto;
+    }
+
+    .notification-center.active {
+        display: block;
+        animation: slideIn 0.3s ease;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .admin-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .admin-sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .admin-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+    }
+
+    @media (min-width: 768px) {
         .time-display {
-            background: rgba(0, 0, 0, 0.05);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: var(--text-sm);
-            color: var(--color-text-muted);
+            display: block;
         }
-
-        .notification-btn {
-            position: relative;
-            background: none;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--color-text);
-            cursor: pointer;
-            transition: var(--transition);
+        
+        .logout-btn span {
+            display: inline;
         }
+    }
 
-        .notification-btn:hover {
-            background-color: rgba(0, 0, 0, 0.05);
+    @media (max-width: 640px) {
+        .admin-header {
+            padding: 0 var(--spacing-md);
         }
-
-        .notification-badge {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 18px;
-            height: 18px;
-            background: var(--color-error);
-            color: white;
-            border-radius: 50%;
-            font-size: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            background-color: var(--color-bg);
-            color: var(--color-text);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .action-btn:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-            border-color: var(--color-accent);
-        }
-
-        .hamburger {
-            display: none;
-            background: none;
-            border: none;
-            font-size: var(--text-xl);
-            color: var(--color-text);
-            cursor: pointer;
-            padding: var(--spacing-sm);
-            border-radius: var(--radius-sm);
-            transition: var(--transition);
-        }
-
-        .hamburger:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        /* Main Layout */
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--color-bg);
-            border-right: 1px solid var(--color-border);
-            padding: var(--spacing-lg);
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 40;
-        }
-
-        .nav-container {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-xl);
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
+        
+        .admin-content {
             padding: var(--spacing-md);
-            border-radius: var(--radius);
-            color: var(--color-text);
-            text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition);
         }
-
-        .nav-link:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .nav-link.active {
-            background-color: rgba(37, 99, 235, 0.1);
-            color: var(--color-accent);
-        }
-
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-        }
-
-        .new-feature {
-            background-color: var(--color-success);
-            color: white;
-            font-size: var(--text-xs);
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: auto;
-        }
-
-        .sidebar-section {
-            margin-bottom: var(--spacing-xl);
-        }
-
-        .sidebar-title {
-            font-size: var(--text-sm);
-            font-weight: 600;
-            color: var(--color-text-muted);
-            margin-bottom: var(--spacing-md);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-
-        .filter-options {
-            display: flex;
+        
+        .search-filter-section {
             flex-direction: column;
-            gap: var(--spacing-sm);
+            align-items: stretch;
         }
-
-        .filter-option {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .filter-option:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
+        
         .date-filter {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-sm);
-            margin-top: var(--spacing-sm);
+            grid-template-columns: 1fr;
         }
-
-        .form-input {
-            width: 100%;
-            padding: var(--spacing-sm);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            font-size: var(--text-sm);
-            transition: var(--transition);
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--color-accent);
-            box-shadow: var(--focus-ring);
-        }
-
-        .btn {
-            padding: var(--spacing-sm) var(--spacing-md);
-            border: none;
-            border-radius: var(--radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--spacing-sm);
-        }
-
-        .btn-primary {
-            background-color: var(--color-accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--color-accent-hover);
-        }
-
-        .btn-success {
-            background-color: var(--color-success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #15803d;
-        }
-
-        .btn-danger {
-            background-color: var(--color-error);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #b91c1c;
-        }
-
-        .btn-warning {
-            background-color: var(--color-warning);
-            color: var(--color-text);
-        }
-
-        .btn-warning:hover {
-            background-color: #e08600;
-        }
-
-        .btn-secondary {
-            background-color: transparent;
-            border: 1px solid var(--color-border);
-            color: var(--color-text);
-        }
-
-        .btn-secondary:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .backup-reminder {
-            background-color: rgba(255, 153, 0, 0.1);
-            border-left: 3px solid var(--color-warning);
-            padding: var(--spacing-md);
-            border-radius: var(--radius-sm);
-            margin-top: var(--spacing-lg);
-        }
-
-        .backup-content h4 {
-            font-size: var(--text-sm);
-            margin-bottom: var(--spacing-xs);
-        }
-
-        .backup-content p {
-            font-size: var(--text-xs);
-            color: var(--color-text-muted);
-        }
-
-        .close-reminder {
-            background: none;
-            border: none;
-            color: var(--color-text-muted);
-            cursor: pointer;
-            margin-left: auto;
-        }
-
-        /* Content Area */
-        .content {
-            flex: 1;
-            padding: var(--spacing-lg);
-            overflow-y: auto;
-        }
-
-        .content-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-lg);
-            flex-wrap: wrap;
-            gap: var(--spacing-md);
-        }
-
-        .page-title {
-            font-size: var(--text-2xl);
-            font-weight: 700;
-        }
-
-        .search-box {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: var(--spacing-sm) var(--spacing-md);
-            padding-left: 40px;
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            font-size: var(--text-sm);
-            transition: var(--transition);
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--color-accent);
-            box-shadow: var(--focus-ring);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--color-text-muted);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-xl);
-        }
-
-        .stat-card {
-            background-color: var(--color-bg);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: var(--spacing-lg);
-            box-shadow: var(--shadow);
-        }
-
-        .stat-value {
-            font-size: var(--text-2xl);
-            font-weight: 700;
-            margin-bottom: var(--spacing-xs);
-        }
-
-        .stat-label {
-            font-size: var(--text-sm);
-            color: var(--color-text-muted);
-        }
-
-        .income-card {
-            background-color: rgba(22, 163, 74, 0.1);
-            border: 1px solid rgba(22, 163, 74, 0.2);
-        }
-
-        .income-card .stat-value {
-            color: var(--color-success);
-        }
-
-        .filters-bar {
-            display: flex;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-tag {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            background-color: rgba(0, 0, 0, 0.05);
-            border-radius: 20px;
-            font-size: var(--text-sm);
-        }
-
-        .filter-tag button {
-            background: none;
-            border: none;
-            color: var(--color-text-muted);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .receipts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: var(--spacing-md);
-        }
-
-        .receipt-card {
-            background-color: var(--color-bg);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: var(--spacing-lg);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            cursor: pointer;
-            position: relative;
-        }
-
-        .receipt-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .receipt-card.selected {
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-        }
-
-        .receipt-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: var(--spacing-md);
-        }
-
-        .receipt-id {
-            font-family: monospace;
-            font-weight: 600;
-            color: var(--color-accent);
-        }
-
-        .receipt-date {
-            font-size: var(--text-xs);
-            color: var(--color-text-muted);
-        }
-
-        .receipt-total {
-            font-weight: 700;
-            font-size: var(--text-lg);
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .receipt-status {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: var(--text-xs);
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-confirmed {
-            background-color: rgba(22, 163, 74, 0.1);
-            color: var(--color-success);
-        }
-
-        .status-declined {
-            background-color: rgba(220, 38, 38, 0.1);
-            color: var(--color-error);
-        }
-
-        .status-pending {
-            background-color: rgba(255, 153, 0, 0.1);
-            color: var(--color-warning);
-        }
-
-        .receipt-note {
-            margin-top: var(--spacing-sm);
-            font-size: var(--text-sm);
-            color: var(--color-text-muted);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .receipt-actions {
-            display: flex;
-            gap: var(--spacing-xs);
-            margin-top: var(--spacing-md);
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .receipt-card:hover .receipt-actions {
-            opacity: 1;
-        }
-
-        .action-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            border: none;
-            color: var(--color-text);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .action-icon:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .checkbox-container {
-            position: absolute;
-            top: var(--spacing-md);
-            left: var(--spacing-md);
-        }
-
-        .receipt-checkbox {
-            width: 20px;
-            height: 20px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--color-border);
-            appearance: none;
-            -webkit-appearance: none;
-            cursor: pointer;
-            position: relative;
-            transition: var(--transition);
-        }
-
-        .receipt-checkbox:checked {
-            background-color: var(--color-accent);
-            border-color: var(--color-accent);
-        }
-
-        .receipt-checkbox:checked::after {
-            content: "✓";
-            position: absolute;
-            color: white;
-            font-size: 12px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .bulk-actions-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--color-bg);
-            border-top: 1px solid var(--color-border);
-            padding: var(--spacing-md) var(--spacing-lg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
-            z-index: 30;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .bulk-actions-bar.visible {
-            transform: translateY(0);
-        }
-
-        .selected-count {
-            font-weight: 500;
-        }
-
-        .bulk-actions-group {
-            display: flex;
-            gap: var(--spacing-sm);
-        }
-
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: var(--spacing-xxl);
-            color: var(--color-text-muted);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: var(--spacing-md);
-            color: var(--color-border);
-        }
-
-        .empty-state p {
-            margin-bottom: var(--spacing-lg);
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--color-overlay);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-            padding: var(--spacing-lg);
-        }
-
-        .modal-content {
-            background-color: var(--color-bg);
-            border-radius: var(--radius);
-            padding: var(--spacing-xl);
-            width: 100%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-md);
-            animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
-        }
-
-        .modal-header {
-            margin-bottom: var(--spacing-lg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-weight: 600;
-            font-size: var(--text-xl);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: var(--text-lg);
-            color: var(--color-text-muted);
-            cursor: pointer;
-            padding: var(--spacing-xs);
-            border-radius: var(--radius-sm);
-            transition: var(--transition);
-        }
-
-        .close-modal:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-            color: var(--color-text);
-        }
-
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .detail-item {
-            display: flex;
+        
+        .action-buttons {
             flex-direction: column;
-            gap: var(--spacing-xs);
         }
-
-        .detail-label {
-            font-size: var(--text-xs);
-            color: var(--color-text-muted);
-            text-transform: uppercase;
-            font-weight: 600;
+        
+        .receipt-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
         }
-
-        .detail-value {
-            font-size: var(--text-sm);
+        
+        .receipt-total {
+            margin-right: 0;
         }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: var(--spacing-lg) 0;
-            font-size: var(--text-sm);
+        
+        .receipt-actions {
+            align-self: flex-end;
         }
-
-        .items-table th {
-            text-align: left;
-            padding: var(--spacing-sm);
-            border-bottom: 1px solid var(--color-border);
-            color: var(--color-text-muted);
-            font-weight: 500;
-        }
-
-        .items-table td {
-            padding: var(--spacing-sm);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .note-section {
-            margin-top: var(--spacing-lg);
-        }
-
-        .note-input {
-            width: 100%;
-            padding: var(--spacing-md);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            font-size: var(--text-sm);
-            min-height: 100px;
-            margin-top: var(--spacing-sm);
-            transition: var(--transition);
-        }
-
-        .note-input:focus {
-            outline: none;
-            border-color: var(--color-accent);
-            box-shadow: var(--focus-ring);
-        }
-
+        
         .modal-footer {
-            display: flex;
-            gap: var(--spacing-md);
-            margin-top: var(--spacing-lg);
-            justify-content: flex-end;
+            flex-direction: column;
         }
+    }
 
-        /* Notification */
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--color-text);
-            color: white;
-            padding: var(--spacing-md) var(--spacing-lg);
-            border-radius: var(--radius);
-            z-index: 60;
-            display: none;
-            animation: slideUp 0.3s ease-out;
-            font-weight: 500;
+    /* Dark mode support for system preference */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-bg: #111827;
+            --color-bg-secondary: #1f2937;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --color-border: #374151;
         }
-
-        .notification.success {
-            background-color: var(--color-success);
-        }
-
-        .notification.error {
-            background-color: var(--color-error);
-        }
-
-        /* Animations */
-        @keyframes slideUp {
-            from { transform: translateY(20px) translateX(-50%); opacity: 0; }
-            to { transform: translateY(0) translateX(-50%); opacity: 1; }
-        }
-
-        @keyframes scaleIn {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .receipts-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            }
-        }
-
-        @media (max-width: 768px) {
-            .hamburger {
-                display: block;
-            }
-
-            .sidebar {
-                position: fixed;
-                top: var(--header-height);
-                left: 0;
-                bottom: 0;
-                transform: translateX(-100%);
-                z-index: 50;
-                width: 80%;
-                max-width: 300px;
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-            }
-
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: var(--color-overlay);
-                z-index: 40;
-            }
-
-            .overlay.active {
-                display: block;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .detail-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .receipts-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .content-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .search-box {
-                max-width: 100%;
-            }
-
-            .bulk-actions-bar {
-                flex-direction: column;
-                gap: var(--spacing-md);
-                align-items: flex-start;
-            }
-
-            .bulk-actions-group {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .modal-content {
-                padding: var(--spacing-lg);
-            }
-
-            .modal-footer {
-                flex-direction: column;
-            }
-
-            .modal-footer .btn {
-                width: 100%;
-            }
-        }
-
-        /* Debug info */
-        .debug-info {
-            background: rgba(13, 110, 253, 0.1);
-            padding: var(--spacing-md);
-            border-radius: var(--radius);
-            margin: var(--spacing-md) 0;
-            font-family: monospace;
-            font-size: var(--text-xs);
-            white-space: pre-wrap;
-            max-height: 200px;
-            overflow: auto;
-            display: none;
-        }
-
-        /* Disabled state for deletion */
-        .deletion-disabled .btn-danger,
-        .deletion-disabled .action-icon[onclick*="delete"],
-        .deletion-disabled #bulk-delete {
-            opacity: 0.5;
-            pointer-events: none;
-            cursor: not-allowed;
-        }
+    }
     </style>
 </head>
 <body>
-    <header>
+    <div class="admin-header">
         <div class="logo">
             <button class="hamburger" id="hamburger">
                 <i class="fas fa-bars"></i>
@@ -988,26 +859,20 @@
             <span>Belegarchiv</span>
         </div>
         <div class="header-controls">
-            <!-- <div class="time-display" id="timeDisplay"></div>
-             <button class="notification-btn" id="notificationBtn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge" id="notificationBadge">0</span>
+            <div class="time-display" id="timeDisplay"></div>
+            <button class="notification-btn" id="notificationBtn">
+                <i class=""></i>
+                <!-- <span class="notification-badge" id="notificationBadge">0</span> -->
             </button>
-            <button class="action-btn" onclick="window.location.href='index'">
-                <i class="fas fa-cash-register"></i>
-                <span>Zur Kasse</span>
-            </button> -->
-            <button class="action-btn" id="logoutBtn">
+            <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Abmelden</span>
             </button>
         </div>
-    </header>
+    </div>
 
-    <div class="overlay" id="overlay"></div>
-
-    <div class="main-container">
-        <aside class="sidebar" id="sidebar">
+    <div class="admin-container">
+        <aside class="admin-sidebar" id="sidebar">
             <div class="nav-container">
                 <a href="control" class="nav-link">
                     <i class="fas fa-cogs"></i>
@@ -1020,7 +885,7 @@
                     <span>Navigation</span>
                 </a>
                 
-                <a href="admin" class="nav-link active">
+                <a href="admin" class="nav-link">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
@@ -1035,7 +900,7 @@
                     <span>Kassenansicht</span>
                 </a>
                 
-                <a href="archive" class="nav-link">
+                <a href="archive" class="nav-link active">
                     <i class="fas fa-archive"></i>
                     <span>Archiv</span>
                 </a>
@@ -1056,122 +921,178 @@
                 </a>
             </div>
         </aside>
+        
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <main class="content">
-            <div class="content-header">
-                <h1 class="page-title">Archivierte Belege</h1>
-                <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="search-input" class="search-input" placeholder="Belege durchsuchen...">
+        <main class="admin-content">
+            <div class="search-filter-section">
+                <div class="search-container">
+                    <input type="text" class="search-bar" id="search-input" placeholder="Belege durchsuchen...">
+                </div>
+                <button class="filter-toggle" id="filterToggle">
+                    <i class="fas fa-filter"></i>
+                    Filter
+                </button>
+                <div class="action-buttons">
+                    <button class="action-btn btn-primary" id="export-all">
+                        <i class="fas fa-file-export"></i>
+                        Exportieren
+                    </button>
+                    <button class="action-btn btn-success" id="backup-btn">
+                        <i class="fas fa-download"></i>
+                        Backup
+                    </button>
+                    <button class="action-btn btn-danger" id="bulk-delete">
+                        <i class="fas fa-trash"></i>
+                        Auswahl löschen
+                    </button>
                 </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="total-receipts">0</div>
-                    <div class="stat-label">Gesamtbelege</div>
+            <div class="filter-panel" id="filterPanel">
+                <div class="filter-group">
+                    <div class="filter-title">
+                        <i class="fas fa-check-circle"></i>
+                        Status
+                    </div>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" id="filter-confirmed" checked>
+                            Bestätigt
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" id="filter-declined" checked>
+                            Abgelehnt
+                        </label>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="confirmed-receipts">0</div>
-                    <div class="stat-label">Bestätigte Belege</div>
+
+                <div class="filter-group">
+                    <div class="filter-title">
+                        <i class="fas fa-calendar"></i>
+                        Zeitraum
+                    </div>
+                    <div class="date-filter">
+                        <input type="date" id="start-date" class="date-input">
+                        <input type="date" id="end-date" class="date-input">
+                    </div>
                 </div>
-                <div class="stat-card income-card">
-                    <div class="stat-value" id="total-income">€0.00</div>
-                    <div class="stat-label">Gesamteinnahmen</div>
+
+                <div class="filter-group">
+                    <div class="filter-title">
+                        <i class="fas fa-search"></i>
+                        Notizen durchsuchen
+                    </div>
+                    <input type="text" class="search-bar" id="note-search" placeholder="Notizen durchsuchen...">
+                </div>
+
+                <button class="apply-filter-btn" id="apply-filters">
+                    Filter anwenden
+                </button>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-file-invoice"></i>
+                        Archivierte Belege
+                    </h2>
+                    <div class="receipt-count" id="receipt-count">0 Belege</div>
+                </div>
+                <div class="receipt-list" id="receipt-list">
+                    <div class="empty-receipts">
+                        <i class="fas fa-receipt"></i>
+                        <p>Keine Belege gefunden</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="filters-bar" id="active-filters">
-                <!-- Active filters will be displayed here -->
-            </div>
-
-            <div class="debug-info" id="debug-container"></div>
-
-            <div class="receipts-grid" id="receipts-container">
-                <!-- Receipt cards will be generated here -->
+            <div class="summary-section">
+                <div class="summary-label">Gesamteinnahmen:</div>
+                <div class="summary-value" id="total-amount">€0.00</div>
             </div>
         </main>
     </div>
 
-    <div class="bulk-actions-bar" id="bulk-actions-bar">
-        <div class="selected-count" id="selected-count">0 Belege ausgewählt</div>
-        <div class="bulk-actions-group">
-            <button class="btn btn-danger" id="bulk-delete">
-                <i class="fas fa-trash"></i> Löschen
-            </button>
-            <button class="btn btn-success" id="bulk-export">
-                <i class="fas fa-file-export"></i> Exportieren
-            </button>
-        </div>
-    </div>
-
-    <div class="modal" id="receipt-modal">
-        <div class="modal-content">
+    <!-- Receipt Detail Modal -->
+    <div class="modal-overlay" id="receipt-modal">
+        <div class="modal">
             <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-receipt"></i>
-                    Belegdetails
-                </h2>
-                <button class="close-modal" id="close-modal">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h2 class="modal-title">Beleg Details</h2>
+                <button class="close-modal" id="close-modal">&times;</button>
             </div>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <div class="detail-label">Belegnummer</div>
-                    <div class="detail-value" id="detail-id">-</div>
+            <div class="modal-body">
+                <div class="detail-row">
+                    <div class="detail-label">Belegnummer:</div>
+                    <div class="detail-value" id="detail-id"></div>
                 </div>
-                <div class="detail-item">
-                    <div class="detail-label">Datum & Uhrzeit</div>
-                    <div class="detail-value" id="detail-date">-</div>
+                <div class="detail-row">
+                    <div class="detail-label">Datum:</div>
+                    <div class="detail-value" id="detail-date"></div>
                 </div>
-                <div class="detail-item">
-                    <div class="detail-label">Status</div>
+                <div class="detail-row">
+                    <div class="detail-label">Status:</div>
                     <div class="detail-value">
-                        <span id="detail-status" class="receipt-status status-confirmed">-</span>
+                        <span class="status-badge" id="detail-status"></span>
                     </div>
                 </div>
-                <div class="detail-item">
-                    <div class="detail-label">Gesamtbetrag</div>
-                    <div class="detail-value" id="detail-total">-</div>
+                <div class="detail-row">
+                    <div class="detail-label">Gesamtbetrag:</div>
+                    <div class="detail-value" id="detail-total"></div>
+                </div>
+
+                <h3>Artikel</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Artikel</th>
+                            <th>Menge</th>
+                            <th>Preis</th>
+                            <th>Gesamt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-list">
+                    </tbody>
+                </table>
+
+                <div class="detail-row" style="flex-direction: column; align-items: flex-start;">
+                    <div class="detail-label">Notizen:</div>
+                    <textarea class="note-input" id="note-input" placeholder="Notizen zu diesem Beleg hinzufügen..."></textarea>
                 </div>
             </div>
-
-            <h3>Artikel</h3>
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th>Artikel</th>
-                        <th>Menge</th>
-                        <th>Preis</th>
-                        <th>Gesamt</th>
-                    </tr>
-                </thead>
-                <tbody id="items-list">
-                    <!-- Items will be populated here -->
-                </tbody>
-            </table>
-
-            <div class="note-section">
-                <div class="detail-label">Notizen</div>
-                <textarea id="note-input" class="note-input" placeholder="Notizen zu diesem Beleg hinzufügen..."></textarea>
-            </div>
-
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="toggle-status">
-                    <i class="fas fa-sync"></i> Status ändern
+                <button class="action-btn" id="toggle-status">
+                    <i class="fas fa-sync"></i>
+                    Status ändern
                 </button>
-                <button class="btn btn-success" id="save-note">
-                    <i class="fas fa-save"></i> Speichern
+                <button class="action-btn btn-primary" id="save-note">
+                    <i class="fas fa-save"></i>
+                    Speichern
                 </button>
-                <button class="btn btn-primary" id="print-receipt">
-                    <i class="fas fa-print"></i> Drucken
+                <button class="action-btn" id="print-receipt">
+                    <i class="fas fa-print"></i>
+                    Drucken
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="notification" id="notification"></div>
+    <!-- Notification Center -->
+    <!-- <div class="notification-center" id="notificationCenter">
+        <div class="modal-header">
+            <h2 class="modal-title">Benachrichtigungen</h2>
+            <button class="close-modal" id="clear-notifications">Alle löschen</button>
+        </div>
+        <div class="notification-list">
+            <div class="notification-item notification-unread">
+                <div class="notification-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="notification-content">
+                    <div>Neue Transaktion abgeschlossen: €42.75</div>
+                    <div class="notification-time">Vor 5 Minuten</div>
+                </div>
+            </div>
+        </div>
+    </div> -->
 
     <script>
         // Initialize jsPDF
@@ -1185,15 +1106,9 @@
         function applyDarkMode() {
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
             if (settings.darkMode) {
-                document.documentElement.style.setProperty('--color-bg', '#111827');
-                document.documentElement.style.setProperty('--color-text', '#f3f4f6');
-                document.documentElement.style.setProperty('--color-text-muted', '#9ca3af');
-                document.documentElement.style.setProperty('--color-border', '#374151');
+                document.body.classList.add('dark-mode');
             } else {
-                document.documentElement.style.setProperty('--color-bg', '#ffffff');
-                document.documentElement.style.setProperty('--color-text', '#111111');
-                document.documentElement.style.setProperty('--color-text-muted', '#6b7280');
-                document.documentElement.style.setProperty('--color-border', '#e5e7eb');
+                document.body.classList.remove('dark-mode');
             }
         }
 
@@ -1218,189 +1133,111 @@
             }
         })();
 
-        // Mobile sidebar toggle
-        document.getElementById('hamburger').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.add('active');
-            document.getElementById('overlay').classList.add('active');
-        });
-        
-        document.getElementById('overlay').addEventListener('click', function() {
-            this.classList.remove('active');
-            document.getElementById('sidebar').classList.remove('active');
-        });
+        // DOM Elements
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationCenter = document.getElementById('notificationCenter');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const filterToggle = document.getElementById('filterToggle');
+        const filterPanel = document.getElementById('filterPanel');
+        const searchInput = document.getElementById('search-input');
+        const noteSearch = document.getElementById('note-search');
+        const receiptList = document.getElementById('receipt-list');
+        const receiptCount = document.getElementById('receipt-count');
+        const totalAmount = document.getElementById('total-amount');
+        const exportAllBtn = document.getElementById('export-all');
+        const backupBtn = document.getElementById('backup-btn');
+        const bulkDeleteBtn = document.getElementById('bulk-delete');
+        const applyFiltersBtn = document.getElementById('apply-filters');
+        const receiptModal = document.getElementById('receipt-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const toggleStatusBtn = document.getElementById('toggle-status');
+        const saveNoteBtn = document.getElementById('save-note');
+        const printReceiptBtn = document.getElementById('print-receipt');
 
-        // Show success message
-        function showSuccess(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = 'notification success';
-            notification.style.display = 'block';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
+        // Time display function
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('de-DE', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            timeDisplay.textContent = `${dateString}, ${timeString}`;
         }
         
-        // Show error message
-        function showError(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = 'notification error';
-            notification.style.display = 'block';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
+        // Update time every second
+        updateTime();
+        setInterval(updateTime, 1000);
         
-        // Enhanced debug information
-        function showDebugInfo() {
-            const container = document.getElementById('debug-container');
-            let debugInfo = "LocalStorage Debug Info\n";
-            debugInfo += `Total items: ${localStorage.length}\n`;
-            debugInfo += `Theme: ${localStorage.getItem('theme') || 'light'}\n\n`;
-            
-            let receiptCount = 0;
-            
-            for(let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if(key.startsWith('receipt_')) {
-                    receiptCount++;
-                    debugInfo += `Key: ${key}\n`;
-                    
-                    try {
-                        const storedValue = localStorage.getItem(key);
-                        if (!storedValue) {
-                            debugInfo += "  Error: Empty value\n\n";
-                            continue;
-                        }
-                        
-                        const stored = JSON.parse(storedValue);
-                        debugInfo += `  Date: ${stored.date}\n`;
-                        debugInfo += `  Total: €${stored.total}\n`;
-                        debugInfo += `  Status: ${stored.status}\n`;
-                        
-                        if (stored.note) {
-                            debugInfo += `  Note: ${stored.note.substring(0, 50)}...\n`;
-                        }
-                    } catch (e) {
-                        debugInfo += `  Error: ${e.message}\n\n`;
-                    }
-                }
-            }
-            
-            debugInfo += `\nTotal receipts: ${receiptCount}\n`;
-            debugInfo += `Last backup: ${localStorage.getItem('lastBackupReminder') || 'Never'}`;
-            
-            container.textContent = debugInfo;
-            container.style.display = 'block';
-        }
-        
-        document.getElementById('debug-btn').addEventListener('click', showDebugInfo);
-        
-        // Close backup reminder
-        document.getElementById('close-reminder').addEventListener('click', function() {
-            document.getElementById('backup-reminder').style.display = 'none';
-            localStorage.setItem('lastBackupReminder', new Date().toISOString());
+        // Hamburger menu toggle for mobile
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
         });
         
-        // Clear old receipts
-        document.getElementById('auto-delete').addEventListener('click', function() {
-            if(confirm('Belege älter als 100 Tage löschen?')) {
-                const hundredDaysAgo = new Date();
-                hundredDaysAgo.setDate(hundredDaysAgo.getDate() - 100);
-                
-                const keysToRemove = [];
-                for(let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if(key.startsWith('receipt_')) {
-                        const stored = JSON.parse(localStorage.getItem(key));
-                        const receiptDate = new Date(stored.date);
-                        
-                        if (receiptDate < hundredDaysAgo) {
-                            keysToRemove.push(key);
-                        }
-                    }
-                }
-                
-                if (keysToRemove.length === 0) {
-                    showSuccess("Keine alten Belege gefunden");
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+        
+        // Notification center toggle
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationCenter.classList.toggle('active');
+        });
+        
+        // Close notification center when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!notificationBtn.contains(e.target) && !notificationCenter.contains(e.target)) {
+                notificationCenter.classList.remove('active');
+            }
+        });
+        
+        // Logout functionality
+        logoutBtn.addEventListener('click', () => {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            if (settings.logoutConfirmation) {
+                if (!confirm('Möchten Sie sich wirklich abmelden?')) {
                     return;
                 }
-                
-                keysToRemove.forEach(key => localStorage.removeItem(key));
-                showSuccess(`${keysToRemove.length} Belege gelöscht`);
-                loadAndDisplayReceipts();
             }
-        });
-
-        // Export all functionality
-        document.getElementById('export-all').addEventListener('click', function() {
-            exportReceipts(allReceipts);
+            
+            sessionStorage.removeItem('validTokens');
+            localStorage.removeItem('authToken');
+            window.location.reload();
         });
         
-        // Export selected receipts
-        document.getElementById('bulk-export').addEventListener('click', function() {
-            if (selectedReceipts.size === 0) {
-                showError("Keine Belege ausgewählt");
-                return;
-            }
-            
-            const receipts = allReceipts.filter(r => selectedReceipts.has(r.id));
-            exportReceipts(receipts);
+        // Filter panel toggle
+        filterToggle.addEventListener('click', () => {
+            filterPanel.classList.toggle('active');
         });
         
-        // Export receipts
-        function exportReceipts(receipts) {
-            if(receipts.length === 0) {
-                showError("Keine Belege zum Exportieren");
-                return;
+        // Close modal
+        closeModalBtn.addEventListener('click', () => {
+            receiptModal.classList.remove('active');
+        });
+        
+        // Close modal when clicking outside
+        receiptModal.addEventListener('click', (e) => {
+            if (e.target === receiptModal) {
+                receiptModal.classList.remove('active');
             }
-            
-            const exportData = receipts.map(receipt => {
-                const stored = JSON.parse(localStorage.getItem(`receipt_${receipt.id}`));
-                return {
-                    key: `receipt_${receipt.id}`,
-                    value: stored
-                };
-            });
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([dataStr], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `belege_export_${new Date().toISOString().split('T')[0]}.txt`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-
-        // Import functionality
-        document.getElementById('import-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const receipts = JSON.parse(e.target.result);
-                    let importedCount = 0;
-                    
-                    receipts.forEach(({ key, value }) => {
-                        localStorage.setItem(key, JSON.stringify(value));
-                        importedCount++;
-                    });
-
-                    showSuccess(`${importedCount} Belege importiert`);
-                    loadAndDisplayReceipts();
-                } catch (error) {
-                    showError('Ungültiges Dateiformat');
-                }
-            };
-            reader.readAsText(file);
         });
 
-        // Fixed loadReceipts function
+        // Load receipts from localStorage
         function loadReceipts() {
             const receipts = [];
             for(let i = 0; i < localStorage.length; i++) {
@@ -1411,32 +1248,19 @@
                         if (!storedValue) continue;
                         
                         const stored = JSON.parse(storedValue);
+                        let originalData = null;
+                        let transactionDate = stored.date;
                         
                         // Attempt decompression
-                        let originalData = null;
                         if (stored.data) {
                             const decompressed = LZString.decompressFromBase64(stored.data);
                             
                             if (decompressed) {
                                 try {
                                     originalData = JSON.parse(decompressed);
+                                    transactionDate = originalData.date;
                                 } catch (parseError) {
                                     console.error('Error parsing decompressed data:', parseError);
-                                    // Fallback to extract items directly
-                                    try {
-                                        const itemsMatch = decompressed.match(/"items":\[(.*?)\]/);
-                                        if (itemsMatch && itemsMatch[1]) {
-                                            const items = JSON.parse(`[${itemsMatch[1]}]`);
-                                            originalData = {
-                                                items: items,
-                                                peerId: stored.peerId,
-                                                total: stored.total,
-                                                date: stored.date
-                                            };
-                                        }
-                                    } catch (fallbackError) {
-                                        console.error('Fallback parsing failed:', fallbackError);
-                                    }
                                 }
                             }
                         }
@@ -1444,7 +1268,7 @@
                         receipts.push({
                             id: key.replace('receipt_', ''),
                             data: originalData,
-                            date: stored.date,
+                            date: transactionDate,
                             total: stored.total,
                             status: stored.status || 'Bestätigt',
                             note: stored.note || ''
@@ -1457,205 +1281,99 @@
             return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
-        // Update stats display
-        function updateStats(receipts) {
-            const total = receipts.length;
-            const confirmed = receipts.filter(r => r.status === 'Bestätigt').length;
-            const income = receipts
-                .filter(r => r.status === 'Bestätigt')
-                .reduce((sum, r) => sum + r.total, 0);
-            
-            document.getElementById('total-receipts').textContent = total;
-            document.getElementById('confirmed-receipts').textContent = confirmed;
-            document.getElementById('total-income').textContent = `€${income.toFixed(2)}`;
-        }
-
-        function applyArchiveSettings() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            const archiveSettings = settings.archiveSettings || {};
-            
-            // Apply dark mode
-            if (archiveSettings.darkMode) {
-                document.documentElement.style.setProperty('--color-bg', '#111827');
-                document.documentElement.style.setProperty('--color-text', '#f3f4f6');
-                document.documentElement.style.setProperty('--color-text-muted', '#9ca3af');
-                document.documentElement.style.setProperty('--color-border', '#374151');
-            }
-            
-            // Apply deletion restriction
-            if (archiveSettings.disableDeletion) {
-                document.body.classList.add('deletion-disabled');
-            } else {
-                document.body.classList.remove('deletion-disabled');
-            }
-            
-            // Apply default date range
-            if (archiveSettings.defaultDateRange) {
-                const today = new Date();
-                const startDateInput = document.getElementById('start-date');
-                const endDateInput = document.getElementById('end-date');
-                
-                switch(archiveSettings.defaultDateRange) {
-                    case 'last7days':
-                        const sevenDaysAgo = new Date();
-                        sevenDaysAgo.setDate(today.getDate() - 7);
-                        startDateInput.value = sevenDaysAgo.toISOString().split('T')[0];
-                        endDateInput.value = today.toISOString().split('T')[0];
-                        break;
-                    case 'last30days':
-                        const thirtyDaysAgo = new Date();
-                        thirtyDaysAgo.setDate(today.getDate() - 30);
-                        startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
-                        endDateInput.value = today.toISOString().split('T')[0];
-                        break;
-                    case 'all':
-                        startDateInput.value = '';
-                        endDateInput.value = '';
-                        break;
-                }
-                
-                // Apply the filter
-                filterReceipts();
-            }
-        }
-
         // Generate receipt list UI
-        function displayReceipts(receipts) {
-            const container = document.getElementById('receipts-container');
-            container.innerHTML = '';
+        function generateReceiptList(receipts) {
+            allReceipts = receipts;
+            const container = document.getElementById('receipt-list');
             
-            // Update stats
-            updateStats(receipts);
+            // Update receipt count
+            document.getElementById('receipt-count').textContent = `${receipts.length} Belege`;
 
-            if(receipts.length === 0) {
+            if (receipts.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-inbox"></i>
+                    <div class="empty-receipts">
+                        <i class="fas fa-receipt"></i>
                         <p>Keine gespeicherten Belege</p>
-                        <button id="add-sample" class="btn btn-primary">
-                            <i class="fas fa-plus-circle"></i> Testbeleg hinzufügen
-                        </button>
                     </div>
                 `;
-                
-                document.getElementById('add-sample').addEventListener('click', addSampleReceipt);
+                updateIncomeTotal([]);
                 return;
             }
 
+            let html = '';
             receipts.forEach(receipt => {
                 const date = new Date(receipt.date);
-                const card = document.createElement('div');
-                card.className = 'receipt-card';
-                card.dataset.id = receipt.id;
+                const dateStr = `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
                 
-                if (selectedReceipts.has(receipt.id)) {
-                    card.classList.add('selected');
+                let statusClass = 'status-confirmed';
+                if (receipt.status === 'Abgelehnt') {
+                    statusClass = 'status-declined';
                 }
                 
-                const statusClass = receipt.status === 'Bestätigt' ? 'status-confirmed' : 
-                                  receipt.status === 'Abgelehnt' ? 'status-declined' : 'status-pending';
-                
-                card.innerHTML = `
-                    <div class="checkbox-container">
-                        <input type="checkbox" class="receipt-checkbox" data-id="${receipt.id}" ${selectedReceipts.has(receipt.id) ? 'checked' : ''}>
-                    </div>
-                    <div class="receipt-header">
-                        <div>
+                html += `
+                    <div class="receipt-item" data-id="${receipt.id}">
+                        <div class="receipt-details">
                             <div class="receipt-id">${receipt.id}</div>
-                            <div class="receipt-date">${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}</div>
+                            <div class="receipt-date">${dateStr}</div>
+                            ${receipt.note ? `<div class="receipt-note">${receipt.note}</div>` : ''}
                         </div>
-                        <span class="receipt-status ${statusClass}">${receipt.status}</span>
-                    </div>
-                    <div class="receipt-total">€ ${receipt.total.toFixed(2)}</div>
-                    ${receipt.note ? `<div class="receipt-note">${receipt.note}</div>` : ''}
-                    <div class="receipt-actions">
-                        <button class="action-icon" onclick="event.stopPropagation(); showReceiptDetails('${receipt.id}')" title="Details anzeigen">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="action-icon" onclick="event.stopPropagation(); generateArchiveReceipt('${receipt.id}')" title="PDF erstellen">
-                            <i class="fas fa-file-pdf"></i>
-                        </button>
-                        <button class="action-icon" onclick="event.stopPropagation(); deleteReceipt('${receipt.id}')" title="Beleg löschen">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="receipt-total">€${receipt.total.toFixed(2)}</div>
+                        <div class="status-badge ${statusClass}">${receipt.status}</div>
+                        <div class="receipt-actions">
+                            <button class="receipt-action-btn view-btn" title="Details anzeigen">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="receipt-action-btn delete-btn" title="Beleg löschen">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
-                
-                // Click handler for the entire receipt
-                card.addEventListener('click', (e) => {
-                    if (!e.target.classList.contains('receipt-checkbox') && 
-                        !e.target.closest('.action-icon')) {
-                        showReceiptDetails(receipt.id);
-                    }
-                });
-                
-                // Checkbox handler
-                const checkbox = card.querySelector('.receipt-checkbox');
-                checkbox.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (checkbox.checked) {
-                        selectedReceipts.add(receipt.id);
-                        card.classList.add('selected');
-                    } else {
-                        selectedReceipts.delete(receipt.id);
-                        card.classList.remove('selected');
-                    }
-                    updateBulkActionsBar();
-                });
-
-                container.appendChild(card);
             });
-        }
-        
-        // Update bulk actions bar
-        function updateBulkActionsBar() {
-            const bar = document.getElementById('bulk-actions-bar');
-            const countElement = document.getElementById('selected-count');
-            const count = selectedReceipts.size;
             
-            countElement.textContent = `${count} Belege ausgewählt`;
+            container.innerHTML = html;
             
-            if (count > 0) {
-                bar.classList.add('visible');
-            } else {
-                bar.classList.remove('visible');
-            }
-        }
-        
-        // Delete a single receipt
-        function deleteReceipt(id) {
-            if(confirm('Diesen Beleg löschen?')) {
-                localStorage.removeItem(`receipt_${id}`);
-                selectedReceipts.delete(id);
-                showSuccess(`Beleg ${id} gelöscht`);
-                loadAndDisplayReceipts();
-            }
-        }
-        
-        // Delete selected receipts
-        document.getElementById('bulk-delete').addEventListener('click', function() {
-            if (selectedReceipts.size === 0) {
-                showError("Keine Belege ausgewählt");
-                return;
-            }
-            
-            if(confirm(`${selectedReceipts.size} Belege löschen?`)) {
-                selectedReceipts.forEach(id => {
-                    localStorage.removeItem(`receipt_${id}`);
+            // Add event listeners
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const receiptId = btn.closest('.receipt-item').dataset.id;
+                    const receipt = receipts.find(r => r.id === receiptId);
+                    if (receipt) showReceiptDetails(receipt);
                 });
-                
-                const count = selectedReceipts.size;
-                selectedReceipts.clear();
-                showSuccess(`${count} Belege gelöscht`);
-                loadAndDisplayReceipts();
-            }
-        });
-        
-        // Show receipt details in modal
-        function showReceiptDetails(receiptId) {
-            const receipt = allReceipts.find(r => r.id === receiptId);
-            if (!receipt) return;
+            });
             
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const receiptId = btn.closest('.receipt-item').dataset.id;
+                    deleteReceipt(receiptId);
+                });
+            });
+            
+            document.querySelectorAll('.receipt-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('receipt-action-btn')) {
+                        const receiptId = item.dataset.id;
+                        const receipt = receipts.find(r => r.id === receiptId);
+                        if (receipt) showReceiptDetails(receipt);
+                    }
+                });
+            });
+
+            updateIncomeTotal(receipts);
+        }
+
+        // Update income total display
+        function updateIncomeTotal(receipts) {
+            const total = receipts
+                .filter(r => r.status === 'Bestätigt')
+                .reduce((sum, r) => sum + parseFloat(r.total), 0);
+            document.getElementById('total-amount').textContent = `€${total.toFixed(2)}`;
+        }
+
+        // Show receipt details in modal
+        function showReceiptDetails(receipt) {
             currentReceipt = receipt;
             const modal = document.getElementById('receipt-modal');
             
@@ -1670,9 +1388,7 @@
             
             const statusBadge = document.getElementById('detail-status');
             statusBadge.textContent = receipt.status;
-            statusBadge.className = 'receipt-status ' + 
-                (receipt.status === 'Bestätigt' ? 'status-confirmed' : 
-                 receipt.status === 'Abgelehnt' ? 'status-declined' : 'status-pending');
+            statusBadge.className = 'status-badge ' + (receipt.status === 'Bestätigt' ? 'status-confirmed' : 'status-declined');
             
             // Populate items
             const itemsList = document.getElementById('items-list');
@@ -1705,16 +1421,11 @@
             document.getElementById('note-input').value = receipt.note || '';
             
             // Show modal
-            modal.style.display = 'flex';
+            modal.classList.add('active');
         }
-        
-        // Close modal
-        document.getElementById('close-modal').addEventListener('click', function() {
-            document.getElementById('receipt-modal').style.display = 'none';
-        });
-        
+
         // Toggle receipt status
-        document.getElementById('toggle-status').addEventListener('click', function() {
+        toggleStatusBtn.addEventListener('click', () => {
             if (!currentReceipt) return;
             
             currentReceipt.status = currentReceipt.status === 'Bestätigt' ? 'Abgelehnt' : 'Bestätigt';
@@ -1727,15 +1438,14 @@
             // Update UI
             const statusBadge = document.getElementById('detail-status');
             statusBadge.textContent = currentReceipt.status;
-            statusBadge.className = 'receipt-status ' + 
-                (currentReceipt.status === 'Bestätigt' ? 'status-confirmed' : 'status-declined');
+            statusBadge.className = 'status-badge ' + (currentReceipt.status === 'Bestätigt' ? 'status-confirmed' : 'status-declined');
             
-            showSuccess(`Status geändert zu "${currentReceipt.status}"`);
-            loadAndDisplayReceipts();
+            showNotification(`Status geändert zu "${currentReceipt.status}"`);
+            generateReceiptList(loadReceipts());
         });
         
         // Save note
-        document.getElementById('save-note').addEventListener('click', function() {
+        saveNoteBtn.addEventListener('click', () => {
             if (!currentReceipt) return;
             
             const note = document.getElementById('note-input').value;
@@ -1746,12 +1456,12 @@
             stored.note = note;
             localStorage.setItem(`receipt_${currentReceipt.id}`, JSON.stringify(stored));
             
-            showSuccess("Notiz gespeichert");
-            loadAndDisplayReceipts();
+            showNotification("Notiz gespeichert");
+            generateReceiptList(loadReceipts());
         });
         
         // Print receipt
-        document.getElementById('print-receipt').addEventListener('click', function() {
+        printReceiptBtn.addEventListener('click', () => {
             if (!currentReceipt) return;
             
             const printWindow = window.open('', '_blank');
@@ -1816,205 +1526,123 @@
             printWindow.document.close();
             printWindow.print();
         });
-        
-        // Add sample receipt for testing
-        function addSampleReceipt() {
-            try {
-                const id = 'TEST' + Math.floor(1000 + Math.random() * 9000);
-                const sampleData = {
-                    items: [
-                        { name: 'Premium Futter', price: 12.99, quantity: 2 },
-                        { name: 'Spielzeug', price: 5.49, quantity: 1 },
-                        { name: 'Rabatt', price: -3.00, quantity: 1 }
-                    ],
-                    total: 12.99*2 + 5.49 - 3.00,
-                    date: new Date().toISOString(),
-                    id: id
-                };
-                
-                const sampleEntry = {
-                    data: LZString.compressToBase64(JSON.stringify(sampleData)),
-                    date: new Date().toISOString(),
-                    total: sampleData.total,
-                    status: Math.random() > 0.3 ? 'Bestätigt' : 'Abgelehnt',
-                    note: Math.random() > 0.5 ? 'Testbeleg' : ''
-                };
-                
-                localStorage.setItem(`receipt_${id}`, JSON.stringify(sampleEntry));
-                showSuccess("Testbeleg hinzugefügt");
-                loadAndDisplayReceipts();
-            } catch (e) {
-                showError(`Fehler: ${e.message}`);
-            }
-        }
-        
-        // Generate archive receipt PDF
-        function generateArchiveReceipt(receiptId) {
-            const receipt = allReceipts.find(r => r.id === receiptId);
-            if (!receipt || !receipt.data) {
-                showError("Belegdaten nicht verfügbar");
+
+        // Delete a single receipt
+        function deleteReceipt(id) {
+            // Check if deletion is disabled in settings
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.archiveSettings?.disableDeletion) {
+                showNotification('Löschen ist deaktiviert', 'error');
                 return;
             }
             
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.width;
-            const pageHeight = doc.internal.pageSize.height;
-            const paymentDate = new Date(receipt.date).toLocaleDateString('de-DE');
-            const paymentTime = new Date(receipt.date).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-            let yPos = 20;
-
-            // Set colors
-            const primaryColor = [44, 62, 80]; // #2c3e50
-            const surfaceColor = [255, 255, 255]; // #ffffff
-            const accentColor = [108, 117, 125]; // #6c757d
-            const successColor = [40, 167, 69]; // #28a745
-            const dangerColor = [220, 53, 69]; // #dc3545
-            const infoColor = [225, 242, 254]; // #e1f2fe
-
-            // Header
-            doc.setFillColor(...surfaceColor);
-            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'F');
-            doc.setDrawColor(200, 200, 200);
-            doc.setLineWidth(0.3);
-            doc.roundedRect(20, yPos, pageWidth - 40, 60, 16, 16, 'S');
-
-            doc.setFontSize(28);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text("Gittertier", pageWidth/2, yPos + 25, null, 'center');
-
-            doc.setFontSize(12);
-            doc.setTextColor(...accentColor);
-            doc.text(`Belegnummer: ${receipt.id}`, pageWidth/2, yPos + 40, null, 'center');
-
-            yPos += 70;
-
-            // Receipt details
-            doc.setFontSize(16);
-            doc.setTextColor(...primaryColor);
-            doc.text(`Datum: ${paymentDate}`, 30, yPos);
-            doc.text(`Uhrzeit: ${paymentTime}`, pageWidth - 30, yPos, null, 'right');
-            yPos += 25;
-
-            // Items header
-            doc.setFillColor(...infoColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'F');
-            doc.setDrawColor(...accentColor);
-            doc.setLineWidth(0.2);
-            doc.roundedRect(30, yPos, pageWidth - 60, 20, 8, 8, 'S');
-
-            doc.setFontSize(12);
-            doc.setTextColor(...accentColor);
-            doc.text("Artikel", 35, yPos + 13);
-            doc.text("Menge", 130, yPos + 13);
-            doc.text("Preis", pageWidth - 35, yPos + 13, null, 'right');
-
-            yPos += 25;
-
-            // Items
-            if (receipt.data.items) {
-                receipt.data.items.forEach((item, index) => {
-                    if(yPos > pageHeight - 100) {
-                        doc.addPage();
-                        yPos = 20;
-                    }
-
-                    // Alternate row colors
-                    const rowColor = index % 2 === 0 ? surfaceColor : [248, 249, 250];
-                    doc.setFillColor(...rowColor);
-                    doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'F');
-                    doc.setDrawColor(200, 200, 200);
-                    doc.setLineWidth(0.1);
-                    doc.roundedRect(30, yPos, pageWidth - 60, 25, 6, 6, 'S');
-
-                    doc.setFontSize(12);
-                    doc.setTextColor(...primaryColor);
-                    doc.text(item.name.substring(0, 40), 35, yPos + 10);
-
-                    const quantityPrice = `${item.quantity}x €${item.price.toFixed(2)}`;
-                    doc.text(quantityPrice, 130, yPos + 10);
-
-                    const total = (item.quantity * item.price).toFixed(2);
-                    doc.text(`€${total}`, pageWidth - 35, yPos + 10, null, 'right');
-
-                    yPos += 30;
-                });
+            if(confirm('Diesen Beleg löschen?')) {
+                localStorage.removeItem(`receipt_${id}`);
+                selectedReceipts.delete(id);
+                showNotification(`Beleg ${id} gelöscht`);
+                generateReceiptList(loadReceipts());
             }
+        }
+        
+        // Delete selected receipts
+        bulkDeleteBtn.addEventListener('click', () => {
+            // Check if deletion is disabled in settings
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.archiveSettings?.disableDeletion) {
+                showNotification('Löschen ist deaktiviert', 'error');
+                return;
+            }
+            
+            if (selectedReceipts.size === 0) {
+                showNotification("Keine Belege ausgewählt", 'error');
+                return;
+            }
+            
+            if(confirm(`${selectedReceipts.size} Belege löschen?`)) {
+                selectedReceipts.forEach(id => {
+                    localStorage.removeItem(`receipt_${id}`);
+                });
+                
+                const count = selectedReceipts.size;
+                selectedReceipts.clear();
+                showNotification(`${count} Belege gelöscht`);
+                generateReceiptList(loadReceipts());
+            }
+        });
 
-            yPos += 15;
-
-            // Total section
-            doc.setFillColor(232, 252, 238); // Light green
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-            doc.setDrawColor(200, 200, 200);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
-
-            doc.setFontSize(18);
-            doc.setTextColor(...primaryColor);
-            doc.text(`Gesamtsumme:`, 40, yPos + 12);
-            doc.text(`€ ${receipt.total.toFixed(2)}`, pageWidth - 40, yPos + 12, null, 'right');
-
-            yPos += 45;
-
-            // Status section
-            const statusColor = receipt.status === 'Bestätigt' ? successColor : dangerColor;
-            doc.setFillColor(...statusColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'F');
-            doc.setDrawColor(...statusColor);
-            doc.roundedRect(30, yPos, pageWidth - 60, 35, 10, 10, 'S');
-
-            doc.setFontSize(18);
-            doc.setTextColor(255, 255, 255);
-            doc.text(`Status: ${receipt.status}`, pageWidth/2, yPos + 12, null, 'center');
-
-            yPos += 45;
-
-            // Thank you message
-            doc.setFontSize(12);
-            doc.setTextColor(...accentColor);
-            doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
-
-            // Save the PDF
-            doc.save(`gittertier_beleg_${receipt.id}.pdf`);
+        // Export all functionality
+        exportAllBtn.addEventListener('click', function() {
+            exportReceipts(allReceipts);
+        });
+        
+        // Export receipts
+        function exportReceipts(receipts) {
+            if(receipts.length === 0) {
+                showNotification("Keine Belege zum Exportieren", 'error');
+                return;
+            }
+            
+            const exportData = receipts.map(receipt => {
+                const stored = JSON.parse(localStorage.getItem(`receipt_${receipt.id}`));
+                return {
+                    key: `receipt_${receipt.id}`,
+                    value: stored
+                };
+            });
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `belege_export_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
         }
 
+        // Backup functionality
+        backupBtn.addEventListener('click', function() {
+            exportReceipts(allReceipts);
+            showNotification("Backup erstellt");
+        });
+
+        // Filter functionality
+        applyFiltersBtn.addEventListener('click', filterReceipts);
+        
         // Search functionality
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            filterReceipts();
-        });
+        searchInput.addEventListener('input', filterReceipts);
+        noteSearch.addEventListener('input', filterReceipts);
         
-        // Search by note content
-        document.getElementById('note-search').addEventListener('input', (e) => {
-            filterReceipts();
-        });
-        
-        // Apply status filters
+        // Status filter change
         document.getElementById('filter-confirmed').addEventListener('change', filterReceipts);
         document.getElementById('filter-declined').addEventListener('change', filterReceipts);
         
-        // Apply date filter
-        document.getElementById('apply-date-filter').addEventListener('click', filterReceipts);
+        // Date filter change
+        document.getElementById('start-date').addEventListener('change', filterReceipts);
+        document.getElementById('end-date').addEventListener('change', filterReceipts);
         
         // Filter receipts based on all criteria
         function filterReceipts() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const noteSearch = document.getElementById('note-search').value.toLowerCase();
+            const noteSearchTerm = document.getElementById('note-search').value.toLowerCase();
             const showConfirmed = document.getElementById('filter-confirmed').checked;
             const showDeclined = document.getElementById('filter-declined').checked;
             
             const startDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
             
-            const filtered = allReceipts.filter(r => {
+            const allReceipts = loadReceipts();
+            
+            const filtered = allReceipts.filter(receipt => {
                 // Status filter
-                if ((r.status === 'Bestätigt' && !showConfirmed) || 
-                    (r.status === 'Abgelehnt' && !showDeclined)) {
+                if ((receipt.status === 'Bestätigt' && !showConfirmed) || 
+                    (receipt.status === 'Abgelehnt' && !showDeclined)) {
                     return false;
                 }
                 
                 // Date filter
                 if (startDate || endDate) {
-                    const receiptDate = new Date(r.date);
+                    const receiptDate = new Date(receipt.date);
                     const start = startDate ? new Date(startDate) : null;
                     const end = endDate ? new Date(endDate + 'T23:59:59') : null;
                     
@@ -2024,153 +1652,57 @@
                 
                 // Main search
                 if (searchTerm && 
-                    !r.id.toLowerCase().includes(searchTerm) && 
-                    !r.date.toLowerCase().includes(searchTerm) &&
-                    !r.status.toLowerCase().includes(searchTerm) &&
-                    !r.total.toString().includes(searchTerm)) {
+                    !receipt.id.toLowerCase().includes(searchTerm) && 
+                    !receipt.date.toLowerCase().includes(searchTerm) &&
+                    !receipt.status.toLowerCase().includes(searchTerm) &&
+                    !receipt.total.toString().includes(searchTerm)) {
                     return false;
                 }
                 
                 // Note search
-                if (noteSearch && (!r.note || !r.note.toLowerCase().includes(noteSearch))) {
+                if (noteSearchTerm && (!receipt.note || !receipt.note.toLowerCase().includes(noteSearchTerm))) {
                     return false;
                 }
                 
                 return true;
             });
             
-            displayReceipts(filtered);
-            
-            // Update active filters display
-            updateActiveFiltersDisplay();
-        }
-        
-        function updateActiveFiltersDisplay() {
-            const filtersContainer = document.getElementById('active-filters');
-            filtersContainer.innerHTML = '';
-            
-            const showConfirmed = document.getElementById('filter-confirmed').checked;
-            const showDeclined = document.getElementById('filter-declined').checked;
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            const searchTerm = document.getElementById('search-input').value;
-            const noteSearch = document.getElementById('note-search').value;
-            
-            // Status filters
-            if (!showConfirmed || !showDeclined) {
-                const statusFilter = document.createElement('div');
-                statusFilter.className = 'filter-tag';
-                statusFilter.innerHTML = `
-                    <span>Status: ${!showConfirmed ? 'Nur abgelehnt' : 'Nur bestätigt'}</span>
-                    <button onclick="resetStatusFilter()"><i class="fas fa-times"></i></button>
-                `;
-                filtersContainer.appendChild(statusFilter);
-            }
-            
-            // Date filter
-            if (startDate || endDate) {
-                const dateFilter = document.createElement('div');
-                dateFilter.className = 'filter-tag';
-                dateFilter.innerHTML = `
-                    <span>Zeitraum: ${startDate || 'Anfang'} bis ${endDate || 'Ende'}</span>
-                    <button onclick="resetDateFilter()"><i class="fas fa-times"></i></button>
-                `;
-                filtersContainer.appendChild(dateFilter);
-            }
-            
-            // Search term
-            if (searchTerm) {
-                const searchFilter = document.createElement('div');
-                searchFilter.className = 'filter-tag';
-                searchFilter.innerHTML = `
-                    <span>Suche: "${searchTerm}"</span>
-                    <button onclick="resetSearch()"><i class="fas fa-times"></i></button>
-                `;
-                filtersContainer.appendChild(searchFilter);
-            }
-            
-            // Note search
-            if (noteSearch) {
-                const noteFilter = document.createElement('div');
-                noteFilter.className = 'filter-tag';
-                noteFilter.innerHTML = `
-                    <span>Notiz: "${noteSearch}"</span>
-                    <button onclick="resetNoteSearch()"><i class="fas fa-times"></i></button>
-                `;
-                filtersContainer.appendChild(noteFilter);
-            }
-        }
-        
-        function resetStatusFilter() {
-            document.getElementById('filter-confirmed').checked = true;
-            document.getElementById('filter-declined').checked = true;
-            filterReceipts();
-        }
-        
-        function resetDateFilter() {
-            document.getElementById('start-date').value = '';
-            document.getElementById('end-date').value = '';
-            filterReceipts();
-        }
-        
-        function resetSearch() {
-            document.getElementById('search-input').value = '';
-            filterReceipts();
-        }
-        
-        function resetNoteSearch() {
-            document.getElementById('note-search').value = '';
-            filterReceipts();
+            generateReceiptList(filtered);
         }
 
-        // Time display function
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            const dateString = now.toLocaleDateString('de-DE', {
-                weekday: 'long',
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-            });
-            document.getElementById('timeDisplay').textContent = `${dateString}, ${timeString}`;
-        }
-        
-        // Logout functionality
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            
-            if (settings.logoutConfirmation) {
-                if (!confirm('Möchten Sie sich wirklich abmelden?')) {
-                    return;
-                }
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            // Create notification element if it doesn't exist
+            let notification = document.querySelector('.notification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.className = 'notification';
+                document.body.appendChild(notification);
             }
             
-            sessionStorage.removeItem('validTokens');
-            localStorage.removeItem('authToken');
-            window.location.reload();
-        });
-
-        // Load and display receipts
-        function loadAndDisplayReceipts() {
-            allReceipts = loadReceipts();
-            filterReceipts();
+            notification.textContent = message;
+            notification.className = 'notification';
+            if (type) notification.classList.add(type);
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         }
 
         // Initial load
-        applyArchiveSettings();
-        loadAndDisplayReceipts();
-        updateTime();
-        setInterval(updateTime, 1000);
-        
-        // Simulate backup reminder if not already set
-        if (!localStorage.getItem('lastBackupReminder')) {
-            localStorage.setItem('lastBackupReminder', new Date().toISOString());
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load receipts
+            generateReceiptList(loadReceipts());
+            
+            // Apply settings
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.archiveSettings?.disableDeletion) {
+                // Hide delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = 'none');
+                bulkDeleteBtn.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
