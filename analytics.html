@@ -3,426 +3,570 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysen</title>
+    <title>Analysen - Gittertier Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <style>
-        :root {
-            --bg: #ebeded;
-            --surface: #ffffff;
-            --text: #2c3e50;
-            --text-secondary: #455a64;
-            --accent: #6c757d;
-            --accent-dark: #5a6268;
-            --accent-light: #d6d8db;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warning: #ffc107;
-            --info: #17a2b8;
-            --border-radius: 16px;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
+    :root {
+        --color-bg: #ffffff;
+        --color-bg-secondary: #f9fafb;
+        --color-text: #111111;
+        --color-text-muted: #6b7280;
+        --color-border: #e5e7eb;
+        --color-accent: #2563eb;
+        --color-accent-hover: #1d4ed8;
+        --color-success: #16a34a;
+        --color-error: #dc2626;
+        --color-warning: #d97706;
+        --color-overlay: rgba(0, 0, 0, 0.5);
+        
+        --radius: 12px;
+        --radius-sm: 6px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+        
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+        
+        --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --text-base: 1rem;
+        --text-lg: 1.125rem;
+        --text-xl: 1.25rem;
+        --text-2xl: 1.5rem;
+        --text-3xl: 1.875rem;
+        
+        --header-height: 64px;
+        --sidebar-width: 280px;
+        --sidebar-width-collapsed: 80px;
+    }
 
-        .dark-mode {
-            --bg: #121212;
-            --surface: #1e1e1e;
-            --text: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --accent: #3a86ff;
-            --accent-dark: #2a75e0;
-            --accent-light: #1a3650;
-            --success: #28a745;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
+    .dark-mode {
+        --color-bg: #111827;
+        --color-bg-secondary: #1f2937;
+        --color-text: #f3f4f6;
+        --color-text-muted: #9ca3af;
+        --color-border: #374151;
+        --color-accent: #3b82f6;
+        --color-accent-hover: #2563eb;
+        --color-success: #10b981;
+        --color-error: #ef4444;
+        --color-warning: #f59e0b;
+        --color-overlay: rgba(0, 0, 0, 0.7);
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-            display: flex;
+    body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header Styles */
+    .admin-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-xl);
+    }
+
+    .logo i {
+        font-size: var(--text-xl);
+        color: var(--color-accent);
+    }
+
+    .header-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        align-items: center;
+    }
+
+    .time-display {
+        background-color: var(--color-bg-secondary);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        display: none;
+    }
+
+    .notification-btn {
+        position: relative;
+        background: transparent;
+        border: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--color-text);
+        font-size: var(--text-lg);
+        transition: var(--transition);
+    }
+
+    .notification-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        background: var(--color-error);
+        color: white;
+        border-radius: 50%;
+        font-size: var(--text-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logout-btn {
+        background-color: transparent;
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .logout-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .hamburger {
+        display: block;
+        background: transparent;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        transition: var(--transition);
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hamburger:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    /* Main layout */
+    .admin-container {
+        display: flex;
+        flex: 1;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--color-bg);
+        border-right: 1px solid var(--color-border);
+        height: calc(100vh - var(--header-height));
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+        z-index: 40;
+        padding: var(--spacing-lg) 0;
+    }
+
+    .nav-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        padding: 0 var(--spacing-md);
+    }
+
+    .nav-link {
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        text-decoration: none;
+        color: var(--color-text);
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .nav-link:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .nav-link.active {
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--color-accent);
+    }
+
+    .nav-link i {
+        width: 24px;
+        text-align: center;
+    }
+
+    .nav-link.active i {
+        color: var(--color-accent);
+    }
+
+    .new-feature {
+        background-color: var(--color-success);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 35;
+        display: none;
+    }
+
+    /* Main content */
+    .admin-content {
+        flex: 1;
+        padding: var(--spacing-lg);
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.3s ease;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    /* Cards */
+    .dashboard-card {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .card-title i {
+        color: var(--color-accent);
+    }
+
+    .add-product-btn {
+        background-color: var(--color-accent);
+        color: white;
+        border: none;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .add-product-btn:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .stat-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .stat-card {
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        text-align: center;
+        transition: var(--transition);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+        font-size: var(--text-2xl);
+        color: var(--color-accent);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .stat-value {
+        font-size: var(--text-xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-label {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    .search-container {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .search-bar {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        transition: var(--transition);
+    }
+
+    .search-bar:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .chart-container {
+        height: 300px;
+        position: relative;
+        margin-top: 20px;
+    }
+
+    .data-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+    }
+
+    .date-input {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        transition: var(--transition);
+    }
+
+    .date-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    th {
+        font-weight: 600;
+        color: var(--color-text);
+        background-color: var(--color-bg-secondary);
+    }
+
+    tr:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-confirmed {
+        background-color: rgba(22, 163, 74, 0.1);
+        color: var(--color-success);
+    }
+
+    .status-canceled {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+
+    .file-input-label {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        background: var(--color-bg);
+        color: var(--color-accent);
+        border: 1px solid var(--color-accent);
+    }
+
+    .file-input-label:hover {
+        background: var(--color-accent);
+        color: white;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: var(--spacing-lg);
+        margin-top: 30px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .admin-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .admin-sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .admin-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .time-display {
+            display: block;
+        }
+        
+        .logout-btn span {
+            display: inline;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .admin-header {
+            padding: 0 var(--spacing-md);
+        }
+        
+        .admin-content {
+            padding: var(--spacing-md);
+        }
+        
+        .stat-cards {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .data-controls {
             flex-direction: column;
         }
+    }
 
-        .admin-header {
-            background: var(--surface);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .header-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .hamburger {
-            display: none;
-            background: transparent;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--accent);
-            cursor: pointer;
-        }
-
-        .admin-container {
-            display: flex;
-            flex: 1;
-            max-width: 1800px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .admin-sidebar {
-            width: 280px;
-            background: var(--surface);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            z-index: 99;
-            height: calc(100vh - 70px);
-            position: sticky;
-            top: 70px;
-            overflow-y: auto;
-        }
-
-        .nav-container {
-            display: grid;
+    @media (max-width: 480px) {
+        .stat-cards {
             grid-template-columns: 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
-            width: 100%;
         }
+    }
 
-        .nav-link {
-            background: var(--surface);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            text-decoration: none;
-            color: var(--text);
-            font-weight: 600;
-            font-size: 1.1rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            border: 2px solid var(--accent-light);
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 15px;
-            width: 100%;
+    /* Dark mode support for system preference */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-bg: #111827;
+            --color-bg-secondary: #1f2937;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --color-border: #374151;
         }
-
-        .nav-link i {
-            font-size: 1.5rem;
-            color: var(--accent);
-        }
-
-        .nav-link:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            border-color: var(--accent);
-        }
-
-        .admin-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .analytics-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .data-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-dark);
-            transform: translateY(-3px);
-        }
-
-        .btn-outline {
-            background: var(--surface);
-            color: var(--accent);
-            border: 2px solid var(--accent);
-        }
-
-        .btn-outline:hover {
-            background: var(--accent);
-            color: white;
-        }
-
-        .date-input {
-            padding: 12px 15px;
-            border: 2px solid var(--accent-light);
-            border-radius: 8px;
-            font-size: 1rem;
-            background: var(--bg);
-            color: var(--text);
-            transition: all 0.3s ease;
-        }
-
-        .date-input:focus {
-            border-color: var(--accent);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.2);
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-        }
-
-        .analytics-card {
-            background: var(--surface);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--accent-light);
-            transition: all 0.3s ease;
-        }
-
-        .analytics-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .analytics-card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .analytics-card h2 i {
-            color: var(--accent);
-        }
-
-        .chart-container {
-            height: 300px;
-            position: relative;
-            margin-top: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .stat-item {
-            background: var(--surface);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--accent-light);
-            transition: all 0.2s ease;
-        }
-
-        .stat-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-label {
-            font-size: 1rem;
-            color: var(--text-secondary);
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin: 10px 0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--accent-light);
-        }
-
-        th {
-            font-weight: 600;
-            color: var(--text);
-            background-color: rgba(108, 117, 125, 0.05);
-        }
-
-        tr:hover {
-            background-color: rgba(108, 117, 125, 0.05);
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .status-confirmed {
-            background-color: rgba(40, 167, 69, 0.1);
-            color: var(--success);
-        }
-
-        .status-canceled {
-            background-color: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-
-        .file-input-label {
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: var(--surface);
-            color: var(--accent);
-            border: 2px solid var(--accent);
-        }
-
-        .file-input-label:hover {
-            background: var(--accent);
-            color: white;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        @media (max-width: 992px) {
-            .admin-sidebar {
-                position: fixed;
-                left: -280px;
-                top: 70px;
-                height: calc(100vh - 70px);
-                z-index: 99;
-                box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
-            }
-            
-            .admin-sidebar.active {
-                left: 0;
-            }
-            
-            .hamburger {
-                display: block;
-            }
-            
-            .admin-content {
-                padding: 15px;
-            }
-            
-            .grid-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .data-controls {
-                width: 100%;
-            }
-            
-            .btn, .date-input, .file-input-label {
-                width: 100%;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .analytics-card {
-                padding: 20px;
-            }
-        }
+    }
     </style>
 </head>
 <body>
@@ -431,12 +575,18 @@
             <button class="hamburger" id="hamburger">
                 <i class="fas fa-bars"></i>
             </button>
-            <h1>Analysen</h1>
+            <i class="fas fa-shopping-cart"></i>
+            <span>Analysen</span>
         </div>
         <div class="header-controls">
-            <button class="btn btn-primary" id="logoutBtn">
+            <div class="time-display" id="timeDisplay"></div>
+            <!-- <button class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationBadge">3</span>
+            </button> -->
+            <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
-                Abmelden
+                <span>Abmelden</span>
             </button>
         </div>
     </div>
@@ -444,93 +594,159 @@
     <div class="admin-container">
         <aside class="admin-sidebar" id="sidebar">
             <div class="nav-container">
+                <a href="control" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    <span>Steuerung</span>
+                    <span class="new-feature">NEU</span>
+                </a>
+                
+                <a href="navi" class="nav-link">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Navigation</span>
+                </a>
+                
+                <a href="admin" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                
                 <a href="products" class="nav-link">
                     <i class="fas fa-box"></i>
-                    Produktverwaltung
+                    <span>Produktverwaltung</span>
                 </a>
+                
                 <a href="index" class="nav-link">
                     <i class="fas fa-cash-register"></i>
-                    Kassenansicht
+                    <span>Kassenansicht</span>
                 </a>
+                
                 <a href="archive" class="nav-link">
                     <i class="fas fa-archive"></i>
-                    Archiv
+                    <span>Archiv</span>
                 </a>
+                
                 <a href="merchant" class="nav-link">
                     <i class="fas fa-store"></i>
-                    Händleransicht
+                    <span>Händleransicht</span>
                 </a>
-                <a href="analytics" class="nav-link">
+                
+                <a href="analytics" class="nav-link active">
                     <i class="fas fa-chart-line"></i>
-                    Analysen
+                    <span>Analysen</span>
                 </a>
-                <a href="admin" class="nav-link">
-                    <i class="fas fa-shield"></i>
-                    Admin
-                </a>
+                
                 <a href="settings" class="nav-link">
                     <i class="fas fa-cog"></i>
-                    Einstellungen
+                    <span>Einstellungen</span>
                 </a>
             </div>
         </aside>
+        
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="admin-content">
-            <div class="analytics-container">
-                <div class="dashboard-header">
-                    <h1><i class="fas fa-chart-line"></i> Verkaufsanalysen</h1>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Übersicht
+                        </h2>
+                    </div>
+                    <div class="stat-cards" id="statsGrid"></div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </h2>
+                    </div>
                     <div class="data-controls">
                         <input type="date" id="startDate" class="date-input">
                         <input type="date" id="endDate" class="date-input">
-                        <button class="btn btn-primary" id="exportBtn">
-                            <i class="fas fa-file-export"></i> Export
+                        <button class="add-product-btn" id="exportBtn">
+                            <i class="fas fa-file-export"></i>
+                            Export
                         </button>
-                        <label class="file-input-label" for="fileInput">
-                            <i class="fas fa-chart-line"></i>
-                            <!--<input type="file" id="fileInput" class="file-input" accept=".csv">-->
-                        </label>
+                        <!-- <label class="file-input-label" for="fileInput">
+                            <i class="fas fa-file-import"></i>
+                            Import
+                            <input type="file" id="fileInput" class="file-input" accept=".csv">
+                        </label> -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-euro-sign"></i>
+                            Umsatzentwicklung
+                        </h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
                     </div>
                 </div>
 
-                <div class="stats-grid" id="statsGrid"></div>
-
-                <div class="grid-container">
-                    <div class="analytics-card">
-                        <h2><i class="fas fa-euro-sign"></i> Umsatzentwicklung</h2>
-                        <div class="chart-container">
-                            <canvas id="revenueChart"></canvas>
-                        </div>
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-star"></i>
+                            Top Produkte
+                        </h2>
                     </div>
-
-                    <div class="analytics-card">
-                        <h2><i class="fas fa-star"></i> Top Produkte</h2>
-                        <div class="chart-container">
-                            <canvas id="productsChart"></canvas>
-                        </div>
+                    <div class="chart-container">
+                        <canvas id="productsChart"></canvas>
                     </div>
+                </div>
+            </div>
 
-                    <div class="analytics-card">
-                        <h2><i class="fas fa-receipt"></i> Letzte Transaktionen</h2>
-                        <div style="overflow-x: auto;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Datum</th>
-                                        <th>Betrag</th>
-                                        <th>Status</th>
-                                        <th>Artikel</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="transactionTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-receipt"></i>
+                        Letzte Transaktionen
+                    </h2>
+                    <button class="add-product-btn" id="refreshTransactions">
+                        <i class="fas fa-sync-alt"></i>
+                        Aktualisieren
+                    </button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Betrag</th>
+                                <th>Status</th>
+                                <th>Artikel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionTable"></tbody>
+                    </table>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
+        // Apply dark mode if enabled in localStorage
+        function applyDarkMode() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // Apply dark mode on page load
+        applyDarkMode();
+
         // Token verification (same as settings)
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -552,11 +768,43 @@
         // DOM Elements
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const timeDisplay = document.getElementById('timeDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const refreshTransactionsBtn = document.getElementById('refreshTransactions');
+        
+        // Time display function
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('de-DE', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            timeDisplay.textContent = `${dateString}, ${timeString}`;
+        }
+        
+        // Update time every second
+        updateTime();
+        setInterval(updateTime, 1000);
         
         // Hamburger menu toggle for mobile
         hamburger.addEventListener('click', () => {
             sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
         });
         
         // Logout functionality
@@ -574,47 +822,59 @@
             window.location.reload();
         });
 
-        // Load settings (dark mode etc.)
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            
-            // Apply dark mode if enabled
-            if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
-            }
-        }
-
         // Data processing functions
         function getTransactionData() {
             const transactions = [];
             const productSales = new Map();
             let totalRevenue = 0;
             let transactionCount = 0;
+            let confirmedCount = 0;
 
             // Parse localStorage data
             for(let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if(key.startsWith('receipt_')) {
-                    const entry = JSON.parse(localStorage.getItem(key));
-                    const receipt = JSON.parse(LZString.decompressFromBase64(entry.data));
-                    
-                    const transaction = {
-                        id: receipt.peerId,
-                        date: new Date(receipt.date),
-                        amount: receipt.total,
-                        status: entry.status,
-                        items: receipt.items
-                    };
+                    try {
+                        const entry = JSON.parse(localStorage.getItem(key));
+                        let receipt = null;
+                        
+                        // Handle both compressed and uncompressed data
+                        if (entry.data) {
+                            const decompressed = LZString.decompressFromBase64(entry.data);
+                            if (decompressed) {
+                                receipt = JSON.parse(decompressed);
+                            }
+                        } else {
+                            receipt = entry;
+                        }
+                        
+                        if (receipt) {
+                            const transaction = {
+                                id: receipt.peerId || key.replace('receipt_', ''),
+                                date: new Date(receipt.date || entry.date),
+                                amount: receipt.total || entry.total,
+                                status: entry.status || 'Bestätigt',
+                                items: receipt.items || []
+                            };
 
-                    // Update product sales
-                    receipt.items.forEach(item => {
-                        const count = productSales.get(item.name) || 0;
-                        productSales.set(item.name, count + item.quantity);
-                    });
+                            // Update product sales
+                            if (receipt.items) {
+                                receipt.items.forEach(item => {
+                                    const count = productSales.get(item.name) || 0;
+                                    productSales.set(item.name, count + (item.quantity || 1));
+                                });
+                            }
 
-                    totalRevenue += receipt.total;
-                    transactionCount++;
-                    transactions.push(transaction);
+                            if (transaction.status === 'Bestätigt' || transaction.status === 'confirmed') {
+                                totalRevenue += parseFloat(transaction.amount);
+                                confirmedCount++;
+                            }
+                            transactionCount++;
+                            transactions.push(transaction);
+                        }
+                    } catch(e) {
+                        console.error('Error processing transaction:', e);
+                    }
                 }
             }
 
@@ -623,7 +883,7 @@
                 productSales: Array.from(productSales.entries()).sort((a, b) => b[1] - a[1]),
                 totalRevenue,
                 transactionCount,
-                averageOrder: transactionCount > 0 ? totalRevenue / transactionCount : 0
+                averageOrder: confirmedCount > 0 ? totalRevenue / confirmedCount : 0
             };
         }
 
@@ -638,7 +898,7 @@
             const revenueData = revenueDates.map(date => 
                 data.transactions
                     .filter(t => t.date.toISOString().startsWith(date))
-                    .reduce((sum, t) => sum + t.amount, 0)
+                    .reduce((sum, t) => sum + parseFloat(t.amount), 0)
             );
 
             new Chart(document.getElementById('revenueChart'), {
@@ -648,8 +908,8 @@
                     datasets: [{
                         label: 'Tagesumsatz',
                         data: revenueData,
-                        borderColor: 'var(--accent)',
-                        backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                        borderColor: 'var(--color-accent)',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
                         tension: 0.4,
                         fill: true
                     }]
@@ -666,18 +926,18 @@
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: 'var(--accent-light)'
+                                color: 'var(--color-border)'
                             },
                             ticks: {
-                                color: 'var(--text-secondary)'
+                                color: 'var(--color-text-muted)'
                             }
                         },
                         x: {
                             grid: {
-                                color: 'var(--accent-light)'
+                                color: 'var(--color-border)'
                             },
                             ticks: {
-                                color: 'var(--text-secondary)'
+                                color: 'var(--color-text-muted)'
                             }
                         }
                     }
@@ -693,7 +953,7 @@
                     datasets: [{
                         label: 'Verkaufte Menge',
                         data: topProducts.map(p => p[1]),
-                        backgroundColor: 'var(--accent)'
+                        backgroundColor: 'var(--color-accent)'
                     }]
                 },
                 options: {
@@ -708,18 +968,18 @@
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: 'var(--accent-light)'
+                                color: 'var(--color-border)'
                             },
                             ticks: {
-                                color: 'var(--text-secondary)'
+                                color: 'var(--color-text-muted)'
                             }
                         },
                         x: {
                             grid: {
-                                color: 'var(--accent-light)'
+                                color: 'var(--color-border)'
                             },
                             ticks: {
-                                color: 'var(--text-secondary)'
+                                color: 'var(--color-text-muted)'
                             }
                         }
                     }
@@ -731,21 +991,33 @@
         function updateStats(data) {
             const statsGrid = document.getElementById('statsGrid');
             statsGrid.innerHTML = `
-                <div class="stat-item">
-                    <div class="stat-label">Gesamtumsatz</div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
                     <div class="stat-value">€${data.totalRevenue.toFixed(2)}</div>
+                    <div class="stat-label">Gesamtumsatz</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Durchschn. Warenkorb</div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
                     <div class="stat-value">€${data.averageOrder.toFixed(2)}</div>
+                    <div class="stat-label">Durchschn. Warenkorb</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Transaktionen</div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
                     <div class="stat-value">${data.transactionCount}</div>
+                    <div class="stat-label">Transaktionen</div>
                 </div>
-                <div class="stat-item">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-value">${data.productSales[0]?.[0]?.substring(0, 12) || '-'}</div>
                     <div class="stat-label">Top Produkt</div>
-                    <div class="stat-value">${data.productSales[0]?.[0] || '-'}</div>
                 </div>
             `;
         }
@@ -756,20 +1028,20 @@
             tableBody.innerHTML = transactions.slice(0, 10).map(t => `
                 <tr>
                     <td>${t.date.toLocaleDateString('de-DE')}</td>
-                    <td>€${t.amount.toFixed(2)}</td>
-                    <td><span class="status-badge ${t.status === 'Bestätigt' ? 'status-confirmed' : 'status-canceled'}">${t.status}</span></td>
-                    <td>${t.items.length} Artikel</td>
+                    <td>€${parseFloat(t.amount).toFixed(2)}</td>
+                    <td><span class="status-badge ${t.status === 'Bestätigt' || t.status === 'confirmed' ? 'status-confirmed' : 'status-canceled'}">${t.status}</span></td>
+                    <td>${t.items ? t.items.length : 0} Artikel</td>
                 </tr>
             `).join('');
         }
 
         // Export functionality
-        document.getElementById('exportBtn').addEventListener('click', () => {
+        exportBtn.addEventListener('click', () => {
             const data = getTransactionData();
             const csvContent = "data:text/csv;charset=utf-8," 
                 + "Datum,Betrag,Status,Artikel\n" 
                 + data.transactions.map(t => 
-                    `${t.date.toISOString()},${t.amount},${t.status},"${t.items.map(i => i.name).join(', ')}"`
+                    `${t.date.toISOString()},${t.amount},${t.status},"${t.items ? t.items.map(i => i.name).join(', ') : ''}"`
                 ).join("\n");
             
             const encodedUri = encodeURI(csvContent);
@@ -783,12 +1055,16 @@
         // Import functionality
         /* document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
+            if (!file) return;
+            
             const reader = new FileReader();
             
             reader.onload = function(event) {
                 const csvData = event.target.result.split('\n').slice(1);
+                let importedCount = 0;
+                
                 csvData.forEach(row => {
-                    if(!row) return;
+                    if(!row.trim()) return;
                     const [date, amount, status, items] = row.split(',');
                     
                     // Generate unique ID
@@ -799,11 +1075,11 @@
                         peerId: paymentId,
                         date: new Date(date).toISOString(),
                         total: parseFloat(amount),
-                        items: items.replace(/"/g, '').split(', ').map(name => ({
+                        items: items ? items.replace(/"/g, '').split(', ').map(name => ({
                             name,
                             quantity: 1,
                             price: 0
-                        }))
+                        })) : []
                     };
 
                     // Save to localStorage
@@ -811,24 +1087,30 @@
                         data: LZString.compressToBase64(JSON.stringify(receiptData)),
                         date: new Date().toISOString(),
                         total: receiptData.total,
-                        status: status
+                        status: status || 'Bestätigt'
                     };
 
                     localStorage.setItem(`receipt_${paymentId.split('-').pop().substr(0, 8)}`, JSON.stringify(archiveEntry));
+                    importedCount++;
                 });
 
-                alert('Daten erfolgreich importiert!');
+                alert(`${importedCount} Transaktionen erfolgreich importiert!`);
                 location.reload();
             };
             
             reader.readAsText(file);
+        }); */
+
+        // Refresh transactions
+        refreshTransactionsBtn.addEventListener('click', function() {
+            const transactionData = getTransactionData();
+            updateStats(transactionData);
+            initCharts(transactionData);
+            updateTable(transactionData.transactions);
         });
-        */
 
         // Initial load
         document.addEventListener('DOMContentLoaded', function() {
-            loadSettings();
-            
             // Set default dates (last 30 days)
             const endDate = new Date();
             const startDate = new Date();
