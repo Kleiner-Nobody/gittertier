@@ -1,572 +1,742 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart Remote Control</title>
+    <title>Steuerung - Gittertier Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #f8f9fa;
-            --surface: #ffffff;
-            --text: #202124;
-            --text-secondary: #5f6368;
-            --accent: #1a73e8;
-            --accent-dark: #0d5dba;
-            --accent-light: #e8f0fe;
-            --success: #34a853;
-            --danger: #d93025;
-            --warning: #f9ab00;
-            --info: #4285f4;
-            --border-radius: 8px;
-            --shadow: 0 1px 2px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-hover: 0 1px 3px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.1);
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    :root {
+        --color-bg: #ffffff;
+        --color-bg-secondary: #f9fafb;
+        --color-text: #111111;
+        --color-text-muted: #6b7280;
+        --color-border: #e5e7eb;
+        --color-accent: #2563eb;
+        --color-accent-hover: #1d4ed8;
+        --color-success: #16a34a;
+        --color-error: #dc2626;
+        --color-warning: #d97706;
+        --color-overlay: rgba(0, 0, 0, 0.5);
+        
+        --radius: 12px;
+        --radius-sm: 6px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+        
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+        
+        --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --text-base: 1rem;
+        --text-lg: 1.125rem;
+        --text-xl: 1.25rem;
+        --text-2xl: 1.5rem;
+        --text-3xl: 1.875rem;
+        
+        --header-height: 64px;
+        --sidebar-width: 280px;
+        --sidebar-width-collapsed: 80px;
+    }
 
-        .dark-mode {
-            --bg: #202124;
-            --surface: #303134;
-            --text: #e8eaed;
-            --text-secondary: #9aa0a6;
-            --accent: #8ab4f8;
-            --accent-dark: #7aa7e8;
-            --accent-light: #3c4043;
-            --success: #81c995;
-            --danger: #f28b82;
-            --warning: #fde293;
-            --info: #8ab4f8;
-            --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.3);
-        }
+    .dark-mode {
+        --color-bg: #111827;
+        --color-bg-secondary: #1f2937;
+        --color-text: #f3f4f6;
+        --color-text-muted: #9ca3af;
+        --color-border: #374151;
+        --color-accent: #3b82f6;
+        --color-accent-hover: #2563eb;
+        --color-success: #10b981;
+        --color-error: #ef4444;
+        --color-warning: #f59e0b;
+        --color-overlay: rgba(0, 0, 0, 0.7);
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            touch-action: manipulation;
-            user-select: none;
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        body {
-            font-family: 'Google Sans', 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            line-height: 1.5;
-        }
+    body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-        .admin-header {
-            background: var(--surface);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            height: 64px;
-        }
+    /* Header Styles */
+    .admin-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-xl);
+    }
 
-        .logo h1 {
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: var(--accent);
-        }
+    .logo i {
+        font-size: var(--text-xl);
+        color: var(--color-accent);
+    }
 
-        .header-controls {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
+    .header-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        align-items: center;
+    }
 
-        .hamburger {
-            display: none;
-            background: transparent;
-            border: none;
-            font-size: 1.25rem;
-            color: var(--accent);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
+    .time-display {
+        background-color: var(--color-bg-secondary);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        display: none;
+    }
 
-        .hamburger:hover {
-            background: var(--accent-light);
-        }
+    .notification-btn {
+        position: relative;
+        background: transparent;
+        border: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--color-text);
+        font-size: var(--text-lg);
+        transition: var(--transition);
+    }
 
-        .admin-container {
-            display: flex;
-            flex: 1;
-            max-width: 1600px;
-            margin: 0 auto;
-            width: 100%;
-        }
+    .notification-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
 
+    .notification-badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        background: var(--color-error);
+        color: white;
+        border-radius: 50%;
+        font-size: var(--text-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logout-btn {
+        background-color: transparent;
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .logout-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .hamburger {
+        display: block;
+        background: transparent;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        transition: var(--transition);
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hamburger:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    /* Main layout */
+    .admin-container {
+        display: flex;
+        flex: 1;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--color-bg);
+        border-right: 1px solid var(--color-border);
+        height: calc(100vh - var(--header-height));
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+        z-index: 40;
+        padding: var(--spacing-lg) 0;
+    }
+
+    .nav-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        padding: 0 var(--spacing-md);
+    }
+
+    .nav-link {
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        text-decoration: none;
+        color: var(--color-text);
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .nav-link:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .nav-link.active {
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--color-accent);
+    }
+
+    .nav-link i {
+        width: 24px;
+        text-align: center;
+    }
+
+    .nav-link.active i {
+        color: var(--color-accent);
+    }
+
+    .new-feature {
+        background-color: var(--color-success);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 35;
+        display: none;
+    }
+
+    /* Main content */
+    .admin-content {
+        flex: 1;
+        padding: var(--spacing-lg);
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.3s ease;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    /* Cards */
+    .dashboard-card {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .card-title i {
+        color: var(--color-accent);
+    }
+
+    /* Search styles */
+    .search-container {
+        margin-bottom: var(--spacing-lg);
+        position: relative;
+    }
+
+    .search-bar {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        transition: var(--transition);
+        padding-left: 40px;
+    }
+
+    .search-bar:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--color-text-muted);
+    }
+
+    #suggestions {
+        position: absolute;
+        width: 100%;
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 100;
+        display: none;
+        box-shadow: var(--shadow-md);
+        margin-top: 4px;
+    }
+
+    .suggestion-item {
+        padding: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: var(--transition);
+    }
+
+    .suggestion-item:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .suggestion-name {
+        font-weight: 500;
+    }
+
+    .suggestion-barcode {
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+        background: var(--color-bg-secondary);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+    }
+
+    /* Control Grid */
+    .control-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .control-btn {
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        padding: var(--spacing-lg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        cursor: pointer;
+        transition: var(--transition);
+        min-height: 120px;
+    }
+
+    .control-btn:hover {
+        background-color: var(--color-bg-secondary);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .control-btn:active {
+        transform: translateY(0);
+    }
+
+    .control-btn i {
+        font-size: var(--text-2xl);
+        color: var(--color-accent);
+    }
+
+    .control-btn span {
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .stop-btn {
+        border-color: var(--color-error);
+        background-color: rgba(220, 38, 38, 0.05);
+    }
+
+    .stop-btn i {
+        color: var(--color-error);
+    }
+
+    .stop-btn:hover {
+        background-color: rgba(220, 38, 38, 0.1);
+    }
+
+    .direction-btn {
+        grid-column: span 1;
+    }
+
+    /* Status panel */
+    .status-panel {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .status-card {
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        text-align: center;
+        transition: var(--transition);
+    }
+
+    .status-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .status-icon {
+        font-size: var(--text-lg);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .status-value {
+        font-size: var(--text-lg);
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .status-label {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    .connected .status-icon {
+        color: var(--color-success);
+    }
+
+    .disconnected .status-icon {
+        color: var(--color-error);
+    }
+
+    /* Connection panel */
+    .connection-panel {
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        padding: var(--spacing-lg);
+    }
+
+    .slider-container {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .slider-label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        font-weight: 500;
+    }
+
+    .slider {
+        width: 100%;
+        height: 8px;
+        -webkit-appearance: none;
+        background: var(--color-border);
+        border-radius: 4px;
+        outline: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--color-accent);
+        cursor: pointer;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-row {
+        display: flex;
+        gap: var(--spacing-md);
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: var(--spacing-md);
+        border: none;
+        border-radius: var(--radius);
+        background: var(--color-accent);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+    }
+
+    .action-btn:hover {
+        background: var(--color-accent-hover);
+    }
+
+    .action-btn:disabled {
+        background: var(--color-text-muted);
+        cursor: not-allowed;
+    }
+
+    .action-btn.disconnect {
+        background: var(--color-error);
+    }
+
+    .action-btn.disconnect:hover {
+        background: #c53030;
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .modal-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        width: 100%;
+        max-width: 400px;
+        box-shadow: var(--shadow-lg);
+        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+        text-align: center;
+    }
+
+    .modal-header {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .modal-title {
+        font-weight: 600;
+        font-size: var(--text-xl);
+        margin-bottom: var(--spacing-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+    }
+
+    .modal-product-name {
+        font-size: var(--text-lg);
+        margin-bottom: var(--spacing-md);
+        font-weight: 500;
+    }
+
+    .modal-barcode {
+        font-family: monospace;
+        background: var(--color-bg-secondary);
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-accent);
+    }
+
+    .modal-btn {
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: var(--color-accent);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .modal-btn:hover {
+        background: var(--color-accent-hover);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
         .admin-sidebar {
-            width: 240px;
-            background: var(--surface);
-            padding: 16px 0;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            z-index: 99;
-            height: calc(100vh - 64px);
-            position: sticky;
-            top: 64px;
-            overflow-y: auto;
+            transform: translateX(-100%);
         }
-
-        .nav-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 4px;
-            margin-bottom: 16px;
-            width: 100%;
+        
+        .admin-sidebar.active {
+            transform: translateX(0);
         }
-
-        .nav-link {
-            background: transparent;
-            padding: 12px 24px;
-            border-radius: 0;
-            text-decoration: none;
-            color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 0.875rem;
-            transition: var(--transition);
-            border: none;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 16px;
-            width: 100%;
-        }
-
-        .nav-link i {
-            font-size: 1.125rem;
-            color: var(--text-secondary);
-            width: 24px;
-            text-align: center;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background: var(--accent-light);
-            color: var(--accent);
-        }
-
-        .nav-link:hover i, .nav-link.active i {
-            color: var(--accent);
-        }
-
+        
         .admin-content {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            margin-left: 0;
         }
-
-        /* CONTROL PAGE SPECIFIC STYLES */
-        .control-section {
-            background: var(--surface);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0,0,0,0.05);
+        
+        .sidebar-overlay.active {
+            display: block;
         }
-
-        .section-title {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        
+        .control-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
-
-        .controls-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        
+        .status-panel {
+            grid-template-columns: repeat(2, 1fr);
         }
+    }
 
-        .control-row {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
+    @media (min-width: 768px) {
+        .time-display {
+            display: block;
         }
-
-        .control-btn {
-            flex: 1;
-            background: var(--surface);
-            border: 1px solid #dadce0;
-            border-radius: var(--border-radius);
-            color: var(--text);
-            font-size: 1.25rem;
-            padding: 16px 8px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 80px;
-            cursor: pointer;
+        
+        .logout-btn span {
+            display: inline;
         }
+    }
 
-        .control-btn:hover {
-            box-shadow: var(--shadow-hover);
-            border-color: var(--accent);
+    @media (max-width: 640px) {
+        .admin-header {
+            padding: 0 var(--spacing-md);
         }
-
-        .control-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            background: var(--accent-light);
+        
+        .admin-content {
+            padding: var(--spacing-md);
         }
-
-        .direction-btn {
-            font-size: 1.5rem;
-            min-height: 100px;
+        
+        .control-grid {
+            grid-template-columns: 1fr;
         }
-
-        .stop-btn {
-            background: var(--danger);
-            color: white;
-            border-color: var(--danger);
+        
+        .status-panel {
+            grid-template-columns: 1fr;
         }
-
-        .stop-btn:hover {
-            background: #c5221f;
-            border-color: #c5221f;
-        }
-
-        .center-btn {
-            flex: 2;
-        }
-
-        .connection-panel {
-            background: var(--surface);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
+        
         .btn-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: var(--border-radius);
-            background: var(--accent);
-            color: white;
-            font-size: 0.875rem;
-            font-weight: 500;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        .action-btn:hover {
-            background: var(--accent-dark);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .action-btn:disabled {
-            background: #f1f3f4;
-            color: #bdc1c6;
-            cursor: not-allowed;
-        }
-
-        .slider-container {
-            padding: 12px 0;
-        }
-
-        .slider {
-            width: 100%;
-            height: 8px;
-            -webkit-appearance: none;
-            background: #dadce0;
-            border-radius: 4px;
-            outline: none;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        .status-indicators {
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            font-size: 0.875rem;
-        }
-
-        .indicator {
-            display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 4px;
         }
+    }
 
-        .indicator-label {
-            color: var(--text-secondary);
+    @media (max-width: 480px) {
+        .control-btn {
+            min-height: 100px;
+            padding: var(--spacing-md);
         }
+        
+        .control-btn i {
+            font-size: var(--text-xl);
+        }
+    }
 
-        .indicator-value {
-            font-weight: 500;
-            font-size: 1rem;
+    /* Dark mode support for system preference */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-bg: #111827;
+            --color-bg-secondary: #1f2937;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --color-border: #374151;
         }
-
-        #connectionStatus {
-            color: var(--danger);
-            font-weight: 500;
-        }
-
-        .connected {
-            color: var(--success) !important;
-        }
-
-        .status-bar {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            font-size: 0.875rem;
-        }
-
-        /* Search styles */
-        .search-container {
-            position: relative;
-            margin-bottom: 8px;
-        }
-
-        #productSearch {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 24px;
-            border: 1px solid #dadce0;
-            font-size: 0.875rem;
-            background: var(--surface);
-            color: var(--text);
-            transition: var(--transition);
-            padding-left: 40px;
-        }
-
-        #productSearch:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-light);
-            outline: none;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        #suggestions {
-            position: absolute;
-            width: 100%;
-            background: var(--surface);
-            border: 1px solid #dadce0;
-            border-radius: var(--border-radius);
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-            box-shadow: var(--shadow-hover);
-            margin-top: 4px;
-        }
-
-        .suggestion-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e0e0e0;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: var(--transition);
-        }
-
-        .suggestion-item:hover {
-            background: var(--accent-light);
-        }
-
-        .suggestion-name {
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .suggestion-barcode {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            background: var(--accent-light);
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: var(--surface);
-            padding: 24px;
-            border-radius: var(--border-radius);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: modalFadeIn 0.2s ease-out;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .modal h2 {
-            margin-bottom: 16px;
-            color: var(--accent);
-            font-size: 1.25rem;
-            font-weight: 500;
-        }
-
-        .modal-product-name {
-            font-size: 1.125rem;
-            margin-bottom: 12px;
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .modal-barcode {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 0.875rem;
-            background: var(--accent-light);
-            padding: 8px 12px;
-            border-radius: var(--border-radius);
-            margin-bottom: 16px;
-            color: var(--accent);
-            display: inline-block;
-        }
-
-        .modal-btn {
-            padding: 10px 24px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .modal-btn:hover {
-            background: var(--accent-dark);
-            box-shadow: var(--shadow-hover);
-        }
-
-        /* Responsive styles */
-        @media (max-width: 992px) {
-            .admin-sidebar {
-                position: fixed;
-                left: -240px;
-                top: 64px;
-                height: calc(100vh - 64px);
-                z-index: 99;
-            }
-            
-            .admin-sidebar.active {
-                left: 0;
-            }
-            
-            .hamburger {
-                display: block;
-            }
-            
-            .admin-content {
-                padding: 16px;
-            }
-            
-            .control-row {
-                flex-wrap: wrap;
-            }
-            
-            .control-btn {
-                min-height: 72px;
-                font-size: 1.125rem;
-            }
-            
-            .direction-btn {
-                min-height: 88px;
-                font-size: 1.375rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .admin-content {
-                padding: 12px;
-            }
-            
-            .control-section {
-                padding: 16px;
-            }
-            
-            .control-btn {
-                padding: 12px 4px;
-                min-height: 64px;
-                font-size: 1rem;
-            }
-            
-            .direction-btn {
-                min-height: 72px;
-                font-size: 1.25rem;
-            }
-            
-            .status-bar {
-                flex-direction: column;
-                gap: 4px;
-                font-size: 0.75rem;
-            }
-        }
+    }
     </style>
 </head>
 <body>
@@ -575,122 +745,185 @@
             <button class="hamburger" id="hamburger">
                 <i class="fas fa-bars"></i>
             </button>
-            <h1>Cart Remote</h1>
+            <i class="fas fa-shopping-cart"></i>
+            <span>Steuerung</span>
         </div>
-        <div class="status-bar">
-            <div><i class="fas fa-battery-three-quarters"></i> <span id="batteryLevel">85%</span></div>
-            <div><i class="fas fa-circle"></i> <span id="connectionStatus">Disconnected</span></div>
+        <div class="header-controls">
+            <div class="time-display" id="timeDisplay"></div>
+            <!--<div class="status-bar">
+                <span><i class="fas fa-battery-three-quarters"></i> <span id="batteryLevel">85%</span></span>
+                <span><i class="fas fa-circle"></i> <span id="connectionStatus">Getrennt</span></span>
+            </div> -->
+            <!-- <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button> -->
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Abmelden</span>
+            </button>
         </div>
     </div>
 
     <div class="admin-container">
         <aside class="admin-sidebar" id="sidebar">
             <div class="nav-container">
-                <a href="settings" class="nav-link">
-                    <i class="fas fa-cog"></i>
-                    Settings
+                <a href="control" class="nav-link active">
+                    <i class="fas fa-cogs"></i>
+                    <span>Steuerung</span>
+                    <span class="new-feature">NEU</span>
                 </a>
-                <a href="products" class="nav-link active">
+                
+                <a href="navi" class="nav-link">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Navigation</span>
+                </a>
+                
+                <a href="admin" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="products" class="nav-link">
                     <i class="fas fa-box"></i>
-                    Products
+                    <span>Produktverwaltung</span>
                 </a>
+                
                 <a href="index" class="nav-link">
                     <i class="fas fa-cash-register"></i>
-                    Checkout
+                    <span>Kassenansicht</span>
                 </a>
+                
                 <a href="archive" class="nav-link">
                     <i class="fas fa-archive"></i>
-                    Archive
+                    <span>Archiv</span>
                 </a>
+                
                 <a href="merchant" class="nav-link">
                     <i class="fas fa-store"></i>
-                    Merchant
+                    <span>Händleransicht</span>
                 </a>
+                
                 <a href="analytics" class="nav-link">
                     <i class="fas fa-chart-line"></i>
-                    Analytics
+                    <span>Analysen</span>
                 </a>
-                <a href="admin" class="nav-link">
-                    <i class="fas fa-shield-alt"></i>
-                    Admin
+                
+                <a href="settings" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Einstellungen</span>
                 </a>
             </div>
         </aside>
+        
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="admin-content">
-            <div class="control-section">
-                <div class="section-title">Product Navigation</div>
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="productSearch" placeholder="Search products...">
-                    <div id="suggestions" class="suggestions"></div>
-                </div>
-            </div>
-            
-            <div class="control-section">
-                <div class="section-title">Movement Controls</div>
-                <div class="controls-container">
-                    <div class="control-row">
-                        <button class="control-btn" id="lightsBtn">
-                            <i class="fas fa-lightbulb"></i>  Lights  
-                        </button>
-                        <button class="control-btn stop-btn" id="stopBtn">
-                            <i class="fas fa-stop"></i> Stop
-                        </button>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-search"></i>
+                            Produktsuche
+                        </h2>
                     </div>
-                    
-                    <div class="control-row">
-                        <div style="flex:1"></div>
-                        <button class="control-btn direction-btn" id="fwdBtn">
-                            <i class="fas fa-arrow-up"></i>
-                        </button>
-                        <div style="flex:1"></div>
-                    </div>
-                    
-                    <div class="control-row">
-                        <button class="control-btn direction-btn" id="leftBtn">
-                            <i class="fas fa-arrow-left"></i>
-                        </button>
-                        <button class="control-btn direction-btn center-btn" id="backBtn">
-                            <i class="fas fa-arrow-down"></i>
-                        </button>
-                        <button class="control-btn direction-btn" id="rightBtn">
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-bar" id="productSearch" placeholder="Produkte suchen...">
+                        <div id="suggestions" class="suggestions"></div>
                     </div>
                 </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-info-circle"></i>
+                            Status
+                        </h2>
+                    </div>
+                    <div class="status-panel">
+                        <div class="status-card" id="batteryStatus">
+                            <div class="status-icon">
+                                <i class="fas fa-battery-three-quarters"></i>
+                            </div>
+                            <div class="status-value" id="batteryValue">85%</div>
+                            <div class="status-label">Batterie</div>
+                        </div>
+                        <div class="status-card disconnected" id="connectionStatusCard">
+                            <div class="status-icon">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div class="status-value" id="connectionStatusValue">Getrennt</div>
+                            <div class="status-label">Verbindung</div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="status-value" id="lightsValue">AUS</div>
+                            <div class="status-label">Beleuchtung</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="control-section">
-                <div class="section-title">Connection & Status</div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-gamepad"></i>
+                        Bewegungssteuerung
+                    </h2>
+                </div>
+                <div class="control-grid">
+                    <div class="control-btn" id="lightsBtn">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Licht</span>
+                    </div>
+                    <div class="control-btn stop-btn" id="stopBtn">
+                        <i class="fas fa-stop"></i>
+                        <span>Stop</span>
+                    </div>
+                    <div class="control-btn" id="fwdBtn">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>Vorwärts</span>
+                    </div>
+                    <div class="control-btn" id="leftBtn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Links</span>
+                    </div>
+                    <div class="control-btn" id="backBtn">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>Rückwärts</span>
+                    </div>
+                    <div class="control-btn" id="rightBtn">
+                        <i class="fas fa-arrow-right"></i>
+                        <span>Rechts</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-link"></i>
+                        Verbindungseinstellungen
+                    </h2>
+                </div>
                 <div class="connection-panel">
                     <div class="slider-container">
-                        <label for="speedSlider" style="display: block; margin-bottom: 8px; font-size: 0.875rem;">Speed Control</label>
+                        <label for="speedSlider" class="slider-label">Geschwindigkeit</label>
                         <input type="range" min="0" max="100" value="50" class="slider" id="speedSlider">
+                        <div class="status-value" id="speedValue">50%</div>
                     </div>
-                    
                     <div class="btn-row">
                         <button class="action-btn" id="connectBtn">
-                            <i class="fas fa-link"></i> Connect
+                            <i class="fas fa-link"></i>
+                            Verbinden
                         </button>
-                        <button class="action-btn" id="disconnectBtn" disabled>
-                            <i class="fas fa-unlink"></i> Disconnect
+                        <button class="action-btn disconnect" id="disconnectBtn" disabled>
+                            <i class="fas fa-unlink"></i>
+                            Trennen
                         </button>
-                    </div>
-                    
-                    <div class="status-indicators">
-                        <div class="indicator">
-                            <div class="indicator-label">Speed</div>
-                            <div class="indicator-value" id="speedValue">50%</div>
-                        </div>
-                        <div class="indicator">
-                            <div class="indicator-label">Direction</div>
-                            <div class="indicator-value" id="directionValue">STOP</div>
-                        </div>
-                        <div class="indicator">
-                            <div class="indicator-label">Lights</div>
-                            <div class="indicator-value" id="lightsValue">OFF</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -700,7 +933,9 @@
     <!-- Website modal for directing confirmation -->
     <div id="websiteDirectModal" class="modal">
         <div class="modal-content">
-            <h2>Directing to Product</h2>
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-map-marker-alt"></i> Navigation zum Produkt</h2>
+            </div>
             <div class="modal-product-name" id="modalProductName"></div>
             <div class="modal-barcode" id="modalBarcode"></div>
             <button class="modal-btn" id="closeModalBtn">OK</button>
@@ -708,25 +943,131 @@
     </div>
 
     <script>
-        // Sidebar toggle functionality
+        // Apply dark mode if enabled in localStorage
+        function applyDarkMode() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // Apply dark mode on page load
+        applyDarkMode();
+
+        // Token verification (existing functionality)
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = decodeURIComponent(urlParams.get('token') || '');
+            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
+            const tokenIndex = validTokens.indexOf(urlToken);
+
+            if(tokenIndex === -1) {
+                const redirect = encodeURIComponent(window.location.href);
+                window.location.href = `login?redirect=${redirect}`;
+            } else {
+                // Remove used token and clean URL
+                validTokens.splice(tokenIndex, 1);
+                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
+                history.replaceState(null, null, window.location.pathname);
+            }
+        })();
+
+        // DOM Elements
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
-        
-        hamburger.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-
-        // Product search functionality
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
         const productSearch = document.getElementById('productSearch');
         const suggestions = document.getElementById('suggestions');
+        
+        // Control elements
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const fwdBtn = document.getElementById('fwdBtn');
+        const backBtn = document.getElementById('backBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const lightsBtn = document.getElementById('lightsBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const batteryValue = document.getElementById('batteryValue');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const connectionStatusValue = document.getElementById('connectionStatusValue');
+        const connectionStatusCard = document.getElementById('connectionStatusCard');
+        const lightsValue = document.getElementById('lightsValue');
+        
+        // Modal elements
+        const websiteDirectModal = document.getElementById('websiteDirectModal');
+        const modalProductName = document.getElementById('modalProductName');
+        const modalBarcode = document.getElementById('modalBarcode');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        // Bluetooth variables
+        let bluetoothDevice;
+        let bluetoothCharacteristic;
+        const serviceUuid = '19b10010-e8f2-537e-4f6c-d104768a1214';
+        const characteristicUuid = '19b10011-e8f2-537e-4f6c-d104768a1214';
+        
+        // Product search
         let products = {};
+        
+        // Time display function
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('de-DE', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            timeDisplay.textContent = `${dateString}, ${timeString}`;
+        }
+        
+        // Update time every second
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Hamburger menu toggle for mobile
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+        
+        // Logout functionality
+        logoutBtn.addEventListener('click', () => {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            if (settings.logoutConfirmation) {
+                if (!confirm('Möchten Sie sich wirklich abmelden?')) {
+                    return;
+                }
+            }
+            
+            sessionStorage.removeItem('validTokens');
+            localStorage.removeItem('authToken');
+            window.location.reload();
+        });
         
         // Load products from localStorage
         function loadProducts() {
             const storedProducts = localStorage.getItem('products');
             if (storedProducts) {
                 products = JSON.parse(storedProducts);
-                console.log('Loaded products:', products);
             }
         }
         
@@ -772,17 +1113,17 @@
         // Handle product selection
         function selectProduct(product) {
             // Show website modal
-            document.getElementById('modalProductName').textContent = product.name;
-            document.getElementById('modalBarcode').textContent = product.barcode;
-            document.getElementById('websiteDirectModal').style.display = 'flex';
+            modalProductName.textContent = product.name;
+            modalBarcode.textContent = product.barcode;
+            websiteDirectModal.style.display = 'flex';
             
             // Send command to Arduino
             sendCommand(`DIRECT:${product.barcode}:${product.name.substring(0, 15)}`);
         }
         
         // Close modal handler
-        document.getElementById('closeModalBtn').addEventListener('click', () => {
-            document.getElementById('websiteDirectModal').style.display = 'none';
+        closeModalBtn.addEventListener('click', () => {
+            websiteDirectModal.style.display = 'none';
         });
         
         // Event listeners for search
@@ -797,26 +1138,6 @@
         });
         
         // Control functionality
-        let bluetoothDevice;
-        let bluetoothCharacteristic;
-        const serviceUuid = '19b10010-e8f2-537e-4f6c-d104768a1214';
-        const characteristicUuid = '19b10011-e8f2-537e-4f6c-d104768a1214';
-        
-        const connectBtn = document.getElementById('connectBtn');
-        const disconnectBtn = document.getElementById('disconnectBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const fwdBtn = document.getElementById('fwdBtn');
-        const backBtn = document.getElementById('backBtn');
-        const leftBtn = document.getElementById('leftBtn');
-        const rightBtn = document.getElementById('rightBtn');
-        const lightsBtn = document.getElementById('lightsBtn');
-        const speedSlider = document.getElementById('speedSlider');
-        const connectionStatus = document.getElementById('connectionStatus');
-        const batteryLevel = document.getElementById('batteryLevel');
-        const directionValue = document.getElementById('directionValue');
-        const lightsValue = document.getElementById('lightsValue');
-        const speedValue = document.getElementById('speedValue');
-        
         connectBtn.addEventListener('click', connectToDevice);
         disconnectBtn.addEventListener('click', disconnectDevice);
         stopBtn.addEventListener('click', () => sendCommand('STOP'));
@@ -849,14 +1170,30 @@
                 console.log('Connected to device');
             } catch (error) {
                 console.error('Connection error:', error);
-                alert('Connection failed: ' + error.message);
+                alert('Verbindungsfehler: ' + error.message);
             }
         }
         
         function handleData(event) {
             const value = new TextDecoder().decode(event.target.value);
             if (value.includes('BATT:')) {
-                batteryLevel.textContent = value.replace('BATT:', '') + '%';
+                const batteryLevel = value.replace('BATT:', '');
+                batteryValue.textContent = batteryLevel + '%';
+                document.getElementById('batteryLevel').textContent = batteryLevel + '%';
+                
+                // Update battery icon based on level
+                const batteryIcon = document.querySelector('.fa-battery-three-quarters');
+                if (batteryLevel > 75) {
+                    batteryIcon.className = 'fas fa-battery-full';
+                } else if (batteryLevel > 50) {
+                    batteryIcon.className = 'fas fa-battery-three-quarters';
+                } else if (batteryLevel > 25) {
+                    batteryIcon.className = 'fas fa-battery-half';
+                } else if (batteryLevel > 10) {
+                    batteryIcon.className = 'fas fa-battery-quarter';
+                } else {
+                    batteryIcon.className = 'fas fa-battery-empty';
+                }
             }
         }
         
@@ -873,19 +1210,30 @@
         }
         
         function updateConnectionStatus(isConnected) {
-            connectionStatus.textContent = isConnected ? 'Connected' : 'Disconnected';
-            connectionStatus.className = isConnected ? 'connected' : '';
-            disconnectBtn.disabled = !isConnected;
-            connectBtn.disabled = isConnected;
-            
-            // Update connection icon
-            const connectionIcon = connectionStatus.previousElementSibling;
             if (isConnected) {
-                connectionIcon.className = 'fas fa-check-circle';
-                connectionIcon.style.color = 'var(--success)';
+                connectionStatus.textContent = 'Verbunden';
+                connectionStatusValue.textContent = 'Verbunden';
+                connectionStatusCard.classList.remove('disconnected');
+                connectionStatusCard.classList.add('connected');
+                disconnectBtn.disabled = false;
+                connectBtn.disabled = true;
+                
+                // Update connection icon
+                const connectionIcon = document.querySelector('.fa-wifi');
+                connectionIcon.className = 'fas fa-wifi';
+                connectionIcon.style.color = '';
             } else {
-                connectionIcon.className = 'fas fa-times-circle';
-                connectionIcon.style.color = 'var(--danger)';
+                connectionStatus.textContent = 'Getrennt';
+                connectionStatusValue.textContent = 'Getrennt';
+                connectionStatusCard.classList.remove('connected');
+                connectionStatusCard.classList.add('disconnected');
+                disconnectBtn.disabled = true;
+                connectBtn.disabled = false;
+                
+                // Update connection icon
+                const connectionIcon = document.querySelector('.fa-wifi');
+                connectionIcon.className = 'fas fa-wifi';
+                connectionIcon.style.color = '';
             }
         }
         
@@ -904,26 +1252,26 @@
         function updateUI(command) {
             switch(command) {
                 case 'FWD':
-                    directionValue.textContent = 'FORWARD';
+                    document.getElementById('directionValue').textContent = 'VORWÄRTS';
                     break;
                 case 'BACK':
-                    directionValue.textContent = 'BACKWARD';
+                    document.getElementById('directionValue').textContent = 'RÜCKWÄRTS';
                     break;
                 case 'LEFT':
-                    directionValue.textContent = 'LEFT';
+                    document.getElementById('directionValue').textContent = 'LINKS';
                     break;
                 case 'RIGHT':
-                    directionValue.textContent = 'RIGHT';
+                    document.getElementById('directionValue').textContent = 'RECHTS';
                     break;
                 case 'STOP':
-                    directionValue.textContent = 'STOP';
+                    document.getElementById('directionValue').textContent = 'GESTOPPT';
                     break;
                 case 'HLTOG':
-                    const newState = lightsValue.textContent === 'ON' ? 'OFF' : 'ON';
+                    const newState = lightsValue.textContent === 'EIN' ? 'AUS' : 'EIN';
                     lightsValue.textContent = newState;
-                    lightsBtn.innerHTML = newState === 'ON' ? 
-                        '<i class="fas fa-lightbulb" style="color: var(--warning)"></i> Lights ON' : 
-                        '<i class="fas fa-lightbulb"></i> Lights';
+                    lightsBtn.innerHTML = newState === 'EIN' ? 
+                        '<i class="fas fa-lightbulb" style="color: var(--warning)"></i><span>Licht AUS</span>' : 
+                        '<i class="fas fa-lightbulb"></i><span>Licht EIN</span>';
                     break;
             }
         }
@@ -936,12 +1284,13 @@
         
         // Simulate battery updates
         setInterval(() => {
-            const currentBattery = parseInt(batteryLevel.textContent);
+            const currentBattery = parseInt(batteryValue.textContent);
             const newBattery = Math.max(0, currentBattery - 1);
-            batteryLevel.textContent = newBattery + '%';
+            batteryValue.textContent = newBattery + '%';
+            document.getElementById('batteryLevel').textContent = newBattery + '%';
             
             // Update battery icon
-            const batteryIcon = batteryLevel.previousElementSibling;
+            const batteryIcon = document.querySelector('.fa-battery-three-quarters');
             if (newBattery > 75) {
                 batteryIcon.className = 'fas fa-battery-full';
             } else if (newBattery > 50) {
@@ -961,14 +1310,15 @@
             }
         }, 60000);
 
-        <!-- Add to product selection handler -->
+        // Add to product selection handler
         function selectProduct(product) {
-        // Send navigation command
-        sendCommand(`NAV:${product.name}`);
-        
-        // Show modal (optional)
-        document.getElementById('modalProductName').textContent = product.name;
-        document.getElementById('websiteDirectModal').style.display = 'flex';
+            // Send navigation command
+            sendCommand(`NAV:${product.name}`);
+            
+            // Show modal
+            modalProductName.textContent = product.name;
+            modalBarcode.textContent = product.barcode;
+            websiteDirectModal.style.display = 'flex';
         }
     </script>
 </body>
