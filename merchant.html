@@ -12,6 +12,7 @@
     <style>
     :root {
         --color-bg: #ffffff;
+        --color-bg-secondary: #f9fafb;
         --color-text: #111111;
         --color-text-muted: #6b7280;
         --color-border: #e5e7eb;
@@ -19,13 +20,14 @@
         --color-accent-hover: #1d4ed8;
         --color-success: #16a34a;
         --color-error: #dc2626;
-        --color-warning: #f59e0b;
+        --color-warning: #d97706;
         --color-overlay: rgba(0, 0, 0, 0.5);
         
         --radius: 12px;
         --radius-sm: 6px;
         --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
         
         --spacing-xs: 4px;
@@ -48,6 +50,25 @@
         --text-3xl: 1.875rem;
         
         --header-height: 64px;
+        --sidebar-width: 280px;
+        --sidebar-width-collapsed: 80px;
+    }
+
+    .dark-mode {
+        --color-bg: #111827;
+        --color-bg-secondary: #1f2937;
+        --color-text: #f3f4f6;
+        --color-text-muted: #9ca3af;
+        --color-border: #374151;
+        --color-accent: #3b82f6;
+        --color-accent-hover: #2563eb;
+        --color-success: #10b981;
+        --color-error: #ef4444;
+        --color-warning: #f59e0b;
+        --color-overlay: rgba(0, 0, 0, 0.7);
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
     }
 
     * {
@@ -67,7 +88,7 @@
     }
 
     /* Header Styles */
-    header {
+    .admin-header {
         height: var(--header-height);
         display: flex;
         align-items: center;
@@ -96,54 +117,205 @@
     .header-controls {
         display: flex;
         gap: var(--spacing-md);
+        align-items: center;
     }
 
-    .action-btn {
+    .time-display {
+        background-color: var(--color-bg-secondary);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        display: none;
+    }
+
+    .notification-btn {
+        position: relative;
+        background: transparent;
+        border: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius);
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        font-weight: 500;
+        justify-content: center;
         cursor: pointer;
+        color: var(--color-text);
+        font-size: var(--text-lg);
         transition: var(--transition);
     }
 
-    .action-btn:hover {
-        background-color: #f9fafb;
-        border-color: var(--color-accent);
+    .notification-btn:hover {
+        background-color: var(--color-bg-secondary);
     }
 
-    .action-btn:focus {
-        outline: none;
-        box-shadow: var(--focus-ring);
+    .notification-badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        background: var(--color-error);
+        color: white;
+        border-radius: 50%;
+        font-size: var(--text-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .action-btn i {
+    .logout-btn {
+        background-color: transparent;
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .logout-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .hamburger {
+        display: block;
+        background: transparent;
+        border: none;
         font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        transition: var(--transition);
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    /* Main Content */
-    main {
+    .hamburger:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    /* Main layout */
+    .admin-container {
+        display: flex;
         flex: 1;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: var(--spacing-xl) var(--spacing-lg);
-        width: 100%;
     }
 
-    .section {
+    /* Sidebar */
+    .admin-sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--color-bg);
+        border-right: 1px solid var(--color-border);
+        height: calc(100vh - var(--header-height));
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+        z-index: 40;
+        padding: var(--spacing-lg) 0;
+    }
+
+    .nav-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        padding: 0 var(--spacing-md);
+    }
+
+    .nav-link {
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        text-decoration: none;
+        color: var(--color-text);
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .nav-link:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .nav-link.active {
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--color-accent);
+    }
+
+    .nav-link i {
+        width: 24px;
+        text-align: center;
+    }
+
+    .nav-link.active i {
+        color: var(--color-accent);
+    }
+
+    .new-feature {
+        background-color: var(--color-success);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 35;
+        display: none;
+    }
+
+    /* Main content */
+    .admin-content {
+        flex: 1;
+        padding: var(--spacing-lg);
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.3s ease;
+    }
+
+    /* Cards */
+    .dashboard-card {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow);
         margin-bottom: var(--spacing-xl);
     }
 
-    .section-title {
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .card-title {
         font-size: var(--text-lg);
         font-weight: 600;
-        margin-bottom: var(--spacing-md);
-        color: var(--color-text);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .card-title i {
+        color: var(--color-accent);
     }
 
     /* Scanner Container */
@@ -166,45 +338,67 @@
     }
 
     /* Modal Styles */
-    .modal {
-        display: none;
+    .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
         background-color: var(--color-overlay);
-        z-index: 100;
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: var(--spacing-lg);
+        z-index: 1000;
+        display: none;
+        padding: var(--spacing-md);
     }
 
-    .modal-content {
+    .modal-overlay.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal {
         background-color: var(--color-bg);
         border-radius: var(--radius);
         padding: var(--spacing-xl);
         width: 100%;
         max-width: 600px;
-        box-shadow: var(--shadow-md);
-        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+        box-shadow: var(--shadow-lg);
+        animation: scaleIn 0.3s ease;
         max-height: 90vh;
         overflow-y: auto;
     }
 
     .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: var(--spacing-lg);
-        text-align: center;
     }
 
     .modal-title {
-        font-weight: 600;
         font-size: var(--text-xl);
-        margin-bottom: var(--spacing-xs);
+        font-weight: 600;
     }
 
-    .modal-subtitle {
-        color: var(--color-text-muted);
+    .close-modal {
+        background: transparent;
+        border: none;
+        font-size: var(--text-xl);
+        color: var(--color-text);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+
+    .close-modal:hover {
+        background-color: var(--color-bg-secondary);
     }
 
     /* Item Styles */
@@ -213,7 +407,7 @@
     }
 
     .item-box {
-        background: #f9fafb;
+        background: var(--color-bg-secondary);
         border-radius: var(--radius);
         padding: var(--spacing-md);
         margin-bottom: var(--spacing-sm);
@@ -238,11 +432,11 @@
         text-align: center;
         margin: var(--spacing-lg) 0;
         padding: var(--spacing-lg);
-        background: #f0fdf4;
+        background: rgba(22, 163, 74, 0.1);
         border-radius: var(--radius);
         font-weight: bold;
         color: var(--color-success);
-        border: 1px solid #86efac;
+        border: 1px solid rgba(22, 163, 74, 0.2);
     }
 
     /* Button Styles */
@@ -300,48 +494,88 @@
     }
 
     .btn-outline:hover {
-        background-color: #f9fafb;
+        background-color: var(--color-bg-secondary);
         border-color: var(--color-accent);
     }
 
     /* Status Message */
-    .status-message {
+    .notification {
         position: fixed;
-        top: var(--spacing-lg);
+        bottom: calc(var(--footer-height) + var(--spacing-md));
         left: 50%;
         transform: translateX(-50%);
+        background-color: var(--color-text);
+        color: white;
         padding: var(--spacing-md) var(--spacing-lg);
         border-radius: var(--radius);
-        font-weight: 600;
-        z-index: 1000;
-        opacity: 0;
-        transition: opacity 0.3s;
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        box-shadow: var(--shadow-md);
+        z-index: 60;
+        display: none;
+        animation: slideUp 0.3s ease-out;
+        font-weight: 500;
     }
 
-    .status-success {
-        background-color: #f0fdf4;
-        color: #166534;
-        border: 1px solid #bbf7d0;
+    .notification.success {
+        background-color: var(--color-success);
     }
 
-    .status-error {
-        background-color: #fef2f2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+    .notification.error {
+        background-color: var(--color-error);
     }
 
     /* Animation Keyframes */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
     @keyframes scaleIn {
         from { transform: scale(0.95); opacity: 0; }
         to { transform: scale(1); opacity: 1; }
     }
 
+    @keyframes slideUp {
+        from { transform: translateY(20px) translateX(-50%); opacity: 0; }
+        to { transform: translateY(0) translateX(-50%); opacity: 1; }
+    }
+
     /* Responsive Design */
+    @media (max-width: 1024px) {
+        .admin-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .admin-sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .admin-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .time-display {
+            display: block;
+        }
+        
+        .logout-btn span {
+            display: inline;
+        }
+    }
+
     @media (max-width: 768px) {
+        .admin-header {
+            padding: 0 var(--spacing-md);
+        }
+        
+        .admin-content {
+            padding: var(--spacing-md);
+        }
+        
         #scanner-container {
             height: 300px;
         }
@@ -350,25 +584,17 @@
             flex-direction: column;
         }
         
-        .modal-content {
+        .modal {
             padding: var(--spacing-lg);
         }
     }
 
     @media (max-width: 480px) {
-        header {
-            padding: 0 var(--spacing-md);
-        }
-        
-        .logo {
-            font-size: var(--text-lg);
-        }
-        
         #scanner-container {
             height: 250px;
         }
         
-        .modal-content {
+        .modal {
             padding: var(--spacing-md);
         }
         
@@ -378,17 +604,14 @@
         }
     }
 
-    /* Dark mode support */
+    /* Dark mode support for system preference */
     @media (prefers-color-scheme: dark) {
         :root {
             --color-bg: #111827;
+            --color-bg-secondary: #1f2937;
             --color-text: #f3f4f6;
             --color-text-muted: #9ca3af;
             --color-border: #374151;
-        }
-        
-        body {
-            background-color: var(--color-bg);
         }
         
         .item-box {
@@ -396,54 +619,116 @@
         }
         
         .total-amount {
-            background-color: #166534;
-            color: #f0fdf4;
-            border-color: #15803d;
-        }
-        
-        .status-success {
-            background-color: #166534;
-            color: #f0fdf4;
-            border-color: #15803d;
-        }
-        
-        .status-error {
-            background-color: #991b1b;
-            color: #fef2f2;
-            border-color: #b91c1c;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--color-success);
+            border-color: rgba(16, 185, 129, 0.2);
         }
     }
     </style>
 </head>
 <body>
-    <header>
+    <div class="admin-header">
         <div class="logo">
+            <button class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </button>
             <i class="fas fa-shopping-cart"></i>
-            <span>Gittertier Pro</span>
+            <span>Händleransicht</span>
         </div>
         <div class="header-controls">
-            <button class="action-btn" onclick="window.location.href='admin.html'">
-                <i class="fas fa-arrow-left"></i>
-                <span>Zurück</span>
+            <div class="time-display" id="timeDisplay"></div>
+            <!-- <button class="notification-btn" id="notificationBtn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationBadge">0</span>
+            </button> -->
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Abmelden</span>
             </button>
         </div>
-    </header>
+    </div>
 
-    <main>
-        <div class="section">
-            <h2 class="section-title">Zahlung bestätigen</h2>
-            <div id="scanner-container">
-                <video id="scanner-video" playsinline></video>
+    <div class="admin-container">
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="nav-container">
+                <a href="control" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    <span>Steuerung</span>
+                    <span class="new-feature">NEU</span>
+                </a>
+                
+                <a href="navi" class="nav-link">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Navigation</span>
+                </a>
+                
+                <a href="admin" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="products" class="nav-link">
+                    <i class="fas fa-box"></i>
+                    <span>Produktverwaltung</span>
+                </a>
+                
+                <a href="index" class="nav-link">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Kassenansicht</span>
+                </a>
+                
+                <a href="archive" class="nav-link">
+                    <i class="fas fa-archive"></i>
+                    <span>Archiv</span>
+                </a>
+                
+                <a href="merchant" class="nav-link active">
+                    <i class="fas fa-store"></i>
+                    <span>Händleransicht</span>
+                </a>
+                
+                <a href="analytics" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analysen</span>
+                </a>
+                
+                <a href="settings" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Einstellungen</span>
+                </a>
             </div>
-        </div>
-    </main>
+        </aside>
+        
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <main class="admin-content">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-qrcode"></i>
+                        QR-Code Scanner
+                    </h2>
+                </div>
+                <p>Scannen Sie den QR-Code vom Kunden, um die Zahlung zu bestätigen</p>
+                <div id="scanner-container">
+                    <video id="scanner-video" playsinline></video>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-outline" onclick="window.location.href='admin'">
+                        <i class="fas fa-arrow-left"></i>
+                        Zurück zum Dashboard
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Confirmation Modal -->
-    <div id="confirmation-modal" class="modal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="confirmation-modal">
+        <div class="modal">
             <div class="modal-header">
                 <h2 class="modal-title">Zahlungsbestätigung</h2>
-                <p class="modal-subtitle">Bitte bestätigen oder ablehnen Sie die Zahlung</p>
+                <button class="close-modal" id="close-confirmation">&times;</button>
             </div>
             
             <div class="total-amount">
@@ -469,26 +754,25 @@
     </div>
 
     <!-- Details Modal -->
-    <div id="details-modal" class="modal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="details-modal">
+        <div class="modal">
             <div class="modal-header">
                 <h2 class="modal-title">Warenkorb Details</h2>
-                <p class="modal-subtitle">Übersicht der gekauften Artikel</p>
+                <button class="close-modal" id="close-details">&times;</button>
             </div>
             
             <div id="items-list" class="items-list"></div>
             
             <div class="button-group">
-                <button id="close-details-btn" class="btn btn-outline">
+                <button class="btn btn-outline" id="back-to-confirmation">
                     <i class="fas fa-arrow-left"></i>
-                    Zurück
+                    Zurück zur Bestätigung
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Status Message -->
-    <div id="status-message" class="status-message"></div>
+    <div class="notification" id="notification"></div>
 
     <script>
         const { jsPDF } = window.jspdf;
@@ -499,6 +783,93 @@
         // Initialize PeerJS with better error handling
         let merchantPeer = null;
         
+        // Apply dark mode if enabled in localStorage
+        function applyDarkMode() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // Apply dark mode on page load
+        applyDarkMode();
+
+        // Token verification (existing functionality)
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = decodeURIComponent(urlParams.get('token') || '');
+            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
+            const tokenIndex = validTokens.indexOf(urlToken);
+
+            if(tokenIndex === -1) {
+                const redirect = encodeURIComponent(window.location.href);
+                window.location.href = `login?redirect=${redirect}`;
+            } else {
+                // Remove used token and clean URL
+                validTokens.splice(tokenIndex, 1);
+                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
+                history.replaceState(null, null, window.location.pathname);
+            }
+        })();
+
+        // DOM Elements
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const notification = document.getElementById('notification');
+        
+        // Time display function
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('de-DE', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            timeDisplay.textContent = `${dateString}, ${timeString}`;
+        }
+        
+        // Update time every second
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Hamburger menu toggle for mobile
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+        
+        // Logout functionality
+        logoutBtn.addEventListener('click', () => {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            
+            if (settings.logoutConfirmation) {
+                if (!confirm('Möchten Sie sich wirklich abmelden?')) {
+                    return;
+                }
+            }
+            
+            sessionStorage.removeItem('validTokens');
+            localStorage.removeItem('authToken');
+            window.location.reload();
+        });
+
         function initializePeerJS() {
             try {
                 merchantPeer = new Peer(null, {
@@ -513,7 +884,7 @@
 
                 merchantPeer.on('open', (id) => {
                     console.log('Merchant Peer ID:', id);
-                    showStatusMessage('Bereit zum Scannen von QR-Codes', true);
+                    showNotification('Bereit zum Scannen von QR-Codes', 'success');
                 });
 
                 merchantPeer.on('error', (err) => {
@@ -522,26 +893,26 @@
                     if (err.type === 'peer-unavailable') {
                         setTimeout(initializePeerJS, 2000);
                     }
-                    showStatusMessage('Verbindungsfehler: ' + err.message, false);
+                    showNotification('Verbindungsfehler: ' + err.message, 'error');
                 });
                 
             } catch (error) {
                 console.error('Failed to initialize PeerJS:', error);
-                showStatusMessage('Verbindungsfehler: ' + error.message, false);
+                showNotification('Verbindungsfehler: ' + error.message, 'error');
                 // Retry initialization after a delay
                 setTimeout(initializePeerJS, 3000);
             }
         }
 
-        // Function to show status messages
-        function showStatusMessage(message, isSuccess = true) {
-            const messageEl = document.getElementById('status-message');
-            messageEl.textContent = message;
-            messageEl.className = `status-message ${isSuccess ? 'status-success' : 'status-error'}`;
-            messageEl.style.opacity = '1';
+        // Function to show notifications
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.className = 'notification';
+            notification.classList.add(type);
+            notification.style.display = 'block';
             
             setTimeout(() => {
-                messageEl.style.opacity = '0';
+                notification.style.display = 'none';
             }, 3000);
         }
 
@@ -565,10 +936,10 @@
                 saveToArchive('Bestätigt', currentPayment);
                 currentPayment.connection.send({ type: 'confirm' });
                 generateReceipt(currentPayment, 'Bestätigt');
-                document.getElementById('confirmation-modal').style.display = 'none';
+                document.getElementById('confirmation-modal').classList.remove('active');
                 initScanner();
             } else {
-                showStatusMessage('Verbindung zum Kunden fehlgeschlagen!', false);
+                showNotification('Verbindung zum Kunden fehlgeschlagen!', 'error');
             }
         });
 
@@ -577,10 +948,10 @@
                 saveToArchive('Abgelehnt', currentPayment);
                 currentPayment.connection.send({ type: 'decline' });
                 generateReceipt(currentPayment, 'Abgelehnt');
-                document.getElementById('confirmation-modal').style.display = 'none';
+                document.getElementById('confirmation-modal').classList.remove('active');
                 initScanner();
             } else {
-                showStatusMessage('Verbindung zum Kunden fehlgeschlagen!', false);
+                showNotification('Verbindung zum Kunden fehlgeschlagen!', 'error');
             }
         });
 
@@ -602,14 +973,24 @@
                     itemsList.appendChild(div);
                 });
                 
-                document.getElementById('confirmation-modal').style.display = 'none';
-                document.getElementById('details-modal').style.display = 'flex';
+                document.getElementById('confirmation-modal').classList.remove('active');
+                document.getElementById('details-modal').classList.add('active');
             }
         });
 
-        document.getElementById('close-details-btn').addEventListener('click', () => {
-            document.getElementById('details-modal').style.display = 'none';
-            document.getElementById('confirmation-modal').style.display = 'flex';
+        document.getElementById('back-to-confirmation').addEventListener('click', () => {
+            document.getElementById('details-modal').classList.remove('active');
+            document.getElementById('confirmation-modal').classList.add('active');
+        });
+
+        document.getElementById('close-confirmation').addEventListener('click', () => {
+            document.getElementById('confirmation-modal').classList.remove('active');
+            initScanner();
+        });
+
+        document.getElementById('close-details').addEventListener('click', () => {
+            document.getElementById('details-modal').classList.remove('active');
+            initScanner();
         });
 
         function stopCamera() {
@@ -618,23 +999,6 @@
                 mediaStream = null;
             }
         }
-
-                (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlToken = decodeURIComponent(urlParams.get('token') || '');
-            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
-            const tokenIndex = validTokens.indexOf(urlToken);
-
-            if(tokenIndex === -1) {
-                const redirect = encodeURIComponent(window.location.href);
-                window.location.href = `login?redirect=${redirect}`;
-            } else {
-                // Remove used token and clean URL
-                validTokens.splice(tokenIndex, 1);
-                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
-                history.replaceState(null, null, window.location.pathname);
-            }
-        })();
 
         function saveToArchive(status, payment) {
             try {
@@ -664,10 +1028,10 @@
                 
                 // Save to localStorage
                 localStorage.setItem(storageKey, JSON.stringify(archiveEntry));
-                showStatusMessage(`Beleg ${shortId} im Archiv gespeichert!`, true);
+                showNotification(`Beleg ${shortId} im Archiv gespeichert!`, 'success');
             } catch (e) {
                 console.error('Error saving to localStorage:', e);
-                showStatusMessage('Fehler beim Speichern im Archiv: ' + e.message, false);
+                showNotification('Fehler beim Speichern im Archiv: ' + e.message, 'error');
             }
         }
 
@@ -681,7 +1045,7 @@
                 requestAnimationFrame(tick);
             } catch(error) {
                 console.error('Kamera-Fehler:', error);
-                showStatusMessage('Kamera-Fehler: ' + error.message, false);
+                showNotification('Kamera-Fehler: ' + error.message, 'error');
             }
         }
 
@@ -732,8 +1096,8 @@
 
                 currentPayment = paymentData;
                 document.getElementById('payment-amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
-                document.getElementById('confirmation-modal').style.display = 'flex';
-                document.getElementById('details-modal').style.display = 'none';
+                document.getElementById('confirmation-modal').classList.add('active');
+                document.getElementById('details-modal').classList.remove('active');
 
                 // Establish connection with customer
                 if (merchantPeer) {
@@ -741,22 +1105,22 @@
                     
                     conn.on('open', () => {
                         currentPayment.connection = conn;
-                        showStatusMessage('Verbindung zum Kunden hergestellt!', true);
+                        showNotification('Verbindung zum Kunden hergestellt!', 'success');
                     });
 
                     conn.on('error', (err) => {
                         console.error('Connection error:', err);
-                        showStatusMessage('Verbindungsfehler: ' + err.message, false);
+                        showNotification('Verbindungsfehler: ' + err.message, 'error');
                     });
                 } else {
-                    showStatusMessage('PeerJS nicht initialisiert', false);
+                    showNotification('PeerJS nicht initialisiert', 'error');
                     // Try to reinitialize PeerJS
                     initializePeerJS();
                 }
 
             } catch(e) {
                 console.error('Scan-Fehler:', e);
-                showStatusMessage('Fehler: ' + e.message, false);
+                showNotification('Fehler: ' + e.message, 'error');
                 initScanner();
             }
         }
@@ -853,10 +1217,7 @@
         function initPage() {
             // Apply dark mode based on system preference
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.style.setProperty('--color-bg', '#111827');
-                document.documentElement.style.setProperty('--color-text', '#f3f4f6');
-                document.documentElement.style.setProperty('--color-text-muted', '#9ca3af');
-                document.documentElement.style.setProperty('--color-border', '#374151');
+                document.body.classList.add('dark-mode');
             }
             
             // Initialize PeerJS
