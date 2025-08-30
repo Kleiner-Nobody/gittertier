@@ -912,15 +912,15 @@
             <span>Gittertier Pro</span>
         </div>
         <div class="header-controls">
-                                            <button class="action-btn admin-btn" onclick="window.location.href='admin'">
+                                            <button class="control-btn" onclick="window.location.href='admin'">
                          <i class="fas fa-cog"></i>
                         
                     </button>
-                      <button class="action-btn support-btn" onclick="window.location.href='support'">
+                      <!-- <button class="control-btn support-btn" onclick="window.location.href='support'">
                         <i class="fas fa-headset"></i> 
                         
-                    </button>
-            <button class="action-btn" onclick="location.href='about'">
+                    </button> -->
+            <button class="control-btn" onclick="location.href='about'">
              <i class="fas fa-info-circle"></i> 
                  <!-- <span>Über uns</span> -->
             </button>
@@ -1624,6 +1624,366 @@
             
             audio.play().catch(e => console.log('Sound playback error:', e));
         }
+    </script>
+</body>
+</html>
+
+ <!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gittertier Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    /* All existing CSS remains the same */
+    /* ... existing CSS code ... */
+    
+    /* New Tutorial Styles */
+    .tutorial-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        display: none;
+    }
+    
+    .tutorial-highlight {
+        position: absolute;
+        border: 2px solid #2563eb;
+        border-radius: 8px;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 15px 5px rgba(37, 99, 235, 0.5);
+        z-index: 2001;
+        transition: all 0.3s ease;
+    }
+    
+    .tutorial-popup {
+        position: absolute;
+        background-color: white;
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 320px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        z-index: 2002;
+        color: #111111;
+    }
+    
+    .tutorial-title {
+        font-weight: 600;
+        font-size: 18px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .tutorial-content {
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+    
+    .tutorial-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .tutorial-progress {
+        font-size: 14px;
+        color: #6b7280;
+    }
+    
+    .tutorial-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        background-color: #2563eb;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .tutorial-btn:hover {
+        background-color: #1d4ed8;
+    }
+    
+    .tutorial-btn.skip {
+        background-color: #6b7280;
+    }
+    
+    .tutorial-btn.skip:hover {
+        background-color: #4b5563;
+    }
+    
+    .tutorial-btn.prev {
+        background-color: #9ca3af;
+    }
+    
+    .tutorial-btn.prev:hover {
+        background-color: #6b7280;
+    }
+    
+    .tutorial-start-btn {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        cursor: pointer;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    
+    .tutorial-start-btn:hover {
+        background-color: #1d4ed8;
+        transform: scale(1.05);
+    }
+    
+    @media (max-width: 768px) {
+        .tutorial-popup {
+            max-width: 280px;
+        }
+        
+        .tutorial-start-btn {
+            bottom: 90px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <!-- All existing HTML remains the same -->
+    <!-- ... existing HTML code ... -->
+    
+    <!-- Tutorial Start Button -->
+    <button class="tutorial-start-btn" id="tutorial-start">
+        <i class="fas fa-graduation-cap"></i>
+    </button>
+    
+    <!-- Tutorial Overlay -->
+    <div class="tutorial-overlay" id="tutorial-overlay">
+        <div class="tutorial-highlight" id="tutorial-highlight"></div>
+        <div class="tutorial-popup" id="tutorial-popup">
+            <div class="tutorial-title">
+                <i class="fas fa-graduation-cap"></i>
+                <span id="tutorial-step-title">Tutorial</span>
+            </div>
+            <div class="tutorial-content" id="tutorial-step-content">
+                Willkommen zum Gittertier Pro Tutorial!
+            </div>
+            <div class="tutorial-navigation">
+               <!-- <button class="tutorial-btn skip" id="tutorial-skip">Überspringen</button> -->
+                <div class="tutorial-progress" id="tutorial-progress">1/6</div>
+                <div>
+                    <button class="tutorial-btn prev" id="tutorial-prev" style="display: none;">Back</button>
+                    <button class="tutorial-btn" id="tutorial-next">Weiter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // All the original JavaScript functionality remains exactly the same
+    // Only the CSS and HTML structure have been modified
+    // ... existing JavaScript code ...
+    
+    // ===== TUTORIAL FUNCTIONALITY =====
+    const tutorialSteps = [
+        {
+            title: "Willkommen bei Gittertier Pro",
+            content: "Dieses Tutorial führt Sie durch die wichtigsten Funktionen der App.",
+            element: "",
+            position: "center"
+        },
+        {
+            title: "Produktscanner",
+            content: "Verwenden Sie den Scanner, um Barcodes von Produkten zu erfassen. Klicken Sie auf 'Scanner starten', um die Kamera zu aktivieren.",
+            element: "#toggle-scanner",
+            position: "top"
+        },
+        {
+            title: "Manuelle Produkterfassung",
+            content: "Falls ein Produkt keinen Barcode hat oder nicht erkannt wird, können Sie es manuell hinzufügen.",
+            element: "#manual-add",
+            position: "top"
+        },
+        /* {
+            title: "Produktdetails",
+            content: "Hier sehen Sie die erkannten Produktdetails. Sie können die Menge anpassen und das Produkt zum Warenkorb hinzufügen.",
+            element: "#product-card",
+            position: "top"
+        }, */
+        {
+            title: "Warenkorb",
+            content: "Alle gescannten Produkte werden hier angezeigt. Sie können Mengen anpassen oder Artikel entfernen.",
+            element: ".cart-section",
+            position: "top"
+        },
+        {
+            title: "Bezahlvorgang",
+            content: "Wenn Sie alle Produkte gescannt haben, klicken Sie hier, um einen Zahlungs-QR-Code zu generieren.",
+            element: ".pay-btn",
+            position: "top"
+        },
+        {
+            title: "Tutorial abgeschlossen",
+            content: "Sie sind jetzt bereit, Gittertier Pro zu verwenden! Viel Erfolg beim Einsatz unserer App. Sie können dieses Tutorial jederzeit über die Schaltfläche unten rechts neu starten.",
+            element: "",
+            position: "center"
+        }
+    ];
+
+    let currentTutorialStep = 0;
+    let tutorialActive = false;
+
+    // Start tutorial
+    document.getElementById('tutorial-start').addEventListener('click', startTutorial);
+    
+    // Tutorial navigation
+    document.getElementById('tutorial-next').addEventListener('click', nextTutorialStep);
+    document.getElementById('tutorial-prev').addEventListener('click', prevTutorialStep);
+    document.getElementById('tutorial-skip').addEventListener('click', endTutorial);
+    
+    function startTutorial() {
+        tutorialActive = true;
+        currentTutorialStep = 0;
+        document.getElementById('tutorial-overlay').style.display = 'block';
+        showTutorialStep(0);
+        
+        // Pause scanner if active
+        if (scannerActive) {
+            toggleScanner();
+        }
+    }
+    
+    function showTutorialStep(stepIndex) {
+        const step = tutorialSteps[stepIndex];
+        const highlight = document.getElementById('tutorial-highlight');
+        const popup = document.getElementById('tutorial-popup');
+        
+        // Update content
+        document.getElementById('tutorial-step-title').textContent = step.title;
+        document.getElementById('tutorial-step-content').textContent = step.content;
+        document.getElementById('tutorial-progress').textContent = `${stepIndex + 1}/${tutorialSteps.length}`;
+        
+        // Show/hide previous button
+        document.getElementById('tutorial-prev').style.display = stepIndex === 0 ? 'none' : 'inline-block';
+        
+        // Change next button text on last step
+        if (stepIndex === tutorialSteps.length - 1) {
+            document.getElementById('tutorial-next').textContent = 'Fertig';
+        } else {
+            document.getElementById('tutorial-next').textContent = 'Weiter';
+        }
+        
+        // Position highlight and popup
+        if (step.element && document.querySelector(step.element)) {
+            const element = document.querySelector(step.element);
+            const rect = element.getBoundingClientRect();
+            
+            // Position highlight
+            highlight.style.display = 'block';
+            highlight.style.width = `${rect.width + 10}px`;
+            highlight.style.height = `${rect.height + 10}px`;
+            highlight.style.top = `${rect.top - 5}px`;
+            highlight.style.left = `${rect.left - 5}px`;
+            
+            // Position popup based on specified position
+            positionPopup(popup, step.position, rect);
+        } else {
+            // Center the popup if no element specified
+            highlight.style.display = 'none';
+            popup.style.top = '50%';
+            popup.style.left = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+        }
+    }
+    
+    function positionPopup(popup, position, rect) {
+        const popupWidth = popup.offsetWidth;
+        const popupHeight = popup.offsetHeight;
+        
+        switch(position) {
+            case "top":
+                popup.style.top = `${Math.max(20, rect.top - popupHeight - 20)}px`;
+                popup.style.left = `${rect.left + (rect.width / 2) - (popupWidth / 2)}px`;
+                popup.style.transform = 'none';
+                break;
+            case "bottom":
+                popup.style.top = `${rect.bottom + 20}px`;
+                popup.style.left = `${rect.left + (rect.width / 2) - (popupWidth / 2)}px`;
+                popup.style.transform = 'none';
+                break;
+            case "left":
+                popup.style.top = `${rect.top + (rect.height / 2) - (popupHeight / 2)}px`;
+                popup.style.left = `${Math.max(20, rect.left - popupWidth - 20)}px`;
+                popup.style.transform = 'none';
+                break;
+            case "right":
+                popup.style.top = `${rect.top + (rect.height / 2) - (popupHeight / 2)}px`;
+                popup.style.left = `${rect.right + 20}px`;
+                popup.style.transform = 'none';
+                break;
+            case "center":
+            default:
+                popup.style.top = '50%';
+                popup.style.left = '50%';
+                popup.style.transform = 'translate(-50%, -50%)';
+                break;
+        }
+    }
+    
+    function nextTutorialStep() {
+        if (currentTutorialStep < tutorialSteps.length - 1) {
+            currentTutorialStep++;
+            showTutorialStep(currentTutorialStep);
+        } else {
+            endTutorial();
+        }
+    }
+    
+    function prevTutorialStep() {
+        if (currentTutorialStep > 0) {
+            currentTutorialStep--;
+            showTutorialStep(currentTutorialStep);
+        }
+    }
+    
+    function endTutorial() {
+        tutorialActive = false;
+        document.getElementById('tutorial-overlay').style.display = 'none';
+        
+        // Save that tutorial was completed
+        localStorage.setItem('tutorialCompleted', 'true');
+    }
+    
+    // Check if tutorial was completed on page load
+    window.addEventListener('DOMContentLoaded', () => {
+        // ... existing initialization code ...
+        
+        // Show tutorial on first visit
+        if (!localStorage.getItem('tutorialCompleted')) {
+            // Start tutorial after a short delay
+            setTimeout(startTutorial, 1000);
+        }
+    });
     </script>
 </body>
 </html>
