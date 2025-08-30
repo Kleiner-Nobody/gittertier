@@ -896,6 +896,147 @@
         padding: var(--spacing-xs) var(--spacing-sm);
         font-size: var(--text-xs);
     }
+    
+    /* Filter controls */
+    .filter-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+    
+    .filter-checkbox {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .filter-label {
+        font-size: var(--text-sm);
+    }
+    
+    /* Sort controls */
+    .sort-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+    
+    .sort-select {
+        padding: var(--spacing-sm);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+    }
+    
+    /* View modal */
+    .view-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--color-overlay);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .view-modal-content {
+        background-color: var(--color-bg);
+        width: 90%;
+        max-width: 800px;
+        max-height: 80vh;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .view-modal-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--color-bg-secondary);
+    }
+    
+    .view-modal-body {
+        padding: var(--spacing-lg);
+        overflow-y: auto;
+        flex: 1;
+    }
+    
+    .view-modal-footer {
+        padding: var(--spacing-lg);
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        justify-content: flex-end;
+        background-color: var(--color-bg-secondary);
+    }
+    
+    /* Suggestions dropdown */
+    .suggestions-dropdown {
+        position: absolute;
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        box-shadow: var(--shadow-md);
+        width: 100%;
+        display: none;
+    }
+    
+    .suggestion-item {
+        padding: var(--spacing-sm) var(--spacing-md);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .suggestion-item:hover {
+        background-color: var(--color-bg-secondary);
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .superadmin-modal-content,
+        .view-modal-content {
+            width: 95%;
+            height: 90vh;
+        }
+        
+        .localstorage-table {
+            font-size: var(--text-xs);
+        }
+        
+        .localstorage-table th,
+        .localstorage-table td {
+            padding: var(--spacing-xs);
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+        
+        .filter-controls,
+        .sort-controls {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
     </style>
 </head>
 <body>
@@ -909,10 +1050,6 @@
         </div>
         <div class="header-controls">
             <div class="time-display" id="timeDisplay"></div>
-            <!-- <button class="notification-btn" id="notificationBtn">
-             <i class="fas fa-bell"></i>
-                <span class="notification-badge" id="notificationBadge">3</span>
-            </button> -->
             <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Abmelden</span>
@@ -1561,8 +1698,38 @@
                 </div>
                 
                 <div id="superAdminConsole" style="display: none;">
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <input type="checkbox" id="filterReceipts" class="filter-checkbox" checked>
+                            <label for="filterReceipts" class="filter-label">Receipt-Einträge ausblenden</label>
+                        </div>
+                        <div class="filter-group">
+                            <input type="checkbox" id="filterSettings" class="filter-checkbox" checked>
+                            <label for="filterSettings" class="filter-label">Settings-Einträge ausblenden</label>
+                        </div>
+                    </div>
+                    
+                    <div class="sort-controls">
+                        <div class="filter-group">
+                            <label for="sortBy" class="filter-label">Sortieren nach:</label>
+                            <select id="sortBy" class="sort-select">
+                                <option value="key">Schlüssel</option>
+                                <option value="size">Größe</option>
+                                <option value="type">Typ</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sortOrder" class="filter-label">Reihenfolge:</label>
+                            <select id="sortOrderLs" class="sort-select">
+                                <option value="asc">Aufsteigend</option>
+                                <option value="desc">Absteigend</option>
+                            </select>
+                        </div>
+                    </div>
+                    
                     <div class="search-container-fixed">
                         <input type="text" class="search-bar" id="localStorageSearch" placeholder="LocalStorage durchsuchen...">
+                        <div class="suggestions-dropdown" id="searchSuggestions"></div>
                     </div>
                     
                     <div class="action-buttons" style="margin-bottom: var(--spacing-md);">
@@ -1573,6 +1740,9 @@
                             <i class="fas fa-upload"></i> Importieren
                         </button>
                         <input type="file" id="importLocalStorageFile" style="display: none;" accept=".json">
+                        <button class="btn btn-primary btn-sm" id="importFromGitHubBtn">
+                            <i class="fab fa-github"></i> Von GitHub importieren
+                        </button>
                         <button class="btn btn-danger btn-sm" id="clearLocalStorageBtn">
                             <i class="fas fa-trash"></i> Alles löschen
                         </button>
@@ -1596,35 +1766,62 @@
                             <!-- Table rows will be inserted here -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Modal -->
+    <div class="view-modal" id="viewModal">
+        <div class="view-modal-content">
+            <div class="view-modal-header">
+                <h2 id="viewModalTitle">Wert anzeigen</h2>
+                <button class="btn btn-sm btn-danger" id="closeViewModalBtn">
+                    <i class="fas fa-times"></i> Schließen
+                </button>
+            </div>
+            <div class="view-modal-body">
+                <pre id="viewModalContent"></pre>
+            </div>
+            <div class="view-modal-footer">
+                <button class="btn btn-primary" id="copyValueBtn">
+                    <i class="fas fa-copy"></i> Kopieren
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="superadmin-modal" id="editModal">
+        <div class="superadmin-modal-content">
+            <div class="superadmin-header">
+                <h2><i class="fas fa-edit"></i> Wert bearbeiten: <span id="editKeyName"></span></h2>
+                <button class="btn btn-sm btn-danger" id="closeEditModalBtn">
+                    <i class="fas fa-times"></i> Schließen
+                </button>
+            </div>
+            <div class="superadmin-body">
+                <div class="setting-card">
+                    <div class="setting-description">
+                        Bearbeiten Sie den ausgewählten Wert. Feste Schlüssel können nicht geändert werden.
+                    </div>
                     
-                    <div id="editModal" style="display: none;">
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-edit"></i>
-                                <h3>Wert bearbeiten: <span id="editKeyName"></span></h3>
-                            </div>
-                            <div class="setting-description">
-                                Bearbeiten Sie den ausgewählten Wert. Feste Schlüssel können nicht geändert werden.
-                            </div>
-                            
-                            <div id="valueEditor">
-                                <!-- Editor will be inserted here -->
-                            </div>
-                            
-                            <div id="suggestionsContainer" style="margin-top: var(--spacing-md);">
-                                <h4>Vorschläge:</h4>
-                                <div id="suggestionsList"></div>
-                            </div>
-                            
-                            <div class="action-buttons" style="margin-top: var(--spacing-md);">
-                                <button class="btn btn-success" id="saveValueBtn">
-                                    <i class="fas fa-save"></i> Speichern
-                                </button>
-                                <button class="btn btn-danger" id="cancelEditBtn">
-                                    <i class="fas fa-times"></i> Abbrechen
-                                </button>
-                            </div>
-                        </div>
+                    <div id="valueEditor">
+                        <!-- Editor will be inserted here -->
+                    </div>
+                    
+                    <div id="suggestionsContainer" style="margin-top: var(--spacing-md);">
+                        <h4>Vorschläge:</h4>
+                        <div id="suggestionsList"></div>
+                    </div>
+                    
+                    <div class="action-buttons" style="margin-top: var(--spacing-md);">
+                        <button class="btn btn-success" id="saveValueBtn">
+                            <i class="fas fa-save"></i> Speichern
+                        </button>
+                        <button class="btn btn-danger" id="cancelEditBtn">
+                            <i class="fas fa-times"></i> Abbrechen
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2069,13 +2266,25 @@
             const exportLocalStorageBtn = document.getElementById('exportLocalStorageBtn');
             const importLocalStorageBtn = document.getElementById('importLocalStorageBtn');
             const importLocalStorageFile = document.getElementById('importLocalStorageFile');
+            const importFromGitHubBtn = document.getElementById('importFromGitHubBtn');
             const clearLocalStorageBtn = document.getElementById('clearLocalStorageBtn');
+            const filterReceipts = document.getElementById('filterReceipts');
+            const filterSettings = document.getElementById('filterSettings');
+            const sortBy = document.getElementById('sortBy');
+            const sortOrderLs = document.getElementById('sortOrderLs');
+            const searchSuggestions = document.getElementById('searchSuggestions');
+            const viewModal = document.getElementById('viewModal');
+            const viewModalTitle = document.getElementById('viewModalTitle');
+            const viewModalContent = document.getElementById('viewModalContent');
+            const closeViewModalBtn = document.getElementById('closeViewModalBtn');
+            const copyValueBtn = document.getElementById('copyValueBtn');
             const editModal = document.getElementById('editModal');
             const editKeyName = document.getElementById('editKeyName');
             const valueEditor = document.getElementById('valueEditor');
             const suggestionsList = document.getElementById('suggestionsList');
             const saveValueBtn = document.getElementById('saveValueBtn');
             const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const closeEditModalBtn = document.getElementById('closeEditModalBtn');
             
             // Super Admin password
             const SUPER_ADMIN_PASSWORD = "malochen";
@@ -2085,6 +2294,21 @@
             let currentEditPath = null;
             let currentData = null;
             let allSuggestions = {};
+            let allKeys = [];
+            let filteredKeys = [];
+            
+            // Debounce function
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
             
             // Open Super Admin modal
             openSuperAdminBtn.addEventListener('click', () => {
@@ -2097,6 +2321,26 @@
             // Close Super Admin modal
             closeSuperAdminBtn.addEventListener('click', () => {
                 superAdminModal.style.display = 'none';
+            });
+            
+            // Close View modal
+            closeViewModalBtn.addEventListener('click', () => {
+                viewModal.style.display = 'none';
+            });
+            
+            // Close Edit modal
+            closeEditModalBtn.addEventListener('click', () => {
+                editModal.style.display = 'none';
+            });
+            
+            // Copy value to clipboard
+            copyValueBtn.addEventListener('click', () => {
+                const text = viewModalContent.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    showStatus('Wert kopiert', 'success', superAdminMessage);
+                }).catch(err => {
+                    showStatus('Fehler beim Kopieren: ' + err, 'error', superAdminMessage);
+                });
             });
             
             // Super Admin authentication
@@ -2117,17 +2361,25 @@
                 localStorageTableBody.innerHTML = '';
                 
                 // Get all keys
-                const keys = Object.keys(localStorage);
+                allKeys = Object.keys(localStorage);
+                filteredKeys = [...allKeys];
                 let totalSize = 0;
+                
+                // Apply filters
+                applyFilters();
+                
+                // Apply sorting
+                applySorting();
                 
                 // Create summary
                 const summary = {
-                    totalItems: keys.length,
+                    totalItems: allKeys.length,
+                    filteredItems: filteredKeys.length,
                     itemsByType: {}
                 };
                 
                 // Process each key
-                keys.forEach(key => {
+                filteredKeys.forEach(key => {
                     try {
                         const value = localStorage.getItem(key);
                         const size = new Blob([value]).size;
@@ -2210,7 +2462,7 @@
                 });
                 
                 // Update summary
-                let summaryHTML = `<strong>Zusammenfassung:</strong> ${summary.totalItems} Einträge, ${formatBytes(totalSize)} Gesamtgröße<br>`;
+                let summaryHTML = `<strong>Zusammenfassung:</strong> ${summary.filteredItems} von ${summary.totalItems} Einträgen, ${formatBytes(totalSize)} Gesamtgröße<br>`;
                 summaryHTML += `<strong>Nach Typ:</strong> `;
                 
                 const typeEntries = Object.entries(summary.itemsByType);
@@ -2220,6 +2472,58 @@
                 });
                 
                 localStorageSummary.innerHTML = summaryHTML;
+            }
+            
+            // Apply filters to keys
+            function applyFilters() {
+                filteredKeys = [...allKeys];
+                
+                // Filter out receipts if checked
+                if (filterReceipts.checked) {
+                    filteredKeys = filteredKeys.filter(key => !key.includes('receipt_'));
+                }
+                
+                // Filter out settings if checked
+                if (filterSettings.checked) {
+                    filteredKeys = filteredKeys.filter(key => !key.includes('appSettings'));
+                }
+            }
+            
+            // Apply sorting to keys
+            function applySorting() {
+                const sortByValue = sortBy.value;
+                const sortOrderValue = sortOrderLs.value;
+                
+                filteredKeys.sort((a, b) => {
+                    let aValue, bValue;
+                    
+                    switch(sortByValue) {
+                        case 'key':
+                            aValue = a;
+                            bValue = b;
+                            break;
+                        case 'size':
+                            aValue = new Blob([localStorage.getItem(a)]).size;
+                            bValue = new Blob([localStorage.getItem(b)]).size;
+                            break;
+                        case 'type':
+                            try {
+                                aValue = typeof JSON.parse(localStorage.getItem(a));
+                                bValue = typeof JSON.parse(localStorage.getItem(b));
+                            } catch (e) {
+                                aValue = 'string';
+                                bValue = 'string';
+                            }
+                            break;
+                        default:
+                            aValue = a;
+                            bValue = b;
+                    }
+                    
+                    if (aValue < bValue) return sortOrderValue === 'asc' ? -1 : 1;
+                    if (aValue > bValue) return sortOrderValue === 'asc' ? 1 : -1;
+                    return 0;
+                });
             }
             
             // Format bytes to human readable format
@@ -2247,7 +2551,9 @@
                 const formattedValue = typeof parsedValue === 'object' ? 
                     JSON.stringify(parsedValue, null, 2) : String(parsedValue);
                 
-                alert(`Schlüssel: ${key}\n\nWert:\n${formattedValue}`);
+                viewModalTitle.textContent = `Schlüssel: ${key}`;
+                viewModalContent.textContent = formattedValue;
+                viewModal.style.display = 'flex';
             }
             
             // Edit item
@@ -2263,12 +2569,7 @@
                 
                 editKeyName.textContent = key;
                 renderEditor(currentData);
-                editModal.style.display = 'block';
-                
-                // Scroll to editor
-                setTimeout(() => {
-                    editModal.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
+                editModal.style.display = 'flex';
             }
             
             // Render editor based on data type
@@ -2321,8 +2622,8 @@
                                 input.dataset.key = key;
                                 input.dataset.path = path;
                                 
-                                // Add input handler
-                                input.addEventListener('change', (e) => {
+                                // Add input handler with debounce
+                                input.addEventListener('input', debounce((e) => {
                                     const editKey = e.target.dataset.key;
                                     const editPath = e.target.dataset.path;
                                     
@@ -2349,7 +2650,7 @@
                                     
                                     // Show suggestions for this field
                                     showSuggestions(editPath ? `${editPath}.${editKey}` : editKey, e.target.value);
-                                });
+                                }, 300));
                                 
                                 valueCell.appendChild(input);
                             }
@@ -2377,8 +2678,8 @@
                         input.value = data;
                     }
                     
-                    // Add input handler
-                    input.addEventListener('change', (e) => {
+                    // Add input handler with debounce
+                    input.addEventListener('input', debounce((e) => {
                         if (typeof currentData === 'number') {
                             currentData = parseFloat(e.target.value);
                         } else {
@@ -2387,7 +2688,7 @@
                         
                         // Show suggestions for this field
                         showSuggestions('', e.target.value);
-                    });
+                    }, 300));
                     
                     valueEditor.appendChild(input);
                     
@@ -2412,6 +2713,8 @@
                         }
                     } catch (e) {
                         // Not JSON, skip
+                    allSuggestions[''] = allSuggestions[''] || new Set();
+                        allSuggestions[''].add(value);
                     }
                 });
             }
@@ -2608,6 +2911,38 @@
                 reader.readAsText(file);
             });
             
+            // Import from GitHub
+            importFromGitHubBtn.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('ls.json');
+                    if (!response.ok) {
+                        throw new Error('ls.json nicht gefunden');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (confirm('Möchten Sie die LocalStorage-Daten von GitHub importieren? Vorhandene Daten werden überschrieben.')) {
+                        // Clear existing data
+                        localStorage.clear();
+                        
+                        // Import new data
+                        Object.keys(data).forEach(key => {
+                            if (typeof data[key] === 'object') {
+                                localStorage.setItem(key, JSON.stringify(data[key]));
+                            } else {
+                                localStorage.setItem(key, data[key]);
+                            }
+                        });
+                        
+                        loadLocalStorageData();
+                        loadSuggestions();
+                        showStatus('Daten von GitHub erfolgreich importiert', 'success', superAdminMessage);
+                    }
+                } catch (error) {
+                    showStatus('Fehler beim Importieren von GitHub: ' + error.message, 'error', superAdminMessage);
+                }
+            });
+            
             // Clear all localStorage data
             clearLocalStorageBtn.addEventListener('click', () => {
                 if (confirm('Möchten Sie wirklich ALLE LocalStorage-Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
@@ -2618,8 +2953,8 @@
                 }
             });
             
-            // Search functionality
-            localStorageSearch.addEventListener('input', (e) => {
+            // Search functionality with suggestions
+            localStorageSearch.addEventListener('input', debounce((e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 const rows = localStorageTableBody.querySelectorAll('tr');
                 
@@ -2633,48 +2968,60 @@
                         row.style.display = 'none';
                     }
                 });
-            });
+                
+                // Show search suggestions
+                showSearchSuggestions(searchTerm);
+            }, 300));
             
-            // Try to fetch ls.json from GitHub
-            async function fetchLsJson() {
-                try {
-                    const response = await fetch('ls.json');
-                    if (response.ok) {
-                        const data = await response.json();
-                        
-                        // Add import from GitHub button
-                        const importFromGitHubBtn = document.createElement('button');
-                        importFromGitHubBtn.className = 'btn btn-primary btn-sm';
-                        importFromGitHubBtn.innerHTML = '<i class="fab fa-github"></i> Von GitHub importieren';
-                        importFromGitHubBtn.addEventListener('click', () => {
-                            if (confirm('Möchten Sie die LocalStorage-Daten von GitHub importieren? Vorhandene Daten werden überschrieben.')) {
-                                // Clear existing data
-                                localStorage.clear();
-                                
-                                // Import new data
-                                Object.keys(data).forEach(key => {
-                                    if (typeof data[key] === 'object') {
-                                        localStorage.setItem(key, JSON.stringify(data[key]));
-                                    } else {
-                                        localStorage.setItem(key, data[key]);
-                                    }
-                                });
-                                
-                                loadLocalStorageData();
-                                loadSuggestions();
-                                showStatus('Daten von GitHub erfolgreich importiert', 'success', superAdminMessage);
-                            }
-                        });
-                        
-                        document.querySelector('.action-buttons').appendChild(importFromGitHubBtn);
-                    }
-                } catch (error) {
-                    console.log('ls.json nicht gefunden oder Fehler beim Laden:', error);
+            // Show search suggestions
+            function showSearchSuggestions(searchTerm) {
+                searchSuggestions.innerHTML = '';
+                
+                if (!searchTerm) {
+                    searchSuggestions.style.display = 'none';
+                    return;
                 }
+                
+                const suggestions = filteredKeys.filter(key => 
+                    key.toLowerCase().includes(searchTerm)
+                ).slice(0, 5);
+                
+                if (suggestions.length === 0) {
+                    searchSuggestions.style.display = 'none';
+                    return;
+                }
+                
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = suggestion;
+                    item.addEventListener('click', () => {
+                        localStorageSearch.value = suggestion;
+                        searchSuggestions.style.display = 'none';
+                        
+                        // Trigger search
+                        const event = new Event('input', { bubbles: true });
+                        localStorageSearch.dispatchEvent(event);
+                    });
+                    
+                    searchSuggestions.appendChild(item);
+                });
+                
+                searchSuggestions.style.display = 'block';
             }
             
-            // Initialize
-            fetchLsJson();
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!localStorageSearch.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                    searchSuggestions.style.display = 'none';
+                }
+            });
+            
+            // Filter and sort event listeners
+            filterReceipts.addEventListener('change', loadLocalStorageData);
+            filterSettings.addEventListener('change', loadLocalStorageData);
+            sortBy.addEventListener('change', loadLocalStorageData);
+            sortOrderLs.addEventListener('change', loadLocalStorageData);
         })();
     </script>
 </body>
