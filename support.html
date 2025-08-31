@@ -584,6 +584,7 @@
         box-shadow: var(--shadow-md);
         animation: shake 0.5s ease;
         border: 3px solid var(--color-error);
+        position: relative;
     }
 
     .block-icon {
@@ -609,6 +610,17 @@
         font-weight: 700;
         color: var(--color-error);
         margin-bottom: var(--spacing-xl);
+    }
+
+    .block-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1999;
+        display: none;
     }
 
     @keyframes shake {
@@ -751,16 +763,45 @@
         background-color: var(--color-accent-hover);
     }
 
-    /* Response Icons */
-    .response-icon {
-        font-size: 1.5rem;
+    /* Topic-specific icons */
+    .topic-icon {
         margin-right: var(--spacing-sm);
-        color: var(--ai-primary);
+        font-size: 1.2em;
     }
 
-    .response-container {
-        display: flex;
-        align-items: flex-start;
+    .payment-icon {
+        color: #16a34a;
+    }
+
+    .scanner-icon {
+        color: #2563eb;
+    }
+
+    .product-icon {
+        color: #f59e0b;
+    }
+
+    .instagram-icon {
+        color: #e1306c;
+    }
+
+    .tutorial-icon {
+        color: #6e45e2;
+    }
+
+    .support-icon {
+        color: #dc2626;
+    }
+
+    /* Animation Keyframes */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
     }
 
     /* Mobile Optimization - Enhanced */
@@ -844,6 +885,11 @@
         /* Better spacing for mobile */
         .section {
             margin-bottom: var(--spacing-lg);
+        }
+
+        /* Fullscreen for mobile */
+        .ai-modal {
+            padding: 0;
         }
     }
 
@@ -1082,6 +1128,9 @@
         </div>
     </div>
     
+    <!-- Block Overlay -->
+    <div class="block-overlay" id="blockOverlay"></div>
+    
     <!-- Sources Modal -->
     <div class="sources-modal" id="sourcesModal">
         <div class="sources-modal-content">
@@ -1153,7 +1202,7 @@
                         reason: "Behandelt Scanner-Fehler und bietet Alternativen"
                     }
                 ],
-                icon: "fas fa-exclamation-triangle"
+                icon: "fas fa-camera"
             },
             "scanner erkennt keine barcodes": {
                 answer: "Wenn der Scanner keine Barcodes erkennt, prüfen Sie: 1) Kamera-Zugriff erlaubt, 2) Ausreichende Beleuchtung, 3) Saubere Kameralinse, 4) Korrekte Haltung des Barcodes. Als Alternative können Sie Produkte manuell hinzufügen.",
@@ -1164,7 +1213,7 @@
                         reason: "Bietet Lösungen für Scanner-Probleme"
                     }
                 ],
-                icon: "fas fa-barcode"
+                icon: "fas fa-camera"
             },
             
             // Product management
@@ -1177,10 +1226,10 @@
                         reason: "Implementiert die manuelle Produkterfassung"
                     }
                 ],
-                icon: "fas fa-plus-circle"
+                icon: "fas fa-cube"
             },
             "produkt nicht gefunden": {
-                answer: "Wenn ein Produkt nicht gefunden wird, können Sie es manuell hinzufügen. Klicken Sie dazu auf den 'Manuell' Button unter dem Scanner und geben Sie die Produktdetails ein. Das Produkt wird dann in Ihre lokale Datenbank gespeichert und beim nächsten Scan erkannt.",
+                answer: "Wenn ein Produkt nicht gefunden wird, können Sie es manuell hinzufügen. Klicken Sie dazu auf den 'Manuell' Button unter dem Scanner und geben Sie die Produktdetails ein. Das Produkt wird dann in Ihrer lokalen Datenbank gespeichert und beim nächsten Scan erkannt.",
                 sources: [
                     {
                         file: "index",
@@ -1188,7 +1237,7 @@
                         reason: "Behandelt den Fall, wenn ein Produkt nicht erkannt wird"
                     }
                 ],
-                icon: "fas fa-search"
+                icon: "fas fa-cube"
             },
             
             // Payment process
@@ -1206,7 +1255,7 @@
                         reason: "Zeigt die Kundenseite für Zahlungen"
                     }
                 ],
-                icon: "fas fa-qrcode"
+                icon: "fas fa-qrcode payment-icon"
             },
             "qr code wird nicht generiert": {
                 answer: "Wenn der QR-Code nicht generiert wird, stellen Sie sicher, dass sich Produkte im Warenkorb befinden. Bei leeren Warenkorb kann kein QR-Code generiert werden. Prüfen Sie auch, ob JavaScript in Ihrem Browser aktiviert ist, da die QR-Generierung clientseitig erfolgt.",
@@ -1217,7 +1266,7 @@
                         reason: "Überprüft den Warenkorb vor QR-Generierung"
                     }
                 ],
-                icon: "fas fa-exclamation-circle"
+                icon: "fas fa-qrcode payment-icon"
             },
             
             // Tutorial and help
@@ -1230,7 +1279,7 @@
                         reason: "Implementiert das Tutorial-System"
                     }
                 ],
-                icon: "fas fa-graduation-cap"
+                icon: "fas fa-graduation-cap tutorial-icon"
             },
             "tutorial schritte": {
                 answer: "Das Gittertier Pro Tutorial besteht aus mehreren Schritte, die Sie durch alle Hauptfunktionen führen: 1) Header-Bedienelemente, 2) Scanner-Bereich, 3) Scanner starten, 4) Manuelle Eingabe, 5) Produktinformationen, 6) Mengensteuerung, 7) Zum Warenkorb hinzufügen, 8) Warenkorb, 9) Warenkorb leeren, 10) Bezahlvorgang.",
@@ -1241,7 +1290,7 @@
                         reason: "Enthält die Tutorial-Schritt-Definitionen"
                     }
                 ],
-                icon: "fas fa-list-ol"
+                icon: "fas fa-graduation-cap tutorial-icon"
             },
             "was verpasse ich im tutorial": {
                 answer: "Im Tutorial lernen Sie alle wichtigen Funktionen von Gittertier Pro kennen: Scanner-Bedienung, Produkterfassung, Warenkorbverwaltung und Bezahlabwicklung. Es ist eine ausgezeichnete Einführung für neue Benutzer und zeigt viele nützliche Tipps und Tricks.",
@@ -1252,7 +1301,7 @@
                         reason: "Beschreibt den Inhalt des Tutorials"
                     }
                 ],
-                icon: "fas fa-info-circle"
+                icon: "fas fa-graduation-cap tutorial-icon"
             },
             
             // Technical questions
@@ -1278,8 +1327,7 @@
                         reason: "Enthält den Instagram-Handle"
                     }
                 ],
-                icon: "fab fa-instagram",
-                banner: "instagram"
+                icon: "fab fa-instagram instagram-icon"
             },
             "insta": {
                 answer: "Unser Instagram-Account ist @gittertierpro. Folgen Sie uns, um über Neuigkeiten, Updates und Tipps zur Nutzung von Gittertier Pro informiert zu bleiben.",
@@ -1290,8 +1338,7 @@
                         reason: "Enthält den Instagram-Handle"
                     }
                 ],
-                icon: "fab fa-instagram",
-                banner: "instagram"
+                icon: "fab fa-instagram instagram-icon"
             },
             "social media": {
                 answer: "Folgen Sie uns auf Instagram (@gittertierpro) für Neuigkeiten, Updates und Tipps zur Nutzung von Gittertier Pro. Wir posten regelmäßig hilfreiche Inhalte für Einzelhändler.",
@@ -1302,8 +1349,7 @@
                         reason: "Verweist auf Social Media Präsenz"
                     }
                 ],
-                icon: "fas fa-share-alt",
-                banner: "instagram"
+                icon: "fab fa-instagram instagram-icon"
             },
             
             // NEW: Conversational responses
@@ -1529,7 +1575,7 @@
                         reason: "Beschreibt die Auswirkungen von Gittertier Pro"
                     }
                 ],
-                icon: "fas fa-chart-bar"
+                icon: "fas fa-chart-line"
             },
             
             // NEW: Customer page details
@@ -1542,7 +1588,7 @@
                         reason: "Beschreibt die Kundenseite und den Bezahlvorgang"
                     }
                 ],
-                icon: "fas fa-users"
+                icon: "fas fa-user-check"
             },
             "was passiert nach der qr code zahlung": {
                 answer: "Nachdem der Kunde den QR-Code gescannt und die Zahlung durchgeführt hat, erhält der Händler eine Bestätigung. Der Kunde kann einen Beleg drucken und wird dann zur Startseite zurückgeleitet.",
@@ -1553,7 +1599,7 @@
                         reason: "Beschreibt den Prozess nach der Zahlung"
                     }
                 ],
-                icon: "fas fa-receipt"
+                icon: "fas fa-qrcode payment-icon"
             },
             
             // NEW: Login page details
@@ -1566,7 +1612,7 @@
                         reason: "Beschreibt den Anmeldeprozess"
                     }
                 ],
-                icon: "fas fa-key"
+                icon: "fas fa-lock"
             },
             "was tun bei vergessenem passwort": {
                 answer: "Wenn Sie Ihr Passwort vergessen haben, wenden Sie sich bitte an den Systemadministrator. Aus Sicherheitsgründen kann ich keine Passwort-Informationen preisgeben.",
@@ -1590,7 +1636,7 @@
                         reason: "Sicherheitsrichtlinie zum Schutz von Passwörtern"
                     }
                 ],
-                icon: "fas fa-shield-alt"
+                icon: "fas fa-lock"
             },
             "administrator passwort": {
                 answer: "Ich kann aus Sicherheitsgründen keine Passwort-Informationen preisgeben. Bei Passwort-Problemen wenden Sie sich bitte an den Systemadministrator.",
@@ -1601,7 +1647,7 @@
                         reason: "Sicherheitsrichtlinie zum Schutz von Administrator-Passwörtern"
                     }
                 ],
-                icon: "fas fa-shield-alt"
+                icon: "fas fa-lock"
             },
             
             // NEW: Technical details
@@ -1662,8 +1708,7 @@
                         reason: "Weist auf Support-Ressourcen hin"
                     }
                 ],
-                icon: "fas fa-headset",
-                banner: "support"
+                icon: "fas fa-headset support-icon"
             },
             "gibt es eine dokumentation": {
                 answer: "Ja, Gittertier Pro verfügt über eine umfassende Dokumentation, die Sie auf der Support-Seite finden. Zusätzlich bietet das integrierte Tutorial eine schrittweise Einführung in alle Funktionen.",
@@ -1731,8 +1776,7 @@
                         reason: "Behandelt Fragen zur Preisgestaltung"
                     }
                 ],
-                icon: "fas fa-euro-sign",
-                banner: "support"
+                icon: "fas fa-euro-sign"
             },
             "kostenlos": {
                 answer: "Gittertier Pro bietet eine kostenlose Basisversion mit allen Kernfunktionen. Für erweiterte Enterprise-Funktionen stehen kostenpflichtige Pakete zur Verfügung.",
@@ -1767,8 +1811,7 @@
                         reason: "Beschreibt den Umgang mit Fehlermeldungen"
                     }
                 ],
-                icon: "fas fa-exclamation-triangle",
-                banner: "support"
+                icon: "fas fa-exclamation-triangle"
             },
             
             // NEW: Future features
@@ -1781,8 +1824,7 @@
                         reason: "Beschreibt geplante Funktionen"
                     }
                 ],
-                icon: "fas fa-road",
-                banner: "instagram"
+                icon: "fas fa-road"
             },
             
             // NEW: Problem solving
@@ -1795,11 +1837,10 @@
                         reason: "Bietet Lösungen für QR-Generierungsprobleme"
                     }
                 ],
-                icon: "fas fa-qrcode",
-                banner: "support"
+                icon: "fas fa-qrcode payment-icon"
             },
             "was tun wenn ich keine ahnung habe wie die seite funktioniert": {
-                answer: "Keine Sorge! Starten Sie das Tutorial über das Fragezeichen-Symbol in der Kopfzeile. It führt Sie Schritt für Schritt durch alle Funktionen. Sie können mich auch jederzeit fragen!",
+                answer: "Keine Sorge! Starten Sie das Tutorial über das Fragezeichen-Symbol in der Kopfzeile. Es führt Sie Schritt für Schritt durch alle Funktionen. Sie können mich auch jederzeit fragen!",
                 sources: [
                     {
                         file: "index",
@@ -1807,7 +1848,7 @@
                         reason: "Verweist auf das Tutorial für Neueinsteiger"
                     }
                 ],
-                icon: "fas fa-question-circle"
+                icon: "fas fa-graduation-cap tutorial-icon"
             },
             "wie kann ich produkte erhöhen und danach bezahlen": {
                 answer: "So erhöhen Sie Produktmengen und bezahlen: 1) Scannen Sie das Produkt oder fügen Sie es manuell hinzu 2) Passen Sie die Menge mit den +/- Buttons an 3) Fügen Sie es zum Warenkorb hinzu 4) Klicken Sie auf 'Bezahlen' für den QR-Code.",
@@ -1818,7 +1859,7 @@
                         reason: "Beschreibt den Prozess von Mengenanpassung bis Bezahlung"
                     }
                 ],
-                icon: "fas fa-shopping-cart"
+                icon: "fas fa-cart-plus"
             },
 
             // NEW: Additional questions to reach 70+
@@ -1831,8 +1872,7 @@
                         reason: "Informationen zur Mehrfilialen-Unterstützung"
                     }
                 ],
-                icon: "fas fa-store",
-                banner: "instagram"
+                icon: "fas fa-store"
             },
             "wie exportiere ich verkaufsdaten": {
                 answer: "Verkaufsdaten können aktuell über die Browser-Entwicklertools im LocalStorage eingesehen werden. Ein vollständiger Export mit CSV- und Excel-Format ist für ein zukünftiges Update geplant.",
@@ -1854,7 +1894,7 @@
                         reason: "Informationen zur App-ähnlichen Nutzung"
                     }
                 ],
-                icon: "fas fa-mobile"
+                icon: "fas fa-mobile-alt"
             },
             "unterstützt gittertier pro bargeldzahlung": {
                 answer: "Gittertier Pro konzentriert sich auf digitale Zahlungen per QR-Code. Für Bargeldzahlungen müssen Sie den Betrag manuell erfassen und die Kassensoftware entsprechend anpassen.",
@@ -1898,8 +1938,7 @@
                         reason: "Informationen zur Preisgestaltung"
                     }
                 ],
-                icon: "fas fa-euro-sign",
-                banner: "support"
+                icon: "fas fa-euro-sign"
             },
             "gibt es eine datensicherung": {
                 answer: "Ihre Daten werden lokal in Ihrem Browser gespeichert. Für eine Sicherung exportieren Sie regelmäßig Ihre Verkaufsdaten. Eine automatische Cloud-Sicherung ist für zukünftige Updates geplant.",
@@ -1943,7 +1982,7 @@
                         reason: "Informationen zur Tablet-Kompatibilität"
                     }
                 ],
-                icon: "fas fa-tablet"
+                icon: "fas fa-tablet-alt"
             },
             "brauche ich eine internetverbindung": {
                 answer: "Für den Scanner und die QR-Generierung ist eine Internetverbindung erforderlich. Ein Offline-Modus für grundlegende Funktionen ist in Planung.",
@@ -1979,7 +2018,7 @@
                 icon: "fas fa-language"
             },
             "kann ich mit mehreren kassen arbeiten": {
-                answer: "Aktuell unterstützt Gittertier Pro eine Kasse pro Browser. Mehrere Kassen erfordern mehrere Geräte. Synchronisation zwischen mehreren Kassen ist für die Zukunft geplant.",
+                answer: "Aktuell unterstützt Gittertier Pro eine Kasse per Browser. Mehrere Kassen erfordern mehrere Geräte. Synchronisation zwischen mehreren Kassen ist für die Zukunft geplant.",
                 sources: [
                     {
                         file: "Multi-Register",
@@ -2009,7 +2048,7 @@
                         reason: "Informationen zur Barcode-Druckerunterstützung"
                     }
                 ],
-                icon: "fas fa-print"
+                icon: "fas fa-barcode"
             },
             "wie lang ist der support erreichbar": {
                 answer: "Unser KI-Assistent ist 24/7 verfügbar. Für persönlichen Support kontaktieren Sie uns bitte über Instagram @gittertierpro während der Geschäftszeiten.",
@@ -2020,8 +2059,7 @@
                         reason: "Informationen zur Support-Erreichbarkeit"
                     }
                 ],
-                icon: "fas fa-clock",
-                banner: "instagram"
+                icon: "fas fa-headset support-icon"
             },
             "kann ich die software an meine bedürfnisse anpassen": {
                 answer: "Gittertier Pro ist eine Standardlösung. Individuelle Anpassungen sind auf Anfrage möglich. Kontaktieren Sie uns für Custom-Lösungen.",
@@ -2032,8 +2070,7 @@
                         reason: "Informationen zu Anpassungsmöglichkeiten"
                     }
                 ],
-                icon: "fas fa-cog",
-                banner: "support"
+                icon: "fas fa-sliders-h"
             },
 
             // Default response for unknown questions
@@ -2046,8 +2083,7 @@
                         reason: "Standardantwort für nicht erkannte Fragen"
                     }
                 ],
-                icon: "fas fa-question-circle",
-                banner: "support"
+                icon: "fas fa-question-circle"
             }
         };
 
@@ -2058,18 +2094,19 @@
         const sourcesModal = document.getElementById('sourcesModal');
         const sourcesContent = document.getElementById('sourcesContent');
         const blockModal = document.getElementById('blockModal');
+        const blockOverlay = document.getElementById('blockOverlay');
         const blockTimer = document.getElementById('blockTimer');
         
         // Current sources for the last answer
         let currentSources = [];
         
-        // Chat history for email support
-        let chatHistory = [];
-        
         // User warning system
         let userWarnings = parseInt(localStorage.getItem('ai_user_warnings') || '0');
         let isUserBlocked = localStorage.getItem('ai_user_blocked') === 'true';
         let blockEndTime = parseInt(localStorage.getItem('ai_block_end_time') || '0');
+        
+        // Chat history for email support
+        let chatHistory = [];
         
         // Inappropriate words list (German)
         const inappropriateWords = [
@@ -2089,6 +2126,7 @@
                     const remainingTime = Math.ceil((blockEndTime - now) / 1000);
                     startBlockTimer(remainingTime);
                     blockModal.style.display = 'flex';
+                    blockOverlay.style.display = 'block';
                     return true;
                 } else {
                     // Block has expired
@@ -2097,6 +2135,7 @@
                     localStorage.removeItem('ai_user_blocked');
                     localStorage.removeItem('ai_block_end_time');
                     localStorage.removeItem('ai_user_warnings');
+                    blockOverlay.style.display = 'none';
                 }
             }
             return false;
@@ -2112,7 +2151,6 @@
             // On mobile, make it full screen
             if (window.innerWidth <= 768) {
                 document.querySelector('.ai-modal-content').style.borderRadius = '0';
-                document.querySelector('.ai-modal-content').style.height = '100%';
             }
         }
         
@@ -2122,7 +2160,6 @@
             
             // Reset modal style
             document.querySelector('.ai-modal-content').style.borderRadius = '';
-            document.querySelector('.ai-modal-content').style.height = '80vh';
         }
         
         // Close Sources Modal
@@ -2217,12 +2254,19 @@
         }
         
         // Add message to chat
-        function addMessage(text, isUser = false, isWarning = false, isBlocked = false, icon = null, banner = null) {
+        function addMessage(text, isUser = false, isWarning = false, isBlocked = false, icon = null) {
             const messageElement = document.createElement('div');
             
             if (isUser) {
                 messageElement.className = 'ai-message user';
                 messageElement.innerHTML = `<p>${text}</p>`;
+                
+                // Add to chat history
+                chatHistory.push({
+                    type: 'user',
+                    content: text,
+                    timestamp: new Date().toISOString()
+                });
             } else {
                 let className = 'ai-message ai';
                 if (isWarning) className += ' warning';
@@ -2230,17 +2274,17 @@
                 
                 messageElement.className = className;
                 
+                // Add icon if provided
+                let iconHtml = '';
+                if (icon) {
+                    iconHtml = `<i class="${icon} topic-icon"></i>`;
+                }
+                
                 // Check if the answer contains sources
                 const hasSources = currentSources && currentSources.length > 0;
                 
-                // Add icon if available
-                const iconHtml = icon ? `<i class="${icon} response-icon"></i>` : '';
-                
                 messageElement.innerHTML = `
-                    <div class="response-container">
-                        ${iconHtml}
-                        <div>${text}</div>
-                    </div>
+                    <div>${iconHtml}${text}</div>
                     ${hasSources ? `
                         <div class="ai-sources">
                             <div class="ai-sources-title" onclick="showSources()">
@@ -2257,39 +2301,19 @@
                     ` : ''}
                 `;
                 
-                // Add banner if specified
-                if (banner === 'instagram') {
-                    messageElement.innerHTML += `
-                        <div class="instagram-banner">
-                            <p>Folgen Sie uns auf Instagram für Updates und Tipps!</p>
-                            <a href="https://instagram.com/gittertierpro" target="_blank">
-                                <i class="fab fa-instagram"></i> @gittertierpro
-                            </a>
-                        </div>
-                    `;
-                } else if (banner === 'support') {
-                    messageElement.innerHTML += `
-                        <div class="contact-banner">
-                            <p>Benötigen Sie weiteren Support?</p>
-                            <a href="#" onclick="generateSupportEmail('${encodeURIComponent(text)}')">
-                                <i class="fas fa-envelope"></i> Support kontaktieren
-                            </a>
-                        </div>
-                    `;
-                }
+                // Add to chat history
+                chatHistory.push({
+                    type: 'ai',
+                    content: text,
+                    timestamp: new Date().toISOString(),
+                    sources: hasSources ? currentSources : []
+                });
             }
             
             chatContainer.appendChild(messageElement);
             
-            // Scroll to bottom to show the latest message
+            // Scroll to bottom to show new message
             chatContainer.scrollTop = chatContainer.scrollHeight;
-            
-            // Add to chat history
-            chatHistory.push({
-                text: text,
-                isUser: isUser,
-                timestamp: new Date().toISOString()
-            });
         }
         
         // Show typing indicator
@@ -2331,6 +2355,7 @@
                 addMessage("Sie wurden aufgrund wiederholter unangemessener Anfragen für 5 Minuten gesperrt.", false, false, true);
                 startBlockTimer(300);
                 blockModal.style.display = 'flex';
+                blockOverlay.style.display = 'block';
                 return true;
             }
             
@@ -2345,6 +2370,7 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     blockModal.style.display = 'none';
+                    blockOverlay.style.display = 'none';
                     isUserBlocked = false;
                     userWarnings = 0;
                     localStorage.removeItem('ai_user_blocked');
@@ -2369,20 +2395,20 @@
                 const blocked = warnUser("Bitte verwenden Sie eine angemessene Sprache.");
                 if (blocked) return null;
                 
-                return { answer: "Ich kann nur Fragen zu Gittertier Pro beantworten. Bitte verwenden Sie eine angemessene Sprache." };
+                return { answer: "Ich kann nur Fragen zu Gittertier Pro beantworten. Bitte verwenden Sie eine angemessene Sprache.", icon: "fas fa-exclamation-triangle" };
             }
             
             // Check for password-related questions
             if (lowerQuestion.includes('passwort') || lowerQuestion.includes('password') || 
                 lowerQuestion.includes('kennwort') || lowerQuestion.includes('anmeldedaten')) {
                 currentSources = knowledgeBase['passwort'].sources;
-                return knowledgeBase['passwort'];
+                return { answer: knowledgeBase['passwort'].answer, icon: knowledgeBase['passwort'].icon };
             }
             
             // Check for exact matches first
             if (knowledgeBase[lowerQuestion]) {
                 currentSources = knowledgeBase[lowerQuestion].sources;
-                return knowledgeBase[lowerQuestion];
+                return { answer: knowledgeBase[lowerQuestion].answer, icon: knowledgeBase[lowerQuestion].icon };
             }
             
             // Check for partial matches with improved matching
@@ -2400,7 +2426,7 @@
                     // Also check if the question contains the key as substring (original logic)
                     if (allKeyWordsFound || lowerQuestion.includes(key)) {
                         currentSources = knowledgeBase[key].sources;
-                        return knowledgeBase[key];
+                        return { answer: knowledgeBase[key].answer, icon: knowledgeBase[key].icon };
                     }
                 }
             }
@@ -2412,25 +2438,25 @@
             if (questionWords.some(word => ['scanner', 'scan', 'kamera'].includes(word))) {
                 if (questionWords.some(word => ['start', 'begin', 'aktivier', 'ein'].includes(word))) {
                     currentSources = knowledgeBase['wie starte ich den scanner'].sources;
-                    return knowledgeBase['wie starte ich den scanner'];
+                    return { answer: knowledgeBase['wie starte ich den scanner'].answer, icon: knowledgeBase['wie starte ich den scanner'].icon };
                 }
                 if (questionWords.some(word => ['funktioniert', 'geht', 'kaputt', 'problem'].includes(word))) {
                     currentSources = knowledgeBase['scanner funktioniert nicht'].sources;
-                    return knowledgeBase['scanner funktioniert nicht'];
+                    return { answer: knowledgeBase['scanner funktioniert nicht'].answer, icon: knowledgeBase['scanner funktioniert nicht'].icon };
                 }
                 currentSources = knowledgeBase['wie funktioniert der scanner'].sources;
-                return knowledgeBase['wie funktioniert der scanner'];
+                return { answer: knowledgeBase['wie funktioniert der scanner'].answer, icon: knowledgeBase['wie funktioniert der scanner'].icon };
             }
             
             // Product-related questions
             if (questionWords.some(word => ['produkt', 'artikel', 'ware'].includes(word))) {
                 if (questionWords.some(word => ['hinzufüg', 'add', 'erfass', 'neu'].includes(word))) {
                     currentSources = knowledgeBase['wie füge ich produkte hinzu'].sources;
-                    return knowledgeBase['wie füge ich produkte hinzu'];
+                    return { answer: knowledgeBase['wie füge ich produkte hinzu'].answer, icon: knowledgeBase['wie füge ich produkte hinzu'].icon };
                 }
                 if (questionWords.some(word => ['nicht', 'gefunden', 'finde', 'fehl'].includes(word))) {
                     currentSources = knowledgeBase['produkt nicht gefunden'].sources;
-                    return knowledgeBase['produkt nicht gefunden'];
+                    return { answer: knowledgeBase['produkt nicht gefunden'].answer, icon: knowledgeBase['produkt nicht gefunden'].icon };
                 }
             }
             
@@ -2438,26 +2464,26 @@
             if (questionWords.some(word => ['zahlung', 'bezahl', 'qr', 'code', 'qrcode'].includes(word))) {
                 if (questionWords.some(word => ['funktioniert', 'geht', 'kaputt', 'generier'].includes(word))) {
                     currentSources = knowledgeBase['qr code wird nicht generiert'].sources;
-                    return knowledgeBase['qr code wird nicht generiert'];
+                    return { answer: knowledgeBase['qr code wird nicht generiert'].answer, icon: knowledgeBase['qr code wird nicht generiert'].icon };
                 }
                 currentSources = knowledgeBase['wie bezahle ich mit qr code'].sources;
-                return knowledgeBase['wie bezahle ich mit qr code'];
+                return { answer: knowledgeBase['wie bezahle ich mit qr code'].answer, icon: knowledgeBase['wie bezahle ich mit qr code'].icon };
             }
             
             // Tutorial-related questions
             if (questionWords.some(word => ['tutorial', 'anleitung', 'hilfe', 'lern', 'einweis'].includes(word))) {
                 if (questionWords.some(word => ['verpass', 'inhalt', 'enthält', 'beinhaltet'].includes(word))) {
                     currentSources = knowledgeBase['was verpasse ich im tutorial'].sources;
-                    return knowledgeBase['was verpasse ich im tutorial'];
+                    return { answer: knowledgeBase['was verpasse ich im tutorial'].answer, icon: knowledgeBase['was verpasse ich im tutorial'].icon };
                 }
                 currentSources = knowledgeBase['gibt es ein tutorial'].sources;
-                return knowledgeBase['gibt es ein tutorial'];
+                return { answer: knowledgeBase['gibt es ein tutorial'].answer, icon: knowledgeBase['gibt es ein tutorial'].icon };
             }
             
             // Instagram-related questions
             if (questionWords.some(word => ['instagram', 'insta', 'social', 'media', 'sozial', '@'].includes(word))) {
                 currentSources = knowledgeBase['instagram'].sources;
-                return knowledgeBase['instagram'];
+                return { answer: knowledgeBase['instagram'].answer, icon: knowledgeBase['instagram'].icon };
             }
             
             // Check for greetings
@@ -2466,7 +2492,7 @@
                 const greetings = ['hallo', 'hi', 'guten tag'];
                 const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
                 currentSources = knowledgeBase[randomGreeting].sources;
-                return knowledgeBase[randomGreeting];
+                return { answer: knowledgeBase[randomGreeting].answer, icon: knowledgeBase[randomGreeting].icon };
             }
             
             // Check for thanks
@@ -2475,7 +2501,7 @@
                 const thanks = ['danke', 'dankeschön', 'vielen dank', 'dankö'];
                 const randomThanks = thanks[Math.floor(Math.random() * thanks.length)];
                 currentSources = knowledgeBase[randomThanks].sources;
-                return knowledgeBase[randomThanks];
+                return { answer: knowledgeBase[randomThanks].answer, icon: knowledgeBase[randomThanks].icon };
             }
             
             // Check for goodbye
@@ -2484,30 +2510,36 @@
                 const goodbyes = ['tschau', 'bye', 'ciao'];
                 const randomGoodbye = goodbyes[Math.floor(Math.random() * goodbyes.length)];
                 currentSources = knowledgeBase[randomGoodbye].sources;
-                return knowledgeBase[randomGoodbye];
+                return { answer: knowledgeBase[randomGoodbye].answer, icon: knowledgeBase[randomGoodbye].icon };
             }
             
             // Check for AI identity questions
             if (questionWords.some(word => ['wer', 'was', 'bist', 'du', 'funktionierst', 'kannst', 'name', 'heißt'].includes(word))) {
                 currentSources = knowledgeBase['wer bist du'].sources;
-                return knowledgeBase['wer bist du'];
+                return { answer: knowledgeBase['wer bist du'].answer, icon: knowledgeBase['wer bist du'].icon };
             }
             
             // Check for cost questions
             if (questionWords.some(word => ['kosten', 'preis', 'kostenlos', 'gratis', 'teuer', 'preiswert', 'kostet', 'geld'].includes(word))) {
                 currentSources = knowledgeBase['ist gittertier pro kostenlos'].sources;
-                return knowledgeBase['ist gittertier pro kostenlos'];
+                return { answer: knowledgeBase['ist gittertier pro kostenlos'].answer, icon: knowledgeBase['ist gittertier pro kostenlos'].icon };
             }
             
             // Check for founder questions
             if (questionWords.some(word => ['gründer', 'entwickler', 'erfinder', 'bastian', 'schäfer', 'kaspar', 'niederberger'].includes(word))) {
                 currentSources = knowledgeBase['wer hat gittertier pro entwickelt'].sources;
-                return knowledgeBase['wer hat gittertier pro entwickelt'];
+                return { answer: knowledgeBase['wer hat gittertier pro entwickelt'].answer, icon: knowledgeBase['wer hat gittertier pro entwickelt'].icon };
+            }
+            
+            // Check for future plans questions
+            if (questionWords.some(word => ['zukunft', 'pläne', 'roadmap', 'entwicklung', 'geplant', 'kommend'].includes(word))) {
+                currentSources = knowledgeBase['welche features sind geplant'].sources;
+                return { answer: knowledgeBase['welche features sind geplant'].answer, icon: knowledgeBase['welche features sind geplant'].icon };
             }
             
             // Default response
             currentSources = knowledgeBase['default'].sources;
-            return knowledgeBase['default'];
+            return { answer: knowledgeBase['default'].answer, icon: knowledgeBase['default'].icon };
         }
         
         // Process multiple questions in one message
@@ -2524,7 +2556,8 @@
                 if (result) {
                     results.push({
                         question: sentence,
-                        answer: result
+                        answer: result.answer,
+                        icon: result.icon
                     });
                 }
             }
@@ -2539,12 +2572,7 @@
             }
             
             if (questions.length === 1) {
-                const question = questions[0];
-                return {
-                    html: `<p>${question.answer.answer}</p>`,
-                    icon: question.answer.icon,
-                    banner: question.answer.banner
-                };
+                return `<p>${questions[0].answer}</p>`;
             }
             
             let html = `<div class="multi-response"><p>Ich habe ${questions.length} Fragen in Ihrer Nachricht erkannt:</p>`;
@@ -2553,7 +2581,7 @@
                 html += `
                     <div class="response-section">
                         <div class="response-question">Frage ${index + 1}: "${q.question}"</div>
-                        <div>${q.answer.answer}</div>
+                        <div>${q.icon ? `<i class="${q.icon} topic-icon"></i>` : ''}${q.answer}</div>
                     </div>
                 `;
             });
@@ -2578,36 +2606,31 @@
                 `;
             }
             
-            return {
-                html: html,
-                banner: hasInstagramQuestion ? 'instagram' : null
-            };
-        }
-        
-        // Generate support email with chat history
-        function generateSupportEmail(lastQuestion) {
-            const subject = `Supportanfrage zu Gittertier Pro: ${lastQuestion.substring(0, 30)}...`;
-            
-            let body = `Hallo Gittertier Pro Team,%0D%0A%0D%0A`;
-            body += `Ich benötige Unterstützung bei folgendem Thema:%0D%0A%0D%0A`;
-            
-            // Add chat history
-            body += `Chat-Verlauf:%0D%0A`;
-            chatHistory.forEach(msg => {
-                const prefix = msg.isUser ? 'Ich: ' : 'AI: ';
-                body += `${prefix}${msg.text}%0D%0A`;
-            });
-            
-            body += `%0D%0AMit freundlichen Grüßen`;
-            
-            // Open email client
-            window.location.href = `mailto:kaspar.niederberger@outlook.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+            return html;
         }
         
         // Ask a question programmatically
         function askQuestion(question) {
             aiInput.value = question;
             sendMessage();
+        }
+        
+        // Generate email with chat history
+        function generateSupportEmail(subject = "Supportanfrage Gittertier Pro") {
+            let emailBody = "Hallo Gittertier Pro Team,%0D%0A%0D%0A";
+            emailBody += "Ich benötige Unterstützung bei:%0D%0A%0D%0A";
+            emailBody += "Chat-Verlauf:%0D%0A";
+            
+            // Add chat history to email body
+            chatHistory.forEach(msg => {
+                const timestamp = new Date(msg.timestamp).toLocaleTimeString();
+                const type = msg.type === 'user' ? 'Ich' : 'AI Assistant';
+                emailBody += `${timestamp} - ${type}: ${msg.content}%0D%0A`;
+            });
+            
+            emailBody += "%0D%0AMit freundlichen Grüßen";
+            
+            return `mailto:kaspar.niederberger@outlook.com?subject=${encodeURIComponent(subject)}&body=${emailBody}`;
         }
         
         // Send message
@@ -2644,13 +2667,9 @@
                 const questions = processMultipleQuestions(message);
                 
                 if (questions.length > 0) {
-                    if (questions.length === 1) {
-                        const response = questions[0].answer;
-                        addMessage(response.answer, false, false, false, response.icon, response.banner);
-                    } else {
-                        const response = formatMultipleResponse(questions);
-                        addMessage(response.html, false, false, false, null, response.banner);
-                    }
+                    const response = formatMultipleResponse(questions);
+                    const firstQuestion = questions[0];
+                    addMessage(response, false, false, false, firstQuestion.icon);
                     
                     // Add contact banner for certain types of questions
                     const hasSupportQuestion = questions.some(q => 
@@ -2662,16 +2681,16 @@
                     );
                     
                     if (hasSupportQuestion) {
+                        const banner = `
+                            <div class="contact-banner">
+                                <p>Benötigen Sie weiteren Support?</p>
+                                <a href="${generateSupportEmail('Supportanfrage: ' + message.substring(0, 30) + '...')}">
+                                    <i class="fas fa-envelope"></i> Support kontaktieren
+                                </a>
+                            </div>
+                        `;
+                        
                         setTimeout(() => {
-                            const banner = `
-                                <div class="contact-banner">
-                                    <p>Benötigen Sie weiteren Support?</p>
-                                    <a href="#" onclick="generateSupportEmail('${encodeURIComponent(message)}')">
-                                        <i class="fas fa-envelope"></i> Support kontaktieren
-                                    </a>
-                                </div>
-                            `;
-                            
                             const bannerElement = document.createElement('div');
                             bannerElement.innerHTML = banner;
                             chatContainer.appendChild(bannerElement);
@@ -2682,20 +2701,51 @@
                     // Get and add AI response for single question
                     const response = processQuestion(message);
                     if (response) {
-                        addMessage(response.answer, false, false, false, response.icon, response.banner);
+                        addMessage(response.answer, false, false, false, response.icon);
                         
-                        // Add support banner for unknown questions
-                        if (response === knowledgeBase['default']) {
+                        // Add Instagram banner if question was about Instagram or for certain responses
+                        if (message.toLowerCase().includes('instagram') || 
+                            message.toLowerCase().includes('insta') ||
+                            message.toLowerCase().includes('social media') ||
+                            message.toLowerCase().includes('update') ||
+                            message.toLowerCase().includes('neuigkeit')) {
+                            const banner = `
+                                <div class="instagram-banner">
+                                    <p>Folgen Sie uns auf Instagram für Updates und Tipps!</p>
+                                    <a href="https://instagram.com/gittertierpro" target="_blank">
+                                        <i class="fab fa-instagram"></i> @gittertierpro
+                                    </a>
+                                </div>
+                            `;
+                            
+                            // Add a small delay before showing the banner
                             setTimeout(() => {
-                                const banner = `
-                                    <div class="contact-banner">
-                                        <p>Konnte Ihre Frage nicht beantworten?</p>
-                                        <a href="#" onclick="generateSupportEmail('${encodeURIComponent(message)}')">
-                                            <i class="fas fa-envelope"></i> Support kontaktieren
-                                        </a>
-                                    </div>
-                                `;
-                                
+                                const bannerElement = document.createElement('div');
+                                bannerElement.innerHTML = banner;
+                                chatContainer.appendChild(bannerElement);
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                            }, 500);
+                        }
+                        
+                        // Add contact banner for support-related questions or default responses
+                        if (message.toLowerCase().includes('support') || 
+                            message.toLowerCase().includes('hilfe') ||
+                            message.toLowerCase().includes('problem') ||
+                            message.toLowerCase().includes('fehler') ||
+                            message.toLowerCase().includes('kontakt') ||
+                            message.toLowerCase().includes('passwort vergessen') ||
+                            response.answer.includes('nicht vollständig verstanden')) {
+                            
+                            const banner = `
+                                <div class="contact-banner">
+                                    <p>Benötigen Sie persönlichen Support?</p>
+                                    <a href="${generateSupportEmail('Supportanfrage: ' + message.substring(0, 30) + '...')}">
+                                        <i class="fas fa-envelope"></i> Support kontaktieren
+                                    </a>
+                                </div>
+                            `;
+                            
+                            setTimeout(() => {
                                 const bannerElement = document.createElement('div');
                                 bannerElement.innerHTML = banner;
                                 chatContainer.appendChild(bannerElement);
@@ -2728,6 +2778,10 @@
             }
             if (e.target === sourcesModal) {
                 closeSourcesModal();
+            }
+            if (e.target === blockOverlay) {
+                // Prevent closing block modal by clicking overlay
+                e.stopPropagation();
             }
         });
         
