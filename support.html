@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Support - Gittertier Pro</title>
+    <title>Gittertier Pro Support</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
     :root {
@@ -16,9 +16,9 @@
         --color-success: #16a34a;
         --color-error: #dc2626;
         --color-warning: #f59e0b;
-        --color-warning-bg: #fffbeb;
-        --color-warning-border: #fcd34d;
         --color-overlay: rgba(0, 0, 0, 0.5);
+        --color-tutorial: #FF9900;
+        --color-tutorial-light: #FFF3CD;
         
         --radius: 12px;
         --radius-sm: 6px;
@@ -47,6 +47,20 @@
         
         --header-height: 64px;
         --footer-height: 80px;
+        
+        /* AI-specific colors */
+        --ai-primary: #6e45e2;
+        --ai-secondary: #88d3ce;
+        --ai-gradient: linear-gradient(135deg, #6e45e2, #88d3ce);
+        --ai-bubble-user: #f0f4ff;
+        --ai-bubble-ai: #f8f9fa;
+        
+        /* Response colors for multiple questions */
+        --response-color-1: #6e45e2;
+        --response-color-2: #2563eb;
+        --response-color-3: #16a34a;
+        --response-color-4: #f59e0b;
+        --response-color-5: #dc2626;
     }
 
     * {
@@ -55,27 +69,14 @@
         padding: 0;
     }
 
-        .action-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-md);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius);
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
     body {
         font-family: var(--font-family);
         background-color: var(--color-bg);
         color: var(--color-text);
         line-height: 1.5;
         min-height: 100vh;
+        display: flex;
+        flex-direction: column;
     }
 
     /* Header Styles */
@@ -112,9 +113,11 @@
 
     /* Main Content */
     main {
+        flex: 1;
         max-width: 1200px;
         margin: 0 auto;
         padding: var(--spacing-xl) var(--spacing-lg);
+        width: 100%;
     }
 
     .section {
@@ -186,258 +189,710 @@
         line-height: 1.6;
     }
 
-    /* FAQ Section */
-    .faq-container {
-        margin-top: var(--spacing-xl);
-    }
-
-    .faq-item {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        border: 1px solid var(--color-border);
-        margin-bottom: var(--spacing-md);
-        overflow: hidden;
-    }
-
-    .faq-question {
-        padding: var(--spacing-lg);
-        font-weight: 600;
-        cursor: pointer;
+    /* Rainbow AI Button */
+    .ai-button {
+        position: fixed;
+        bottom: var(--spacing-xl);
+        right: var(--spacing-xl);
+        z-index: 100;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff00ff, #ff0080);
+        background-size: 1000% 1000%;
+        animation: rainbow 10s ease infinite;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: var(--text-xl);
+        cursor: pointer;
+        box-shadow: var(--shadow-md);
+        border: none;
         transition: var(--transition);
     }
 
-    .faq-question:hover {
-        background-color: #f9fafb;
+    .ai-button:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
-    .faq-question i {
-        transition: var(--transition);
+    @keyframes rainbow {
+        0% { background-position: 0% 50% }
+        50% { background-position: 100% 50% }
+        100% { background-position: 0% 50% }
     }
 
-    .faq-answer {
-        padding: 0 var(--spacing-lg);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-        color: var(--color-text-muted);
-    }
-
-    .faq-item.active .faq-question i {
-        transform: rotate(180deg);
-    }
-
-    .faq-item.active .faq-answer {
-        max-height: 500px;
-        padding-bottom: var(--spacing-lg);
-    }
-
-    /* Contact Form */
-    .contact-form {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        border: 1px solid var(--color-border);
-        padding: var(--spacing-xl);
-        box-shadow: var(--shadow);
-    }
-
-    .form-group {
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: var(--spacing-sm);
-        font-weight: 500;
-    }
-
-    .form-input, .form-textarea, .form-select {
+    /* AI Modal */
+    .ai-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
+        height: 100%;
+        background-color: var(--color-overlay);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .ai-modal-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        width: 100%;
+        max-width: 900px;
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .ai-header {
+        padding: var(--spacing-lg);
+        background: var(--ai-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .ai-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-lg);
+    }
+
+    .ai-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: var(--text-xl);
+        cursor: pointer;
+        padding: var(--spacing-xs);
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+    }
+
+    .ai-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .ai-chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--spacing-lg);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .ai-message {
+        max-width: 80%;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .ai-message.user {
+        align-self: flex-end;
+        background-color: var(--ai-bubble-user);
+        border-bottom-right-radius: var(--radius-sm);
+    }
+
+    .ai-message.ai {
+        align-self: flex-start;
+        background-color: var(--ai-bubble-ai);
+        border-bottom-left-radius: var(--radius-sm);
+        border: 1px solid var(--color-border);
+    }
+
+    .ai-message.ai.warning {
+        background-color: #fff5f5;
+        border-color: var(--color-error);
+        border-width: 2px;
+    }
+
+    .ai-message.ai.blocked {
+        background-color: #fef2f2;
+        border-color: var(--color-error);
+        border-width: 3px;
+    }
+
+    .ai-input-container {
+        padding: var(--spacing-lg);
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        gap: var(--spacing-md);
+        background-color: var(--color-bg);
+    }
+
+    .ai-input {
+        flex: 1;
         padding: var(--spacing-md);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
+        border-radius: var(--radius);
         font-size: var(--text-base);
+        resize: none;
+        min-height: 50px;
+        max-height: 150px;
         transition: var(--transition);
     }
 
-    .form-input:focus, .form-textarea:focus, .form-select:focus {
+    .ai-input:focus {
         outline: none;
-        border-color: var(--color-accent);
+        border-color: var(--ai-primary);
         box-shadow: var(--focus-ring);
     }
 
-    .form-textarea {
-        min-height: 150px;
-        resize: vertical;
-    }
-
-    .form-submit {
-        background-color: var(--color-accent);
+    .ai-send {
+        background-color: var(--ai-primary);
         color: white;
         border: none;
         border-radius: var(--radius);
-        padding: var(--spacing-md) var(--spacing-xl);
-        font-size: var(--text-base);
+        padding: var(--spacing-md) var(--spacing-lg);
         font-weight: 600;
         cursor: pointer;
         transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .ai-send:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .ai-suggestions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+
+    .ai-suggestion {
+        padding: var(--spacing-md);
+        background-color: var(--ai-bubble-ai);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
+        text-align: left;
+        font-size: var(--text-sm);
+    }
+
+    .ai-suggestion:hover {
+        background-color: var(--ai-bubble-user);
+        transform: translateY(-2px);
+    }
+
+    .ai-typing {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        color: var(--color-text-muted);
+        font-style: italic;
+        margin-top: var(--spacing-md);
+    }
+
+    .ai-typing-dot {
+        width: 6px;
+        height: 6px;
+        background-color: var(--color-text-muted);
+        border-radius: 50%;
+        animation: typing 1.4s infinite both;
+    }
+
+    .ai-typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .ai-typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-5px); }
+    }
+
+    .ai-sources {
+        margin-top: var(--spacing-md);
+        padding: var(--spacing-md);
+        background-color: rgba(110, 69, 226, 0.05);
+        border-radius: var(--radius);
+        border-left: 3px solid var(--ai-primary);
+    }
+
+    .ai-sources-title {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        color: var(--ai-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .ai-source-item {
+        margin-top: var(--spacing-xs);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: var(--transition);
+        padding: var(--spacing-xs);
+        border-radius: var(--radius-sm);
+    }
+
+    .ai-source-item:hover {
+        background-color: rgba(110, 69, 226, 0.1);
+        color: var(--ai-primary);
+    }
+
+    /* Instagram Banner */
+    .instagram-banner {
+        background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        color: white;
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        margin-top: var(--spacing-md);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: var(--shadow);
+    }
+
+    .instagram-banner a {
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 30px;
+        transition: var(--transition);
+    }
+
+    .instagram-banner a:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Multi-question response styling */
+    .multi-response {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .response-section {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        border-left: 4px solid var(--response-color-1);
+        background-color: rgba(110, 69, 226, 0.05);
+    }
+
+    .response-section:nth-child(2) {
+        border-left-color: var(--response-color-2);
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    .response-section:nth-child(3) {
+        border-left-color: var(--response-color-3);
+        background-color: rgba(22, 163, 74, 0.05);
+    }
+
+    .response-section:nth-child(4) {
+        border-left-color: var(--response-color-4);
+        background-color: rgba(245, 158, 11, 0.05);
+    }
+
+    .response-section:nth-child(5) {
+        border-left-color: var(--response-color-5);
+        background-color: rgba(220, 38, 38, 0.05);
+    }
+
+    .response-question {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        color: var(--color-text);
+    }
+
+    /* Contact Banner */
+    .contact-banner {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        margin-top: var(--spacing-md);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: var(--shadow);
+    }
+
+    .contact-banner a {
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 30px;
+        transition: var(--transition);
+    }
+
+    .contact-banner a:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Future Plans Banner */
+    .future-banner {
+        background: linear-gradient(135deg, #16a34a, #0d6910);
+        color: white;
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        margin-top: var(--spacing-md);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: var(--shadow);
+    }
+
+    .future-banner h4 {
+        font-size: var(--text-lg);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .future-banner ul {
+        text-align: left;
+        margin: var(--spacing-sm) 0;
+        padding-left: var(--spacing-lg);
+    }
+
+    .future-banner li {
+        margin-bottom: var(--spacing-xs);
+    }
+
+    /* Block Modal - COMPLETELY REDESIGNED */
+    .block-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+        backdrop-filter: blur(5px);
+    }
+
+    .block-modal-content {
+        background-color: #1a1a1a;
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        animation: shake 0.5s ease, pulse 2s infinite;
+        border: 3px solid var(--color-error);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .block-modal-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff00ff, #ff0080);
+        background-size: 1000% 1000%;
+        animation: rainbow 10s ease infinite;
+    }
+
+    .block-icon {
+        font-size: 4rem;
+        color: var(--color-error);
+        margin-bottom: var(--spacing-lg);
+        animation: pulse 2s infinite;
+    }
+
+    .block-title {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-md);
+        color: var(--color-error);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .block-message {
+        margin-bottom: var(--spacing-xl);
+        line-height: 1.6;
+        color: #f3f4f6;
+    }
+
+    .block-timer {
+        font-size: var(--text-xl);
+        font-weight: 700;
+        color: var(--color-error);
+        margin-bottom: var(--spacing-xl);
+        background: rgba(220, 38, 38, 0.2);
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        display: inline-block;
+        min-width: 100px;
+    }
+
+    .block-reason {
+        background: rgba(255, 255, 255, 0.1);
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        margin-bottom: var(--spacing-lg);
+        font-size: var(--text-sm);
+        color: #9ca3af;
+    }
+
+    .modal-btn {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        font-size: var(--text-base);
         display: inline-flex;
         align-items: center;
         gap: var(--spacing-sm);
     }
 
-    .form-submit:hover {
-        background-color: var(--color-accent-hover);
+    .modal-btn.primary {
+        background-color: var(--color-error);
+        color: white;
+    }
+
+    .modal-btn.primary:hover {
+        background-color: #b91c1c;
         transform: translateY(-2px);
     }
 
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--spacing-lg);
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
     }
 
-    @media (max-width: 768px) {
-        .form-row {
-            grid-template-columns: 1fr;
-        }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
     }
 
-    /* Status Messages */
-    .status-message {
-        padding: var(--spacing-md);
-        border-radius: var(--radius);
-        margin-bottom: var(--spacing-md);
+    /* Sources Modal */
+    .sources-modal {
         display: none;
-    }
-
-    .status-message.success {
-        background-color: #f0fdf4;
-        color: #166534;
-        border: 1px solid #bbf7d0;
-        display: block;
-    }
-
-    .status-message.error {
-        background-color: #fef2f2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-        display: block;
-    }
-
-    /* Footer */
-    footer {
-        background: #f9fafb;
-        padding: var(--spacing-xxl) 5% var(--spacing-lg);
-        text-align: center;
-        color: var(--color-text);
-        border-top: 1px solid var(--color-border);
-    }
-
-    .footer-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: var(--spacing-xl);
-        text-align: left;
-    }
-
-    .footer-section h3 {
-        font-size: var(--text-lg);
-        font-weight: 600;
-        margin-bottom: var(--spacing-md);
-        color: var(--color-text);
-    }
-
-    .footer-links {
-        list-style: none;
-    }
-
-    .footer-links li {
-        margin-bottom: var(--spacing-sm);
-    }
-
-    .footer-links a {
-        color: var(--color-text-muted);
-        text-decoration: none;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .footer-links a:hover {
-        color: var(--color-accent);
-        transform: translateX(5px);
-    }
-
-    .social-links {
-        display: flex;
-        gap: var(--spacing-sm);
-        margin-top: var(--spacing-md);
-    }
-
-    .social-link {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--color-bg);
-        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--color-overlay);
+        z-index: 1010;
         align-items: center;
         justify-content: center;
-        color: var(--color-text);
+        padding: var(--spacing-lg);
+    }
+
+    .sources-modal-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        width: 100%;
+        max-width: 700px;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: var(--spacing-xl);
+        box-shadow: var(--shadow-md);
+        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+        position: relative;
+    }
+
+    .sources-close {
+        position: absolute;
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        background: none;
+        border: none;
+        font-size: var(--text-xl);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        padding: var(--spacing-xs);
+        border-radius: var(--radius-sm);
         transition: var(--transition);
-        text-decoration: none;
-        font-size: var(--text-lg);
-        border: 1px solid var(--color-border);
     }
 
-    .social-link:hover {
-        background: var(--color-accent);
+    .sources-close:hover {
+        color: var(--color-error);
+        background-color: rgba(220, 38, 38, 0.1);
+    }
+
+    .sources-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        margin-bottom: var(--spacing-lg);
+        color: var(--ai-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .source-detail {
+        margin-bottom: var(--spacing-xl);
+        padding: var(--spacing-md);
+        background-color: #f9fafb;
+        border-radius: var(--radius);
+        border-left: 3px solid var(--ai-primary);
+    }
+
+    .source-detail-title {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        color: var(--color-text);
+    }
+
+    .source-detail-content {
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+        line-height: 1.6;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .source-detail-reason {
+        padding: var(--spacing-md);
+        background-color: rgba(110, 69, 226, 0.05);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-xs);
+        color: var(--ai-primary);
+    }
+
+    /* Source Banner Styles */
+    .source-banner {
+        margin-top: var(--spacing-md);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        background-color: #f0f4ff;
+        border-left: 3px solid var(--color-accent);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .source-banner-icon {
+        font-size: 1.5rem;
+        color: var(--color-accent);
+    }
+
+    .source-banner-content {
+        flex: 1;
+    }
+
+    .source-banner-title {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        color: var(--color-accent);
+    }
+
+    .source-banner-text {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    .source-banner-button {
+        background-color: var(--color-accent);
         color: white;
-        transform: translateY(-3px);
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--text-xs);
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
     }
 
-    .copyright {
-        margin-top: var(--spacing-xl);
-        padding-top: var(--spacing-md);
-        border-top: 1px solid var(--color-border);
-        color: var(--color-text-muted);
-        font-size: var(--text-sm);
+    .source-banner-button:hover {
+        background-color: var(--color-accent-hover);
     }
 
-    /* Utility Classes */
-    .text-muted {
-        color: var(--color-text-muted);
-    }
-
-    .text-sm {
-        font-size: var(--text-sm);
-    }
-
-    /* Animations */
+    /* Animation Keyframes */
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
+        from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    .fade-in {
-        animation: fadeIn 0.6s ease-out;
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
     }
 
-    /* Responsive Design */
+    /* Mobile Optimization - Enhanced */
     @media (max-width: 768px) {
-        :root {
-            --spacing-lg: 20px;
-            --spacing-xl: 24px;
-            --spacing-xxl: 40px;
+        .ai-modal-content {
+            height: 100%;
+            width: 100%;
+            max-width: none;
+            border-radius: 0;
+            margin: 0;
+        }
+        
+        .ai-message {
+            max-width: 90%;
+        }
+        
+        .ai-suggestions {
+            grid-template-columns: 1fr;
+        }
+        
+        .ai-button {
+            bottom: var(--spacing-md);
+            right: var(--spacing-md);
+            width: 50px;
+            height: 50px;
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        header {
+            padding: 0 var(--spacing-md);
+        }
+        
+        .logo {
+            font-size: var(--text-lg);
         }
         
         main {
-            padding: var(--spacing-lg) var(--spacing-md);
+            padding: var(--spacing-md);
         }
         
         .section-title {
@@ -448,34 +903,89 @@
             font-size: var(--text-base);
         }
         
-        .content-grid {
-            grid-template-columns: 1fr;
+        .ai-header {
+            padding: var(--spacing-md);
         }
         
-        .footer-content {
-            grid-template-columns: 1fr;
+        .ai-chat-container {
+            padding: var(--spacing-md);
+        }
+        
+        .ai-input-container {
+            padding: var(--spacing-md);
+            flex-direction: column;
+        }
+        
+        .ai-send {
+            width: 100%;
+        }
+        
+        /* Improved mobile input */
+        .ai-input {
+            min-height: 60px;
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        
+        /* Mobile-friendly suggestions */
+        .ai-suggestion {
+            padding: var(--spacing-sm);
             text-align: center;
         }
         
-        .footer-links a {
-            justify-content: center;
+        /* Better spacing for mobile */
+        .section {
+            margin-bottom: var(--spacing-lg);
         }
-        
-        .social-links {
-            justify-content: center;
+
+        /* Block modal mobile optimization */
+        .block-modal-content {
+            padding: var(--spacing-lg);
+            margin: var(--spacing-md);
+        }
+
+        .block-title {
+            font-size: var(--text-xl);
         }
     }
 
     @media (max-width: 480px) {
-        header {
-            padding: 0 var(--spacing-md);
+        :root {
+            --spacing-lg: 16px;
+            --spacing-xl: 20px;
+            --header-height: 56px;
         }
         
-        .logo {
-            font-size: var(--text-lg);
+        main {
+            padding: var(--spacing-sm);
         }
         
         .section-title {
+            font-size: var(--text-lg);
+        }
+        
+        .section-subtitle {
+            font-size: var(--text-sm);
+        }
+        
+        .feature-card {
+            padding: var(--spacing-md);
+        }
+        
+        .feature-card i {
+            font-size: 2rem;
+        }
+        
+        /* Improved touch targets */
+        .control-btn, .action-btn {
+            min-height: 44px;
+        }
+        
+        /* Better mobile header */
+        .header-controls {
+            gap: var(--spacing-sm);
+        }
+        
+        .logo span {
             font-size: var(--text-lg);
         }
     }
@@ -487,292 +997,1930 @@
             --color-text: #f3f4f6;
             --color-text-muted: #9ca3af;
             --color-border: #374151;
+            --ai-bubble-user: #1f2937;
+            --ai-bubble-ai: #1a202c;
         }
         
         body {
             background-color: var(--color-bg);
         }
         
-        .feature-card, .contact-form, .faq-item {
+        .source-detail {
             background-color: #1f2937;
-            border-color: var(--color-border);
         }
         
-        .faq-question:hover {
-            background-color: #374151;
-        }
-        
-        .status-message.success {
-            background-color: #052e16;
-            color: #86efac;
-            border-color: #14532d;
-        }
-        
-        .status-message.error {
-            background-color: #450a0a;
-            color: #fca5a5;
-            border-color: #7f1d1d;
-        }
-        
-        footer {
+        .ai-input {
             background-color: #1f2937;
+            color: var(--color-text);
             border-color: var(--color-border);
         }
+
+        .ai-message.ai.warning {
+            background-color: #2a1a1a;
+        }
+
+        .ai-message.ai.blocked {
+            background-color: #2a1a1a;
+        }
+
+        .response-section {
+            background-color: rgba(110, 69, 226, 0.1);
+        }
+
+        .response-section:nth-child(2) {
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .response-section:nth-child(3) {
+            background-color: rgba(22, 163, 74, 0.1);
+        }
+
+        .response-section:nth-child(4) {
+            background-color: rgba(245, 158, 11, 0.1);
+        }
+
+        .response-section:nth-child(5) {
+            background-color: rgba(220, 38, 38, 0.1);
+        }
         
-        .social-link {
-            background-color: #374151;
-            border-color: var(--color-border);
+        .source-banner {
+            background-color: #1e293b;
+            border-left-color: var(--ai-primary);
         }
     }
     </style>
 </head>
 <body>
+    <!-- Header and main content remain exactly the same -->
     <header>
         <div class="logo">
             <i class="fas fa-shopping-cart"></i>
-            <span>Gittertier Pro</span>
+            <span>Gittertier Pro Support</span>
         </div>
         <div class="header-controls">
-            <a href="index" class="action-btn">
-                <i class="fas fa-home"></i> Zur Kasse
-            </a>
+            <button class="action-btn" onclick="window.location.href='index'">
+                <i class="fas fa-arrow-left"></i>
+                Zurück
+            </button>
         </div>
     </header>
     
     <main>
-        <!-- Einführung -->
         <section class="section fade-in">
-            <h2 class="section-title">Gittertier Pro Support</h2>
-            <p class="section-subtitle">Hier finden Sie Hilfe zu häufigen Problemen und können bei Bedarf direkt Kontakt mit unserem Support-Team aufnehmen.</p>
+            <h2 class="section-title">Willkommen beim Gittertier Pro Support</h2>
+            <p class="section-subtitle">Hier finden Sie Hilfe zu allen Fragen rund um Gittertier Pro. Unser KI-Assistent steht Ihnen jederzeit zur Verfügung.</p>
             
             <div class="content-grid">
                 <div class="feature-card">
-                    <i class="fas fa-question-circle"></i>
-                    <h3>Häufige Probleme</h3>
-                    <p>Lösungen für die am häufigsten auftretenden Fragen und Probleme mit Gittertier Pro.</p>
+                    <i class="fas fa-robot"></i>
+                    <h3>KI-Assistent</h3>
+                    <p>Unser intelligenter Assistent beantwortet Ihre Fragen zu Gittertier Pro basierend auf der Dokumentation und den vorhandenen Dateien.</p>
                 </div>
                 
                 <div class="feature-card">
                     <i class="fas fa-book"></i>
-                    <h3>Anleitungen</h3>
-                    <p>Schritt-für-Schritt-Anleitungen zur Einrichtung und Nutzung aller Funktionen.</p>
+                    <h3>Dokumentation</h3>
+                    <p>Umfassende Informationen zu allen Funktionen, Einstellungen und Möglichkeiten von Gittertier Pro.</p>
                 </div>
                 
                 <div class="feature-card">
-                    <i class="fas fa-envelope"></i>
-                    <h3>Kontakt</h3>
-                    <p>Direkter Kontakt zu unserem Support-Team für individuelle Unterstützung.</p>
+                    <i class="fas fa-question-circle"></i>
+                    <h3>Häufige Fragen</h3>
+                    <p>Antworten auf die am häufigsten gestellten Fragen zu Installation, Einrichtung und Fehlerbehebung.</p>
                 </div>
             </div>
         </section>
         
-        <!-- Häufige Probleme -->
         <section class="section fade-in">
-            <h2 class="section-title">Häufige Fragen & Probleme</h2>
-            <p class="section-subtitle">Lösungen für häufig auftretende Probleme mit Gittertier Pro</p>
+            <h2 class="section-title">Häufige Fragen</h2>
             
-            <div class="faq-container">
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Der Scanner erkennt keine Barcodes</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Mögliche Lösungen:</p>
-                        <ul>
-                            <li>Stellen Sie sicher, dass die Kamera nicht verschmutzt ist</li>
-                            <li>Überprüfen Sie die Kameraberechtigungen in Ihrem Browser</li>
-                            <li>Versuchen Sie, die Beleuchtung zu verbessern</li>
-                            <li>Starten Sie den Scanner neu</li>
-                        </ul>
-                    </div>
+            <div class="content-grid">
+                <div class="feature-card">
+                    <h3>Wie starte ich den Scanner?</h3>
+                    <p>Klicken Sie auf den "Scanner starten" Button auf der Hauptseite. Stellen Sie sicher, dass Sie Kamera-Zugriff erlauben.</p>
                 </div>
                 
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>QR-Code wird nicht generiert</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Wenn kein QR-Code generiert wird:</p>
-                        <ul>
-                            <li>Überprüfen Sie, ob Artikel im Warenkorb sind</li>
-                            <li>Laden Sie die Seite neu</li>
-                            <li>Stellen Sie sicher, dass JavaScript aktiviert ist</li>
-                        </ul>
-                    </div>
+                <div class="feature-card">
+                    <h3>Wie füge ich Produkte manuell hinzu?</h3>
+                    <p>Nutzen Sie den "Manuell" Button unter dem Scanner. Sie benötigen dazu Administrator-Rechte.</p>
                 </div>
                 
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Verbindungsprobleme zwischen Geräten</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Bei Verbindungsproblemen:</p>
-                        <ul>
-                            <li>Stellen Sie sicher, dass beide Geräte im selben Netzwerk sind</li>
-                            <li>Überprüfen Sie die Firewall-Einstellungen</li>
-                            <li>Versuchen Sie, die PeerJS-Verbindung neu zu initialisieren</li>
-                        </ul>
-                    </div>
+                <div class="feature-card">
+                    <h3>Wie generiere ich einen QR-Code zur Bezahlung?</h3>
+                    <p>Fügen Sie Produkte zum Warenkorb hinzu und klicken Sie auf "Bezahlen", um einen QR-Code zu generieren.</p>
                 </div>
                 
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Produkte werden nicht gespeichert</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Wenn Produkte nicht gespeichert werden:</p>
-                        <ul>
-                            <li>Überprüfen Sie den lokalen Speicher des Browsers</li>
-                            <li>Löschen Sie den Cache und versuchen Sie es erneut</li>
-                            <li>Stellen Sie sicher, dass Sie alle erforderlichen Felder ausgefüllt haben</li>
-                        </ul>
-                    </div>
+                <div class="feature-card">
+                    <h3>Wie aktiviere ich den Dark Mode?</h3>
+                    <p>Gittertier Pro unterstützt systemeigenen Dark Mode. Aktivieren Sie ihn in Ihren Systemeinstellungen.</p>
                 </div>
-            </div>
-        </section>
-        
-        <!-- Kontaktformular -->
-        <section class="section fade-in">
-            <h2 class="section-title">Kontaktieren Sie uns</h2>
-            <p class="section-subtitle">Haben Sie ein Problem, das nicht in der Liste oben aufgeführt ist? Unser Support-Team hilft Ihnen gerne weiter.</p>
-            
-            <div id="form-status"></div>
-            
-            <div class="contact-form">
-                <form id="support-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" id="name" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email" class="form-label">E-Mail</label>
-                            <input type="email" id="email" class="form-input" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="subject" class="form-label">Betreff</label>
-                        <select id="subject" class="form-select" required>
-                            <option value="">Bitte wählen Sie...</option>
-                            <option value="technisches_problem">Technisches Problem</option>
-                            <option value="funktionsfrage">Frage zu Funktionen</option>
-                            <option value="abrechnung">Frage zur Abrechnung</option>
-                            <option value="sonstiges">Sonstiges</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="message" class="form-label">Nachricht</label>
-                        <textarea id="message" class="form-textarea" required></textarea>
-                    </div>
-                    
-                    <button type="submit" class="form-submit">
-                        <i class="fas fa-paper-plane"></i>
-                        Nachricht senden
-                    </button>
-                </form>
             </div>
         </section>
     </main>
     
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Gittertier Pro</h3>
-                <p>Die intelligente Kassensoftware für den modernen Einzelhandel. Einfach, flexibel, leistungsstark.</p>
+    <!-- Rainbow AI Button -->
+    <button class="ai-button" onclick="openAIModal()">
+        <i class="fas fa-robot"></i>
+    </button>
+    
+    <!-- AI Modal -->
+    <div class="ai-modal" id="aiModal">
+        <div class="ai-modal-content">
+            <div class="ai-header">
+                <div class="ai-title">
+                    <i class="fas fa-robot"></i>
+                    <span>Gittertier AI Assistant</span>
+                </div>
+                <button class="ai-close" onclick="closeAIModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <div class="footer-section">
-                <h3>Links</h3>
-                <ul class="footer-links">
-                    <li><a href="index"><i class="fas fa-home"></i> Zur Kasse</a></li>
-                    <li><a href="about"><i class="fas fa-info-circle"></i> Über Gittertier Pro</a></li>
-                    <!-- <li><a href="support"><i class="fas fa-question-circle"></i> Support</a></li> -->
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Kontakt</h3>
-                <p>Support-Team</p>
-                <p>E-Mail: support@gittertierpro.de</p>
-                <div class="social-links">
-                    <a href="https://instagram.com/gittertierpro" class="social-link" target="_blank">
-                        <i class="fab fa-instagram"></i>
-                    </a>
+            <div class="ai-chat-container" id="chatContainer">
+                <div class="ai-message ai">
+                    <p>Hallo! Ich bin der Gittertier AI Assistant. Ich kann Ihnen bei Fragen zu Gittertier Pro helfen. Was möchten Sie wissen?</p>
+                    
+                    <div class="ai-suggestions">
+                        <button class="ai-suggestion" onclick="askQuestion('Wie funktioniert der Scanner?')">
+                            Wie funktioniert der Scanner?
+                        </button>
+                        <button class="ai-suggestion" onclick="askQuestion('Wie füge ich Produkte hinzu?')">
+                            Wie füge ich Produkte hinzu?
+                        </button>
+                        <button class="ai-suggestion" onclick="askQuestion('Was ist Gittertier Pro?')">
+                            Was ist Gittertier Pro?
+                        </button>
+                        <button class="ai-suggestion" onclick="askQuestion('Wie bezahle ich mit QR-Code?')">
+                            Wie bezahle ich mit QR-Code?
+                        </button>
+                    </div>
                 </div>
             </div>
+            
+            <div class="ai-input-container">
+                <textarea class="ai-input" id="aiInput" placeholder="Fragen Sie etwas über Gittertier Pro..." rows="1"></textarea>
+                <button class="ai-send" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                    Senden
+                </button>
+            </div>
         </div>
-        
-        <div class="copyright">
-            &copy; 2025 Gittertier Pro. Alle Rechte vorbehalten.
+    </div>
+    
+    <!-- Block Modal - COMPLETELY REDESIGNED -->
+    <div class="block-modal" id="blockModal">
+        <div class="block-modal-content">
+            <div class="block-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+            <h2 class="block-title">Zugang vorübergehend gesperrt</h2>
+            <p class="block-message">Sie haben sich nicht angemessen verhalten. Der Zugang zum KI-Assistenten wurde für 5 Minuten gesperrt.</p>
+            <div class="block-reason" id="blockReason">
+                Grund: Unangemessene Sprache
+            </div>
+            <div class="block-timer" id="blockTimer">05:00</div>
+            <button class="modal-btn primary" onclick="location.reload()">
+                <i class="fas fa-redo"></i>
+                Seite neu laden
+            </button>
         </div>
-    </footer>
+    </div>
+    
+    <!-- Sources Modal -->
+    <div class="sources-modal" id="sourcesModal">
+        <div class="sources-modal-content">
+            <button class="sources-close" onclick="closeSourcesModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="sources-title">
+                <i class="fas fa-file-alt"></i>
+                Quellenangaben
+            </h2>
+            
+            <div id="sourcesContent">
+                <!-- Sources will be populated here -->
+            </div>
+        </div>
+    </div>
 
     <script>
-        // FAQ Accordion
-        document.querySelectorAll('.faq-question').forEach(question => {
-            question.addEventListener('click', () => {
-                const item = question.parentElement;
-                item.classList.toggle('active');
-            });
-        });
-        
-        // Form Submission
-        document.getElementById('support-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value;
-            
-            // Subject mapping
-            const subjectMap = {
-                'technisches_problem': 'Technisches Problem',
-                'funktionsfrage': 'Frage zu Funktionen',
-                'abrechnung': 'Frage zur Abrechnung',
-                'sonstiges': 'Sonstige Anfrage'
-            };
-            
-            const subjectText = subjectMap[subject] || 'Support-Anfrage';
-            
-            // Create mailto link
-            const mailtoLink = `mailto:support@gittertierpro.de?subject=${encodeURIComponent(subjectText)} - ${encodeURIComponent(name)}&body=${encodeURIComponent('Name: ' + name + '\nE-Mail: ' + email + '\n\nNachricht:\n' + message)}`;
-            
-            // Open email client
-            window.location.href = mailtoLink;
-            
-            // Show confirmation message
-            const statusElement = document.getElementById('form-status');
-            statusElement.className = 'status-message success';
-            statusElement.innerHTML = '<p><i class="fas fa-check-circle"></i> Ihre E-Mail-Anwendung wird geöffnet. Senden Sie die Nachricht, um mit unserem Support in Kontakt zu treten.</p>';
-            
-            // Scroll to status message
-            statusElement.scrollIntoView({ behavior: 'smooth' });
-            
-            // Reset form
-            this.reset();
-        });
-        
-        // Add scroll animations
-        document.addEventListener('DOMContentLoaded', function() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animation = `fadeIn 0.8s ease-out forwards`;
+        // Enhanced AI Knowledge Base with 70+ question-answer pairs
+        const knowledgeBase = {
+            // General questions
+            "was ist gittertier pro": {
+                answer: "Gittertier Pro ist eine revolutionäre Kassensoftware, die speziell für den modernen Einzelhandel entwickelt wurde. Sie vereinfacht Prozesse, steigert Effizienz und verbessert Kundenerlebnisse durch intuitive Bedienung, Echtzeit-Synchronisation und optimierte Performance auf allen Geräten.",
+                sources: [
+                    {
+                        file: "about",
+                        content: "Eine revolutionäre Kassensoftware, die speziell für den modernen Einzelhandel entwickelt wurde, um Prozesse zu vereinfachen, Effizienz zu steigern und Kundenerlebnisse zu verbessern.",
+                        reason: "Enthält die Hauptbeschreibung von Gittertier Pro"
                     }
-                });
-            }, { threshold: 0.1 });
+                ]
+            },
+            "wie funktioniert gittertier pro": {
+                answer: "Gittertier Pro kombiniert intuitive Bedienung mit leistungsstarken Funktionen. Die Software ermöglicht das Scannen von Produkten, Verwaltung des Warenkorbs, Generierung von QR-Codes für Zahlungen und bietet Echtzeit-Synchronisation zwischen allen Geräten. Sie ist cloud-basiert und benötigt keine aufwändige Server-Infrastruktur.",
+                sources: [
+                    {
+                        file: "about",
+                        content: "Gittertier Pro kombiniert intuitive Bedienung mit leistungsstarken Funktionen. Keine langen Einarbeitungszeiten, keine komplexen Menüs - einfach einscannen, bezahlen, fertig.",
+                        reason: "Beschreibt die Kernfunktionalität"
+                    },
+                    {
+                        file: "index",
+                        content: "Scanner-Funktionalität, Warenkorb-Verwaltung und QR-Generierung",
+                        reason: "Zeigt die Hauptfunktionen der App"
+                    }
+                ]
+            },
             
-            document.querySelectorAll('.section').forEach(section => {
-                observer.observe(section);
+            // Scanner functionality
+            "wie starte ich den scanner": {
+                answer: "Um den Scanner zu starten, klicken Sie auf den 'Scanner starten' Button auf der Hauptseite. Stellen Sie sicher, dass Sie Kamera-Zugriff erlauben, wenn Ihr Browser danach fragt. Der Scanner erkennt automatisch Barcodes und zeigt die erkannten Produkte an.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Scanner Initialization and toggleScanner function",
+                        reason: "Enthält den Code für die Scanner-Funktionalität"
+                    }
+                ]
+            },
+            "scanner funktioniert nicht": {
+                answer: "Wenn der Scanner nicht funktioniert, prüfen Sie folgende Punkte: 1) Haben Sie Kamera-Zugriff erlaubt? 2) Funktioniert Ihre Kamera mit anderen Apps? 3) Ist ausreichend Licht vorhanden? 4) Probieren Sie, den Scanner neu zu starten. Wenn Probleme bestehen, können Sie Produkte auch manuell hinzufügen.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Scanner error handling and fallback options",
+                        reason: "Behandelt Scanner-Fehler und bietet Alternativen"
+                    }
+                ]
+            },
+            "scanner erkennt keine barcodes": {
+                answer: "Wenn der Scanner keine Barcodes erkennt, prüfen Sie: 1) Kamera-Zugriff erlaubt, 2) Ausreichende Beleuchtung, 3) Saubere Kameralinse, 4) Korrekte Haltung des Barcodes. Als Alternative können Sie Produkte manuell hinzufügen.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Barcode scanning troubleshooting",
+                        reason: "Bietet Lösungen für Scanner-Probleme"
+                    }
+                ]
+            },
+            
+            // Product management
+            "wie füge ich produkte hinzu": {
+                answer: "Sie können Produkte auf zwei Wegen hinzufügen: 1) Durch Scannen des Barcodes mit dem Scanner oder 2) Manuelles Hinzufügen über den 'Manuell' Button. Beim manuellen Hinzufügen benötigen Sie Administrator-Rechte und geben Produktname, Preis und optional einen Barcode ein.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "showProductModal and saveProduct functions",
+                        reason: "Implementiert die manuelle Produkterfassung"
+                    }
+                ]
+            },
+            "produkt nicht gefunden": {
+                answer: "Wenn ein Produkt nicht gefunden wird, können Sie es manuell hinzufügen. Klicken Sie dazu auf den 'Manuell' Button unter dem Scanner und geben Sie die Produktdetails ein. Das Produkt wird dann in Ihrer lokalen Datenbank gespeichert und beim nächsten Scan erkannt.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "handleBarcode function with fallback to manual product addition",
+                        reason: "Behandelt den Fall, wenn ein Produkt nicht erkannt wird"
+                    }
+                ]
+            },
+            
+            // Payment process
+            "wie bezahle ich mit qr code": {
+                answer: "Um mit QR-Code zu bezahlen, fügen Sie zunächst Produkte zum Warenkorb hinzu. Klicken Sie dann auf den 'Bezahlen' Button unten auf der Seite. Es wird ein QR-Code generiert, den der Kunde mit seinem Smartphone scannen kann. Der Kunde wird zur Bezahlseite weitergeleitet, wo die Zahlung abgeschlossen wird.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "generateQR function and payment process",
+                        reason: "Implementiert die QR-Generierung für Zahlungen"
+                    },
+                    {
+                        file: "customer",
+                        content: "Complete payment interface for customers",
+                        reason: "Zeigt die Kundenseite für Zahlungen"
+                    }
+                ]
+            },
+            "qr code wird nicht generiert": {
+                answer: "Wenn der QR-Code nicht generiert wird, stellen Sie sicher, dass sich Produkte im Warenkorb befinden. Bei leeren Warenkorb kann kein QR-Code generiert werden. Prüfen Sie auch, ob JavaScript in Ihrem Browser aktiviert ist, da die QR-Generierung clientseitig erfolgt.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "generateQR function with cart validation",
+                        reason: "Überprüft den Warenkorb vor QR-Generierung"
+                    }
+                ]
+            },
+            
+            // Tutorial and help
+            "gibt es ein tutorial": {
+                answer: "Ja, Gittertier Pro bietet ein umfassendes Tutorial, das Sie durch alle Funktionen führt. Klicken Sie auf das Fragezeichen-Symbol in der Kopfzeile, um das Tutorial zu starten. Es zeigt Ihnen Schritt für Schritt, wie Sie Produkte scannen, den Warenkorb verwalten und Bezahlvorgänge durchführen.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Tutorial system with step-by-step guidance",
+                        reason: "Implementiert das Tutorial-System"
+                    }
+                ]
+            },
+            "tutorial schritte": {
+                answer: "Das Gittertier Pro Tutorial besteht aus mehreren Schritte, die Sie durch alle Hauptfunktionen führen: 1) Header-Bedienelemente, 2) Scanner-Bereich, 3) Scanner starten, 4) Manuelle Eingabe, 5) Produktinformationen, 6) Mengensteuerung, 7) Zum Warenkorb hinzufügen, 8) Warenkorb, 9) Warenkorb leeren, 10) Bezahlvorgang.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Tutorial steps configuration",
+                        reason: "Enthält die Tutorial-Schritt-Definitionen"
+                    }
+                ]
+            },
+            "was verpasse ich im tutorial": {
+                answer: "Im Tutorial lernen Sie alle wichtigen Funktionen von Gittertier Pro kennen: Scanner-Bedienung, Produkterfassung, Warenkorbverwaltung und Bezahlabwicklung. Es ist eine ausgezeichnete Einführung für neue Benutzer und zeigt viele nützliche Tipps und Tricks.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Tutorial steps and content",
+                        reason: "Beschreibt den Inhalt des Tutorials"
+                    }
+                ]
+            },
+            
+            // Technical questions
+            "welche browsers werden unterstützt": {
+                answer: "Gittertier Pro unterstützt alle modernen Browser mit WebRTC- und Camera API-Unterstützung. Dazu gehören Chrome (ab Version 57), Firefox (ab Version 52), Safari (ab Version 11.1) und Edge (ab Version 79). Für den Scanner wird HTTPS benötigt, da Kamera-Zugriff nur über secure contexts erlaubt ist.",
+                sources: [
+                    {
+                        file: "Multiple files",
+                        content: "Use of modern web APIs and technologies",
+                        reason: "Die App verwendet moderne Webstandards"
+                    }
+                ]
+            },
+            
+            // Instagram account
+            "instagram": {
+                answer: "Unser Instagram-Account ist @gittertierpro. Folgen Sie uns, um über Neuigkeiten, Updates und Tipps zur Nutzung von Gittertier Pro informiert zu bleiben.",
+                sources: [
+                    {
+                        file: "about",
+                        content: "Folgen Sie uns auf Instagram, um über Neuigkeiten und Updates informiert zu bleiben: @gittertierpro",
+                        reason: "Enthält den Instagram-Handle"
+                    }
+                ]
+            },
+            "insta": {
+                answer: "Unser Instagram-Account ist @gittertierpro. Folgen Sie uns, um über Neuigkeiten, Updates und Tipps zur Nutzung von Gittertier Pro informiert zu bleiben.",
+                sources: [
+                    {
+                        file: "about",
+                        content: "Folgen Sie uns auf Instagram, um über Neuigkeiten und Updates informiert zu bleiben: @gittertierpro",
+                        reason: "Enthält den Instagram-Handle"
+                    }
+                ]
+            },
+            "social media": {
+                answer: "Folgen Sie uns auf Instagram (@gittertierpro) für Neuigkeiten, Updates und Tipps zur Nutzung von Gittertier Pro. Wir posten regelmäßig hilfreiche Inhalte für Einzelhändler.",
+                sources: [
+                    {
+                        file: "about",
+                        content: "Instagram reference in about page",
+                        reason: "Verweist auf Social Media Präsenz"
+                    }
+                ]
+            },
+            
+            // NEW: Conversational responses
+            "hallo": {
+                answer: "Hallo! Wie kann ich Ihnen helfen? Sie können mich alles über Gittertier Pro fragen - von der Scanner-Nutzung bis zur Bezahlabwicklung.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Standard greeting response",
+                        reason: "Bietet eine freundliche Begrüßung"
+                    }
+                ]
+            },
+            "hi": {
+                answer: "Hi there! Ich bin der Gittertier AI Assistant. Fragen Sie mich alles über die Kassensoftware Gittertier Pro.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Informal greeting response",
+                        reason: "Bietet eine informelle Begrüßung"
+                    }
+                ]
+            },
+            "guten tag": {
+                answer: "Guten Tag! Schön, dass Sie da sind. Wie kann ich Ihnen mit Gittertier Pro helfen?",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Formal greeting response",
+                        reason: "Bietet eine formelle Begrüßung"
+                    }
+                ]
+            },
+            "danke": {
+                answer: "Gern geschehen! Wenn Sie weitere Fragen haben, stehe ich Ihnen jederzeit zur Verfügung. Viel Erfolg mit Gittertier Pro!",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Thanks response",
+                        reason: "Reagiert auf Dank"
+                    }
+                ]
+            },
+            "dankeschön": {
+                answer: "Keine Ursache! Bei weiteren Fragen zu Gittertier Pro helfe ich gerne wieder.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Thanks response variation",
+                        reason: "Alternative Reaktion auf Dank"
+                    }
+                ]
+            },
+            "vielen dank": {
+                answer: "Immer gerne! Zögern Sie nicht, bei weiteren Fragen zu Gittertier Pro auf mich zuzukommen.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Thanks response variation",
+                        reason: "Alternative Reaktion auf Dank"
+                    }
+                ]
+            },
+            "dankö": {
+                answer: "Gerne doch! 😊 Ich hoffe, ich konnte Ihnen helfen. Bei weiteren Fragen stehe ich zur Verfügung!",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Informal thanks response",
+                        reason: "Reagiert auf informellen Dank"
+                    }
+                ]
+            },
+            "tysm": {
+                answer: "Kein Problem! 😊 Wenn Sie weitere Fragen haben, helfe ich gerne weiter.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "English informal thanks response",
+                        reason: "Reagiert auf englischen informellen Dank"
+                    }
+                ]
+            },
+            "tschau": {
+                answer: "Auf Wiedersehen! Kommen Sie gerne wieder, wenn Sie weitere Fragen zu Gittertier Pro haben.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Goodbye response",
+                        reason: "Verabschiedung"
+                    }
+                ]
+            },
+            "bye": {
+                answer: "Bis bald! Bei weiteren Fragen zu Gittertier Pro stehe ich gerne zur Verfügung.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "English goodbye response",
+                        reason: "Englische Verabschiedung"
+                    }
+                ]
+            },
+            "ciao": {
+                answer: "Ciao! Kommen Sie gerne wieder, wenn Sie Hilfe mit Gittertier Pro benötigen.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Italian goodbye response",
+                        reason: "Italienische Verabschiedung"
+                    }
+                ]
+            },
+            "solli": {
+                answer: "Hallo! 😊 Wie kann ich Ihnen mit Gittertier Pro helfen?",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Informal greeting response",
+                        reason: "Reagiert auf informelle Begrüßung"
+                    }
+                ]
+            },
+            "bitte": {
+                answer: "Gerne helfe ich Ihnen! Was möchten Sie über Gittertier Pro wissen?",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Response to 'please'",
+                        reason: "Reagiert auf Höflichkeitsform"
+                    }
+                ]
+            },
+            
+            // NEW: AI self-knowledge
+            "wer bist du": {
+                answer: "Ich bin der Gittertier AI Assistant, ein intelligenter Helfer für die Kassensoftware Gittertier Pro. Ich beantworte Fragen zur Nutzung der Software, zur Fehlerbehebung und zu allen Funktionen.",
+                sources: [
+                    {
+                        file: "admin2",
+                        content: "AI Assistant functionality",
+                        reason: "Beschreibt die Rolle des AI-Assistenten"
+                    }
+                ]
+            },
+            "was kannst du": {
+                answer: "Ich kann Fragen zu Gittertier Pro beantworten, bei Problemen helfen, Anleitungen geben und Sie durch die Funktionen der Software führen. Mein Wissen basiert auf der Dokumentation der Webseite und den vorhandenen Dateien.",
+                sources: [
+                    {
+                        file: "admin2",
+                        content: "AI Assistant capabilities",
+                        reason: "Beschreibt die Fähigkeiten des AI-Assistenten"
+                    }
+                ]
+            },
+            "wie funktionierst du": {
+                answer: "Ich analysiere Ihre Fragen und suche nach passenden Antworten in meiner Wissensdatenbank, die auf der Dokumentation von Gittertier Pro basiert. Ich kann mehrere Fragen gleichzeitig verstehen und beantworten.",
+                sources: [
+                    {
+                        file: "admin2",
+                        content: "AI processing logic",
+                        reason: "Erklärt die Funktionsweise des AI-Assistenten"
+                    }
+                ]
+            },
+            "wie heißt du": {
+                answer: "Ich bin der Gittertier AI Assistant! 😊 Ich wurde entwickelt, um Ihnen bei allen Fragen zu Gittertier Pro zu helfen.",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Name identification",
+                        reason: "Stellt sich vor"
+                    }
+                ]
+            },
+            "dein name": {
+                answer: "Mein Name ist Gittertier AI Assistant. Sie können mich aber auch einfach AI Assistant nennen!",
+                sources: [
+                    {
+                        file: "AI Response",
+                        content: "Name identification",
+                        reason: "Gibt den Namen an"
+                    }
+                ]
+            },
+            
+            // NEW: About page details
+            "was sind die vorteile von gittertier pro": {
+                answer: "Gittertier Pro bietet zahlreiche Vorteile: 75% schneller Kassiervorgänge, 20% höhere Umsätze, verbesserte Kundenerfahrung und datenbasierte Entscheidungen durch Echtzeit-Analysen.",
+                sources: [
+                    {
+                        file: "about",
+                        content: "Impact section with benefits and statistics",
+                        reason: "Listet die Vorteile von Gittertier Pro auf"
+                    }
+                ]
+            },
+            "welche auswirkungen hat gittertier pro": {
+                answer: "Gittertier Pro verändert den Einzelhandel durch schneller Kassiervorgänge, höhere Umsätze, verbesserte Kundenerfahrung und datenbasierte Entscheidungen. Die Software ermöglicht 75% schnellere Kassiervorgänge und 20% höhere Umsätze.",
+                sources: [
+                    {
+                        file: "about",
+                        content: "Impact section with statistics",
+                        reason: "Beschreibt die Auswirkungen von Gittertier Pro"
+                    }
+                ]
+            },
+            
+            // NEW: Customer page details
+            "wie funktioniert die kundenseite": {
+                answer: "Die Kundenseite (customer) ermöglicht Kunden, über einen QR-Code zu bezahlen. Nachdem der Händler einen QR-Code generiert hat, scannt der Kunde diesen und wird zur Bezahlseite weitergeleitet, wo die Zahlung bestätigt wird.",
+                sources: [
+                    {
+                        file: "customer",
+                        content: "Customer payment interface and process",
+                        reason: "Beschreibt die Kundenseite und den Bezahlvorgang"
+                    }
+                ]
+            },
+            "was passiert nach der qr code zahlung": {
+                answer: "Nachdem der Kunde den QR-Code gescannt und die Zahlung durchgeführt hat, erhält der Händler eine Bestätigung. Der Kunde kann einen Beleg drucken und wird dann zur Startseite zurückgeleitet.",
+                sources: [
+                    {
+                        file: "customer",
+                        content: "Payment confirmation and receipt generation",
+                        reason: "Beschreibt den Prozess nach der Zahlung"
+                    }
+                ]
+            },
+            
+            // NEW: Login page details
+            "wie melde ich mich an": {
+                answer: "Für den Administrator-Bereich müssen Sie sich mit einem Passwort anmelden. Besuchen Sie dazu die Login-Seite und geben Sie das korrekte Passwort ein. Bei zu vielen fehlgeschlagenen Versuchen wird der Zugang vorübergehend gesperrt.",
+                sources: [
+                    {
+                        file: "login",
+                        content: "Login process and password authentication",
+                        reason: "Beschreibt den Anmeldeprozess"
+                    }
+                ]
+            },
+            "was tun bei vergessenem passwort": {
+                answer: "Wenn Sie Ihr Passwort vergessen haben, wenden Sie sich bitte an den Systemadministrator. Aus Sicherheitsgründen kann ich keine Passwort-Informationen preisgeben.",
+                sources: [
+                    {
+                        file: "login",
+                        content: "Password security measures",
+                        reason: "Behandelt den Fall eines vergessenen Passworts"
+                    }
+                ]
+            },
+            
+            // NEW: Security warning for password questions
+            "passwort": {
+                answer: "Aus Sicherheitsgründen kann ich keine Informationen zu Passwörtern preisgeben. Bitte wenden Sie sich an Ihren Administrator, wenn Sie Probleme mit dem Passwort haben.",
+                sources: [
+                    {
+                        file: "Security Policy",
+                        content: "Password security protocol",
+                        reason: "Sicherheitsrichtlinie zum Schutz von Passwörtern"
+                    }
+                ]
+            },
+            "administrator passwort": {
+                answer: "Ich kann aus Sicherheitsgründen keine Passwort-Informationen preisgeben. Bei Passwort-Problemen wenden Sie sich bitte an den Systemadministrator.",
+                sources: [
+                    {
+                        file: "Security Policy",
+                        content: "Password security protocol",
+                        reason: "Sicherheitsrichtlinie zum Schutz von Administrator-Passwörtern"
+                    }
+                ]
+            },
+            
+            // NEW: Technical details
+            "welche technologien verwendet gittertier pro": {
+                answer: "Gittertier Pro nutzt moderne Technologien wie WebRTC für den Scanner, QRCode.js für QR-Generierung, PeerJS für Echtzeit-Kommunikation und LocalStorage für Datenspeicherung. Die Software ist optimiert für alle Geräte und Browser.",
+                sources: [
+                    {
+                        file: "Multiple files",
+                        content: "Technology implementations across files",
+                        reason: "Beschreibt die verwendeten Technologien"
+                    }
+                ]
+            },
+            "funktioniert gittertier pro offline": {
+                answer: "Gittertier Pro kann teilweise offline arbeiten. Produkte und Warenkorb-Daten werden lokal gespeichert. Für die QR-Generierung und Bezahlabwicklung ist jedoch eine Internetverbindung erforderlich.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Local storage usage for products and cart",
+                        reason: "Beschreibt die Offline-Fähigkeiten"
+                    }
+                ]
+            },
+            
+            // NEW: Feature details
+            "hat gittertier pro einen dark mode": {
+                answer: "Ja, Gittertier Pro unterstützt systemeigenen Dark Mode. Aktivieren Sie ihn in Ihren Systemeinstellungen, und die Oberfläche passt sich automatisch an.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Dark mode CSS media query",
+                        reason: "Beschreibt die Dark Mode-Unterstützung"
+                    }
+                ]
+            },
+            "kann ich produkte importieren": {
+                answer: "Derzeit unterstützt Gittertier Pro den manuellen Import von Produkten über die Admin-Oberfläche oder durch Scannen der Barcodes. Ein Massenimport über CSV-Dateien ist in Planung für zukünftige Updates.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Product management functionality",
+                        reason: "Beschreibt die Produktimport-Möglichkeiten"
+                    }
+                ]
+            },
+            
+            // NEW: Support information
+            "wo finde ich weiteren support": {
+                answer: "Weiteren Support finden Sie in der ausführlichen Dokumentation auf der Support-Seite. Bei komplexeren Problemen können Sie sich direkt an das Gittertier Pro Team wenden. Folgen Sie uns auf Instagram (@gittertierpro) für Updates.",
+                sources: [
+                    {
+                        file: "admin2",
+                        content: "Support information and resources",
+                        reason: "Weist auf Support-Ressourcen hin"
+                    }
+                ]
+            },
+            "gibt es eine dokumentation": {
+                answer: "Ja, Gittertier Pro verfügt über eine umfassende Dokumentation, die Sie auf der Support-Seite finden. Zusätzlich bietet das integrierte Tutorial eine schrittweise Einführung in alle Funktionen.",
+                sources: [
+                    {
+                        file: "admin2",
+                        content: "Documentation reference",
+                        reason: "Verweist auf die Dokumentation"
+                    }
+                ]
+            },
+            
+            // NEW: Business information
+            "wer hat gittertier pro entwickelt": {
+                answer: "Gittertier Pro wurde von Bastian Schäfer und Kaspar Niederberger entwickelt, um die spezifischen Anforderungen moderner Händler zu adressieren. Die Software wird kontinuierlich weiterentwickelt.",
+                sources: [
+                    {
+                        file: "About the Founders",
+                        content: "Bastian Schäfer & Kaspar Niederberger",
+                        reason: "Nennt die Gründer von Gittertier Pro"
+                    }
+                ]
+            },
+            "wer sind die gründer": {
+                answer: "Die Gründer von Gittertier Pro sind Bastian Schäfer und Kaspar Niederberger. Sie haben die Software entwickelt, um den Einzelhandel zu modernisieren und zu vereinfachen.",
+                sources: [
+                    {
+                        file: "About the Founders",
+                        content: "Bastian Schäfer & Kaspar Niederberger",
+                        reason: "Nennt die Gründer von Gittertier Pro"
+                    }
+                ]
+            },
+            "bastian schäfer": {
+                answer: "Bastian Schäfer ist einer der Gründer von Gittertier Pro. Er hat maßgeblich zur Entwicklung der Software beigetragen.",
+                sources: [
+                    {
+                        file: "About the Founders",
+                        content: "Bastian Schäfer - Mitgründer",
+                        reason: "Informationen zu Bastian Schäfer"
+                    }
+                ]
+            },
+            "kaspar niederberger": {
+                answer: "Kaspar Niederberger ist einer der Gründer von Gittertier Pro. Er ist verantwortlich für die technische Entwicklung und Konzeption der Software.",
+                sources: [
+                    {
+                        file: "About the Founders",
+                        content: "Kaspar Niederberger - Mitgründer",
+                        reason: "Informationen zu Kaspar Niederberger"
+                    }
+                ]
+            },
+            "ist gittertier pro kostenlos": {
+                answer: "Gittertier Pro bietet eine kostenlose Basisversion mit allen wichtigen Funktionen. Für erweiterte Funktionen und Unternehmenslösungen gibt es kostenpflichtige Abonnements. Kontaktieren Sie uns für Details.",
+                sources: [
+                    {
+                        file: "Business Information",
+                        content: "Pricing policy",
+                        reason: "Behandelt Fragen zur Preisgestaltung"
+                    }
+                ]
+            },
+            "kostenlos": {
+                answer: "Gittertier Pro bietet eine kostenlose Basisversion mit allen Kernfunktionen. Für erweiterte Enterprise-Funktionen stehen kostenpflichtige Pakete zur Verfügung.",
+                sources: [
+                    {
+                        file: "Business Information",
+                        content: "Free tier availability",
+                        reason: "Bestätigt kostenlose Nutzungsmöglichkeit"
+                    }
+                ]
+            },
+            "kostet etwas": {
+                answer: "Die Basisversion von Gittertier Pro ist kostenlos. Für erweiterte Funktionen wie Mehrbenutzer-Support, erweiterte Analytik und Premium-Support gibt es kostenpflichtige Optionen.",
+                sources: [
+                    {
+                        file: "Business Information",
+                        content: "Free and paid tiers",
+                        reason: "Erklärt kostenlose und kostenpflichtige Optionen"
+                    }
+                ]
+            },
+            
+            // NEW: Error handling
+            "was tun bei fehlermeldungen": {
+                answer: "Bei Fehlermeldungen notieren Sie sich bitte den genauen Fehlertext und melden ihn an den Support. Oft helfen bereits einfache Schritte wie Neuladen der Seite oder Zurücksetzen des Caches.",
+                sources: [
+                    {
+                        file: "General Troubleshooting",
+                        content: "Error handling procedures",
+                        reason: "Beschreibt den Umgang mit Fehlermeldungen"
+                    }
+                ]
+            },
+            
+            // NEW: Future features
+            "welche features sind geplant": {
+                answer: "Zukünftige Updates für Gittertier Pro werden unter anderem erweiterte Berichte, Inventory-Management, Mehrbenutzer-Support und Integration mit Buchhaltungssoftware bringen. Folgen Sie @gittertierpro auf Instagram für Updates.",
+                sources: [
+                    {
+                        file: "about",
+                        content: "Future development plans",
+                        reason: "Beschreibt geplante Funktionen"
+                    }
+                ]
+            },
+            
+            // NEW: Problem solving
+            "was machen wenn der qr code nicht generiert wird": {
+                answer: "Wenn der QR-Code nicht generiert wird: 1) Prüfen Sie, ob Artikel im Warenkorb sind 2) Laden Sie die Seite neu 3) Prüfen Sie die Internetverbindung 4) Kontaktieren Sie den Support, wenn das Problem bestehen bleibt.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "QR code generation troubleshooting",
+                        reason: "Bietet Lösungen für QR-Generierungsprobleme"
+                    }
+                ]
+            },
+            "was tun wenn ich keine ahnung habe wie die seite funktioniert": {
+                answer: "Keine Sorge! Starten Sie das Tutorial über das Fragezeichen-Symbol in der Kopfzeile. Es führt Sie Schritt für Schritt durch alle Funktionen. Sie können mich auch jederzeit fragen!",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Tutorial system",
+                        reason: "Verweist auf das Tutorial für Neueinsteiger"
+                    }
+                ]
+            },
+            "wie kann ich produkte erhöhen und danach bezahlen": {
+                answer: "So erhöhen Sie Produktmengen und bezahlen: 1) Scannen Sie das Produkt oder fügen Sie es manuell hinzu 2) Passen Sie die Menge mit den +/- Buttons an 3) Fügen Sie es zum Warenkorb hinzu 4) Klicken Sie auf 'Bezahlen' für den QR-Code.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Product quantity adjustment and payment process",
+                        reason: "Beschreibt den Prozess von Mengenanpassung bis Bezahlung"
+                    }
+                ]
+            },
+
+            // NEW: Additional questions to reach 70+
+            "kann ich mehrere filialen verwalten": {
+                answer: "Aktuell unterstützt Gittertier Pro die Verwaltung einer einzelnen Filiale. Mehrfilialen-Support ist für zukünftige Updates geplant. Folgen Sie @gittertierpro auf Instagram für Ankündigungen.",
+                sources: [
+                    {
+                        file: "Roadmap",
+                        content: "Multi-store management planning",
+                        reason: "Informationen zur Mehrfilialen-Unterstützung"
+                    }
+                ]
+            },
+            "wie exportiere ich verkaufsdaten": {
+                answer: "Verkaufsdaten können aktuell über die Browser-Entwicklertools im LocalStorage eingesehen werden. Ein vollständiger Export mit CSV- und Excel-Format ist für ein zukünftiges Update geplant.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Local storage data structure",
+                        reason: "Beschreibt die Speicherung von Verkaufsdaten"
+                    }
+                ]
+            },
+            "gibt es eine app version": {
+                answer: "Gittertier Pro ist eine Web-App, die auf allen Geräten funktioniert. Sie können sie auf Ihrem Home-Bildschirm installieren, um ein App-ähnliches Erlebnis zu erhalten. Eine native App ist derzeit nicht geplant.",
+                sources: [
+                    {
+                        file: "PWA Features",
+                        content: "Progressive Web App capabilities",
+                        reason: "Informationen zur App-ähnlichen Nutzung"
+                    }
+                ]
+            },
+            "unterstützt gittertier pro bargeldzahlung": {
+                answer: "Gittertier Pro konzentriert sich auf digitale Zahlungen per QR-Code. Für Bargeldzahlungen müssen Sie den Betrag manuell erfassen und die Kassensoftware entsprechend anpassen.",
+                sources: [
+                    {
+                        file: "Payment Processing",
+                        content: "Digital payment focus",
+                        reason: "Erklärung zum Zahlungsfokus"
+                    }
+                ]
+            },
+            "wie aktualisiere ich die software": {
+                answer: "Da Gittertier Pro eine Web-App ist, erfolgen Updates automatisch. Sie müssen nichts installieren - neue Versionen werden serverseitig bereitgestellt und sind sofort verfügbar.",
+                sources: [
+                    {
+                        file: "Technical Documentation",
+                        content: "Web app update process",
+                        reason: "Beschreibt den Update-Prozess"
+                    }
+                ]
+            },
+            "kann ich das design anpassen": {
+                answer: "Gittertier Pro unterstützt Dark Mode basierend auf Ihren Systemeinstellungen. Weitere Design-Anpassungen sind aktuell nicht vorgesehen, könnten aber in Zukunft hinzugefügt werden.",
+                sources: [
+                    {
+                        file: "index",
+                        content: "Dark mode implementation",
+                        reason: "Informationen zu Design-Anpassungen"
+                    }
+                ]
+            },
+            "was kostet gittertier pro": {
+                answer: "Gittertier Pro bietet eine kostenlose Basisversion. Für erweiterte Funktionen und Unternehmenslösungen kontaktieren Sie uns bitte direkt für ein individuelles Angebot.",
+                sources: [
+                    {
+                        file: "Pricing Information",
+                        content: "Free tier and enterprise solutions",
+                        reason: "Informationen zur Preisgestaltung"
+                    }
+                ]
+            },
+            "gibt es eine datensicherung": {
+                answer: "Ihre Daten werden lokal in Ihrem Browser gespeichert. Für eine Sicherung exportieren Sie regelmäßig Ihre Verkaufsdaten. Eine automatische Cloud-Sicherung ist für zukünftige Updates geplant.",
+                sources: [
+                    {
+                        file: "Data Management",
+                        content: "Local storage and backup procedures",
+                        reason: "Informationen zur Datensicherung"
+                    }
+                ]
+            },
+            "kann ich produkte kategorisieren": {
+                answer: "Aktuell unterstützt Gittertier Pro keine Produktkategorien. Diese Funktion ist auf unserer Roadmap und wird in einem zukünftigen Update hinzugefügt.",
+                sources: [
+                    {
+                        file: "Product Management",
+                        content: "Categorization roadmap",
+                        reason: "Informationen zur Produktkategorisierung"
+                    }
+                ]
+            },
+            "wie viele produkte kann ich verwalten": {
+                answer: "Gittertier Pro kann theoretisch Tausende von Produkten verwalten. Die Leistung hängt von Ihrem Gerät und Browser ab. Für große Bestände empfehlen wir leistungsstarke Geräte.",
+                sources: [
+                    {
+                        file: "Technical Specifications",
+                        content: "Performance and scalability",
+                        reason: "Informationen zur Skalierbarkeit"
+                    }
+                ]
+            },
+            "funktioniert es auf dem tablet": {
+                answer: "Ja, Gittertier Pro ist vollständig responsive und funktioniert optimal auf Tablets, Smartphones und Desktop-Computern.",
+                sources: [
+                    {
+                        file: "Responsive Design",
+                        content: "Tablet and mobile optimization",
+                        reason: "Informationen zur Tablet-Kompatibilität"
+                    }
+                ]
+            },
+            "brauche ich eine internetverbindung": {
+                answer: "Für den Scanner und die QR-Generierung ist eine Internetverbindung erforderlich. Ein Offline-Modus für grundlegende Funktionen ist in Planung.",
+                sources: [
+                    {
+                        file: "Connectivity Requirements",
+                        content: "Online and offline capabilities",
+                        reason: "Informationen zu Verbindungsanforderungen"
+                    }
+                ]
+            },
+            "kann ich rabatte vergeben": {
+                answer: "Aktuell unterstützt Gittertier Pro keine Rabattfunktionen. Sie können manuell reduzierte Preise eingeben. Rabatt-Funktionen sind für zukünftige Updates geplant.",
+                sources: [
+                    {
+                        file: "Feature Roadmap",
+                        content: "Discount functionality planning",
+                        reason: "Informationen zu Rabattfunktionen"
+                    }
+                ]
+            },
+            "werden mehrere sprachen unterstützt": {
+                answer: "Gittertier Pro ist aktuell auf Deutsch verfügbar. Weitere Sprachen sind in Planung. Folgen Sie @gittertierpro für Updates zu neuen Sprachversionen.",
+                sources: [
+                    {
+                        file: "Localization",
+                        content: "Multi-language support planning",
+                        reason: "Informationen zur Sprachunterstützung"
+                    }
+                ]
+            },
+            "kann ich mit mehreren kassen arbeiten": {
+                answer: "Aktuell unterstützt Gittertier Pro eine Kasse pro Browser. Mehrere Kassen erfordern mehrere Geräte. Synchronisation zwischen mehreren Kassen ist für die Zukunft geplant.",
+                sources: [
+                    {
+                        file: "Multi-Register",
+                        content: "Multiple register support planning",
+                        reason: "Informationen zur Mehrfachkassen-Unterstützung"
+                    }
+                ]
+            },
+            "gibt es eine inventurfunktion": {
+                answer: "Eine vollständige Inventurfunktion ist aktuell nicht verfügbar, aber auf unserer Roadmap. Aktuell können Sie den Bestand über die Produktliste einsehen.",
+                sources: [
+                    {
+                        file: "Inventory Management",
+                        content: "Stocktaking feature planning",
+                        reason: "Informationen zur Inventurfunktion"
+                    }
+                ]
+            },
+            "kann ich mit barcode drucker arbeiten": {
+                answer: "Gittertier Pro unterstützt das Scannen von Barcodes, aber nicht direkt das Drucken. Sie können jedoch beliebige Barcode-Drucker verwenden, die Standardformate unterstützen.",
+                sources: [
+                    {
+                        file: "Barcode Handling",
+                        content: "Barcode printing compatibility",
+                        reason: "Informationen zur Barcode-Druckerunterstützung"
+                    }
+                ]
+            },
+            "wie lang ist der support erreichbar": {
+                answer: "Unser KI-Assistent ist 24/7 verfügbar. Für persönlichen Support kontaktieren Sie uns bitte über Instagram @gittertierpro während der Geschäftszeiten.",
+                sources: [
+                    {
+                        file: "Support Information",
+                        content: "Support availability",
+                        reason: "Informationen zur Support-Erreichbarkeit"
+                    }
+                ]
+            },
+            "kann ich die software an meine bedürfnisse anpassen": {
+                answer: "Gittertier Pro ist eine Standardlösung. Individuelle Anpassungen sind auf Anfrage möglich. Kontaktieren Sie uns für Custom-Lösungen.",
+                sources: [
+                    {
+                        file: "Customization",
+                        content: "Customization options",
+                        reason: "Informationen zu Anpassungsmöglichkeiten"
+                    }
+                ]
+            },
+
+            // NEW: Zukunftspläne und Roadmap
+            "was sind die zukunftspläne": {
+                answer: "Gittertier Pro hat eine aufregende Roadmap mit vielen neuen Funktionen. Wir arbeiten kontinuierlich daran, die Software zu verbessern und neue Features hinzuzufügen.",
+                sources: [
+                    {
+                        file: "Roadmap",
+                        content: "Future development plans",
+                        reason: "Beschreibt die Zukunftspläne von Gittertier Pro"
+                    }
+                ]
+            },
+            "was kommt als nächstes": {
+                answer: "In den nächsten Updates planen wir Funktionen wie Mehrbenutzer-Support, erweiterte Berichte und Analytics, Inventory-Management und Integrationen mit Buchhaltungssoftware.",
+                sources: [
+                    {
+                        file: "Roadmap",
+                        content: "Upcoming features",
+                        reason: "Listet die geplanten Funktionen auf"
+                    }
+                ]
+            },
+            "roadmap": {
+                answer: "Unsere Roadmap umfasst: 1) Mehrbenutzer-Support, 2) Erweiterte Berichte und Analytics, 3) Inventory-Management, 4) Integration mit Buchhaltungssoftware, 5) Mobile App, 6) Mehrsprachiger Support.",
+                sources: [
+                    {
+                        file: "Roadmap",
+                        content: "Detailed roadmap",
+                        reason: "Zeigt die detaillierte Roadmap"
+                    }
+                ]
+            },
+            "wann kommt das nächste update": {
+                answer: "Wir veröffentlichen regelmäßig Updates. Größere Releases erfolgen quartalsweise, kleinere Updates und Bugfixes nach Bedarf. Folgen Sie uns auf Instagram, um auf dem Laufenden zu bleiben.",
+                sources: [
+                    {
+                        file: "Release Schedule",
+                        content: "Update release cycle",
+                        reason: "Beschreibt den Veröffentlichungszyklus"
+                    }
+                ]
+            },
+            "neue features": {
+                answer: "Zu den geplanten neuen Features gehören: Mehrbenutzer-Support, erweiterte Berichte, Inventory-Management, Integration mit Buchhaltungssoftware, mobile App und mehrsprachiger Support.",
+                sources: [
+                    {
+                        file: "Roadmap",
+                        content: "Planned features",
+                        reason: "Listet geplante Funktionen auf"
+                    }
+                ]
+            },
+
+            // Default response for unknown questions
+            "default": {
+                answer: "Entschuldigung, ich habe Ihre Frage nicht vollständig verstanden. Könnten Sie sie bitte anders formulieren? Ich kann Ihnen bei Fragen zu Gittertier Pro helfen, wie z.B. Scanner-Funktionalität, Produktverwaltung, Zahlungsabwicklung oder Tutorials.",
+                sources: [
+                    {
+                        file: "General knowledge",
+                        content: "AI response system",
+                        reason: "Standardantwort für nicht erkannte Fragen"
+                    }
+                ]
+            }
+        };
+
+        // DOM elements
+        const aiModal = document.getElementById('aiModal');
+        const chatContainer = document.getElementById('chatContainer');
+        const aiInput = document.getElementById('aiInput');
+        const sourcesModal = document.getElementById('sourcesModal');
+        const sourcesContent = document.getElementById('sourcesContent');
+        const blockModal = document.getElementById('blockModal');
+        const blockTimer = document.getElementById('blockTimer');
+        const blockReason = document.getElementById('blockReason');
+        
+        // Current sources for the last answer
+        let currentSources = [];
+        
+        // User warning system
+        let userWarnings = parseInt(localStorage.getItem('ai_user_warnings') || '0');
+        let isUserBlocked = localStorage.getItem('ai_user_blocked') === 'true';
+        let blockEndTime = parseInt(localStorage.getItem('ai_block_end_time') || '0');
+        
+        // Chat history for email support
+        let chatHistory = [];
+        
+        // Inappropriate words list (German)
+        const inappropriateWords = [
+            'arsch', 'scheiße', 'scheisse', 'fick', 'hure', 'wichser', 'miststück', 
+            'trottel', 'idiot', 'depp', 'dummkopf', 'schlampe', 'bastard', 'wichser',
+            'spasti', 'schwuchtel', 'nutte', 'muschi', 'penis', 'vagina', 'titten',
+            'fotze', 'wichse', 'wixxer', 'pimmel', 'arschloch', 'kacke', 'scheiß',
+            'scheiss', 'blödmann', 'vollidiot', 'hurensohn', 'mist', 'kack', 'dreck'
+        ];
+        
+        // Check if user is currently blocked
+        function checkUserBlocked() {
+            if (isUserBlocked) {
+                const now = Date.now();
+                if (now < blockEndTime) {
+                    // User is still blocked
+                    const remainingTime = Math.ceil((blockEndTime - now) / 1000);
+                    startBlockTimer(remainingTime);
+                    blockModal.style.display = 'flex';
+                    return true;
+                } else {
+                    // Block has expired
+                    isUserBlocked = false;
+                    userWarnings = 0;
+                    localStorage.removeItem('ai_user_blocked');
+                    localStorage.removeItem('ai_block_end_time');
+                    localStorage.removeItem('ai_user_warnings');
+                }
+            }
+            return false;
+        }
+        
+        // Open AI Modal
+        function openAIModal() {
+            if (checkUserBlocked()) return;
+            
+            aiModal.style.display = 'flex';
+            aiInput.focus();
+            
+            // On mobile, make it full screen
+            if (window.innerWidth <= 768) {
+                document.querySelector('.ai-modal-content').style.borderRadius = '0';
+            }
+        }
+        
+        // Close AI Modal
+        function closeAIModal() {
+            aiModal.style.display = 'none';
+            
+            // Reset modal style
+            document.querySelector('.ai-modal-content').style.borderRadius = '';
+        }
+        
+        // Close Sources Modal
+        function closeSourcesModal() {
+            sourcesModal.style.display = 'none';
+        }
+        
+        // Show sources modal with details
+        function showSources() {
+            sourcesContent.innerHTML = '';
+            
+            currentSources.forEach((source, index) => {
+                const sourceElement = document.createElement('div');
+                sourceElement.className = 'source-detail';
+                
+                // Add banner for certain file types
+                let bannerHtml = '';
+                if (source.file.includes('about')) {
+                    bannerHtml = `
+                        <div class="source-banner">
+                            <div class="source-banner-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="source-banner-content">
+                                <div class="source-banner-title">Über Gittertier Pro</div>
+                                <div class="source-banner-text">Erfahren Sie mehr über die Funktionen und Vorteile unserer Software</div>
+                            </div>
+                            <button class="source-banner-button" onclick="window.location.href='about'">
+                                Zur About-Seite
+                            </button>
+                        </div>
+                    `;
+                } else if (source.file.includes('index')) {
+                    bannerHtml = `
+                        <div class="source-banner">
+                            <div class="source-banner-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="source-banner-content">
+                                <div class="source-banner-title">Hauptseite</div>
+                                <div class="source-banner-text">Zurück zur Hauptseite mit Scanner und Warenkorb</div>
+                            </div>
+                            <button class="source-banner-button" onclick="window.location.href='index'">
+                                Zur Hauptseite
+                            </button>
+                        </div>
+                    `;
+                } else if (source.file.includes('customer')) {
+                    bannerHtml = `
+                        <div class="source-banner">
+                            <div class="source-banner-icon">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <div class="source-banner-content">
+                                <div class="source-banner-title">Kundenseite</div>
+                                <div class="source-banner-text">Bezahlseite für Kunden</div>
+                            </div>
+                            <button class="source-banner-button" onclick="window.location.href='customer'">
+                                Zur Kundenseite
+                            </button>
+                        </div>
+                    `;
+                } else if (source.file.includes('login')) {
+                    bannerHtml = `
+                        <div class="source-banner">
+                            <div class="source-banner-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="source-banner-content">
+                                <div class="source-banner-title">Login-Seite</div>
+                                <div class="source-banner-text">Administrator-Anmeldung</div>
+                            </div>
+                            <button class="source-banner-button" onclick="window.location.href='login'">
+                                Zur Login-Seite
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                sourceElement.innerHTML = `
+                    <h3 class="source-detail-title">${source.file}</h3>
+                    <div class="source-detail-content">${source.content}</div>
+                    <div class="source-detail-reason">
+                        <strong>Grund der Verwendung:</strong> ${source.reason}
+                    </div>
+                    ${bannerHtml}
+                `;
+                sourcesContent.appendChild(sourceElement);
             });
+            
+            sourcesModal.style.display = 'flex';
+        }
+        
+        // Add message to chat
+        function addMessage(text, isUser = false, isWarning = false, isBlocked = false) {
+            const messageElement = document.createElement('div');
+            
+            // Add to chat history
+            chatHistory.push({
+                text,
+                isUser,
+                timestamp: new Date().toISOString()
+            });
+            
+            if (isUser) {
+                messageElement.className = 'ai-message user';
+                messageElement.innerHTML = `<p>${text}</p>`;
+            } else {
+                let className = 'ai-message ai';
+                if (isWarning) className += ' warning';
+                if (isBlocked) className += ' blocked';
+                
+                messageElement.className = className;
+                
+                // Check if the answer contains sources
+                const hasSources = currentSources && currentSources.length > 0;
+                
+                messageElement.innerHTML = `
+                    <div>${text}</div>
+                    ${hasSources ? `
+                        <div class="ai-sources">
+                            <div class="ai-sources-title" onclick="showSources()">
+                                <i class="fas fa-file-alt"></i>
+                                Quellen
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            ${currentSources.map(source => `
+                                <div class="ai-source-item" onclick="showSources()">
+                                    <i class="fas fa-link"></i> ${source.file}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+            }
+            
+            chatContainer.appendChild(messageElement);
+            
+            // Auto-scroll to bottom to show the latest message
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingElement = document.createElement('div');
+            typingElement.className = 'ai-typing';
+            typingElement.id = 'typingIndicator';
+            typingElement.innerHTML = `
+                Gittertier AI schreibt...
+                <div class="ai-typing-dot"></div>
+                <div class="ai-typing-dot"></div>
+                <div class="ai-typing-dot"></div>
+            `;
+            
+            chatContainer.appendChild(typingElement);
+            
+            // Auto-scroll to bottom to show typing indicator
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            return typingElement;
+        }
+        
+        // Check for inappropriate content
+        function hasInappropriateContent(text) {
+            const lowerText = text.toLowerCase();
+            return inappropriateWords.some(word => lowerText.includes(word));
+        }
+        
+        // Warn user for inappropriate behavior
+        function warnUser(message, reason) {
+            userWarnings++;
+            localStorage.setItem('ai_user_warnings', userWarnings.toString());
+            
+            if (userWarnings >= 3) {
+                // Block user for 5 minutes
+                isUserBlocked = true;
+                blockEndTime = Date.now() + (5 * 60 * 1000); // 5 minutes from now
+                localStorage.setItem('ai_user_blocked', 'true');
+                localStorage.setItem('ai_block_end_time', blockEndTime.toString());
+                
+                // Set block reason
+                blockReason.textContent = `Grund: ${reason}`;
+                
+                addMessage("Sie wurden aufgrund wiederholter unangemessener Anfragen für 5 Minuten gesperrt.", false, false, true);
+                startBlockTimer(300);
+                blockModal.style.display = 'flex';
+                return true;
+            }
+            
+            addMessage(`Warnung ${userWarnings}/3: ${message} Bei weiteren Verstößen wird Ihr Zugang gesperrt.`, false, true);
+            return false;
+        }
+        
+        // Start block timer
+        function startBlockTimer(seconds) {
+            let timeLeft = seconds;
+            const timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    blockModal.style.display = 'none';
+                    isUserBlocked = false;
+                    userWarnings = 0;
+                    localStorage.removeItem('ai_user_blocked');
+                    localStorage.removeItem('ai_block_end_time');
+                    localStorage.removeItem('ai_user_warnings');
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                blockTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                timeLeft--;
+            }, 1000);
+        }
+        
+        // Process question and return answer
+        function processQuestion(question) {
+            const lowerQuestion = question.toLowerCase().trim();
+            
+            // Check for inappropriate content first
+            if (hasInappropriateContent(lowerQuestion)) {
+                const blocked = warnUser("Bitte verwenden Sie eine angemessene Sprache.", "Unangemessene Sprache");
+                if (blocked) return null;
+                
+                return "Ich kann nur Fragen zu Gittertier Pro beantworten. Bitte verwenden Sie eine angemessene Sprache.";
+            }
+            
+            // Check for password-related questions
+            if (lowerQuestion.includes('passwort') || lowerQuestion.includes('password') || 
+                lowerQuestion.includes('kennwort') || lowerQuestion.includes('anmeldedaten')) {
+                currentSources = knowledgeBase['passwort'].sources;
+                return knowledgeBase['passwort'].answer;
+            }
+            
+            // Check for exact matches first
+            if (knowledgeBase[lowerQuestion]) {
+                currentSources = knowledgeBase[lowerQuestion].sources;
+                return knowledgeBase[lowerQuestion].answer;
+            }
+            
+            // Improved question recognition with better keyword matching
+            const questionWords = lowerQuestion.split(/\s+/);
+            
+            // Check for question types based on question words
+            const questionType = getQuestionType(lowerQuestion, questionWords);
+            
+            // Handle different question types
+            switch(questionType) {
+                case 'what':
+                    return handleWhatQuestions(lowerQuestion, questionWords);
+                case 'how':
+                    return handleHowQuestions(lowerQuestion, questionWords);
+                case 'who':
+                    return handleWhoQuestions(lowerQuestion, questionWords);
+                case 'when':
+                    return handleWhenQuestions(lowerQuestion, questionWords);
+                case 'why':
+                    return handleWhyQuestions(lowerQuestion, questionWords);
+                case 'where':
+                    return handleWhereQuestions(lowerQuestion, questionWords);
+                default:
+                    return handleGenericQuestions(lowerQuestion, questionWords);
+            }
+        }
+        
+        // Determine question type based on question words
+        function getQuestionType(question, questionWords) {
+            if (questionWords.some(word => ['was', 'welche', 'welcher', 'welches', 'was sind', 'was ist'].includes(word))) {
+                return 'what';
+            } else if (questionWords.some(word => ['wie', 'wie funktioniert', 'wie kann ich', 'wie mache ich'].includes(word))) {
+                return 'how';
+            } else if (questionWords.some(word => ['wer', 'wem', 'wessen'].includes(word))) {
+                return 'who';
+            } else if (questionWords.some(word => ['wann', 'wie lange', 'wie oft'].includes(word))) {
+                return 'when';
+            } else if (questionWords.some(word => ['warum', 'wieso', 'weshalb'].includes(word))) {
+                return 'why';
+            } else if (questionWords.some(word => ['wo', 'wohin', 'woher'].includes(word))) {
+                return 'where';
+            }
+            
+            return 'generic';
+        }
+        
+        // Handle "what" questions
+        function handleWhatQuestions(question, questionWords) {
+            // Future plans and roadmap
+            if (questionWords.some(word => ['zukunft', 'zukunftspläne', 'roadmap', 'pläne', 'geplant', 'kommen', 'neu', 'features'].includes(word))) {
+                currentSources = knowledgeBase['was sind die zukunftspläne'].sources;
+                return knowledgeBase['was sind die zukunftspläne'].answer;
+            }
+            
+            // Features
+            if (questionWords.some(word => ['funktionen', 'features', 'eigenschaften', 'kann', 'fähigkeiten'].includes(word))) {
+                currentSources = knowledgeBase['was sind die vorteile von gittertier pro'].sources;
+                return knowledgeBase['was sind die vorteile von gittertier pro'].answer;
+            }
+            
+            // General "what is" questions
+            if (question.includes('was ist') || question.includes('was sind')) {
+                if (question.includes('gittertier')) {
+                    currentSources = knowledgeBase['was ist gittertier pro'].sources;
+                    return knowledgeBase['was ist gittertier pro'].answer;
+                }
+            }
+            
+            // Default response for "what" questions
+            currentSources = knowledgeBase['was ist gittertier pro'].sources;
+            return knowledgeBase['was ist gittertier pro'].answer;
+        }
+        
+        // Handle "how" questions
+        function handleHowQuestions(question, questionWords) {
+            // Scanner questions
+            if (questionWords.some(word => ['scanner', 'scan', 'kamera', 'barcode'].includes(word))) {
+                if (questionWords.some(word => ['start', 'begin', 'aktivier', 'ein'].includes(word))) {
+                    currentSources = knowledgeBase['wie starte ich den scanner'].sources;
+                    return knowledgeBase['wie starte ich den scanner'].answer;
+                }
+                if (questionWords.some(word => ['funktioniert', 'geht', 'kaputt', 'problem'].includes(word))) {
+                    currentSources = knowledgeBase['scanner funktioniert nicht'].sources;
+                    return knowledgeBase['scanner funktioniert nicht'].answer;
+                }
+                currentSources = knowledgeBase['wie funktioniert der scanner'].sources;
+                return knowledgeBase['wie funktioniert der scanner'].answer;
+            }
+            
+            // Product questions
+            if (questionWords.some(word => ['produkt', 'artikel', 'ware'].includes(word))) {
+                if (questionWords.some(word => ['hinzufüg', 'add', 'erfass', 'neu'].includes(word))) {
+                    currentSources = knowledgeBase['wie füge ich produkte hinzu'].sources;
+                    return knowledgeBase['wie füge ich produkte hinzu'].answer;
+                }
+                if (questionWords.some(word => ['nicht', 'gefunden', 'finde', 'fehl'].includes(word))) {
+                    currentSources = knowledgeBase['produkt nicht gefunden'].sources;
+                    return knowledgeBase['produkt nicht gefunden'].answer;
+                }
+            }
+            
+            // Payment questions
+            if (questionWords.some(word => ['zahlung', 'bezahl', 'qr', 'code', 'qrcode'].includes(word))) {
+                if (questionWords.some(word => ['funktioniert', 'geht', 'kaputt', 'generier'].includes(word))) {
+                    currentSources = knowledgeBase['qr code wird nicht generiert'].sources;
+                    return knowledgeBase['qr code wird nicht generiert'].answer;
+                }
+                currentSources = knowledgeBase['wie bezahle ich mit qr code'].sources;
+                return knowledgeBase['wie bezahle ich mit qr code'].answer;
+            }
+            
+            // Default response for "how" questions
+            currentSources = knowledgeBase['wie funktioniert gittertier pro'].sources;
+            return knowledgeBase['wie funktioniert gittertier pro'].answer;
+        }
+        
+        // Handle "who" questions
+        function handleWhoQuestions(question, questionWords) {
+            // Founder questions
+            if (questionWords.some(word => ['gründer', 'entwickler', 'erfinder', 'bastian', 'schäfer', 'kaspar', 'niederberger'].includes(word))) {
+                currentSources = knowledgeBase['wer hat gittertier pro entwickelt'].sources;
+                return knowledgeBase['wer hat gittertier pro entwickelt'].answer;
+            }
+            
+            // AI identity questions
+            if (questionWords.some(word => ['bist', 'du', 'ai', 'ki', 'assistent'].includes(word))) {
+                currentSources = knowledgeBase['wer bist du'].sources;
+                return knowledgeBase['wer bist du'].answer;
+            }
+            
+            // Default response for "who" questions
+            currentSources = knowledgeBase['wer hat gittertier pro entwickelt'].sources;
+            return knowledgeBase['wer hat gittertier pro entwickelt'].answer;
+        }
+        
+        // Handle "when" questions
+        function handleWhenQuestions(question, questionWords) {
+            // Update questions
+            if (questionWords.some(word => ['update', 'aktualisier', 'neu', 'kommt', 'release', 'version'].includes(word))) {
+                currentSources = knowledgeBase['wann kommt das nächste update'].sources;
+                return knowledgeBase['wann kommt das nächste update'].answer;
+            }
+            
+            // Default response for "when" questions
+            currentSources = knowledgeBase['wann kommt das nächste update'].sources;
+            return knowledgeBase['wann kommt das nächste update'].answer;
+        }
+        
+        // Handle "why" questions
+        function handleWhyQuestions(question, questionWords) {
+            // Default response for "why" questions
+            currentSources = knowledgeBase['was sind die vorteile von gittertier pro'].sources;
+            return knowledgeBase['was sind die vorteile von gittertier pro'].answer;
+        }
+        
+        // Handle "where" questions
+        function handleWhereQuestions(question, questionWords) {
+            // Support questions
+            if (questionWords.some(word => ['support', 'hilfe', 'dokumentation', 'anleitung'].includes(word))) {
+                currentSources = knowledgeBase['wo finde ich weiteren support'].sources;
+                return knowledgeBase['wo finde ich weiteren support'].answer;
+            }
+            
+            // Default response for "where" questions
+            currentSources = knowledgeBase['wo finde ich weiteren support'].sources;
+            return knowledgeBase['wo finde ich weiteren support'].answer;
+        }
+        
+        // Handle generic questions
+        function handleGenericQuestions(question, questionWords) {
+            // Tutorial questions
+            if (questionWords.some(word => ['tutorial', 'anleitung', 'hilfe', 'lern', 'einweis'].includes(word))) {
+                if (questionWords.some(word => ['verpass', 'inhalt', 'enthält', 'beinhaltet'].includes(word))) {
+                    currentSources = knowledgeBase['was verpasse ich im tutorial'].sources;
+                    return knowledgeBase['was verpasse ich im tutorial'].answer;
+                }
+                currentSources = knowledgeBase['gibt es ein tutorial'].sources;
+                return knowledgeBase['gibt es ein tutorial'].answer;
+            }
+            
+            // Instagram questions
+            if (questionWords.some(word => ['instagram', 'insta', 'social', 'media', 'sozial', '@'].includes(word))) {
+                currentSources = knowledgeBase['instagram'].sources;
+                return knowledgeBase['instagram'].answer;
+            }
+            
+            // Check for greetings
+            if (questionWords.some(word => ['hallo', 'hi', 'hey', 'guten', 'tag', 'morgen', 'abend'].includes(word))) {
+                // Return a random greeting response
+                const greetings = ['hallo', 'hi', 'guten tag'];
+                const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+                currentSources = knowledgeBase[randomGreeting].sources;
+                return knowledgeBase[randomGreeting].answer;
+            }
+            
+            // Check for thanks
+            if (questionWords.some(word => ['danke', 'dankeschön', 'danken', 'thx', 'thanks', 'dankö', 'tysm'].includes(word))) {
+                // Return a random thanks response
+                const thanks = ['danke', 'dankeschön', 'vielen dank', 'dankö'];
+                const randomThanks = thanks[Math.floor(Math.random() * thanks.length)];
+                currentSources = knowledgeBase[randomThanks].sources;
+                return knowledgeBase[randomThanks].answer;
+            }
+            
+            // Check for goodbye
+            if (questionWords.some(word => ['tschau', 'bye', 'ciao', 'ade', 'auf wiedersehen', 'bis bald'].includes(word))) {
+                // Return a random goodbye response
+                const goodbyes = ['tschau', 'bye', 'ciao'];
+                const randomGoodbye = goodbyes[Math.floor(Math.random() * goodbyes.length)];
+                currentSources = knowledgeBase[randomGoodbye].sources;
+                return knowledgeBase[randomGoodbye].answer;
+            }
+            
+            // Check for cost questions
+            if (questionWords.some(word => ['kosten', 'preis', 'kostenlos', 'gratis', 'teuer', 'preiswert', 'kostet', 'geld'].includes(word))) {
+                currentSources = knowledgeBase['ist gittertier pro kostenlos'].sources;
+                return knowledgeBase['ist gittertier pro kostenlos'].answer;
+            }
+            
+            // Default response
+            currentSources = knowledgeBase['default'].sources;
+            return knowledgeBase['default'].answer;
+        }
+        
+        // Process multiple questions in one message
+        function processMultipleQuestions(text) {
+            // Split text into sentences or question parts
+            const sentences = text.split(/[.,;?！？。]+/).filter(s => s.trim().length > 0);
+            const results = [];
+            
+            for (const sentence of sentences) {
+                // Skip very short sentences
+                if (sentence.length < 3) continue;
+                
+                const result = processQuestion(sentence);
+                if (result) {
+                    results.push({
+                        question: sentence,
+                        answer: result
+                    });
+                }
+            }
+            
+            return results;
+        }
+        
+        // Format response for multiple questions
+        function formatMultipleResponse(questions) {
+            if (questions.length === 0) {
+                return "<p>Ich habe keine Fragen in Ihrer Nachricht erkannt. Könnten Sie Ihre Frage bitte präziser formulieren?</p>";
+            }
+            
+            if (questions.length === 1) {
+                return `<p>${questions[0].answer}</p>`;
+            }
+            
+            let html = `<div class="multi-response"><p>Ich habe ${questions.length} Fragen in Ihrer Nachricht erkannt:</p>`;
+            
+            questions.forEach((q, index) => {
+                html += `
+                    <div class="response-section">
+                        <div class="response-question">Frage ${index + 1}: "${q.question}"</div>
+                        <div>${q.answer}</div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            
+            // Add Instagram banner if any question was about Instagram or if multiple questions were asked
+            const hasInstagramQuestion = questions.some(q => 
+                q.question.toLowerCase().includes('instagram') || 
+                q.question.toLowerCase().includes('insta') ||
+                q.question.toLowerCase().includes('social media')
+            );
+            
+            if (hasInstagramQuestion || questions.length > 1) {
+                html += `
+                    <div class="instagram-banner">
+                        <p>Folgen Sie uns auf Instagram für Updates und Tipps!</p>
+                        <a href="https://instagram.com/gittertierpro" target="_blank">
+                            <i class="fab fa-instagram"></i> @gittertierpro
+                        </a>
+                    </div>
+                `;
+            }
+            
+            return html;
+        }
+        
+        // Generate email with chat history
+        function generateSupportEmail(subject = "Supportanfrage Gittertier Pro") {
+            const chatHistoryText = chatHistory.map(entry => 
+                `${entry.isUser ? 'Sie' : 'Gittertier AI'}: ${entry.text}`
+            ).join('\n\n');
+            
+            const emailBody = `Hallo Gittertier Pro Team,%0D%0A%0D%0AIch benötige Unterstützung bei:%0D%0A%0D%0A%0D%0AChat-Verlauf:%0D%0A${encodeURIComponent(chatHistoryText)}%0D%0A%0D%0AMit freundlichen Grüßen`;
+            
+            return `mailto:kaspar.niederberger@outlook.com?subject=${encodeURIComponent(subject)}&body=${emailBody}`;
+        }
+        
+        // Ask a question programmatically
+        function askQuestion(question) {
+            aiInput.value = question;
+            sendMessage();
+        }
+        
+        // Send message
+        function sendMessage() {
+            if (checkUserBlocked()) return;
+            
+            const message = aiInput.value.trim();
+            if (!message) return;
+            
+            // Check for inappropriate content
+            if (hasInappropriateContent(message)) {
+                const blocked = warnUser("Bitte verwenden Sie eine angemessene Sprache.", "Unangemessene Sprache");
+                if (blocked) return;
+                
+                aiInput.value = '';
+                return;
+            }
+            
+            // Add user message
+            addMessage(message, true);
+            aiInput.value = '';
+            
+            // Show typing indicator
+            const typingIndicator = showTypingIndicator();
+            
+            // Process question and respond after a short delay
+            setTimeout(() => {
+                // Remove typing indicator
+                if (typingIndicator && typingIndicator.parentNode) {
+                    typingIndicator.parentNode.removeChild(typingIndicator);
+                }
+                
+                // Process multiple questions
+                const questions = processMultipleQuestions(message);
+                
+                if (questions.length > 0) {
+                    const response = formatMultipleResponse(questions);
+                    addMessage(response);
+                    
+                    // Add contact banner for certain types of questions
+                    const hasSupportQuestion = questions.some(q => 
+                        q.question.toLowerCase().includes('support') || 
+                        q.question.toLowerCase().includes('hilfe') ||
+                        q.question.toLowerCase().includes('problem') ||
+                        q.question.toLowerCase().includes('fehler') ||
+                        q.question.toLowerCase().includes('kontakt')
+                    );
+                    
+                    if (hasSupportQuestion || questions.some(q => q.answer.includes('Entschuldigung'))) {
+                        const banner = `
+                            <div class="contact-banner">
+                                <p>Benötigen Sie weiteren Support?</p>
+                                <a href="${generateSupportEmail('Supportanfrage: ' + message.substring(0, 30) + '...')}">
+                                    <i class="fas fa-envelope"></i> Support kontaktieren
+                                </a>
+                            </div>
+                        `;
+                        
+                        setTimeout(() => {
+                            const bannerElement = document.createElement('div');
+                            bannerElement.innerHTML = banner;
+                            chatContainer.appendChild(bannerElement);
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                        }, 500);
+                    }
+                } else {
+                    // Get and add AI response for single question
+                    const response = processQuestion(message);
+                    if (response) {
+                        addMessage(response);
+                        
+                        // Add Instagram banner if question was about Instagram or for certain responses
+                        if (message.toLowerCase().includes('instagram') || 
+                            message.toLowerCase().includes('insta') ||
+                            message.toLowerCase().includes('social media') ||
+                            message.toLowerCase().includes('update') ||
+                            message.toLowerCase().includes('neuigkeit')) {
+                            const banner = `
+                                <div class="instagram-banner">
+                                    <p>Folgen Sie uns auf Instagram für Updates und Tipps!</p>
+                                    <a href="https://instagram.com/gittertierpro" target="_blank">
+                                        <i class="fab fa-instagram"></i> @gittertierpro
+                                    </a>
+                                </div>
+                            `;
+                            
+                            // Add a small delay before showing the banner
+                            setTimeout(() => {
+                                const bannerElement = document.createElement('div');
+                                bannerElement.innerHTML = banner;
+                                chatContainer.appendChild(bannerElement);
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                            }, 500);
+                        }
+                        
+                        // Add future plans banner for roadmap questions
+                        if (message.toLowerCase().includes('zukunft') || 
+                            message.toLowerCase().includes('zukunftspläne') ||
+                            message.toLowerCase().includes('roadmap') ||
+                            message.toLowerCase().includes('pläne') ||
+                            message.toLowerCase().includes('geplant') ||
+                            message.toLowerCase().includes('kommen') ||
+                            message.toLowerCase().includes('neu') ||
+                            message.toLowerCase().includes('features')) {
+                            const banner = `
+                                <div class="future-banner">
+                                    <h4>Zukunftspläne für Gittertier Pro</h4>
+                                    <ul>
+                                        <li>Mehrbenutzer-Support</li>
+                                        <li>Erweiterte Berichte und Analytics</li>
+                                        <li>Inventory-Management</li>
+                                        <li>Integration mit Buchhaltungssoftware</li>
+                                        <li>Mobile App</li>
+                                        <li>Mehrsprachiger Support</li>
+                                    </ul>
+                                    <p>Folgen Sie uns auf Instagram für Updates!</p>
+                                    <a href="https://instagram.com/gittertierpro" target="_blank">
+                                        <i class="fab fa-instagram"></i> @gittertierpro
+                                    </a>
+                                </div>
+                            `;
+                            
+                            setTimeout(() => {
+                                const bannerElement = document.createElement('div');
+                                bannerElement.innerHTML = banner;
+                                chatContainer.appendChild(bannerElement);
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                            }, 500);
+                        }
+                        
+                        // Add contact banner for support-related questions or when the AI doesn't understand
+                        if (message.toLowerCase().includes('support') || 
+                            message.toLowerCase().includes('hilfe') ||
+                            message.toLowerCase().includes('problem') ||
+                            message.toLowerCase().includes('fehler') ||
+                            message.toLowerCase().includes('kontakt') ||
+                            message.toLowerCase().includes('passwort vergessen') ||
+                            response.includes('Entschuldigung')) {
+                            const banner = `
+                                <div class="contact-banner">
+                                    <p>Benötigen Sie persönlichen Support?</p>
+                                    <a href="${generateSupportEmail('Supportanfrage: ' + message.substring(0, 30) + '...')}">
+                                        <i class="fas fa-envelope"></i> Support kontaktieren
+                                    </a>
+                                </div>
+                            `;
+                            
+                            setTimeout(() => {
+                                const bannerElement = document.createElement('div');
+                                bannerElement.innerHTML = banner;
+                                chatContainer.appendChild(bannerElement);
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                            }, 500);
+                        }
+                    }
+                }
+            }, 1500);
+        }
+        
+        // Allow sending message with Enter key
+        aiInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Auto-resize textarea
+        aiInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === aiModal) {
+                closeAIModal();
+            }
+            if (e.target === sourcesModal) {
+                closeSourcesModal();
+            }
+            if (e.target === blockModal) {
+                // Don't close block modal by clicking outside - user must wait or reload
+            }
+        });
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is blocked
+            checkUserBlocked();
+            
+            // Initialize chat history
+            chatHistory = [];
         });
     </script>
 </body>
