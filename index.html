@@ -277,6 +277,18 @@
         cursor: pointer;
         transition: var(--transition);
     }
+    
+    /* Passcode Modal Specific Styles */
+#passcode-modal .modal-content {
+    max-width: 400px;
+}
+
+#passcode-input {
+    letter-spacing: 2px;
+    font-size: var(--text-lg);
+    text-align: center;
+    font-weight: 600;
+}
 
     .action-btn:hover {
         background-color: #f9fafb;
@@ -2059,6 +2071,56 @@
         function showTutorial() {
             startTutorial();
         }
+        
+        // Initialize tutorial on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we have valid access first
+    if (!validateAccess()) {
+        // Disable all interactive elements if no access
+        document.body.classList.add('tutorial-disabled');
+        return; // Stop further execution if no access
+    }
+    
+    // Set up continue button handler
+    document.getElementById('tutorial-continue-btn').addEventListener('click', nextTutorialStep);
+    
+    // Check if we should show the tutorial
+    checkTutorialStatus();
+    document.getElementById('tutorial-cutout').style.display = 'none';
+    document.getElementById('tutorial-bubble').style.display = 'none';
+    
+    // Check if we need to resume a tutorial in progress
+    try {
+        const tutorialInProgress = localStorage.getItem('gittertier_tutorial_progress') || 
+                                  sessionStorage.getItem('gittertier_tutorial_progress');
+        
+        if (tutorialInProgress) {
+            const progress = JSON.parse(tutorialInProgress);
+            const isRecent = (Date.now() - progress.timestamp) < 0;
+            
+            if (isRecent) {
+                if (confirm('Möchten Sie das Tutorial fortsetzen, wo Sie aufgehört haben?')) {
+                    tutorialCurrentStep = progress.step;
+                    startTutorial();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to check for tutorial progress:', e);
+    }
+    
+    // Initialize products from localStorage
+    products = JSON.parse(localStorage.getItem('products')) || {};
+    
+    // Apply settings
+    applySettings();
+    checkShopStatus();
+    setInterval(checkShopStatus, 60000);
+    
+    // Initialize currency symbol
+    currencySymbol = '€';
+    window.addEventListener('focus', checkShopStatus);
+});
 
         // Initialize tutorial on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -2400,6 +2462,68 @@
             }
         }
         
+        // Passcode Protection System
+const REQUIRED_PASSCODE = "INSTAGRAM";
+const ACCESS_DURATION = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
+
+function checkPasscode() {
+    const input = document.getElementById('passcode-input').value.trim();
+    const errorElement = document.getElementById('passcode-error');
+    
+    if (input === REQUIRED_PASSCODE) {
+        // Set access expiration (current time + 1 week)
+        const expirationTime = Date.now() + ACCESS_DURATION;
+        localStorage.setItem('passcode_access_expiration', expirationTime);
+        localStorage.setItem('passcode_granted', 'true');
+        
+        // Hide the modal
+        document.getElementById('passcode-modal').style.display = 'none';
+        document.body.classList.remove('tutorial-disabled');
+    } else {
+        // Show error
+        errorElement.style.display = 'block';
+        document.getElementById('passcode-input').value = '';
+        setTimeout(() => {
+            errorElement.style.display = 'none';
+        }, 3000);
+    }
+}
+
+function validateAccess() {
+    const expiration = localStorage.getItem('passcode_access_expiration');
+    const granted = localStorage.getItem('passcode_granted');
+    
+    // Check if access was previously granted and hasn't expired
+    if (granted === 'true' && expiration && Date.now() < parseInt(expiration)) {
+        document.getElementById('passcode-modal').style.display = 'none';
+        document.body.classList.remove('tutorial-disabled');
+        return true;
+    }
+    
+    // Access not granted or expired
+    document.getElementById('passcode-modal').style.display = 'flex';
+    document.body.classList.add('tutorial-disabled');
+    return false;
+}
+
+// Add event listener for Enter key in passcode input
+document.getElementById('passcode-input')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        checkPasscode();
+    }
+});
+
+// Initialize access validation when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we have valid access first
+    if (!validateAccess()) {
+        // Disable all interactive elements if no access
+        document.body.classList.add('tutorial-disabled');
+    }
+    
+    // The rest of your existing DOMContentLoaded code...
+});
+        
         function removeCartItem(barcode) {
             cart = cart.filter(item => item.barcode !== barcode);
             updateCartDisplay();
@@ -2629,5 +2753,25 @@
             audio.play().catch(e => console.log('Sound playback error:', e));
         }
     </script>
+    
+    <!-- Passcode Protection Modal -->
+<div id="passcode-modal" class="modal" style="display: flex; z-index: 2000;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-lock"></i>
+                Passcode erforderlich
+            </h3>
+            <p class="text-muted">Bitte geben Sie den Zugangscode ein</p>
+        </div>
+        <input type="password" id="passcode-input" class="modal-input" placeholder="Zugangscode">
+        <p id="passcode-error" class="text-muted text-sm" style="color: var(--color-error); display: none;">
+            Ungültiger Passcode
+        </p>
+        <div class="modal-actions">
+            <button class="modal-btn primary" onclick="checkPasscode()">Bestätigen</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
