@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-    :root {
+:root {
         --color-bg: #ffffff;
         --color-text: #111111;
         --color-text-muted: #6b7280;
@@ -21,23 +21,23 @@
         --color-overlay: rgba(0, 0, 0, 0.5);
         --color-tutorial: #FF9900;
         --color-tutorial-light: #FFF3CD;
-        
+
         --radius: 12px;
         --radius-sm: 6px;
         --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
-        
+
         --spacing-xs: 4px;
         --spacing-sm: 8px;
         --spacing-md: 16px;
         --spacing-lg: 24px;
         --spacing-xl: 32px;
         --spacing-xxl: 48px;
-        
+
         --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
         --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-        
+
         --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
         --text-xs: 0.75rem;
         --text-sm: 0.875rem;
@@ -46,1270 +46,1456 @@
         --text-xl: 1.25rem;
         --text-2xl: 1.5rem;
         --text-3xl: 1.875rem;
-        
+
         --header-height: 64px;
         --footer-height: 80px;
     }
 
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    body {
-        font-family: var(--font-family);
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        line-height: 1.5;
-        min-height: 100vh;
-        padding-bottom: var(--footer-height);
-    }
-
-    /* Header Styles */
-    header {
-        height: var(--header-height);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 var(--spacing-lg);
-        border-bottom: 1px solid var(--color-border);
-        background-color: var(--color-bg);
-        position: sticky;
-        top: 0;
-        z-index: 50;
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-md);
-        font-weight: 700;
-        font-size: var(--text-xl);
-    }
-
-    .logo i {
-        font-size: var(--text-xl);
-        color: var(--color-accent);
-    }
-
-    .header-controls {
-        display: flex;
-        gap: var(--spacing-md);
-    }
-
-    /* Main Content */
-    main {
-        max-width: 880px;
-        margin: 0 auto;
-        padding: var(--spacing-xl) var(--spacing-lg);
-    }
-
-    .section {
-        margin-bottom: var(--spacing-xl);
-    }
-
-    .section-title {
-        font-size: var(--text-lg);
-        font-weight: 600;
-        margin-bottom: var(--spacing-md);
-        color: var(--color-text);
-    }
-
-    /* Scanner Card */
-    .scanner-card {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        border: 1px solid var(--color-border);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        margin-bottom: var(--spacing-xl);
-        animation: fadeIn 0.4s ease-out;
-    }
-
-    #scanner-container {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16/9;
-        background-color: #f9fafb;
-        overflow: hidden;
-    }
-
-    #scanner-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    #barcode-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 10;
-    }
-
-    #barcode-box {
-        position: absolute;
-        border: 2px solid var(--color-success);
-        box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
-        display: none;
-        z-index: 10;
-        transition: all 0.2s ease;
-        border-radius: var(--radius-sm);
-    }
-
-    .scanner-status {
-        position: absolute;
-        bottom: var(--spacing-md);
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--color-overlay);
-        color: white;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: 20px;
-        font-size: var(--text-sm);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        z-index: 20;
-    }
-
-    .scanner-status .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: var(--color-success);
-    }
-
-    .scanner-status.inactive .dot {
-        background-color: var(--color-error);
-    }
-
-    /* Scanner Controls */
-    .scanner-controls {
-        display: flex;
-        padding: var(--spacing-md);
-        gap: var(--spacing-md);
-        border-top: 1px solid var(--color-border);
-        flex-wrap: wrap;
-    }
-
-    .control-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--spacing-xs);
-        background: none;
-        border: none;
-        padding: var(--spacing-sm);
-        border-radius: var(--radius-sm);
-        color: var(--color-text-muted);
-        font-size: var(--text-xs);
-        cursor: pointer;
-        transition: var(--transition);
-        flex: 1;
-        min-width: 60px;
-    }
-
-    .control-btn:hover {
-        background-color: #f9fafb;
-        color: var(--color-text);
-    }
-
-    .control-btn:focus {
-        outline: none;
-        box-shadow: var(--focus-ring);
-    }
-
-    .control-btn i {
-        font-size: var(--text-lg);
-    }
-
-    .scan-btn {
-        background-color: var(--color-accent);
-        color: white;
-        border: none;
-        border-radius: var(--radius);
-        padding: var(--spacing-md) var(--spacing-lg);
-        font-size: var(--text-base);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-sm);
-        flex: 2;
-        min-width: 140px;
-    }
-
-    .scan-btn:hover {
-        background-color: var(--color-accent-hover);
-    }
-
-    .scan-btn:focus {
-        outline: none;
-        box-shadow: var(--focus-ring);
-    }
-
-    /* Additional Controls */
-    .additional-controls {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-md);
-        margin-top: var(--spacing-md);
-    }
-
-    .action-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-md);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius);
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-    
-    /* Passcode Modal Specific Styles */
-/* Passcode Modal Specific Styles */
-#passcode-modal .modal-content {
-    max-width: 400px;
-}
-
-#passcode-input {
-    letter-spacing: 2px;
-    font-size: var(--text-lg);
-    text-align: center;
-    font-weight: 600;
-}
-
-/* Ensure modal is on top of everything */
-#passcode-modal {
-    z-index: 2000;
-    background-color: var(--color-overlay);
-}
-
-/* Disabled state for when passcode is required */
-.passcode-required .scanner-card,
-.passcode-required .product-card,
-.passcode-required .cart-section,
-.passcode-required .payment-footer {
-    opacity: 0.5;
-    filter: blur(2px);
-    pointer-events: none;
-}
-
-    .action-btn:hover {
-        background-color: #f9fafb;
-        border-color: var(--color-accent);
-    }
-
-    .action-btn:focus {
-        outline: none;
-        box-shadow: var(--focus-ring);
-    }
-
-    .action-btn i {
-        font-size: var(--text-lg);
-    }
-
-    .support-btn {
-        color: var(--color-success);
-        border-color: #16a34a33;
-    }
-
-    .support-btn:hover {
-        background-color: rgba(22, 163, 74, 0.05);
-        border-color: var(--color-success);
-    }
-
-    .admin-btn {
-        color: var(--color-error);
-        border-color: rgba(220, 38, 38, 0.2);
-    }
-
-    .admin-btn:hover {
-        background-color: rgba(220, 38, 38, 0.05);
-        border-color: var(--color-error);
-    }
-
-    /* Product Card */
-    .product-card {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        border: 1px solid var(--color-border);
-        padding: var(--spacing-lg);
-        margin-bottom: var(--spacing-xl);
-        display: none;
-    }
-
-    .product-card.visible {
-        display: flex;
-        animation: slideUp 0.3s ease-out;
-    }
-
-    .product-image {
-        width: 80px;
-        height: 80px;
-        background-color: #f3f4f6;
-        border-radius: var(--radius);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: var(--spacing-lg);
-        flex-shrink: 0;
-    }
-
-    .product-image i {
-        font-size: var(--text-2xl);
-        color: var(--color-text-muted);
-    }
-
-    .product-info {
-        flex-grow: 1;
-    }
-
-    .product-name {
-        font-weight: 600;
-        font-size: var(--text-base);
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .product-price {
-        font-weight: 700;
-        font-size: var(--text-lg);
-        color: var(--color-text);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .product-actions {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-md);
-    }
-
-    .quantity-controls {
-        display: flex;
-        align-items: center;
-        background-color: #f9fafb;
-        border-radius: var(--radius);
-        overflow: hidden;
-        border: 1px solid var(--color-border);
-    }
-
-    .quantity-btn {
-        background: none;
-        border: none;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: var(--color-text-muted);
-        transition: var(--transition);
-    }
-
-    .quantity-btn:hover {
-        background-color: #f3f4f6;
-        color: var(--color-text);
-    }
-
-    .quantity-btn:focus {
-        outline: none;
-        box-shadow: var(--focus-ring);
-    }
-
-    .quantity-value {
-        width: 36px;
-        text-align: center;
-        font-weight: 600;
-    }
-
-    .add-to-cart-btn {
-        background-color: var(--color-accent);
-        color: white;
-        border: none;
-        border-radius: var(--radius);
-        padding: var(--spacing-sm) var(--spacing-md);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .add-to-cart-btn:hover {
-        background-color: var(--color-accent-hover);
-    }
-
-    .add-to-cart-btn:focus {
-        outline: none;
-        box-shadow: var(--focus-ring);
-    }
-
-    .replace-scan {
-        color: var(--color-accent);
-        font-size: var(--text-sm);
-        text-decoration: underline;
-        cursor: pointer;
-        margin-left: auto;
-    }
-
-    .replace-scan:hover {
-        color: var(--color-accent-hover);
-    }
-
-    /* Cart Section */
-    .cart-section {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        border: 1px solid var(--color-border);
-        overflow: hidden;
-    }
-
-    .cart-header {
-        padding: var(--spacing-lg);
-        border-bottom: 1px solid var(--color-border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .cart-title {
-        font-weight: 600;
-        font-size: var(--text-lg);
-    }
-
-    .cart-count {
-        color: var(--color-text-muted);
-        font-size: var(--text-sm);
-    }
-
-    #cart-items {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-
-    .cart-item {
-        display: flex;
-        align-items: center;
-        padding: var(--spacing-lg);
-        border-bottom: 1px solid var(--color-border);
-        transition: var(--transition);
-    }
-
-    .cart-item:hover {
-        background-color: #f9fafb;
-    }
-
-    .cart-item-image {
-        width: 50px;
-        height: 50px;
-        background-color: #f3f4f6;
-        border-radius: var(--radius-sm);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: var(--spacing-md);
-        flex-shrink: 0;
-    }
-
-    .cart-item-image i {
-        font-size: var(--text-lg);
-        color: var(--color-text-muted);
-    }
-
-    .cart-item-info {
-        flex-grow: 1;
-    }
-
-    .cart-item-name {
-        font-weight: 500;
-        font-size: var(--text-base);
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .cart-item-price {
-        color: var(--color-text-muted);
-        font-size: var(--text-sm);
-    }
-
-    .cart-item-quantity {
-        display: flex;
-        align-items: center;
-        margin-right: var(--spacing-md);
-    }
-
-    .cart-item-remove {
-        background: none;
-        border: none;
-        color: var(--color-error);
-        cursor: pointer;
-        padding: var(--spacing-sm);
-        border-radius: var(--radius-sm);
-        transition: var(--transition);
-    }
-
-    .cart-item-remove:hover {
-        background-color: #fef2f2;
-    }
-
-    .cart-item-remove:focus {
-        outline: none;
-        box-shadow: var(--focus-ring);
-    }
-
-    .cart-total {
-        padding: var(--spacing-lg);
-        border-top: 1px solid var(--color-border);
-        display: flex;
-        justify-content: space-between;
-        font-weight: 700;
-        font-size: var(--text-lg);
-    }
-
-    /* Payment Footer */
-    .payment-footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: var(--footer-height);
-        background-color: var(--color-bg);
-        border-top: 1px solid var(--color-border);
-        padding: var(--spacing-md) var(--spacing-lg);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        z-index: 40;
-    }
-
-    .total-amount {
-        font-weight: 700;
-        font-size: var(--text-xl);
-    }
-
-    .pay-btn {
-        background-color: var(--color-accent);
-        color: white;
-        border: none;
-        border-radius: var(--radius);
-        padding: var(--spacing-md) var(--spacing-xl);
-        font-weight: 700;
-        font-size: var(--text-base);
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .pay-btn:hover {
-        background-color: var(--color-accent-hover);
-        transform: translateY(-2px);
-    }
-
-    .pay-btn:active {
-        transform: translateY(0);
-    }
-
-    .pay-btn:focus {
-        outline: none;
-        box-shadow: var(--focus-ring);
-    }
-
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--color-overlay);
-        z-index: 100;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-lg);
-    }
-
-    .modal-content {
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        width: 100%;
-        max-width: 500px;
-        box-shadow: var(--shadow-md);
-        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
-    }
-
-    .modal-header {
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .modal-title {
-        font-weight: 600;
-        font-size: var(--text-xl);
-        margin-bottom: var(--spacing-xs);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .modal-input {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        margin-bottom: var(--spacing-md);
-        font-size: var(--text-base);
-        transition: var(--transition);
-    }
-
-    .modal-input:focus {
-        outline: none;
-        border-color: var(--color-accent);
-        box-shadow: var(--focus-ring);
-    }
-
-    .modal-actions {
-        display: flex;
-        gap: var(--spacing-md);
-        margin-top: var(--spacing-lg);
-    }
-
-    .modal-btn {
-        flex: 1;
-        padding: var(--spacing-md);
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .modal-btn.primary {
-        background-color: var(--color-accent);
-        color: white;
-        border: none;
-    }
-
-    .modal-btn.primary:hover {
-        background-color: var(--color-accent-hover);
-    }
-
-    .modal-btn.secondary {
-        background-color: transparent;
-        border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
-    }
-
-    .modal-btn.secondary:hover {
-        background-color: #f9fafb;
-        color: var(--color-text);
-    }
-
-    /* Notification */
-    .notification {
-        position: fixed;
-        bottom: calc(var(--footer-height) + var(--spacing-md));
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--color-text);
-        color: white;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: var(--radius);
-        z-index: 60;
-        display: none;
-        animation: slideUp 0.3s ease-out;
-        font-weight: 500;
-    }
-
-    .notification.success {
-        background-color: var(--color-success);
-    }
-
-    .notification.error {
-        background-color: var(--color-error);
-    }
-
-    /* Utility Classes */
-    .text-muted {
-        color: var(--color-text-muted);
-    }
-
-    .text-sm {
-        font-size: var(--text-sm);
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes slideUp {
-        from { transform: translateY(20px) translateX(-50%); opacity: 0; }
-        to { transform: translateY(0) translateX(-50%); opacity: 1; }
-    }
-
-    @keyframes scaleIn {
-        from { transform: scale(0.95); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        :root {
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding-bottom: var(--footer-height);
+        }
+
+        /* Header Styles */
+        header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            background-color: var(--color-bg);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            font-weight: 700;
+            font-size: var(--text-xl);
+        }
+
+        .logo i {
+            font-size: var(--text-xl);
+            color: var(--color-accent);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-lg);
+        }
+
+        .section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .section-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        /* Scanner Card */
+        .scanner-card {
+            background: var(--color-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: var(--spacing-xl);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        #scanner-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: #f9fafb;
+            overflow: hidden;
+        }
+
+        #scanner-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #barcode-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #barcode-box {
+            position: absolute;
+            border: 2px solid var(--color-success);
+            box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+            display: none;
+            z-index: 10;
+            transition: all 0.2s ease;
+            border-radius: var(--radius-sm);
+        }
+
+        .scanner-status {
+            position: absolute;
+            bottom: var(--spacing-md);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--color-overlay);
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 20px;
+            font-size: var(--text-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            z-index: 20;
+        }
+
+        .scanner-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color-success);
+        }
+
+        .scanner-status.inactive .dot {
+            background-color: var(--color-error);
+        }
+
+        /* Scanner Controls */
+        .scanner-controls {
+            display: flex;
+            padding: var(--spacing-md);
+            gap: var(--spacing-md);
+            border-top: 1px solid var(--color-border);
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-xs);
+            background: none;
+            border: none;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            color: var(--color-text-muted);
+            font-size: var(--text-xs);
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+            min-width: 60px;
+        }
+
+        .control-btn:hover {
+            background-color: #f9fafb;
+            color: var(--color-text);
+        }
+
+        .control-btn:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .control-btn i {
+            font-size: var(--text-lg);
+        }
+
+        .scan-btn {
+            background-color: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-size: var(--text-base);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            flex: 2;
+            min-width: 140px;
+        }
+
+        .scan-btn:hover {
+            background-color: var(--color-accent-hover);
+        }
+
+        .scan-btn:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        /* Additional Controls */
+        .additional-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            background-color: #f9fafb;
+            border-color: var(--color-accent);
+        }
+
+        .action-btn:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .action-btn i {
+            font-size: var(--text-lg);
+        }
+
+        .support-btn {
+            color: var(--color-success);
+            border-color: #16a34a33;
+        }
+
+        .support-btn:hover {
+            background-color: rgba(22, 163, 74, 0.05);
+            border-color: var(--color-success);
+        }
+
+        .admin-btn {
+            color: var(--color-error);
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+
+        .admin-btn:hover {
+            background-color: rgba(220, 38, 38, 0.05);
+            border-color: var(--color-error);
+        }
+
+        /* Product Card */
+        .product-card {
+            background: var(--color-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            display: none;
+        }
+
+        .product-card.visible {
+            display: flex;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            background-color: #f3f4f6;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-lg);
+            flex-shrink: 0;
+        }
+
+        .product-image i {
+            font-size: var(--text-2xl);
+            color: var(--color-text-muted);
+        }
+
+        .product-info {
+            flex-grow: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: var(--text-base);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .product-price {
+            font-weight: 700;
+            font-size: var(--text-lg);
+            color: var(--color-text);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .product-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            background-color: #f9fafb;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+
+        .quantity-btn {
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            transition: var(--transition);
+        }
+
+        .quantity-btn:hover {
+            background-color: #f3f4f6;
+            color: var(--color-text);
+        }
+
+        .quantity-btn:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .quantity-value {
+            width: 36px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .add-to-cart-btn {
+            background-color: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: var(--spacing-sm) var(--spacing-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: var(--color-accent-hover);
+        }
+
+        .add-to-cart-btn:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .replace-scan {
+            color: var(--color-accent);
+            font-size: var(--text-sm);
+            text-decoration: underline;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .replace-scan:hover {
+            color: var(--color-accent-hover);
+        }
+
+        /* Cart Section */
+        .cart-section {
+            background: var(--color-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+        }
+
+        .cart-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-title {
+            font-weight: 600;
+            font-size: var(--text-lg);
+        }
+
+        .cart-count {
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
+        }
+
+        #cart-items {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            transition: var(--transition);
+        }
+
+        .cart-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .cart-item-image {
+            width: 50px;
+            height: 50px;
+            background-color: #f3f4f6;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-md);
+            flex-shrink: 0;
+        }
+
+        .cart-item-image i {
+            font-size: var(--text-lg);
+            color: var(--color-text-muted);
+        }
+
+        .cart-item-info {
+            flex-grow: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 500;
+            font-size: var(--text-base);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .cart-item-price {
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            margin-right: var(--spacing-md);
+        }
+
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: var(--color-error);
+            cursor: pointer;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .cart-item-remove:hover {
+            background-color: #fef2f2;
+        }
+
+        .cart-item-remove:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .cart-total {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: var(--text-lg);
+        }
+
+        /* Payment Footer */
+        .payment-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--footer-height);
+            background-color: var(--color-bg);
+            border-top: 1px solid var(--color-border);
+            padding: var(--spacing-md) var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 40;
+        }
+
+        .total-amount {
+            font-weight: 700;
+            font-size: var(--text-xl);
+        }
+
+        .pay-btn {
+            background-color: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: var(--spacing-md) var(--spacing-xl);
+            font-weight: 700;
+            font-size: var(--text-base);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .pay-btn:hover {
+            background-color: var(--color-accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .pay-btn:active {
+            transform: translateY(0);
+        }
+
+        .pay-btn:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-overlay);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+        }
+
+        .modal-content {
+            background-color: var(--color-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing-xl);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow-md);
+            animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .modal-header {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .modal-title {
+            font-weight: 600;
+            font-size: var(--text-xl);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--text-base);
+            transition: var(--transition);
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: var(--focus-ring);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-btn.primary {
+            background-color: var(--color-accent);
+            color: white;
+            border: none;
+        }
+
+        .modal-btn.primary:hover {
+            background-color: var(--color-accent-hover);
+        }
+
+        .modal-btn.secondary {
+            background-color: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+        }
+
+        .modal-btn.secondary:hover {
+            background-color: #f9fafb;
+            color: var(--color-text);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: calc(var(--footer-height) + var(--spacing-md));
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--color-text);
+            color: white;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius);
+            z-index: 60;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+            font-weight: 500;
+        }
+
+        .notification.success {
+            background-color: var(--color-success);
+        }
+
+        .notification.error {
+            background-color: var(--color-error);
+        }
+
+        /* Utility Classes */
+        .text-muted {
+            color: var(--color-text-muted);
+        }
+
+        .text-sm {
+            font-size: var(--text-sm);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px) translateX(-50%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) translateX(-50%);
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+:root {
             --spacing-lg: 20px;
             --spacing-xl: 24px;
         }
-        
-        main {
-            padding: var(--spacing-lg) var(--spacing-md);
-        }
-        
-        .scanner-controls {
-            flex-direction: column;
-        }
-        
-        .control-btn {
-            flex-direction: row;
-            justify-content: center;
-        }
-        
-        .additional-controls {
-            grid-template-columns: 1fr;
-        }
-        
-        .product-card.visible {
-            flex-direction: column;
-        }
-        
-        .product-image {
-            margin-right: 0;
-            margin-bottom: var(--spacing-md);
-            align-self: center;
-        }
-        
-        .product-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .replace-scan {
-            margin-left: 0;
-            text-align: center;
-        }
-        
-        .cart-item {
-            flex-wrap: wrap;
-        }
-        
-        .cart-item-quantity {
-            margin-top: var(--spacing-md);
-            margin-right: 0;
-            width: 100%;
-            justify-content: center;
-        }
-        
-        .cart-item-remove {
-            margin-top: var(--spacing-md);
-            width: 100%;
-            text-align: center;
-        }
-        
-        .payment-footer {
-            flex-direction: column;
-            height: auto;
-            padding: var(--spacing-md);
-            gap: var(--spacing-md);
-        }
-        
-        .total-amount {
-            font-size: var(--text-lg);
-        }
-        
-        .pay-btn {
-            width: 100%;
-        }
-    }
 
-    @media (max-width: 480px) {
-        header {
-            padding: 0 var(--spacing-md);
+            main {
+                padding: var(--spacing-lg) var(--spacing-md);
+            }
+
+            .scanner-controls {
+                flex-direction: column;
+            }
+
+            .control-btn {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .additional-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .product-card.visible {
+                flex-direction: column;
+            }
+
+            .product-image {
+                margin-right: 0;
+                margin-bottom: var(--spacing-md);
+                align-self: center;
+            }
+
+            .product-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .replace-scan {
+                margin-left: 0;
+                text-align: center;
+            }
+
+            .cart-item {
+                flex-wrap: wrap;
+            }
+
+            .cart-item-quantity {
+                margin-top: var(--spacing-md);
+                margin-right: 0;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .cart-item-remove {
+                margin-top: var(--spacing-md);
+                width: 100%;
+                text-align: center;
+            }
+
+            .payment-footer {
+                flex-direction: column;
+                height: auto;
+                padding: var(--spacing-md);
+                gap: var(--spacing-md);
+            }
+
+            .total-amount {
+                font-size: var(--text-lg);
+            }
+
+            .pay-btn {
+                width: 100%;
+            }
         }
-        
-        .logo {
-            font-size: var(--text-lg);
+
+        @media (max-width: 480px) {
+            header {
+                padding: 0 var(--spacing-md);
+            }
+
+            .logo {
+                font-size: var(--text-lg);
+            }
+
+            .modal-content {
+                padding: var(--spacing-lg);
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
         }
-        
-        .modal-content {
+
+        /* Maintenance and Closed Screens */
+        #maintenance-modal, #closed-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-bg);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
             padding: var(--spacing-lg);
+            text-align: center;
         }
-        
-        .modal-actions {
-            flex-direction: column;
+
+        .maintenance-content, .closed-content {
+            max-width: 500px;
         }
-    }
 
-    /* Maintenance and Closed Screens */
-    #maintenance-modal, #closed-screen {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--color-bg);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-        padding: var(--spacing-lg);
-        text-align: center;
-    }
+        .maintenance-icon, .closed-icon {
+            font-size: 4rem;
+            color: var(--color-error);
+            margin-bottom: var(--spacing-lg);
+        }
 
-    .maintenance-content, .closed-content {
-        max-width: 500px;
-    }
+        .maintenance-title, .closed-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+        }
 
-    .maintenance-icon, .closed-icon {
-        font-size: 4rem;
-        color: var(--color-error);
-        margin-bottom: var(--spacing-lg);
-    }
+        .maintenance-message, .closed-message {
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-xl);
+        }
 
-    .maintenance-title, .closed-title {
-        font-size: var(--text-2xl);
-        font-weight: 700;
-        margin-bottom: var(--spacing-md);
-    }
-
-    .maintenance-message, .closed-message {
-        color: var(--color-text-muted);
-        margin-bottom: var(--spacing-xl);
-    }
-
-    /* Dark mode support for system preference */
-    @media (prefers-color-scheme: dark) {
-        :root {
+        /* Dark mode support for system preference */
+        @media (prefers-color-scheme: dark) {
+:root {
             --color-bg: #111827;
             --color-text: #f3f4f6;
             --color-text-muted: #9ca3af;
             --color-border: #374151;
             --color-tutorial-light: #cc5c00;
         }
-        
-        body {
-            background-color: var(--color-bg);
+
+            body {
+                background-color: var(--color-bg);
+            }
+
+            .scanner-card, .product-card, .cart-section {
+                background-color: #1f2937;
+                border-color: var(--color-border);
+            }
+
+            .control-btn:hover, .action-btn:hover {
+                background-color: #374151;
+            }
+
+            .product-image, .cart-item-image {
+                background-color: #374151;
+            }
+
+            .cart-item:hover {
+                background-color: #374151;
+            }
+
+            .payment-footer {
+                background-color: #1f2937;
+                border-color: var(--color-border);
+            }
         }
-        
-        .scanner-card, .product-card, .cart-section {
-            background-color: #1f2937;
-            border-color: var(--color-border);
-        }
-        
-        .control-btn:hover, .action-btn:hover {
-            background-color: #374151;
-        }
-        
-        .product-image, .cart-item-image {
-            background-color: #374151;
-        }
-        
-        .cart-item:hover {
-            background-color: #374151;
-        }
-        
-        .payment-footer {
-            background-color: #1f2937;
-            border-color: var(--color-border);
-        }
-    }
 
-    /* NEW: Tutorial Elements */
-    .tutorial-welcome-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
-        z-index: 10000;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-lg);
-    }
-
-    .tutorial-welcome-content {
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        max-width: 500px;
-        width: 100%;
-        box-shadow: var(--shadow-md);
-        text-align: center;
-    }
-
-    .tutorial-welcome-icon {
-        font-size: 3rem;
-        color: var(--color-tutorial);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .tutorial-welcome-title {
-        font-size: var(--text-xl);
-        font-weight: 600;
-        margin-bottom: var(--spacing-md);
-        color: var(--color-tutorial);
-    }
-
-    .tutorial-welcome-message {
-        margin-bottom: var(--spacing-lg);
-        line-height: 1.6;
-    }
-
-    .tutorial-welcome-actions {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-md);
-    }
-
-    .tutorial-welcome-btn {
-        padding: var(--spacing-md);
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        border: none;
-    }
-
-    .tutorial-welcome-btn.primary {
-        background-color: var(--color-tutorial);
-        color: white;
-    }
-
-    .tutorial-welcome-btn.secondary {
-        background-color: transparent;
-        border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
-    }
-
-    .tutorial-welcome-checkbox {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-sm);
-        margin-top: var(--spacing-lg);
-        font-size: var(--text-sm);
-    }
-
-    .tutorial-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        /* background-color: rgba(0, 0, 0, 0.8); */
-        z-index: 10001;
-        display: none;
-    }
-
-    .tutorial-cutout {
-        position: absolute;
-        border-radius: var(--radius);
-        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 15px 5px rgba(255, 153, 0, 0.5);
-        z-index: 10002;
-        transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
-    }
-
-    .tutorial-bubble {
-        position: fixed;
-        background-color: white;
-        border-radius: var(--radius);
-        padding: var(--spacing-lg); /* Increased padding */
-        box-shadow: var(--shadow-md);
-        z-index: 10003;
-        max-width: 90%; /* More responsive */
-        min-width: 280px; /* Minimum width */
-        border: 2px solid var(--color-tutorial);
-        animation: fadeIn 0.3s ease-out;
-        font-size: var(--text-base); /* Ensure base font size */
-    }
-
-    .tutorial-bubble:after {
-        content: '';
-        position: absolute;
-        width: 0;
-        height: 0;
-        border: 12px solid transparent;
-    }
-
-    .tutorial-bubble.top:after {
-        bottom: -24px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-top-color: var(--color-tutorial);
-    }
-
-    .tutorial-bubble.bottom:after {
-        top: -24px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-bottom-color: var(--color-tutorial);
-    }
-
-    .tutorial-bubble.left:after {
-        right: -24px;
-        top: 50%;
-        transform: translateY(-50%);
-        border-left-color: var(--color-tutorial);
-    }
-
-    .tutorial-bubble.right:after {
-        left: -24px;
-        top: 50%;
-        transform: translateY(-50%);
-        border-right-color: var(--color-tutorial);
-    }
-
-    .tutorial-bubble-title {
-        font-weight: 600;
-        margin-bottom: var(--spacing-sm); /* Increased margin */
-        color: var(--color-tutorial);
-        font-size: var(--text-lg); /* Slightly larger title */
-    }
-
-    .tutorial-bubble-content {
-        margin-bottom: var(--spacing-md);
-        line-height: 1.5; /* Better line height */
-    }
-
-    .tutorial-bubble-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: var(--spacing-sm);
-    }
-
-    .tutorial-bubble-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius-sm);
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        transition: var(--transition);
-    }
-
-    .tutorial-bubble-btn.primary {
-        background-color: var(--color-tutorial);
-        color: white;
-    }
-
-    .tutorial-bubble-btn.secondary {
-        background-color: transparent;
-        color: var(--color-text-muted);
-    }
-
-    .tutorial-step-indicator {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--color-tutorial);
-        color: white;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: 20px;
-        z-index: 10004;
-        display: none;
-        font-weight: 500;
-    }
-
-    .tutorial-continue-btn {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: var(--color-tutorial);
-        color: white;
-        border: none;
-        border-radius: var(--radius);
-        padding: var(--spacing-md) var(--spacing-lg);
-        font-weight: 600;
-        cursor: pointer;
-        z-index: 10004;
-        display: none;
-        box-shadow: var(--shadow-md);
-    }
-
-    .tutorial-completion-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
-        z-index: 10000;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-lg);
-    }
-
-    .tutorial-completion-content {
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        max-width: 500px;
-        width: 100%;
-        box-shadow: var(--shadow-md);
-        text-align: center;
-    }
-
-    .tutorial-completion-icon {
-        font-size: 3rem;
-        color: var(--color-tutorial);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .tutorial-completion-title {
-        font-size: var(--text-xl);
-        font-weight: 600;
-        margin-bottom: var(--spacing-md);
-        color: var(--color-tutorial);
-    }
-
-    .tutorial-completion-message {
-        margin-bottom: var(--spacing-lg);
-        line-height: 1.6;
-    }
-
-    .tutorial-completion-actions {
-        display: flex;
-        gap: var(--spacing-md);
-        justify-content: center;
-    }
-
-    .tutorial-disabled {
-        position: relative;
-        cursor: not-allowed !important;
-    }
-    
-    .tutorial-disabled::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(255, 255, 255, 0.5);
-        z-index: 9999;
-        border-radius: inherit;
-    }
-    
-    .tutorial-disabled:hover::before {
-        content: 'Im Tutorial-Modus - dieser Button ist deaktiviert';
-        position: absolute;
-        top: -40px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--color-tutorial);
-        color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 10000;
-    }
-
-    @keyframes highlight-pulse {
-        0% { box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(255, 153, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(255, 153, 0, 0); }
-    }
-    
-    .tutorial-highlight {
-        animation: highlight-pulse 2s infinite;
-        position: relative;
-        z-index: 10005 !important;
-    }
-
-    .tutorial-error-banner {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--color-error);
-        color: white;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: var(--radius);
-        z-index: 10006;
-        display: none;
-        max-width: 90%;
-        text-align: center;
-    }
-
-    @media (max-width: 420px){
-
-      .GP {
+        /* NEW: Tutorial Elements */
+        .tutorial-welcome-modal {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
         }
-    }
 
-    @media (max-width: 768px) {
-        .tutorial-bubble {
-            max-width: 85%;
-            left: 50% !important;
-            transform: translateX(-50%);
-            margin: 0 var(--spacing-md);
+        .tutorial-welcome-content {
+            background-color: var(--color-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing-xl);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .tutorial-welcome-icon {
+            font-size: 3rem;
+            color: var(--color-tutorial);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .tutorial-welcome-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-tutorial);
+        }
+
+        .tutorial-welcome-message {
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.6;
+        }
+
+        .tutorial-welcome-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .tutorial-welcome-btn {
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .tutorial-welcome-btn.primary {
+            background-color: var(--color-tutorial);
+            color: white;
+        }
+
+        .tutorial-welcome-btn.secondary {
+            background-color: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+        }
+
+        .tutorial-welcome-checkbox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
             font-size: var(--text-sm);
         }
 
-        .tutorial-bubble-title {
-            font-size: var(--text-base);
-        }
-        
-        .tutorial-bubble:after {
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background-color: rgba(0, 0, 0, 0.8); */
+            z-index: 10001;
             display: none;
         }
-        
-        .tutorial-bubble.top {
-            top: var(--spacing-xl);
-        }
-        
-        .tutorial-bubble.bottom {
-            bottom: var(--spacing-xl);
-        }
-    }
 
-    @media (prefers-color-scheme: dark) {
+        .tutorial-cutout {
+            position: absolute;
+            border-radius: var(--radius);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 15px 5px rgba(255, 153, 0, 0.5);
+            z-index: 10002;
+            transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+        }
+
         .tutorial-bubble {
-            background-color: #1f2937;
+            position: fixed;
+            background-color: white;
+            border-radius: var(--radius);
+            padding: var(--spacing-lg);
+            /* Increased padding */
+            box-shadow: var(--shadow-md);
+            z-index: 10003;
+            max-width: 90%;
+            /* More responsive */
+            min-width: 280px;
+            /* Minimum width */
+            border: 2px solid var(--color-tutorial);
+            animation: fadeIn 0.3s ease-out;
+            font-size: var(--text-base);
+            /* Ensure base font size */
+        }
+
+        .tutorial-bubble:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 12px solid transparent;
+        }
+
+        .tutorial-bubble.top:after {
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-top-color: var(--color-tutorial);
+        }
+
+        .tutorial-bubble.bottom:after {
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-color: var(--color-tutorial);
+        }
+
+        .tutorial-bubble.left:after {
+            right: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left-color: var(--color-tutorial);
+        }
+
+        .tutorial-bubble.right:after {
+            left: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-right-color: var(--color-tutorial);
+        }
+
+        .tutorial-bubble-title {
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            /* Increased margin */
+            color: var(--color-tutorial);
+            font-size: var(--text-lg);
+            /* Slightly larger title */
+        }
+
+        .tutorial-bubble-content {
+            margin-bottom: var(--spacing-md);
+            line-height: 1.5;
+            /* Better line height */
+        }
+
+        .tutorial-bubble-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-sm);
+        }
+
+        .tutorial-bubble-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .tutorial-bubble-btn.primary {
+            background-color: var(--color-tutorial);
+            color: white;
+        }
+
+        .tutorial-bubble-btn.secondary {
+            background-color: transparent;
+            color: var(--color-text-muted);
+        }
+
+        .tutorial-step-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--color-tutorial);
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 20px;
+            z-index: 10004;
+            display: none;
+            font-weight: 500;
+        }
+
+        .tutorial-continue-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--color-tutorial);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 10004;
+            display: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .tutorial-completion-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+        }
+
+        .tutorial-completion-content {
+            background-color: var(--color-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing-xl);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .tutorial-completion-icon {
+            font-size: 3rem;
+            color: var(--color-tutorial);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .tutorial-completion-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-tutorial);
+        }
+
+        .tutorial-completion-message {
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.6;
+        }
+
+        .tutorial-completion-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+        }
+
+        .tutorial-disabled {
+            position: relative;
+            cursor: not-allowed !important;
+        }
+
+        .tutorial-disabled::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.5);
+            z-index: 9999;
+            border-radius: inherit;
+        }
+
+        .tutorial-disabled:hover::before {
+            content: 'Im Tutorial-Modus - dieser Button ist deaktiviert';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--color-tutorial);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10000;
+        }
+
+        @keyframes highlight-pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 153, 0, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 153, 0, 0);
+            }
+        }
+
+        .tutorial-highlight {
+            animation: highlight-pulse 2s infinite;
+            position: relative;
+            z-index: 10005 !important;
+        }
+
+        .tutorial-error-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--color-error);
+            color: white;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius);
+            z-index: 10006;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* Passcode Modal Styles */
+        .passcode-modal {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--color-bg);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+        }
+
+        .passcode-content {
+            background-color: var(--color-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing-xl);
+            width: 100%;
+            max-width: 450px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            border: 1px solid var(--color-border);
+        }
+
+        .passcode-icon {
+            font-size: 2.5rem;
+            color: var(--color-accent);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .passcode-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
             color: var(--color-text);
         }
-        
-        .tutorial-welcome-content,
-        .tutorial-completion-content {
-            background-color: #1f2937;
-            border-color: var(--color-border);
+
+        .passcode-subtitle {
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-lg);
         }
-    }
+
+        .passcode-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--text-base);
+            text-align: center;
+            letter-spacing: 2px;
+            transition: var(--transition);
+        }
+
+        .passcode-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: var(--focus-ring);
+        }
+
+        .passcode-error {
+            color: var(--color-error);
+            font-size: var(--text-sm);
+            margin-bottom: var(--spacing-md);
+            display: none;
+        }
+
+        .passcode-info {
+            background-color: #f9fafb;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            font-size: var(--text-sm);
+            color: var(--color-text-muted);
+            text-align: left;
+        }
+
+        .passcode-info h4 {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
+            color: var(--color-text);
+        }
+
+        .trial-expired-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--color-bg);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+        }
+
+        .trial-expired-content {
+            background-color: var(--color-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing-xl);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            border: 1px solid var(--color-border);
+        }
+
+        .trial-expired-icon {
+            font-size: 3rem;
+            color: var(--color-error);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .trial-expired-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-error);
+        }
+
+        .trial-expired-message {
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 420px) {
+            .GP {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .tutorial-bubble {
+                max-width: 85%;
+                left: 50% !important;
+                transform: translateX(-50%);
+                margin: 0 var(--spacing-md);
+                font-size: var(--text-sm);
+            }
+
+            .tutorial-bubble-title {
+                font-size: var(--text-base);
+            }
+
+            .tutorial-bubble:after {
+                display: none;
+            }
+
+            .tutorial-bubble.top {
+                top: var(--spacing-xl);
+            }
+
+            .tutorial-bubble.bottom {
+                bottom: var(--spacing-xl);
+            }
+
+            .passcode-content, .trial-expired-content {
+                padding: var(--spacing-lg);
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .tutorial-bubble {
+                background-color: #1f2937;
+                color: var(--color-text);
+            }
+
+            .tutorial-welcome-content,
+            .tutorial-completion-content {
+                background-color: #1f2937;
+                border-color: var(--color-border);
+            }
+
+            .passcode-info {
+                background-color: #1f2937;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Passcode Modal -->
+    <div id="passcode-modal" class="passcode-modal">
+        <div class="passcode-content">
+            <div class="passcode-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2 class="passcode-title">Zugangskontrolle</h2>
+            <p class="passcode-subtitle">
+                Bitte geben Sie den Passcode ein, um auf Gittertier Pro zuzugreifen
+            </p>
+
+            <div class="passcode-info">
+                <h4><i class="fas fa-info-circle"></i> 7-Tage Testversion</h4>
+                <p>
+                    Nach der Eingabe des korrekten Passcodes haben Sie 7 Tage lang Zugriff auf die Anwendung. Nach Ablauf dieser Testversion wird der Zugang automatisch deaktiviert.
+                </p>
+            </div>
+
+            <input type="password" id="passcode-input" class="passcode-input" placeholder="Passcode eingeben" maxlength="20">
+            <div id="passcode-error" class="passcode-error">
+                <i class="fas fa-exclamation-circle"></i> Ungültiger Passcode
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn primary" onclick="checkPasscode()">
+                    <i class="fas fa-unlock"></i> Zugang freischalten
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trial Expired Modal -->
+    <div id="trial-expired-modal" class="trial-expired-modal">
+        <div class="trial-expired-content">
+            <div class="trial-expired-icon">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h2 class="trial-expired-title">Testversion abgelaufen</h2>
+            <p class="trial-expired-message">
+                Ihre 7-tägige Testversion ist abgelaufen. Der Zugang zur Anwendung wurde deaktiviert.<br>
+                Bei Fragen wenden Sie sich bitte an den Support.
+            </p>
+            <button class="modal-btn primary" onclick="location.reload()">
+                <i class="fas fa-refresh"></i> Seite neu laden
+            </button>
+        </div>
+    </div>
+
     <header>
         <div class="logo">
             <i class="fas fa-shopping-cart"></i>
-            <div class ="GP">
-            <span>Gittertier Pro</span>
+            <div class="GP">
+                <span>Gittertier Pro</span>
             </div>
         </div>
         <div class="header-controls">
@@ -1317,13 +1503,13 @@
                 <i class="fas fa-cog"></i>
             </button>
             <button class="control-btn" onclick="showWelcomeModal()">
-                <i class="fas fa-question-circle"></i> 
+                <i class="fas fa-question-circle"></i>
             </button>
             <button class="control-btn" onclick="window.location.href='support'">
-                <i class="fas fa-headset"></i> 
+                <i class="fas fa-headset"></i>
             </button>
-           <button class="control-btn" onclick="window.location.href='about'">
-                <i class="fas fa-info-circle"></i> 
+            <button class="control-btn" onclick="window.location.href='about'">
+                <i class="fas fa-info-circle"></i>
             </button>
         </div>
     </header>
@@ -1352,7 +1538,7 @@
                         <span>Manuell</span>
                     </button>
                 </div>
-                
+
                 <!-- Additional action buttons -->
                 <div class="additional-controls">
                 </div>
@@ -1365,8 +1551,12 @@
                     <i class="fas fa-cube"></i>
                 </div>
                 <div class="product-info">
-                    <div class="product-name" id="product-name">Produktname</div>
-                    <div class="product-price" id="product-price">0,00€</div>
+                    <div class="product-name" id="product-name">
+                        Produktname
+                    </div>
+                    <div class="product-price" id="product-price">
+                        0,00€
+                    </div>
                     <div class="product-actions">
                         <div class="quantity-controls">
                             <button class="quantity-btn" onclick="adjustProductQuantity(-1)">−</button>
@@ -1391,7 +1581,9 @@
                         <i class="fas fa-trash-alt"></i>
                         Warenkorb leeren
                     </button>
-                    <div class="cart-count" id="cart-count">0 Artikel</div>
+                    <div class="cart-count" id="cart-count">
+                        0 Artikel
+                    </div>
                 </div>
                 <div id="cart-items"></div>
                 <div class="cart-total">
@@ -1403,7 +1595,9 @@
     </main>
 
     <div class="payment-footer">
-        <div class="total-amount" id="payment-total">0,00€</div>
+        <div class="total-amount" id="payment-total">
+            0,00€
+        </div>
         <button class="pay-btn" onclick="generateQR()">
             <i class="fas fa-qrcode"></i>
             Bezahlen
@@ -1418,7 +1612,9 @@
                     <i class="fas fa-plus-circle"></i>
                     Produkt erfassen
                 </h3>
-                <p class="text-muted">Bitte geben Sie die Produktdetails ein</p>
+                <p class="text-muted">
+                    Bitte geben Sie die Produktdetails ein
+                </p>
             </div>
             <input type="text" id="product-name-input" class="modal-input" placeholder="Produktname">
             <input type="number" id="product-price-input" class="modal-input" placeholder="Preis (€)" step="0.01">
@@ -1429,7 +1625,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- QR Modal -->
     <div id="qr-modal" class="modal">
         <div class="modal-content">
@@ -1438,7 +1634,9 @@
                     <i class="fas fa-qrcode"></i>
                     Bezahlung initiieren
                 </h3>
-                <p class="text-muted">Generieren Sie einen QR-Code zur Zahlung</p>
+                <p class="text-muted">
+                    Generieren Sie einen QR-Code zur Zahlung
+                </p>
             </div>
             <div style="text-align: center; margin: var(--spacing-xl) 0;">
                 <button class="scan-btn" onclick="generateQR()" style="margin: 0 auto;">
@@ -1460,7 +1658,9 @@
                 <i class="fas fa-tools"></i>
             </div>
             <h2 class="maintenance-title">Wartungsarbeiten</h2>
-            <p class="maintenance-message">Der Shop ist derzeit wegen Wartungsarbeiten geschlossen. Bitte versuchen Sie es später erneut.</p>
+            <p class="maintenance-message">
+                Der Shop ist derzeit wegen Wartungsarbeiten geschlossen. Bitte versuchen Sie es später erneut.
+            </p>
             <button class="pay-btn" onclick="location.href='settings'">
                 <i class="fas fa-cog"></i>
                 Einstellungen
@@ -1474,7 +1674,9 @@
                 <i class="fas fa-moon"></i>
             </div>
             <h2 class="closed-title">Geschlossen</h2>
-            <p class="closed-message">Wir haben derzeit geschlossen.</p>
+            <p class="closed-message">
+                Wir haben derzeit geschlossen.
+            </p>
             <p id="opening-hours-display" class="text-muted"></p>
         </div>
     </div>
@@ -1487,8 +1689,8 @@
             </div>
             <h2 class="tutorial-welcome-title">Willkommen bei Gittertier Pro</h2>
             <p class="tutorial-welcome-message">
-                Möchten Sie eine geführte Tour durch die App starten? 
-                Das Tutorial zeigt Ihnen Schritt für Schritt, wie Sie Produkte scannen, 
+                Möchten Sie eine geführte Tour durch die App starten?
+                Das Tutorial zeigt Ihnen Schritt für Schritt, wie Sie Produkte scannen,
                 Ihren Warenkorb verwalten und Bezahlvorgänge durchführen.
             </p>
             <div class="tutorial-welcome-actions">
@@ -1528,23 +1730,125 @@
     <div class="tutorial-error-banner" id="tutorial-error-banner"></div>
 
     <script>
+        // Passcode Protection System
+        const ACCESS_DURATION = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
+
+        // Obfuscated passcode validation
+        function validatePasscode(input) {
+            // Simple obfuscation to prevent casual viewing of the passcode
+            const encoded = [73,
+                78,
+                83,
+                84,
+                65,
+                71,
+                82,
+                65,
+                77];
+            let decoded = "";
+            for (let i = 0; i < encoded.length; i++) {
+                decoded += String.fromCharCode(encoded[i]);
+            }
+            return input === decoded;
+        }
+
+        // Check if access is already granted and not expired
+        function checkAccessStatus() {
+            const expiration = localStorage.getItem('passcode_access_expiration');
+            const granted = localStorage.getItem('passcode_granted');
+
+            // Check if access was previously granted and hasn't expired
+            if (granted === 'true' && expiration) {
+                const expirationTime = parseInt(expiration);
+                if (Date.now() < expirationTime) {
+                    return {
+                        granted: true,
+                        expired: false
+                    };
+                } else {
+                    return {
+                        granted: true,
+                        expired: true
+                    };
+                }
+            }
+
+            return {
+                granted: false,
+                expired: false
+            };
+        }
+
+        // Validate passcode and grant access
+        function checkPasscode() {
+            const input = document.getElementById('passcode-input').value.trim();
+            const errorElement = document.getElementById('passcode-error');
+
+            if (validatePasscode(input)) {
+                // Set access expiration (current time + 1 week)
+                const expirationTime = Date.now() + ACCESS_DURATION;
+                localStorage.setItem('passcode_access_expiration', expirationTime);
+                localStorage.setItem('passcode_granted', 'true');
+
+                // Hide the modal and show the app
+                document.getElementById('passcode-modal').style.display = 'none';
+                document.body.classList.remove('passcode-required');
+            } else {
+                // Show error
+                errorElement.style.display = 'block';
+                document.getElementById('passcode-input').value = '';
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Show trial expired modal
+        function showTrialExpired() {
+            document.getElementById('trial-expired-modal').style.display = 'flex';
+            document.getElementById('passcode-modal').style.display = 'none';
+        }
+
+        // Initialize passcode protection
+        function initPasscodeProtection() {
+            const accessStatus = checkAccessStatus();
+
+            if (accessStatus.granted && !accessStatus.expired) {
+                // Already authenticated and not expired - show the app
+                document.getElementById('passcode-modal').style.display = 'none';
+            } else if (accessStatus.granted && accessStatus.expired) {
+                // Trial has expired
+                showTrialExpired();
+            } else {
+                // Show passcode input
+                document.getElementById('passcode-modal').style.display = 'flex';
+                document.body.classList.add('passcode-required');
+            }
+        }
+
+        // Add event listener for Enter key in passcode input
+        document.getElementById('passcode-input')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPasscode();
+            }
+        });
+
         // Tutorial State Management
         let tutorialActive = false;
         let tutorialCurrentStep = 0;
         let tutorialSteps = [];
         let tutorialObservers = [];
         let tutorialStorageAvailable = true;
-        
+
         // Tutorial Steps Configuration
         function initializeTutorialSteps() {
-            tutorialSteps = [
-                {
-                    title: "Header-Bedienelemente",
-                    content: "Oben rechts finden Sie verschiedene Bedienelemente: Einstellungen (nur für Administratoren), Hilfe (öffnet dieses Tutorial), Support (Fragen & Anliegen) und Info (Über diese App).",
-                    element: ".header-controls",
-                    position: "bottom",
-                    action: null
-                },
+            tutorialSteps = [{
+                title: "Header-Bedienelemente",
+                content: "Oben rechts finden Sie verschiedene Bedienelemente: Einstellungen (nur für Administratoren), Hilfe (öffnet dieses Tutorial), Support (Fragen & Anliegen) und Info (Über diese App).",
+                element: ".header-controls",
+                position: "bottom",
+                action: null
+            },
                 {
                     title: "Scanner-Bereich",
                     content: "Dies ist der Scanner-Bereich. Hier scannen Sie Barcodes von Produkten, um sie zum Warenkorb hinzuzufügen.",
@@ -1565,9 +1869,9 @@
                         } catch (error) {
                             showTutorialError("Kamera konnte nicht gestartet werden. Bitte erlauben Sie Kamera-Zugriff in Ihren Browsereinstellungen.");
                             document.getElementById('tutorial-bubble').innerHTML += `
-                                <div class="tutorial-bubble-actions" style="margin-top: 10px;">
-                                    <button class="tutorial-bubble-btn primary" onclick="simulateBarcodeScan()">Scan simulieren</button>
-                                </div>
+                            <div class="tutorial-bubble-actions" style="margin-top: 10px;">
+                            <button class="tutorial-bubble-btn primary" onclick="simulateBarcodeScan()">Scan simulieren</button>
+                            </div>
                             `;
                         }
                     }
@@ -1636,7 +1940,7 @@
                     simulate: function() {
                         // Clear the cart but keep the tutorial item
                         const exampleItem = cart.find(item => item.name === 'Beispielprodukt');
-                        cart = exampleItem ? [exampleItem] : [];
+                        cart = exampleItem ? [exampleItem]: [];
                         updateCartDisplay();
                     }
                 },
@@ -1644,7 +1948,8 @@
                     title: "Bezahlvorgang",
                     content: "Klicken Sie auf 'Bezahlen', um einen QR-Code zu generieren und den Bezahlvorgang abzuschließen.",
                     element: ".pay-btn",
-                    position: "top", // Changed from "bottom" to "top"
+                    position: "top",
+                    // Changed from "bottom" to "top"
                     action: "click",
                     prepare: function() {
                         // Ensure there's at least one item in the cart
@@ -1661,8 +1966,7 @@
                     simulate: function() {
                         document.getElementById('qr-modal').style.display = 'flex';
                     }
-                }
-            ];
+                }];
         }
 
         // Check if tutorial should be shown
@@ -1673,7 +1977,7 @@
                     // Check if we can use localStorage
                     localStorage.setItem('gittertier_test', 'test');
                     localStorage.removeItem('gittertier_test');
-                    
+
                     // Show welcome modal after a short delay
                     setTimeout(showWelcomeModal, 1000);
                 }
@@ -1701,7 +2005,7 @@
 
         function closeWelcomeModal() {
             document.getElementById('tutorial-welcome-modal').style.display = 'none';
-            
+
             // Save preference if "don't show again" is checked
             const dontShowAgain = document.getElementById('tutorial-dont-show-again').checked;
             if (dontShowAgain) {
@@ -1721,13 +2025,13 @@
             document.getElementById('tutorial-welcome-modal').style.display = 'none';
             tutorialActive = true;
             tutorialCurrentStep = 0;
-            
+
             // Save tutorial progress
             saveTutorialProgress();
-            
+
             // Initialize tutorial steps
             initializeTutorialSteps();
-            
+
             // Start the first step
             showTutorialStep(tutorialCurrentStep);
         }
@@ -1737,64 +2041,66 @@
                 completeTutorial();
                 return;
             }
-            
+
             const step = tutorialSteps[stepIndex];
-            
+
             // Update step indicator
             document.getElementById('tutorial-step-indicator').textContent = `${stepIndex + 1}/${tutorialSteps.length}`;
             document.getElementById('tutorial-step-indicator').style.display = 'none';
-            
+
             // Prepare the step if needed
             if (step.prepare) {
                 step.prepare();
             }
-            
+
             // Show overlay and cutout
             document.getElementById('tutorial-overlay').style.display = 'block';
-            
+
             // Position cutout around the target element
             positionCutout(step.element);
-            
+
             // Create and position tutorial bubble
             positionBubble(step);
-            
+
             // Add highlight animation to the element
             const targetElement = document.querySelector(step.element);
             if (targetElement) {
                 targetElement.classList.add('tutorial-highlight');
-                
+
                 // Scroll to element if needed
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
+                targetElement.scrollIntoView({
+                    behavior: 'smooth', block: 'center'
+                });
+
                 // If the step has an action, set up the event listener
                 if (step.action === 'click') {
                     const clickHandler = function() {
                         targetElement.removeEventListener('click', clickHandler);
                         targetElement.classList.remove('tutorial-highlight');
-                        
+
                         if (step.simulate) {
                             step.simulate();
                         }
-                        
+
                         // Auto-proceed to next step after interaction
                         setTimeout(() => {
                             nextTutorialStep();
                         }, 500);
                     };
-                    
+
                     targetElement.addEventListener('click', clickHandler);
                 } else {
                     // For steps without action, show continue button
                     document.getElementById('tutorial-continue-btn').style.display = 'block';
                 }
             }
-            
+
             // For steps with simulation but no user action
             if (step.simulate && !step.action) {
                 step.simulate();
                 document.getElementById('tutorial-continue-btn').style.display = 'block';
             }
-            
+
             // Set up observers to keep elements positioned correctly
             setupObservers(step.element);
         }
@@ -1802,10 +2108,10 @@
         function positionCutout(elementSelector) {
             const element = document.querySelector(elementSelector);
             if (!element) return;
-            
+
             const rect = element.getBoundingClientRect();
             const cutout = document.getElementById('tutorial-cutout');
-            
+
             cutout.style.display = 'block';
             cutout.style.width = `${rect.width + 20}px`;
             cutout.style.height = `${rect.height + 20}px`;
@@ -1816,34 +2122,34 @@
         function positionBubble(step) {
             const element = document.querySelector(step.element);
             if (!element) return;
-            
+
             const rect = element.getBoundingClientRect();
             const bubble = document.getElementById('tutorial-bubble');
-            
+
             // Determine bubble position based on element position
             const viewportCenter = window.innerHeight / 2;
             const elementCenter = rect.top + (rect.height / 2);
-            
-            let positionClass = elementCenter < viewportCenter ? 'bottom' : 'top';
-            
+
+            let positionClass = elementCenter < viewportCenter ? 'bottom': 'top';
+
             // Create bubble content
             bubble.innerHTML = `
-                <div class="tutorial-bubble-title">${step.title}</div>
-                <div class="tutorial-bubble-content">${step.content}</div>
+            <div class="tutorial-bubble-title">${step.title}</div>
+            <div class="tutorial-bubble-content">${step.content}</div>
             `;
-            
+
             // Add simulation button if needed
             if (step.simulate && !step.action) {
                 bubble.innerHTML += `
-                    <div class="tutorial-bubble-actions">
-                        <button class="tutorial-bubble-btn primary" onclick="tutorialSteps[${tutorialCurrentStep}].simulate(); document.getElementById('tutorial-continue-btn').style.display = 'block';">Simulieren</button>
-                    </div>
+                <div class="tutorial-bubble-actions">
+                <button class="tutorial-bubble-btn primary" onclick="tutorialSteps[${tutorialCurrentStep}].simulate(); document.getElementById('tutorial-continue-btn').style.display = 'block';">Simulieren</button>
+                </div>
                 `;
             }
-            
+
             // Position the bubble
             bubble.className = `tutorial-bubble ${positionClass}`;
-            
+
             if (positionClass === 'bottom') {
                 bubble.style.top = `${rect.bottom + 20 + window.scrollY}px`;
                 bubble.style.bottom = 'auto';
@@ -1851,22 +2157,22 @@
                 bubble.style.top = 'auto';
                 bubble.style.bottom = `${window.innerHeight - rect.top + 20}px`;
             }
-            
+
             // Center horizontally
             const bubbleWidth = bubble.offsetWidth;
             bubble.style.left = `${rect.left + (rect.width / 2) - (bubbleWidth / 2)}px`;
-            
+
             // Ensure bubble stays within viewport
             const bubbleRect = bubble.getBoundingClientRect();
-            
+
             if (bubbleRect.left < 10) {
                 bubble.style.left = '10px';
             }
-            
+
             if (bubbleRect.right > window.innerWidth - 10) {
                 bubble.style.left = `${window.innerWidth - bubbleRect.width - 10}px`;
             }
-            
+
             bubble.style.display = 'block';
         }
 
@@ -1876,49 +2182,49 @@
                 observer.disconnect();
             });
             tutorialObservers = [];
-            
+
             const element = document.querySelector(elementSelector);
             if (!element) return;
-            
+
             // MutationObserver for DOM changes
             const mutationObserver = new MutationObserver(() => {
                 positionCutout(elementSelector);
                 positionBubble(tutorialSteps[tutorialCurrentStep]);
             });
-            
-            mutationObserver.observe(element, { 
+
+            mutationObserver.observe(element, {
                 attributes: true,
                 childList: true,
                 subtree: true
             });
-            
+
             tutorialObservers.push(mutationObserver);
-            
+
             // ResizeObserver for size changes
             if (typeof ResizeObserver !== 'undefined') {
                 const resizeObserver = new ResizeObserver(() => {
                     positionCutout(elementSelector);
                     positionBubble(tutorialSteps[tutorialCurrentStep]);
                 });
-                
+
                 resizeObserver.observe(element);
                 tutorialObservers.push(resizeObserver);
             }
-            
+
             // Listen for window resize and scroll events
             const resizeHandler = () => {
                 positionCutout(elementSelector);
                 positionBubble(tutorialSteps[tutorialCurrentStep]);
             };
-            
+
             const scrollHandler = () => {
                 positionCutout(elementSelector);
                 positionBubble(tutorialSteps[tutorialCurrentStep]);
             };
-            
+
             window.addEventListener('resize', resizeHandler);
             window.addEventListener('scroll', scrollHandler);
-            
+
             tutorialObservers.push({
                 disconnect: () => {
                     window.removeEventListener('resize', resizeHandler);
@@ -1933,25 +2239,25 @@
             if (currentElement) {
                 currentElement.classList.remove('tutorial-highlight');
             }
-            
+
             // Clean up observers
             tutorialObservers.forEach(observer => {
                 observer.disconnect();
             });
             tutorialObservers = [];
-            
+
             // Hide continue button
             document.getElementById('tutorial-continue-btn').style.display = 'none';
-            
+
             // Reset payment footer z-index if it was changed
             document.querySelector('.payment-footer').style.zIndex = '';
-            
+
             // Move to next step
             tutorialCurrentStep++;
-            
+
             // Save progress
             saveTutorialProgress();
-            
+
             // Show next step
             showTutorialStep(tutorialCurrentStep);
         }
@@ -1963,832 +2269,726 @@
             document.getElementById('tutorial-bubble').style.display = 'none';
             document.getElementById('tutorial-step-indicator').style.display = 'none';
             document.getElementById('tutorial-continue-btn').style.display = 'none';
-            
+
             // Remove any highlight classes
             document.querySelectorAll('.tutorial-highlight').forEach(el => {
                 el.classList.remove('tutorial-highlight');
-            });
-            
-            // Clean up observers
-            tutorialObservers.forEach(observer => {
-                observer.disconnect();
-            });
-            tutorialObservers = [];
-            
-            // Reset payment footer z-index
-            document.querySelector('.payment-footer').style.zIndex = '';
-            
-            // Show completion modal
-            document.getElementById('tutorial-completion-modal').style.display = 'flex';
-            
-            // Save that tutorial has been completed
-            try {
-                if (tutorialStorageAvailable) {
-                    localStorage.setItem('gittertier_tutorial_seen', 'true');
-                    localStorage.removeItem('gittertier_tutorial_progress');
-                } else {
-                    sessionStorage.setItem('gittertier_tutorial_seen', 'true');
-                    sessionStorage.removeItem('gittertier_tutorial_progress');
-                }
-            } catch (e) {
-                console.error('Failed to save tutorial completion:', e);
-            }
-            
-            tutorialActive = false;
-        }
+            );
 
-        function closeCompletionModal() {
-            document.getElementById('tutorial-completion-modal').style.display = 'none';
-        }
+                // Clean up observers
+                tutorialObservers.forEach(observer => {
+                    observer.disconnect();
+                });
+                tutorialObservers = [];
 
-        function restartTutorial() {
-            document.getElementById('tutorial-completion-modal').style.display = 'none';
-            startTutorial();
-        }
+                // Reset payment footer z-index
+                document.querySelector('.payment-footer').style.zIndex = '';
 
-        function saveTutorialProgress() {
-            try {
-                const progress = {
-                    step: tutorialCurrentStep,
-                    timestamp: Date.now()
-                };
-                
-                if (tutorialStorageAvailable) {
-                    localStorage.setItem('gittertier_tutorial_progress', JSON.stringify(progress));
-                } else {
-                    sessionStorage.setItem('gittertier_tutorial_progress', JSON.stringify(progress));
-                }
-            } catch (e) {
-                console.error('Failed to save tutorial progress:', e);
-            }
-        }
+                // Show completion modal
+                document.getElementById('tutorial-completion-modal').style.display = 'flex';
 
-        function loadTutorialProgress() {
-            try {
-                let progress = null;
-                
-                if (tutorialStorageAvailable) {
-                    progress = localStorage.getItem('gittertier_tutorial_progress');
-                } else {
-                    progress = sessionStorage.getItem('gittertier_tutorial_progress');
-                }
-                
-                if (progress) {
-                    progress = JSON.parse(progress);
-                    
-                    // Check if progress is recent (within 30 minutes)
-                    const isRecent = (Date.now() - progress.timestamp) < (30 * 60 * 1000);
-                    
-                    if (isRecent) {
-                        return progress.step;
+                // Save that tutorial has been completed
+                try {
+                    if (tutorialStorageAvailable) {
+                        localStorage.setItem('gittertier_tutorial_seen', 'true');
+                        localStorage.removeItem('gittertier_tutorial_progress');
+                    } else {
+                        sessionStorage.setItem('gittertier_tutorial_seen', 'true');
+                        sessionStorage.removeItem('gittertier_tutorial_progress');
                     }
+                } catch (e) {
+                    console.error('Failed to save tutorial completion:', e);
                 }
-            } catch (e) {
-                console.error('Failed to load tutorial progress:', e);
+
+                tutorialActive = false;
             }
-            
-            return 0;
-        }
 
-        function simulateBarcodeScan() {
-            // Simulate a barcode scan
-            handleBarcode('123456789');
-            
-            // Add the product to our products list if not already there
-            if (!products['123456789']) {
-                products['123456789'] = {
-                    name: 'Beispielprodukt',
-                    price: 9.99,
-                    barcode: '123456789'
-                };
-                localStorage.setItem('products', JSON.stringify(products));
+            function closeCompletionModal() {
+                document.getElementById('tutorial-completion-modal').style.display = 'none';
             }
-            
-            // Show the product card
-            showProduct(products['123456789']);
-            
-            // Hide error banner if shown
-            document.getElementById('tutorial-error-banner').style.display = 'none';
-            
-            // Proceed to next step
-            nextTutorialStep();
-        }
 
-        function showTutorialError(message) {
-            const errorBanner = document.getElementById('tutorial-error-banner');
-            errorBanner.textContent = message;
-            errorBanner.style.display = 'block';
-            
-            setTimeout(() => {
-                errorBanner.style.display = 'none';
-            }, 5000);
-        }
+            function restartTutorial() {
+                document.getElementById('tutorial-completion-modal').style.display = 'none';
+                startTutorial();
+            }
 
-        // Show tutorial from help button
-        function showTutorial() {
-            startTutorial();
-        }
-        
-        // Initialize tutorial on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if we have valid access first
-    if (!validateAccess()) {
-        // Disable all interactive elements if no access
-        document.body.classList.add('tutorial-disabled');
-        return; // Stop further execution if no access
-    }
-    
-    // Set up continue button handler
-    document.getElementById('tutorial-continue-btn').addEventListener('click', nextTutorialStep);
-    
-    // Check if we should show the tutorial
-    checkTutorialStatus();
-    document.getElementById('tutorial-cutout').style.display = 'none';
-    document.getElementById('tutorial-bubble').style.display = 'none';
-    
-    // Check if we need to resume a tutorial in progress
-    try {
-        const tutorialInProgress = localStorage.getItem('gittertier_tutorial_progress') || 
-                                  sessionStorage.getItem('gittertier_tutorial_progress');
-        
-        if (tutorialInProgress) {
-            const progress = JSON.parse(tutorialInProgress);
-            const isRecent = (Date.now() - progress.timestamp) < 0;
-            
-            if (isRecent) {
-                if (confirm('Möchten Sie das Tutorial fortsetzen, wo Sie aufgehört haben?')) {
-                    tutorialCurrentStep = progress.step;
-                    startTutorial();
+            function saveTutorialProgress() {
+                try {
+                    const progress = {
+                        step: tutorialCurrentStep,
+                        timestamp: Date.now()
+                    };
+
+                    if (tutorialStorageAvailable) {
+                        localStorage.setItem('gittertier_tutorial_progress', JSON.stringify(progress));
+                    } else {
+                        sessionStorage.setItem('gittertier_tutorial_progress', JSON.stringify(progress));
+                    }
+                } catch (e) {
+                    console.error('Failed to save tutorial progress:', e);
                 }
             }
-        }
-    } catch (e) {
-        console.error('Failed to check for tutorial progress:', e);
-    }
-    
-    // Initialize products from localStorage
-    products = JSON.parse(localStorage.getItem('products')) || {};
-    
-    // Apply settings
-    applySettings();
-    checkShopStatus();
-    setInterval(checkShopStatus, 60000);
-    
-    // Initialize currency symbol
-    currencySymbol = '€';
-    window.addEventListener('focus', checkShopStatus);
-});
 
-        // Initialize tutorial on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up continue button handler
-            document.getElementById('tutorial-continue-btn').addEventListener('click', nextTutorialStep);
-            
-            // Check if we should show the tutorial
-            checkTutorialStatus();
-            document.getElementById('tutorial-cutout').style.display = 'none';
-            document.getElementById('tutorial-bubble').style.display = 'none';
-            
-            // Check if we need to resume a tutorial in progress
-            try {
-                const tutorialInProgress = localStorage.getItem('gittertier_tutorial_progress') || 
-                                          sessionStorage.getItem('gittertier_tutorial_progress');
-                
-                if (tutorialInProgress) {
-                    const progress = JSON.parse(tutorialInProgress);
-                    const isRecent = (Date.now() - progress.timestamp) < 0;
-                    
-                    if (isRecent) {
-                        if (confirm('Möchten Sie das Tutorial fortsetzen, wo Sie aufgehört haben?')) {
-                            tutorialCurrentStep = progress.step;
-                            startTutorial();
+            function loadTutorialProgress() {
+                try {
+                    let progress = null;
+
+                    if (tutorialStorageAvailable) {
+                        progress = localStorage.getItem('gittertier_tutorial_progress');
+                    } else {
+                        progress = sessionStorage.getItem('gittertier_tutorial_progress');
+                    }
+
+                    if (progress) {
+                        progress = JSON.parse(progress);
+
+                        // Check if progress is recent (within 30 minutes)
+                        const isRecent = (Date.now() - progress.timestamp) < (30 * 60 * 1000);
+
+                        if (isRecent) {
+                            return progress.step;
                         }
                     }
+                } catch (e) {
+                    console.error('Failed to load tutorial progress:', e);
                 }
-            } catch (e) {
-                console.error('Failed to check for tutorial progress:', e);
+
+                return 0;
             }
-        });
 
-        // All the original JavaScript functionality remains exactly the same
-        let cart = [];
-        let products = JSON.parse(localStorage.getItem('products')) || {};
-        let scannerActive = false;
-        let mediaStream = null;
-        let currentBarcode = null;
-        let scannedBarcodes = new Set();
-        let qrCode = null;
-        let lastBoxPosition = null;
-        let currencySymbol = '€';
-        let currentProduct = null;
+            function simulateBarcodeScan() {
+                // Simulate a barcode scan
+                handleBarcode('123456789');
 
-        // Barcode Scanner Configuration
-        const scannerConfig = {
-            inputStream: {
-                name: "Live",
-                type: "LiveStream",
-                target: document.querySelector('#scanner-video'),
-                constraints: {
-                    width: 1280,
-                    height: 720,
-                    facingMode: "environment"
+                // Add the product to our products list if not already there
+                if (!products['123456789']) {
+                    products['123456789'] = {
+                        name: 'Beispielprodukt',
+                        price: 9.99,
+                        barcode: '123456789'
+                    };
+                    localStorage.setItem('products', JSON.stringify(products));
                 }
-            },
-            decoder: {
-                readers: [
-                    'ean_reader', 
-                    'ean_8_reader'
-                ],
-                multiple: false
-            },
-            locate: true,
-            frequency: 10
-        };
 
-        // Scanner Initialization
-        async function initScanner() {
-            return new Promise((resolve, reject) => {
-                Quagga.init(scannerConfig, err => {
-                    if (err) return reject(err);
-                    
-                    // Add processed event for visual feedback
-                    Quagga.onProcessed(onProcessed);
-                    
-                    Quagga.onDetected(handleDetection);
-                    Quagga.start();
-                    resolve();
-                });
+                // Show the product card
+                showProduct(products['123456789']);
+
+                // Hide error banner if shown
+                document.getElementById('tutorial-error-banner').style.display = 'none';
+
+                // Proceed to next step
+                nextTutorialStep();
+            }
+
+            function showTutorialError(message) {
+                const errorBanner = document.getElementById('tutorial-error-banner');
+                errorBanner.textContent = message;
+                errorBanner.style.display = 'block';
+
+                setTimeout(() => {
+                    errorBanner.style.display = 'none';
+                }, 5000);
+            }
+
+            // Show tutorial from help button
+            function showTutorial() {
+                startTutorial();
+            }
+
+            // Initialize tutorial on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                // First check passcode access
+                initPasscodeProtection();
+
+                // Set up continue button handler
+                document.getElementById('tutorial-continue-btn').addEventListener('click', nextTutorialStep);
+
+                // Check if we should show the tutorial
+                checkTutorialStatus();
+                document.getElementById('tutorial-cutout').style.display = 'none';
+                document.getElementById('tutorial-bubble').style.display = 'none';
+
+                // Check if we need to resume a tutorial in progress
+                try {
+                    const tutorialInProgress = localStorage.getItem('gittertier_tutorial_progress') ||
+                    sessionStorage.getItem('gittertier_tutorial_progress');
+
+                    if (tutorialInProgress) {
+                        const progress = JSON.parse(tutorialInProgress);
+                        const isRecent = (Date.now() - progress.timestamp) < 0;
+
+                        if (isRecent) {
+                            if (confirm('Möchten Sie das Tutorial fortsetzen, wo Sie aufgehört haben?')) {
+                                tutorialCurrentStep = progress.step;
+                                startTutorial();
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to check for tutorial progress:', e);
+                }
             });
-        }
 
-        function timeToMinutes(timeStr) {
-          const [hours, minutes] = timeStr.split(':').map(Number);
-          return hours * 60 + minutes;
-        }
+            // All the original JavaScript functionality remains exactly the same
+            let cart = [];
+            let products = JSON.parse(localStorage.getItem('products')) || {};
+            let scannerActive = false;
+            let mediaStream = null;
+            let currentBarcode = null;
+            let scannedBarcodes = new Set();
+            let qrCode = null;
+            let lastBoxPosition = null;
+            let currencySymbol = '€';
+            let currentProduct = null;
 
-        function isShopOpen() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            const shopHours = settings.shopHours || {};
-            
-            if (!shopHours.enabled) return true;
-            
-            const now = new Date();
-            const currentMinutes = now.getHours() * 60 + now.getMinutes();
-            const openingMinutes = timeToMinutes(shopHours.openingTime);
-            const closingMinutes = timeToMinutes(shopHours.closingTime);
-            
-            // Handle cases where closing time is after midnight
-            if (closingMinutes < openingMinutes) {
-                return currentMinutes >= openingMinutes || currentMinutes < closingMinutes;
+            // Barcode Scanner Configuration
+            const scannerConfig = {
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#scanner-video'),
+                    constraints: {
+                        width: 1280,
+                        height: 720,
+                        facingMode: "environment"
+                    }
+                },
+                decoder: {
+                    readers: [
+                        'ean_reader',
+                        'ean_8_reader'
+                    ],
+                    multiple: false
+                },
+                locate: true,
+                frequency: 10
+            };
+
+            // Scanner Initialization
+            async function initScanner() {
+                return new Promise((resolve, reject) => {
+                    Quagga.init(scannerConfig, err => {
+                        if (err) return reject(err);
+
+                        // Add processed event for visual feedback
+                        Quagga.onProcessed(onProcessed);
+
+                        Quagga.onDetected(handleDetection);
+                        Quagga.start();
+                        resolve();
+                    });
+                });
             }
-            
-            return currentMinutes >= openingMinutes && currentMinutes < closingMinutes;
-        }
 
-        function checkShopStatus() {
-            const open = isShopOpen();
-            const closedScreen = document.getElementById('closed-screen');
-            const mainContent = document.querySelector('main');
-            const maintenanceModal = document.getElementById('maintenance-modal');
-            
-            if (!open && maintenanceModal.style.display !== 'flex') {
-                closedScreen.style.display = 'flex';
-                mainContent.style.display = 'none';
-                
-                // Show opening hours
+            function timeToMinutes(timeStr) {
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                return hours * 60 + minutes;
+            }
+
+            function isShopOpen() {
                 const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
                 const shopHours = settings.shopHours || {};
-                if (shopHours.enabled) {
-                    document.getElementById('opening-hours-display').textContent = 
+
+                if (!shopHours.enabled) return true;
+
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                const openingMinutes = timeToMinutes(shopHours.openingTime);
+                const closingMinutes = timeToMinutes(shopHours.closingTime);
+
+                // Handle cases where closing time is after midnight
+                if (closingMinutes < openingMinutes) {
+                    return currentMinutes >= openingMinutes || currentMinutes < closingMinutes;
+                }
+
+                return currentMinutes >= openingMinutes && currentMinutes < closingMinutes;
+            }
+
+            function checkShopStatus() {
+                const open = isShopOpen();
+                const closedScreen = document.getElementById('closed-screen');
+                const mainContent = document.querySelector('main');
+                const maintenanceModal = document.getElementById('maintenance-modal');
+
+                if (!open && maintenanceModal.style.display !== 'flex') {
+                    closedScreen.style.display = 'flex';
+                    mainContent.style.display = 'none';
+
+                    // Show opening hours
+                    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                    const shopHours = settings.shopHours || {};
+                    if (shopHours.enabled) {
+                        document.getElementById('opening-hours-display').textContent =
                         `Öffnet um ${shopHours.openingTime} Uhr`;
-                }
-                
-                // Stop scanner if active
-                if (scannerActive) {
-                    toggleScanner();
-                }
-            } else {
-                closedScreen.style.display = 'none';
-                mainContent.style.display = 'block';
-            }
-        }
-        
-        // Visual feedback for barcode detection
-        function onProcessed(result) {
-            const box = document.getElementById('barcode-box');
-            
-            if (!result || !result.boxes) {
-                box.style.display = 'none';
-                lastBoxPosition = null;
-                return;
-            }
-            
-            const boxes = result.boxes;
-            const video = document.getElementById('scanner-video');
-            const container = document.getElementById('scanner-container');
-            
-            // Skip if video hasn't loaded dimensions yet
-            if (!video.videoWidth || !video.videoHeight) {
-                box.style.display = 'none';
-                return;
-            }
-            
-            // Find the first valid box
-            let validBox = null;
-            for (let i = 0; i < Math.min(boxes.length, 1); i++) {
-                if (boxes[i] && boxes[i].length === 4) {
-                    validBox = boxes[i];
-                    break;
+                    }
+
+                    // Stop scanner if active
+                    if (scannerActive) {
+                        toggleScanner();
+                    }
+                } else {
+                    closedScreen.style.display = 'none';
+                    mainContent.style.display = 'block';
                 }
             }
-            
-            if (!validBox) {
-                box.style.display = 'none';
-                lastBoxPosition = null;
-                return;
-            }
-            
-            // Calculate video aspect ratio and scaling
-            const videoWidth = video.videoWidth;
-            const videoHeight = video.videoHeight;
-            const containerWidth = container.offsetWidth;
-            const containerHeight = container.offsetHeight;
-            
-            const videoAspect = videoWidth / videoHeight;
-            const containerAspect = containerWidth / containerHeight;
-            
-            let scale, offsetX, offsetY;
-            
-            // Calculate scaling and offsets based on object-fit: cover
-            if (videoAspect > containerAspect) {
-                // Video is wider than container
-                scale = containerHeight / videoHeight;
-                offsetX = (containerWidth - videoWidth * scale) / 2;
-                offsetY = 0;
-            } else {
-                // Video is taller than container
-                scale = containerWidth / videoWidth;
-                offsetX = 0;
-                offsetY = (containerHeight - videoHeight * scale) / 2;
-            }
-            
-            // Calculate box coordinates
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            
-            for (const point of validBox) {
-                if (point.x < minX) minX = point.x;
-                if (point.x > maxX) maxX = point.x;
-                if (point.y < minY) minY = point.y;
-                if (point.y > maxY) maxY = point.y;
-            }
-            
-            const x = offsetX + minX * scale;
-            const y = offsetY + minY * scale;
-            const width = (maxX - minX) * scale;
-            const height = (maxY - minY) * scale;
-            
-            // Update box position with smooth transition
-            box.style.display = 'block';
-            box.style.left = `${x}px`;
-            box.style.top = `${y}px`;
-            box.style.width = `${width}px`;
-            box.style.height = `${height}px`;
-            
-            lastBoxPosition = { x, y, width, height };
-        }
 
-        function handleDetection(result) {
-            const code = result.codeResult.code;
-            if (!scannedBarcodes.has(code)) {
-                scannedBarcodes.add(code);
-                setTimeout(() => scannedBarcodes.delete(code), 2000);
-                handleBarcode(code);
-            }
-        }
+            // Visual feedback for barcode detection
+            function onProcessed(result) {
+                const box = document.getElementById('barcode-box');
 
-        // Barcode Handling
-        function handleBarcode(barcode) {
-            currentBarcode = barcode;
-            playSound('scan');
-            
-            if (products[barcode]) {
-                showProduct(products[barcode]);
-                showNotification(`${products[barcode].name} erkannt`);
-            } else {
-                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                if (settings.manualAdd === false) {
-                    showNotification('Nicht erlaubt!', 'error');
-                }else {
-                    showProductModal(barcode);
+                if (!result || !result.boxes) {
+                    box.style.display = 'none';
+                    lastBoxPosition = null;
+                    return;
+                }
+
+                const boxes = result.boxes;
+                const video = document.getElementById('scanner-video');
+                const container = document.getElementById('scanner-container');
+
+                // Skip if video hasn't loaded dimensions yet
+                if (!video.videoWidth || !video.videoHeight) {
+                    box.style.display = 'none';
+                    return;
+                }
+
+                // Find the first valid box
+                let validBox = null;
+                for (let i = 0; i < Math.min(boxes.length, 1); i++) {
+                    if (boxes[i] && boxes[i].length === 4) {
+                        validBox = boxes[i];
+                        break;
+                    }
+                }
+
+                if (!validBox) {
+                    box.style.display = 'none';
+                    lastBoxPosition = null;
+                    return;
+                }
+
+                // Calculate video aspect ratio and scaling
+                const videoWidth = video.videoWidth;
+                const videoHeight = video.videoHeight;
+                const containerWidth = container.offsetWidth;
+                const containerHeight = container.offsetHeight;
+
+                const videoAspect = videoWidth / videoHeight;
+                const containerAspect = containerWidth / containerHeight;
+
+                let scale,
+                offsetX,
+                offsetY;
+
+                // Calculate scaling and offsets based on object-fit: cover
+                if (videoAspect > containerAspect) {
+                    // Video is wider than container
+                    scale = containerHeight / videoHeight;
+                    offsetX = (containerWidth - videoWidth * scale) / 2;
+                    offsetY = 0;
+                } else {
+                    // Video is taller than container
+                    scale = containerWidth / videoWidth;
+                    offsetX = 0;
+                    offsetY = (containerHeight - videoHeight * scale) / 2;
+                }
+
+                // Calculate box coordinates
+                let minX = Infinity,
+                minY = Infinity,
+                maxX = -Infinity,
+                maxY = -Infinity;
+
+                for (const point of validBox) {
+                    if (point.x < minX) minX = point.x;
+                    if (point.x > maxX) maxX = point.x;
+                    if (point.y < minY) minY = point.y;
+                    if (point.y > maxY) maxY = point.y;
+                }
+
+                const x = offsetX + minX * scale;
+                const y = offsetY + minY * scale;
+                const width = (maxX - minX) * scale;
+                const height = (maxY - minY) * scale;
+
+                // Update box position with smooth transition
+                box.style.display = 'block';
+                box.style.left = `${x}px`;
+                box.style.top = `${y}px`;
+                box.style.width = `${width}px`;
+                box.style.height = `${height}px`;
+
+                lastBoxPosition = {
+                    x,
+                    y,
+                    width,
+                    height
+                };
+            }
+
+            function handleDetection(result) {
+                const code = result.codeResult.code;
+                if (!scannedBarcodes.has(code)) {
+                    scannedBarcodes.add(code);
+                    setTimeout(() => scannedBarcodes.delete(code), 2000);
+                    handleBarcode(code);
                 }
             }
-        }
 
-        function showProduct(product) {
-            currentProduct = product;
-            document.getElementById('product-name').textContent = product.name;
-            document.getElementById('product-price').textContent = product.price.toFixed(2) + currencySymbol;
-            document.getElementById('product-quantity').textContent = '1';
-            document.getElementById('product-card').classList.add('visible');
-        }
+            // Barcode Handling
+            function handleBarcode(barcode) {
+                currentBarcode = barcode;
+                playSound('scan');
 
-        function adjustProductQuantity(delta) {
-            if (!currentProduct) return;
-            
-            const quantityElement = document.getElementById('product-quantity');
-            let quantity = parseInt(quantityElement.textContent);
-            quantity = Math.max(1, quantity + delta);
-            quantityElement.textContent = quantity;
-        }
-
-        function addCurrentProductToCart() {
-            if (!currentProduct) return;
-            
-            const quantity = parseInt(document.getElementById('product-quantity').textContent);
-            const existing = cart.find(item => item.barcode === currentProduct.barcode);
-            
-            if (existing) {
-                existing.quantity += quantity;
-            } else {
-                cart.push({
-                    ...currentProduct,
-                    quantity: quantity
-                });
+                if (products[barcode]) {
+                    showProduct(products[barcode]);
+                    showNotification(`${products[barcode].name} erkannt`);
+                } else {
+                    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                    if (settings.manualAdd === false) {
+                        showNotification('Nicht erlaubt!', 'error');
+                    } else {
+                        showProductModal(barcode);
+                    }
+                }
             }
-            
-            updateCartDisplay();
-            showNotification(`${currentProduct.name} hinzugefügt`);
-        }
 
-        function resetScanner() {
-            document.getElementById('product-card').classList.remove('visible');
-            currentProduct = null;
-        }
-
-        // Cart Management
-        function addToCart(product) {
-            const existing = cart.find(item => item.barcode === product.barcode);
-            if (existing) {
-                existing.quantity++;
-            } else {
-                cart.push({...product, quantity: 1});
+            function showProduct(product) {
+                currentProduct = product;
+                document.getElementById('product-name').textContent = product.name;
+                document.getElementById('product-price').textContent = product.price.toFixed(2) + currencySymbol;
+                document.getElementById('product-quantity').textContent = '1';
+                document.getElementById('product-card').classList.add('visible');
             }
-            updateCartDisplay();
-        }
 
-        function updateCartDisplay() {
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const cartItems = document.getElementById('cart-items');
-            const cartCount = document.getElementById('cart-count');
-            const cartTotal = document.getElementById('cart-total-amount');
-            const paymentTotal = document.getElementById('payment-total');
-            
-            cartItems.innerHTML = cart.map(item => `
-                <div class="cart-item" data-barcode="${item.barcode}">
-                    <div class="cart-item-image">
-                        <i class="fas fa-cube"></i>
-                    </div>
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">${item.price.toFixed(2)}${currencySymbol} × ${item.quantity}</div>
-                    </div>
-                    <div class="cart-item-quantity">
-                        <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', -1)">−</button>
-                        <span class="quantity-value">${item.quantity}</span>
-                        <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', 1)">+</button>
-                    </div>
-                    <button class="cart-item-remove" onclick="removeCartItem('${item.barcode}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
-            
-            cartTotal.textContent = total.toFixed(2) + currencySymbol;
-            paymentTotal.textContent = total.toFixed(2) + currencySymbol;
-            cartCount.textContent = `${cart.reduce((sum, item) => sum + item.quantity, 0)} Artikel`;
-        }
-        
-        function adjustCartItemQuantity(barcode, delta) {
-            const item = cart.find(item => item.barcode === barcode);
-            if (item) {
-                item.quantity = Math.max(0, item.quantity + delta);
-                if (item.quantity === 0) {
-                    cart = cart.filter(i => i.barcode !== barcode);
+            function adjustProductQuantity(delta) {
+                if (!currentProduct) return;
+
+                const quantityElement = document.getElementById('product-quantity');
+                let quantity = parseInt(quantityElement.textContent);
+                quantity = Math.max(1, quantity + delta);
+                quantityElement.textContent = quantity;
+            }
+
+            function addCurrentProductToCart() {
+                if (!currentProduct) return;
+
+                const quantity = parseInt(document.getElementById('product-quantity').textContent);
+                const existing = cart.find(item => item.barcode === currentProduct.barcode);
+
+                if (existing) {
+                    existing.quantity += quantity;
+                } else {
+                    cart.push({
+                        ...currentProduct,
+                        quantity: quantity
+                    });
+                }
+
+                updateCartDisplay();
+                showNotification(`${currentProduct.name} hinzugefügt`);
+            }
+
+            function resetScanner() {
+                document.getElementById('product-card').classList.remove('visible');
+                currentProduct = null;
+            }
+
+            // Cart Management
+            function addToCart(product) {
+                const existing = cart.find(item => item.barcode === product.barcode);
+                if (existing) {
+                    existing.quantity++;
+                } else {
+                    cart.push({
+                        ...product, quantity: 1
+                    });
                 }
                 updateCartDisplay();
             }
-        }
-        
-        // Passcode Protection System
-const REQUIRED_PASSCODE = "INSTAGRAM";
-const ACCESS_DURATION = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
 
-function checkPasscode() {
-    const input = document.getElementById('passcode-input').value.trim();
-    const errorElement = document.getElementById('passcode-error');
-    
-    if (input === REQUIRED_PASSCODE) {
-        // Set access expiration (current time + 1 week)
-        const expirationTime = Date.now() + ACCESS_DURATION;
-        localStorage.setItem('passcode_access_expiration', expirationTime);
-        localStorage.setItem('passcode_granted', 'true');
-        
-        // Hide the modal
-        document.getElementById('passcode-modal').style.display = 'none';
-        document.body.classList.remove('tutorial-disabled');
-    } else {
-        // Show error
-        errorElement.style.display = 'block';
-        document.getElementById('passcode-input').value = '';
-        setTimeout(() => {
-            errorElement.style.display = 'none';
-        }, 3000);
-    }
-}
+            function updateCartDisplay() {
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const cartItems = document.getElementById('cart-items');
+                const cartCount = document.getElementById('cart-count');
+                const cartTotal = document.getElementById('cart-total-amount');
+                const paymentTotal = document.getElementById('payment-total');
 
-function validateAccess() {
-    const expiration = localStorage.getItem('passcode_access_expiration');
-    const granted = localStorage.getItem('passcode_granted');
-    
-    // Check if access was previously granted and hasn't expired
-    if (granted === 'true' && expiration && Date.now() < parseInt(expiration)) {
-        document.getElementById('passcode-modal').style.display = 'none';
-        document.body.classList.remove('tutorial-disabled');
-        return true;
-    }
-    
-    // Access not granted or expired
-    document.getElementById('passcode-modal').style.display = 'flex';
-    document.body.classList.add('tutorial-disabled');
-    return false;
-}
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="cart-item" data-barcode="${item.barcode}">
+                    <div class="cart-item-image">
+                    <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="cart-item-info">
+                    <div class="cart-item-name">${item.name}</div>
+                    <div class="cart-item-price">${item.price.toFixed(2)}${currencySymbol} × ${item.quantity}</div>
+                    </div>
+                    <div class="cart-item-quantity">
+                    <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', -1)">−</button>
+                    <span class="quantity-value">${item.quantity}</span>
+                    <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', 1)">+</button>
+                    </div>
+                    <button class="cart-item-remove" onclick="removeCartItem('${item.barcode}')">
+                    <i class="fas fa-trash"></i>
+                    </button>
+                    </div>
+                    `).join('');
 
-// Add event listener for Enter key in passcode input
-document.getElementById('passcode-input')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        checkPasscode();
-    }
-});
-
-// Initialize access validation when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if we have valid access first
-    if (!validateAccess()) {
-        // Disable all interactive elements if no access
-        document.body.classList.add('tutorial-disabled');
-    }
-    
-    // The rest of your existing DOMContentLoaded code...
-});
-        
-        function removeCartItem(barcode) {
-            cart = cart.filter(item => item.barcode !== barcode);
-            updateCartDisplay();
-            showNotification('Artikel entfernt');
-        }
-
-        // Product Management
-        function showProductModal(barcode) {
-            document.getElementById('product-barcode-input').value = barcode;
-            document.getElementById('product-modal').style.display = 'flex';
-        }
-
-        function saveProduct() {
-            const name = document.getElementById('product-name-input').value.trim();
-            const price = parseFloat(document.getElementById('product-price-input').value);
-            const barcode = document.getElementById('product-barcode-input').value;
-            playSound('success');
-
-            if (!name || isNaN(price) || !barcode) {
-                showNotification('Ungültige Eingabe', 'error');
-                return;
-            }
-            
-            if (price <= 0) {
-                showNotification('Preis muss größer als 0 sein', 'error');
-                return;
+                cartTotal.textContent = total.toFixed(2) + currencySymbol;
+                paymentTotal.textContent = total.toFixed(2) + currencySymbol;
+                cartCount.textContent = `${cart.reduce((sum, item) => sum + item.quantity, 0)} Artikel`;
             }
 
-            products[barcode] = { name, price, barcode };
-            localStorage.setItem('products', JSON.stringify(products));
-            showProduct(products[barcode]);
-            closeModal();
-            showNotification('Produkt gespeichert');
-        }
-
-        // QR Generation
-        function generateQR() {
-            if(cart.length === 0) {
-                showNotification('Warenkorb ist leer', 'error');
-                return;
-            }
-            
-            const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
-            const paymentData = {
-                paymentId,
-                items: cart.map(item => ({
-                    name: item.name,
-                    price: item.price,
-                    quantity: item.quantity,
-                    barcode: item.barcode
-                })),
-                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-            };
-
-            try {
-                const compressedData = LZString.compressToBase64(JSON.stringify(paymentData));
-                window.location.href = `customer?id=${encodeURIComponent(compressedData)}`;
-            } catch(e) {
-                console.error('Compression error:', e);
-                showNotification('Fehler beim Generieren des QR-Codes', 'error');
-            }
-        }
-
-        // Apply all settings from localStorage
-        function applySettings() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            
-            // Apply currency setting
-            currencySymbol = settings.currency || '€';
-            updateCartDisplay();
-            
-            // Apply auto scanner setting
-            if (settings.autoScanner) {
-                // Start scanner after short delay to allow page to load
-                setTimeout(() => {
-                    if (!scannerActive) {
-                        toggleScanner();
+            function adjustCartItemQuantity(barcode, delta) {
+                const item = cart.find(item => item.barcode === barcode);
+                if (item) {
+                    item.quantity = Math.max(0, item.quantity + delta);
+                    if (item.quantity === 0) {
+                        cart = cart.filter(i => i.barcode !== barcode);
                     }
-                }, 500);
-            }
-            
-            // Apply notification duration
-            notificationDuration = settings.notificationDuration || 3;
-            
-            // Apply manual add setting
-            const manualAddBtn = document.getElementById('manual-add');
-            if (settings.manualAdd === false) {
-                if (manualAddBtn) {
-                    manualAddBtn.disabled = true;
-                    manualAddBtn.style.opacity = '0.5';
-                }
-            } else {
-                if (manualAddBtn) {
-                    manualAddBtn.disabled = false;
-                    manualAddBtn.style.opacity = '1';
+                    updateCartDisplay();
                 }
             }
 
-            // Check shop status after applying settings
-            checkShopStatus();
-        }
-        
-        // Scanner Control
-        async function toggleScanner() {
-            const video = document.getElementById('scanner-video');
-            const status = document.getElementById('scanner-status');
-            const box = document.getElementById('barcode-box');
-            const container = document.getElementById('scanner-container');
-            const toggleBtn = document.getElementById('toggle-scanner');
-            
-            try {
-                if (!scannerActive) {
-                    mediaStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: "environment",
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
+            function removeCartItem(barcode) {
+                cart = cart.filter(item => item.barcode !== barcode);
+                updateCartDisplay();
+                showNotification('Artikel entfernt');
+            }
+
+            // Product Management
+            function showProductModal(barcode) {
+                document.getElementById('product-barcode-input').value = barcode;
+                document.getElementById('product-modal').style.display = 'flex';
+            }
+
+            function saveProduct() {
+                const name = document.getElementById('product-name-input').value.trim();
+                const price = parseFloat(document.getElementById('product-price-input').value);
+                const barcode = document.getElementById('product-barcode-input').value;
+                playSound('success');
+
+                if (!name || isNaN(price) || !barcode) {
+                    showNotification('Ungültige Eingabe', 'error');
+                    return;
+                }
+
+                if (price <= 0) {
+                    showNotification('Preis muss größer als 0 sein', 'error');
+                    return;
+                }
+
+                products[barcode] = {
+                    name,
+                    price,
+                    barcode
+                };
+                localStorage.setItem('products', JSON.stringify(products));
+                showProduct(products[barcode]);
+                closeModal();
+                showNotification('Produkt gespeichert');
+            }
+
+            // QR Generation
+            function generateQR() {
+                if (cart.length === 0) {
+                    showNotification('Warenkorb ist leer', 'error');
+                    return;
+                }
+
+                const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+                const paymentData = {
+                    paymentId,
+                    items: cart.map(item => ({
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        barcode: item.barcode
+                    })),
+                    total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                };
+
+                try {
+                    const compressedData = LZString.compressToBase64(JSON.stringify(paymentData));
+                    window.location.href = `customer?id=${encodeURIComponent(compressedData)}`;
+                } catch(e) {
+                    console.error('Compression error:', e);
+                    showNotification('Fehler beim Generieren des QR-Codes', 'error');
+                }
+            }
+
+            // Apply all settings from localStorage
+            function applySettings() {
+                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+
+                // Apply currency setting
+                currencySymbol = settings.currency || '€';
+                updateCartDisplay();
+
+                // Apply auto scanner setting
+                if (settings.autoScanner) {
+                    // Start scanner after short delay to allow page to load
+                    setTimeout(() => {
+                        if (!scannerActive) {
+                            toggleScanner();
                         }
-                    });
-                    
-                    video.srcObject = mediaStream;
-                    await video.play();
-                    
-                    status.innerHTML = '<span class="dot"></span><span>Scannt...</span>';
-                    status.classList.remove('inactive');
-                    scannerActive = true;
-                    container.classList.add('active');
-                    toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Scanner stoppen';
-                    await initScanner();
-                } else {
-                    mediaStream.getTracks().forEach(track => track.stop());
-                    video.srcObject = null;
-                    status.innerHTML = '<span class="dot"></span><span>Scanner pausiert</span>';
-                    status.classList.add('inactive');
-                    scannerActive = false;
-                    container.classList.remove('active');
-                    toggleBtn.innerHTML = '<i class="fas fa-camera"></i> Scanner starten';
-                    box.style.display = 'none';
-                    Quagga.stop();
+                    },
+                        500);
                 }
-            } catch (error) {
-                scannerActive = false;
-                showNotification(`Kamerafehler: ${error.message}`, 'error');
-            }
-        }
 
-        // UI Helpers
-        function showNotification(message, type = 'success') {
-            playSound(type);
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = 'notification';
-            notification.classList.add(type);
-            notification.style.display = 'block';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
+                // Apply notification duration
+                notificationDuration = settings.notificationDuration || 3;
 
-        function closeModal() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.style.display = 'none';
-            });
-            document.getElementById('product-name-input').value = '';
-            document.getElementById('product-price-input').value = '';
-        }
+                // Apply manual add setting
+                const manualAddBtn = document.getElementById('manual-add');
+                if (settings.manualAdd === false) {
+                    if (manualAddBtn) {
+                        manualAddBtn.disabled = true;
+                        manualAddBtn.style.opacity = '0.5';
+                    }
+                } else {
+                    if (manualAddBtn) {
+                        manualAddBtn.disabled = false;
+                        manualAddBtn.style.opacity = '1';
+                    }
+                }
 
-        // Event Listeners
-        document.getElementById('toggle-scanner').addEventListener('click', toggleScanner);
-        document.getElementById('manual-add').addEventListener('click', () => {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.manualAdd === false) {
-                showNotification('Manuelle Eingabe ist deaktiviert', 'error');
-                return;
-            }
-            currentBarcode = null;
-            document.getElementById('product-modal').style.display = 'flex';
-        });
-        
-        document.getElementById('clear-cart').addEventListener('click', () => {
-            cart = [];
-            updateCartDisplay();
-            showNotification('Warenkorb geleert');
-        });
-        
-        // Initialize products from localStorage
-        window.addEventListener('DOMContentLoaded', () => {
-            products = JSON.parse(localStorage.getItem('products')) || {};
-            
-            // Apply settings
-            applySettings();
-            checkShopStatus();
-            setInterval(checkShopStatus, 60000);
-            
-            // Initialize currency symbol
-            currencySymbol = '€';
-            window.addEventListener('focus', checkShopStatus);
-        });
-
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'appSettings') {
-                applySettings();
+                // Check shop status after applying settings
                 checkShopStatus();
             }
-        });
 
-        function playSound(type) {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (!settings.soundEffects) return;
-            
-            const audio = new Audio();
-            audio.volume = 0.3;
-            
-            switch(type) {
-                case 'success':
-                    audio.src = 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_f96ec71310.mp3';
-                    break;
-                case 'error':
-                    audio.src = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_b805049288.mp3';
-                    break;
-                case 'scan':
-                    audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
-                    break;
+            // Scanner Control
+            async function toggleScanner() {
+                const video = document.getElementById('scanner-video');
+                const status = document.getElementById('scanner-status');
+                const box = document.getElementById('barcode-box');
+                const container = document.getElementById('scanner-container');
+                const toggleBtn = document.getElementById('toggle-scanner');
+
+                try {
+                    if (!scannerActive) {
+                        mediaStream = await navigator.mediaDevices.getUserMedia({
+                            video: {
+                                facingMode: "environment",
+                                width: {
+                                    ideal: 1280
+                                },
+                                height: {
+                                    ideal: 720
+                                }
+                            }
+                        });
+
+                        video.srcObject = mediaStream;
+                        await video.play();
+
+                        status.innerHTML = '<span class="dot"></span><span>Scannt...</span>';
+                        status.classList.remove('inactive');
+                        scannerActive = true;
+                        container.classList.add('active');
+                        toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Scanner stoppen';
+                        await initScanner();
+                    } else {
+                        mediaStream.getTracks().forEach(track => track.stop());
+                        video.srcObject = null;
+                        status.innerHTML = '<span class="dot"></span><span>Scanner pausiert</span>';
+                        status.classList.add('inactive');
+                        scannerActive = false;
+                        container.classList.remove('active');
+                        toggleBtn.innerHTML = '<i class="fas fa-camera"></i> Scanner starten';
+                        box.style.display = 'none';
+                        Quagga.stop();
+                    }
+                } catch (error) {
+                    scannerActive = false;
+                    showNotification(`Kamerafehler: ${error.message}`, 'error');
+                }
             }
-            
-            audio.play().catch(e => console.log('Sound playback error:', e));
-        }
-    </script>
-    
-    <!-- Passcode Protection Modal -->
-<div id="passcode-modal" class="modal" style="display: flex; z-index: 2000;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="modal-title">
-                <i class="fas fa-lock"></i>
-                Passcode erforderlich
-            </h3>
-            <p class="text-muted">Bitte geben Sie den Zugangscode ein</p>
-        </div>
-        <input type="password" id="passcode-input" class="modal-input" placeholder="Zugangscode">
-        <p id="passcode-error" class="text-muted text-sm" style="color: var(--color-error); display: none;">
-            Ungültiger Passcode
-        </p>
-        <div class="modal-actions">
-            <button class="modal-btn primary" onclick="checkPasscode()">Bestätigen</button>
-        </div>
-    </div>
-</div>
-</body>
-</html>
+
+            // UI Helpers
+            function showNotification(message, type = 'success') {
+                playSound(type);
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = 'notification';
+                notification.classList.add(type);
+                notification.style.display = 'block';
+
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+
+            function closeModal() {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+                document.getElementById('product-name-input').value = '';
+                document.getElementById('product-price-input').value = '';
+            }
+
+            // Event Listeners
+            document.getElementById('toggle-scanner').addEventListener('click', toggleScanner);
+            document.getElementById('manual-add').addEventListener('click', () => {
+                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                if (settings.manualAdd === false) {
+                    showNotification('Manuelle Eingabe ist deaktiviert', 'error');
+                    return;
+                }
+                currentBarcode = null;
+                document.getElementById('product-modal').style.display = 'flex';
+            });
+
+            document.getElementById('clear-cart').addEventListener('click',
+                () => {
+                    cart = [];
+                    updateCartDisplay();
+                    showNotification('Warenkorb geleert');
+                });
+
+            // Initialize products from localStorage
+            window.addEventListener('DOMContentLoaded',
+                () => {
+                    products = JSON.parse(localStorage.getItem('products')) || {};
+
+                    // Apply settings
+                    applySettings();
+                    checkShopStatus();
+                    setInterval(checkShopStatus, 60000);
+
+                    // Initialize currency symbol
+                    currencySymbol = '€';
+                    window.addEventListener('focus', checkShopStatus);
+                });
+
+            window.addEventListener('storage',
+                function(e) {
+                    if (e.key === 'appSettings') {
+                        applySettings();
+                        checkShopStatus();
+                    }
+                });
+
+            function playSound(type) {
+                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                if (!settings.soundEffects) return;
+
+                const audio = new Audio();
+                audio.volume = 0.3;
+
+                switch (type) {
+                    case 'success':
+                        audio.src = 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_f96ec71310.mp3';
+                        break;
+                    case 'error':
+                        audio.src = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_b805049288.mp3';
+                        break;
+                    case 'scan':
+                        audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
+                        break;
+                }
+
+                audio.play().catch(e => console.log('Sound playback error:', e));
+            }
+        </script>
+    </b
