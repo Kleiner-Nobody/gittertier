@@ -51,6 +51,36 @@
         --footer-height: 80px;
     }
 
+        /* Contact Banner */
+    .contact-banner {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+        border-radius: var(--radius);
+        margin-top: var(--spacing-md);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: var(--shadow);
+    }
+
+    .contact-banner a {
+        color: rgb(255, 255, 255);
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: 30px;
+        transition: var(--transition);
+    }
+
+    .contact-banner:hover {
+        transform: translateY(-2px);
+    }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -1485,9 +1515,12 @@
                 Ihre 7-tägige Testversion ist abgelaufen. Der Zugang zur Anwendung wurde deaktiviert.<br>
                 Bei Fragen wenden Sie sich bitte an den Support.
             </p>
-            <button class="modal-btn primary" onclick="location.reload()">
-                <i class="fas fa-refresh"></i> Seite neu laden
-            </button>
+                            <div class="contact-banner">
+                                <a href="mailto:kaspar.niederberger@outlook.com?subject='Gittertier Pro - Support Anfrage'&body='Hallo liebes Gittertier Pro Team,'">
+                                    <i class="fas fa-envelope"></i> Support kontaktieren
+                                </a>
+                            </div>
+                        
         </div>
     </div>
 
@@ -1756,6 +1789,7 @@
         function checkAccessStatus() {
             const expiration = localStorage.getItem('passcode_access_expiration');
             const granted = localStorage.getItem('passcode_granted');
+            
 
             // Check if access was previously granted and hasn't expired
             if (granted === 'true' && expiration) {
@@ -1789,6 +1823,8 @@
                 const expirationTime = Date.now() + ACCESS_DURATION;
                 localStorage.setItem('passcode_access_expiration', expirationTime);
                 localStorage.setItem('passcode_granted', 'true');
+                setTimeout(showWelcomeModal, 1000);
+                
 
                 // Hide the modal and show the app
                 document.getElementById('passcode-modal').style.display = 'none';
@@ -1823,6 +1859,7 @@
                 // Show passcode input
                 document.getElementById('passcode-modal').style.display = 'flex';
                 document.body.classList.add('passcode-required');
+                document.getElementById('tutorial-cutout').style.display = 'none';
             }
         }
 
@@ -1971,9 +2008,11 @@
 
         // Check if tutorial should be shown
         function checkTutorialStatus() {
+            const expiration = localStorage.getItem('passcode_access_expiration');
+            const granted = localStorage.getItem('passcode_granted');
             try {
                 const tutorialSeen = localStorage.getItem('gittertier_tutorial_seen');
-                if (tutorialSeen === null) {
+                if (tutorialSeen === null && granted === 'true' && expiration) {
                     // Check if we can use localStorage
                     localStorage.setItem('gittertier_test', 'test');
                     localStorage.removeItem('gittertier_test');
@@ -1986,13 +2025,16 @@
                 // Fallback to sessionStorage
                 try {
                     const sessionTutorialSeen = sessionStorage.getItem('gittertier_tutorial_seen');
-                    if (sessionTutorialSeen === null) {
+                    if (sessionTutorialSeen === null && granted === 'true' && expiration) {
                         showWelcomeModal();
                         showTutorialError("Ihre Einstellungen können nicht dauerhaft gespeichert werden. Das Tutorial wird bei Ihrem nächsten Besuch erneut angezeigt.");
                     }
                 } catch (e) {
                     // Both storage methods failed
-                    showTutorialError("Ihre Browsereinstellungen erlauben das Speichern von Präferenzen nicht.");
+                    if (granted === 'true' && expiration) {
+                        showTutorialError("Ihre Browsereinstellungen erlauben das Speichern von Präferenzen nicht.");
+                    }
+                    
                 }
             }
         }
@@ -2273,7 +2315,7 @@
             // Remove any highlight classes
             document.querySelectorAll('.tutorial-highlight').forEach(el => {
                 el.classList.remove('tutorial-highlight');
-            );
+        });
 
                 // Clean up observers
                 tutorialObservers.forEach(observer => {
@@ -2502,6 +2544,15 @@
                 }
 
                 return currentMinutes >= openingMinutes && currentMinutes < closingMinutes;
+            }
+
+            function generateSupportEmail(subject = "Supportanfrage Gittertier Pro") {
+                let emailBody = "Hallo Gittertier Pro Team,%0D%0A%0D%0A";
+                emailBody += "Ich benötige Unterstützung bei:%0D%0A%0D%0A";
+                
+                emailBody += "%0D%0AMit freundlichen Grüßen";
+                
+                return `mailto:kaspar.niederberger@outlook.com?subject=${encodeURIComponent(subject)}&body=${emailBody}`;
             }
 
             function checkShopStatus() {
@@ -2991,4 +3042,4 @@
                 audio.play().catch(e => console.log('Sound playback error:', e));
             }
         </script>
-    </b
+    </html>
