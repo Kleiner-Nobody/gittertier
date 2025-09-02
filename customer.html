@@ -7,7 +7,6 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
-    <!-- Add jsPDF library for receipt generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -391,6 +390,172 @@
         color: var(--color-text);
     }
 
+    /* Payment Modal Specific Styles */
+    #payment-modal .modal-content {
+        max-width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .payment-modal-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .payment-modal-back {
+        background: none;
+        border: none;
+        font-size: var(--text-lg);
+        cursor: pointer;
+        color: var(--color-text-muted);
+        padding: var(--spacing-xs);
+        margin-right: var(--spacing-sm);
+    }
+
+    .payment-modal-title {
+        font-weight: 600;
+        font-size: var(--text-lg);
+        flex: 1;
+        text-align: center;
+        margin-right: var(--spacing-lg);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+        text-align: left;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-xs);
+        font-weight: 500;
+        color: var(--color-text);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-base);
+        transition: var(--transition);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .radio-group {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-sm);
+    }
+
+    .radio-option {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-md);
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .radio-option.selected {
+        border-color: var(--color-accent);
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    .radio-option i {
+        margin-right: var(--spacing-xs);
+        font-size: var(--text-lg);
+    }
+
+    .coupon-section {
+        background-color: #f9fafb;
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+
+    .coupon-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-sm);
+        cursor: pointer;
+    }
+
+    .coupon-title {
+        font-weight: 500;
+        color: var(--color-text);
+    }
+
+    .coupon-content {
+        display: none;
+        margin-top: var(--spacing-md);
+    }
+
+    .coupon-content.expanded {
+        display: block;
+    }
+
+    .coupon-input-group {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+
+    .coupon-input {
+        flex: 1;
+    }
+
+    .apply-coupon-btn {
+        white-space: nowrap;
+    }
+
+    .coupon-result {
+        margin-top: var(--spacing-sm);
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-sm);
+    }
+
+    .coupon-success {
+        background-color: rgba(22, 163, 74, 0.1);
+        color: var(--color-success);
+    }
+
+    .coupon-error {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-xs);
+        padding: var(--spacing-xs) 0;
+    }
+
+    .summary-total {
+        border-top: 1px solid var(--color-border);
+        margin-top: var(--spacing-xs);
+        padding-top: var(--spacing-sm);
+        font-weight: 700;
+        font-size: var(--text-lg);
+    }
+
+    .discount {
+        color: var(--color-success);
+    }
+
     /* Animation Keyframes */
     @keyframes fadeIn {
         from { opacity: 0; }
@@ -433,6 +598,10 @@
         .action-btn {
             width: 100%;
         }
+        
+        .radio-group {
+            flex-direction: column;
+        }
     }
 
     @media (max-width: 480px) {
@@ -468,6 +637,10 @@
         .countdown-value {
             font-size: var(--text-base);
         }
+        
+        #payment-modal .modal-content {
+            padding: var(--spacing-lg);
+        }
     }
 
     /* Dark mode support */
@@ -502,6 +675,20 @@
         
         .action-btn:hover {
             background-color: #374151;
+        }
+        
+        .coupon-section {
+            background-color: #1f2937;
+        }
+        
+        .form-control {
+            background-color: #1f2937;
+            color: var(--color-text);
+            border-color: var(--color-border);
+        }
+        
+        .radio-option {
+            background-color: #1f2937;
         }
     }
     </style>
@@ -557,6 +744,68 @@
         </div>
     </main>
 
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal" style="display: flex;">
+        <div class="modal-content">
+            <div class="payment-modal-header">
+                <button class="payment-modal-back" onclick="window.location.href='index'">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="payment-modal-title">Bezahlung abschließen</h2>
+            </div>
+            
+            <div class="form-group">
+                <label for="customer-name">Ihr Name</label>
+                <input type="text" id="customer-name" class="form-control" placeholder="Vor- und Nachname">
+            </div>
+            
+            <div class="form-group">
+                <label>Zahlungsmethode</label>
+                <div class="radio-group">
+                    <div class="radio-option" data-value="cash" onclick="selectPaymentMethod('cash')">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Bar</span>
+                    </div>
+                    <div class="radio-option" data-value="card" onclick="selectPaymentMethod('card')">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Karte</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="coupon-section">
+                <div class="coupon-header" onclick="toggleCouponSection()">
+                    <span class="coupon-title">Gutschein anwenden</span>
+                    <i class="fas fa-chevron-down" id="coupon-chevron"></i>
+                </div>
+                
+                <div class="coupon-content" id="coupon-content">
+                    <div class="coupon-input-group">
+                        <input type="text" id="coupon-code" class="form-control coupon-input" placeholder="Gutscheincode eingeben">
+                        <button class="action-btn apply-coupon-btn" onclick="applyCoupon()">
+                            Anwenden
+                        </button>
+                    </div>
+                    <div id="coupon-result" class="coupon-result"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <h3>Zusammenfassung</h3>
+                <div id="payment-summary">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-btn primary" onclick="processPayment()">
+                    <i class="fas fa-check"></i>
+                    Bezahlung bestätigen
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Error Modal -->
     <div id="error-modal" class="modal">
         <div class="modal-content">
@@ -566,11 +815,7 @@
             <h2 class="modal-title">Fehler</h2>
             <p class="modal-message" id="error-message">Die Zahlungsinformationen konnten nicht geladen werden.</p>
             <div class="modal-actions">
-                <!-- <button class="modal-btn secondary" onclick="closeModal('error-modal')">Schließen</button> -->
-                <button class="modal-btn secondary" onclick="generateReceipt()">
-                    <i class="fas fa-receipt"></i>
-                    Beleg drucken
-                </button>
+                <button class="modal-btn secondary" onclick="closeModal('error-modal')">Schließen</button>
                 <button class="modal-btn primary" onclick="window.location.href='index'">Zur Startseite</button>
             </div>
         </div>
@@ -606,7 +851,7 @@
             <h2 class="modal-title">Verbindung hergestellt</h2>
             <p class="modal-message">Warten auf Bestätigung vom Händler...</p>
             <div class="modal-actions">
-               <!--<button class="modal-btn secondary" onclick="closeModal('connecting-modal')">Schließen</button> -->
+                <button class="modal-btn secondary" onclick="closeModal('connecting-modal')">Schließen</button>
             </div>
         </div>
     </div>
@@ -621,6 +866,9 @@
         let countdownTime = 60; // seconds
         let customerPeer = null;
         let merchantConnection = null;
+        let selectedPaymentMethod = null;
+        let appliedCoupon = null;
+        let coupons = [];
         
         // Initialize payment
         function initPayment() {
@@ -644,31 +892,225 @@
                     throw new Error('Ungültige Datenstruktur');
                 }
                 
-                // Display payment data
-                document.getElementById('amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
-                const itemsList = document.getElementById('items-list');
-                itemsList.innerHTML = '';
+                // Load coupons from GitHub
+                loadCoupons();
                 
-                paymentData.items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'item-box';
-                    div.innerHTML = `
-                        <h3>${item.name}</h3>
-                        <p>${item.quantity}x € ${item.price.toFixed(2)}</p>
-                        <p>Summe: € ${(item.quantity * item.price).toFixed(2)}</p>
-                    `;
-                    itemsList.appendChild(div);
-                });
-                
-                generateQR();
-                startCountdown();
-                initializePeerJS();
+                // Display payment summary in the modal
+                updatePaymentSummary();
                 
             } catch(error) {
                 console.error('Payment initialization error:', error);
                 document.getElementById('error-message').textContent = error.message;
                 showModal('error-modal');
             }
+        }
+        
+        // Load coupons from GitHub
+        function loadCoupons() {
+            fetch('https://raw.githubusercontent.com/Kleiner-Nobody/gittertier/main/coupons.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Coupons konnten nicht geladen werden');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    coupons = data;
+                    console.log('Coupons erfolgreich geladen:', coupons);
+                })
+                .catch(error => {
+                    console.error('Fehler beim Laden der Coupons:', error);
+                    // Fallback to sample coupons
+                    coupons = [
+                        { code: "WELCOME10", discount: 10, type: "percent", valid: true },
+                        { code: "SUMMER2023", discount: 5, type: "amount", valid: true },
+                        { code: "FREESHIP", discount: 3.99, type: "amount", valid: true, freeShipping: true }
+                    ];
+                    console.log('Verwende Beispiel-Coupons:', coupons);
+                });
+        }
+        
+        // Update payment summary in the modal
+        function updatePaymentSummary() {
+            const summaryElement = document.getElementById('payment-summary');
+            let html = '';
+            let subtotal = paymentData.total;
+            
+            // Add items
+            paymentData.items.forEach(item => {
+                html += `
+                    <div class="summary-row">
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span>€ ${(item.quantity * item.price).toFixed(2)}</span>
+                    </div>
+                `;
+            });
+            
+            // Add discount if applied
+            if (appliedCoupon) {
+                let discountAmount = 0;
+                
+                if (appliedCoupon.type === 'percent') {
+                    discountAmount = subtotal * (appliedCoupon.discount / 100);
+                } else {
+                    discountAmount = appliedCoupon.discount;
+                }
+                
+                subtotal -= discountAmount;
+                
+                html += `
+                    <div class="summary-row discount">
+                        <span>Rabatt (${appliedCoupon.code})</span>
+                        <span>-€ ${discountAmount.toFixed(2)}</span>
+                    </div>
+                `;
+            }
+            
+            // Add total
+            html += `
+                <div class="summary-row summary-total">
+                    <span>Gesamtsumme</span>
+                    <span>€ ${subtotal.toFixed(2)}</span>
+                </div>
+            `;
+            
+            summaryElement.innerHTML = html;
+        }
+        
+        // Select payment method
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            
+            // Update UI
+            document.querySelectorAll('.radio-option').forEach(option => {
+                if (option.getAttribute('data-value') === method) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Toggle coupon section
+        function toggleCouponSection() {
+            const content = document.getElementById('coupon-content');
+            const chevron = document.getElementById('coupon-chevron');
+            
+            content.classList.toggle('expanded');
+            
+            if (content.classList.contains('expanded') && coupons.length === 0) {
+                // If coupons haven't loaded yet, try again
+                loadCoupons();
+            }
+            
+            if (content.classList.contains('expanded')) {
+                chevron.classList.remove('fa-chevron-down');
+                chevron.classList.add('fa-chevron-up');
+            } else {
+                chevron.classList.remove('fa-chevron-up');
+                chevron.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // Apply coupon
+        function applyCoupon() {
+            const code = document.getElementById('coupon-code').value.trim();
+            const resultElement = document.getElementById('coupon-result');
+            
+            if (!code) {
+                resultElement.innerHTML = '<div class="coupon-error">Bitte geben Sie einen Gutscheincode ein</div>';
+                return;
+            }
+            
+            // Find coupon
+            const coupon = coupons.find(c => c.code === code.toUpperCase());
+            
+            if (!coupon || !coupon.valid) {
+                resultElement.innerHTML = '<div class="coupon-error">Ungültiger Gutscheincode</div>';
+                return;
+            }
+            
+            // Apply coupon
+            appliedCoupon = coupon;
+            resultElement.innerHTML = `<div class="coupon-success">Gutschein erfolgreich angewendet: ${coupon.code}</div>`;
+            
+            // Update summary
+            updatePaymentSummary();
+        }
+        
+        // Process payment
+        function processPayment() {
+            const customerName = document.getElementById('customer-name').value.trim();
+            
+            // Validate inputs
+            if (!customerName) {
+                alert('Bitte geben Sie Ihren Namen ein');
+                return;
+            }
+            
+            if (!selectedPaymentMethod) {
+                alert('Bitte wählen Sie eine Zahlungsmethode aus');
+                return;
+            }
+            
+            // Hide payment modal
+            document.getElementById('payment-modal').style.display = 'none';
+            
+            // Calculate final total with coupon
+            let finalTotal = paymentData.total;
+            
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percent') {
+                    finalTotal -= finalTotal * (appliedCoupon.discount / 100);
+                } else {
+                    finalTotal -= appliedCoupon.discount;
+                }
+                
+                // Ensure total doesn't go negative
+                finalTotal = Math.max(0, finalTotal);
+            }
+            
+            // Update payment data with final total
+            paymentData.finalTotal = finalTotal;
+            paymentData.customerName = customerName;
+            paymentData.paymentMethod = selectedPaymentMethod;
+            paymentData.coupon = appliedCoupon ? appliedCoupon.code : null;
+            
+            // Display payment data
+            document.getElementById('amount').textContent = `€ ${finalTotal.toFixed(2)}`;
+            const itemsList = document.getElementById('items-list');
+            itemsList.innerHTML = '';
+            
+            paymentData.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item-box';
+                div.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <p>${item.quantity}x € ${item.price.toFixed(2)}</p>
+                    <p>Summe: € ${(item.quantity * item.price).toFixed(2)}</p>
+                `;
+                itemsList.appendChild(div);
+            });
+            
+            // Show discount if applied
+            if (appliedCoupon) {
+                const discountDiv = document.createElement('div');
+                discountDiv.className = 'item-box';
+                let discountText = '';
+                
+                if (appliedCoupon.type === 'percent') {
+                    discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
+                } else {
+                    discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
+                }
+                
+                discountDiv.innerHTML = `<h3 class="discount">${discountText}</h3>`;
+                itemsList.appendChild(discountDiv);
+            }
+            
+            generateQR();
+            startCountdown();
+            initializePeerJS();
         }
         
         // Initialize PeerJS for customer
@@ -775,13 +1217,16 @@
             // Create optimized data structure for QR code
             const qrData = {
                 p: paymentId,           // Payment ID
-                t: paymentData.total,   // Total amount
+                t: paymentData.finalTotal,   // Total amount
                 i: paymentData.items.map(item => ({
                     n: item.name,       // Shortened property names
                     q: item.quantity,
                     p: item.price,
                     b: item.barcode
-                }))
+                })),
+                c: paymentData.customerName,
+                m: selectedPaymentMethod,
+                cp: paymentData.coupon
             };
 
             try {
@@ -862,6 +1307,14 @@
 
             yPos += 20;
 
+            // Customer info
+            doc.setFontSize(12);
+            doc.setTextColor(17, 17, 17);
+            doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
+            yPos += 8;
+            doc.text(`Zahlungsmethode: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
+            yPos += 15;
+
             // Items header
             doc.setDrawColor(229, 231, 235);
             doc.line(20, yPos, pageWidth - 20, yPos);
@@ -894,6 +1347,27 @@
                 yPos += 8;
             });
 
+            // Add discount if applied
+            if (appliedCoupon) {
+                if (yPos > pageHeight - 40) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                yPos += 5;
+                let discountText = '';
+                
+                if (appliedCoupon.type === 'percent') {
+                    discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
+                } else {
+                    discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
+                }
+                
+                doc.setTextColor(22, 163, 74);
+                doc.text(discountText, pageWidth - 25, yPos, null, 'right');
+                doc.setTextColor(17, 17, 17);
+            }
+
             yPos += 10;
             doc.setDrawColor(229, 231, 235);
             doc.line(20, yPos, pageWidth - 20, yPos);
@@ -902,7 +1376,7 @@
             doc.setFontSize(14);
             doc.setFont(undefined, 'bold');
             doc.text("Gesamtsumme:", 25, yPos);
-            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
 
             yPos += 20;
             doc.setFontSize(12);
@@ -925,7 +1399,6 @@
             }, 1500);
         }
 
-        
         // Clean up PeerJS connection when leaving the page
         window.addEventListener('beforeunload', () => {
             if (customerPeer) {
