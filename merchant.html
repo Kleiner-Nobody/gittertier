@@ -772,6 +772,31 @@
         </div>
     </div>
 
+    <!-- Merchant Setup Modal -->
+    <div class="modal-overlay" id="merchant-setup-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Händlerinformationen</h2>
+            </div>
+            
+            <div style="margin-bottom: var(--spacing-lg);">
+                <p>Bitte geben Sie Ihre Händlerinformationen ein:</p>
+                
+                <div style="margin-top: var(--spacing-md);">
+                    <label for="merchant-name" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">Händlername</label>
+                    <input type="text" id="merchant-name" class="form-control" placeholder="Ihr Händlername" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button id="save-merchant" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Speichern
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="notification" id="notification"></div>
 
     <script>
@@ -870,6 +895,98 @@
             window.location.reload();
         });
 
+        // Merchant Storage System
+        const merchantStorage = {
+            init: function() {
+                // Check if merchant info exists
+                if (!this.getMerchantInfo()) {
+                    document.getElementById('merchant-setup-modal').classList.add('active');
+                }
+            },
+            
+            getMerchantInfo: function() {
+                try {
+                    const merchantInfo = localStorage.getItem('merchant_info');
+                    return merchantInfo ? JSON.parse(merchantInfo) : null;
+                } catch (e) {
+                    console.error('Error getting merchant info:', e);
+                    return null;
+                }
+            },
+            
+            saveMerchantInfo: function(info) {
+                try {
+                    localStorage.setItem('merchant_info', JSON.stringify(info));
+                    return true;
+                } catch (e) {
+                    console.error('Error saving merchant info:', e);
+                    return false;
+                }
+            },
+            
+            getArchive: function() {
+                try {
+                    const archive = localStorage.getItem('payment_archive');
+                    return archive ? JSON.parse(archive) : [];
+                } catch (e) {
+                    console.error('Error getting archive:', e);
+                    return [];
+                }
+            },
+            
+            addToArchive: function(payment) {
+                try {
+                    const archive = this.getArchive();
+                    archive.push({
+                        id: payment.id || 'payment-' + Date.now(),
+                        date: new Date().toISOString(),
+                        amount: payment.total,
+                        status: payment.status || 'completed',
+                        items: payment.items,
+                        customer: payment.customer,
+                        merchant: this.getMerchantInfo(),
+                        coupon: payment.coupon
+                    });
+                    
+                    localStorage.setItem('payment_archive', JSON.stringify(archive));
+                    return true;
+                } catch (e) {
+                    console.error('Error adding to archive:', e);
+                    return false;
+                }
+            },
+            
+            getArchiveItem: function(id) {
+                const archive = this.getArchive();
+                return archive.find(item => item.id === id);
+            }
+        };
+
+        // Initialize merchant storage
+        merchantStorage.init();
+
+        // Save merchant info
+        document.getElementById('save-merchant').addEventListener('click', function() {
+            const merchantName = document.getElementById('merchant-name').value.trim();
+            
+            if (!merchantName) {
+                alert('Bitte geben Sie einen Händlernamen ein.');
+                return;
+            }
+            
+            const success = merchantStorage.saveMerchantInfo({
+                name: merchantName,
+                setupDate: new Date().toISOString()
+            });
+            
+            if (success) {
+                document.getElementById('merchant-setup-modal').classList.remove('active');
+                showNotification('Händlerinformationen gespeichert!', 'success');
+            } else {
+                showNotification('Fehler beim Speichern der Händlerinformationen!', 'error');
+            }
+        });
+
         function initializePeerJS() {
             try {
                 merchantPeer = new Peer(null, {
@@ -926,7 +1043,10 @@
                     quantity: item.q,
                     price: item.p,
                     barcode: item.b
-                }))
+                })),
+                customer: rawData.c,
+                paymentMethod: rawData.m,
+                coupon: rawData.cp
             };
         }
 
@@ -1011,26 +1131,21 @@
                         quantity: item.quantity,
                         price: item.price
                     })),
-                    date: new Date().toISOString()
-                };
-                
-                // Create the archive entry
-                const archiveEntry = {
-                    data: LZString.compressToBase64(JSON.stringify(sanitizedPayment)),
+                    customer: payment.customer,
+                    paymentMethod: payment.paymentMethod,
+                    coupon: payment.coupon,
                     date: new Date().toISOString(),
-                    total: sanitizedPayment.total,
                     status: status
                 };
                 
-                // Create a short ID for storage key
-                const shortId = sanitizedPayment.peerId.split('-').pop().substr(0, 8);
-                const storageKey = `receipt_${shortId}`;
+                // Add to archive using merchant storage
+                merchantStorage.addToArchive(sanitizedPayment);
                 
-                // Save to localStorage
-                localStorage.setItem(storageKey, JSON.stringify(archiveEntry));
+                // Create a short ID for display
+                const shortId = sanitizedPayment.peerId.split('-').pop().substr(0, 8);
                 showNotification(`Beleg ${shortId} im Archiv gespeichert!`, 'success');
             } catch (e) {
-                console.error('Error saving to localStorage:', e);
+                console.error('Error saving to archive:', e);
                 showNotification('Fehler beim Speichern im Archiv: ' + e.message, 'error');
             }
         }
@@ -1132,6 +1247,7 @@
             const paymentDate = new Date().toLocaleDateString('de-DE');
             const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
             const paymentId = paymentData.peerId.split('-').pop().substr(0, 8);
+            const merchantInfo = merchantStorage.getMerchantInfo();
             let yPos = 20;
             
             // Header with logo
@@ -1149,8 +1265,37 @@
             yPos += 10;
             doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth/2, yPos, null, 'center');
             
+            // Merchant info
+            if (merchantInfo && merchantInfo.name) {
+                yPos += 10;
+                doc.text(`Händler: ${merchantInfo.name}`, pageWidth/2, yPos, null, 'center');
+            }
+            
             yPos += 20;
             
+            // Customer info
+            if (paymentData.customer) {
+                doc.setFontSize(12);
+                doc.setTextColor(17, 17, 17);
+                doc.text(`Kunde: ${paymentData.customer}`, 20, yPos);
+                yPos += 10;
+            }
+            
+            // Payment method
+            if (paymentData.paymentMethod) {
+                const methodText = paymentData.paymentMethod === 'cash' ? 'Bar' : 'Karte';
+                doc.text(`Zahlungsart: ${methodText}`, 20, yPos);
+                yPos += 10;
+            }
+            
+            // Coupon info
+            if (paymentData.coupon) {
+                doc.text(`Gutschein: ${paymentData.coupon}`, 20, yPos);
+                yPos += 15;
+            } else {
+                yPos += 5;
+            }
+
             // Items header
             doc.setDrawColor(229, 231, 235);
             doc.line(20, yPos, pageWidth - 20, yPos);
@@ -1164,12 +1309,12 @@
             doc.text("Preis", pageWidth - 25, yPos, null, 'right');
             
             yPos += 10;
-            
+
             // Items list
             doc.setFontSize(10);
             doc.setTextColor(17, 17, 17);
             doc.setFont(undefined, 'normal');
-            
+
             paymentData.items.forEach((item, index) => {
                 if (yPos > pageHeight - 60) {
                     doc.addPage();

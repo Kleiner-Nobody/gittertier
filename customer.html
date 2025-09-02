@@ -98,6 +98,19 @@
     .header-controls {
         display: flex;
         gap: var(--spacing-md);
+        align-items: center;
+    }
+
+    .edit-details-btn {
+        background: none;
+        border: none;
+        color: var(--color-accent);
+        cursor: pointer;
+        font-size: var(--text-lg);
+        padding: var(--spacing-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Main Content */
@@ -556,6 +569,37 @@
         color: var(--color-success);
     }
 
+    .remember-choice {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-lg);
+        font-size: var(--text-sm);
+    }
+
+    .payment-details-summary {
+        background-color: #f9fafb;
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        margin: var(--spacing-lg) 0;
+        text-align: left;
+    }
+
+    .payment-details-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .payment-details-label {
+        font-weight: 500;
+        color: var(--color-text-muted);
+    }
+
+    .payment-details-value {
+        font-weight: 600;
+    }
+
     /* Animation Keyframes */
     @keyframes fadeIn {
         from { opacity: 0; }
@@ -690,6 +734,10 @@
         .radio-option {
             background-color: #1f2937;
         }
+        
+        .payment-details-summary {
+            background-color: #1f2937;
+        }
     }
     </style>
 </head>
@@ -700,6 +748,9 @@
             <span>Gittertier Pro</span>
         </div>
         <div class="header-controls">
+            <button class="edit-details-btn" id="edit-details-btn" style="display: none;">
+                <i class="fas fa-edit"></i>
+            </button>
             <button class="action-btn" onclick="window.location.href='index'">
                 <i class="fas fa-arrow-left"></i>
                 <span>Zurück</span>
@@ -715,6 +766,21 @@
             </div>
             
             <div class="amount" id="amount">€0.00</div>
+            
+            <div id="payment-details-summary" class="payment-details-summary" style="display: none;">
+                <div class="payment-details-row">
+                    <span class="payment-details-label">Name:</span>
+                    <span class="payment-details-value" id="summary-name"></span>
+                </div>
+                <div class="payment-details-row">
+                    <span class="payment-details-label">Zahlungsart:</span>
+                    <span class="payment-details-value" id="summary-method"></span>
+                </div>
+                <div class="payment-details-row">
+                    <span class="payment-details-label">Gutschein:</span>
+                    <span class="payment-details-value" id="summary-coupon"></span>
+                </div>
+            </div>
             
             <div id="items-list" class="items-list"></div>
             
@@ -745,7 +811,7 @@
     </main>
 
     <!-- Payment Modal -->
-    <div id="payment-modal" class="modal" style="display: flex;">
+    <div id="payment-modal" class="modal">
         <div class="modal-content">
             <div class="payment-modal-header">
                 <button class="payment-modal-back" onclick="window.location.href='index'">
@@ -795,6 +861,11 @@
                 <div id="payment-summary">
                     <!-- Will be populated by JavaScript -->
                 </div>
+            </div>
+            
+            <div class="remember-choice">
+                <input type="checkbox" id="remember-choice">
+                <label for="remember-choice">Meine Auswahl merken</label>
             </div>
             
             <div class="modal-actions">
@@ -869,6 +940,7 @@
         let selectedPaymentMethod = null;
         let appliedCoupon = null;
         let coupons = [];
+        let userPreferences = null;
         
         // Initialize payment
         function initPayment() {
@@ -892,16 +964,92 @@
                     throw new Error('Ungültige Datenstruktur');
                 }
                 
+                // Load user preferences
+                loadUserPreferences();
+                
                 // Load coupons from GitHub
                 loadCoupons();
                 
                 // Display payment summary in the modal
                 updatePaymentSummary();
                 
+                // Check if we have saved preferences
+                if (userPreferences && userPreferences.rememberChoice) {
+                    // Use saved preferences
+                    document.getElementById('customer-name').value = userPreferences.customerName || '';
+                    
+                    if (userPreferences.paymentMethod) {
+                        selectPaymentMethod(userPreferences.paymentMethod);
+                    }
+                    
+                    if (userPreferences.couponCode) {
+                        // Try to apply the saved coupon
+                        appliedCoupon = coupons.find(c => c.code === userPreferences.couponCode);
+                        if (appliedCoupon) {
+                            document.getElementById('coupon-code').value = appliedCoupon.code;
+                            document.getElementById('coupon-result').innerHTML = 
+                                `<div class="coupon-success">Gespeicherter Gutschein: ${appliedCoupon.code}</div>`;
+                        }
+                    }
+                    
+                    // Update summary with saved preferences
+                    updatePaymentSummary();
+                    
+                    // Don't show modal if we have all required info
+                    if (userPreferences.customerName && userPreferences.paymentMethod) {
+                        // Hide modal and proceed directly to payment
+                        document.getElementById('payment-modal').style.display = 'none';
+                        processPaymentWithSavedPreferences();
+                    } else {
+                        // Show modal but prefill with saved data
+                        document.getElementById('payment-modal').style.display = 'flex';
+                    }
+                } else {
+                    // Show modal for new users
+                    document.getElementById('payment-modal').style.display = 'flex';
+                }
+                
             } catch(error) {
                 console.error('Payment initialization error:', error);
                 document.getElementById('error-message').textContent = error.message;
                 showModal('error-modal');
+            }
+        }
+        
+        // Load user preferences from localStorage
+        function loadUserPreferences() {
+            try {
+                const preferences = localStorage.getItem('gittertier_payment_preferences');
+                if (preferences) {
+                    userPreferences = JSON.parse(preferences);
+                }
+            } catch (e) {
+                console.error('Error loading user preferences:', e);
+                userPreferences = null;
+            }
+        }
+        
+        // Save user preferences to localStorage
+        function saveUserPreferences() {
+            try {
+                const rememberChoice = document.getElementById('remember-choice').checked;
+                
+                if (rememberChoice) {
+                    userPreferences = {
+                        rememberChoice: true,
+                        customerName: document.getElementById('customer-name').value,
+                        paymentMethod: selectedPaymentMethod,
+                        couponCode: appliedCoupon ? appliedCoupon.code : null
+                    };
+                    
+                    localStorage.setItem('gittertier_payment_preferences', JSON.stringify(userPreferences));
+                } else {
+                    // Clear preferences if not remembering
+                    localStorage.removeItem('gittertier_payment_preferences');
+                    userPreferences = null;
+                }
+            } catch (e) {
+                console.error('Error saving user preferences:', e);
             }
         }
         
@@ -917,6 +1065,14 @@
                 .then(data => {
                     coupons = data;
                     console.log('Coupons erfolgreich geladen:', coupons);
+                    
+                    // If we have saved coupon, try to apply it
+                    if (userPreferences && userPreferences.couponCode) {
+                        appliedCoupon = coupons.find(c => c.code === userPreferences.couponCode);
+                        if (appliedCoupon) {
+                            updatePaymentSummary();
+                        }
+                    }
                 })
                 .catch(error => {
                     console.error('Fehler beim Laden der Coupons:', error);
@@ -928,6 +1084,76 @@
                     ];
                     console.log('Verwende Beispiel-Coupons:', coupons);
                 });
+        }
+        
+        // Process payment with saved preferences (without showing modal)
+        function processPaymentWithSavedPreferences() {
+            if (!userPreferences) return;
+            
+            // Calculate final total with coupon
+            let finalTotal = paymentData.total;
+            
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percent') {
+                    finalTotal -= finalTotal * (appliedCoupon.discount / 100);
+                } else {
+                    finalTotal -= appliedCoupon.discount;
+                }
+                
+                // Ensure total doesn't go negative
+                finalTotal = Math.max(0, finalTotal);
+            }
+            
+            // Update payment data with final total
+            paymentData.finalTotal = finalTotal;
+            paymentData.customerName = userPreferences.customerName;
+            paymentData.paymentMethod = userPreferences.paymentMethod;
+            paymentData.coupon = appliedCoupon ? appliedCoupon.code : null;
+            
+            // Show payment details summary
+            document.getElementById('payment-details-summary').style.display = 'block';
+            document.getElementById('summary-name').textContent = userPreferences.customerName;
+            document.getElementById('summary-method').textContent = userPreferences.paymentMethod === 'cash' ? 'Bar' : 'Karte';
+            document.getElementById('summary-coupon').textContent = appliedCoupon ? appliedCoupon.code : 'Keiner';
+            
+            // Show edit button
+            document.getElementById('edit-details-btn').style.display = 'block';
+            
+            // Display payment data
+            document.getElementById('amount').textContent = `€ ${finalTotal.toFixed(2)}`;
+            const itemsList = document.getElementById('items-list');
+            itemsList.innerHTML = '';
+            
+            paymentData.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item-box';
+                div.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <p>${item.quantity}x € ${item.price.toFixed(2)}</p>
+                    <p>Summe: € ${(item.quantity * item.price).toFixed(2)}</p>
+                `;
+                itemsList.appendChild(div);
+            });
+            
+            // Show discount if applied
+            if (appliedCoupon) {
+                const discountDiv = document.createElement('div');
+                discountDiv.className = 'item-box';
+                let discountText = '';
+                
+                if (appliedCoupon.type === 'percent') {
+                    discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
+                } else {
+                    discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
+                }
+                
+                discountDiv.innerHTML = `<h3 class="discount">${discountText}</h3>`;
+                itemsList.appendChild(discountDiv);
+            }
+            
+            generateQR();
+            startCountdown();
+            initializePeerJS();
         }
         
         // Update payment summary in the modal
@@ -1053,8 +1279,20 @@
                 return;
             }
             
+            // Save user preferences
+            saveUserPreferences();
+            
             // Hide payment modal
             document.getElementById('payment-modal').style.display = 'none';
+            
+            // Show payment details summary
+            document.getElementById('payment-details-summary').style.display = 'block';
+            document.getElementById('summary-name').textContent = customerName;
+            document.getElementById('summary-method').textContent = selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte';
+            document.getElementById('summary-coupon').textContent = appliedCoupon ? appliedCoupon.code : 'Keiner';
+            
+            // Show edit button
+            document.getElementById('edit-details-btn').style.display = 'block';
             
             // Calculate final total with coupon
             let finalTotal = paymentData.total;
@@ -1111,6 +1349,28 @@
             generateQR();
             startCountdown();
             initializePeerJS();
+        }
+        
+        // Edit payment details
+        function editPaymentDetails() {
+            // Show the payment modal again
+            document.getElementById('payment-modal').style.display = 'flex';
+            
+            // Hide the summary and edit button
+            document.getElementById('payment-details-summary').style.display = 'none';
+            document.getElementById('edit-details-btn').style.display = 'none';
+            
+            // Stop countdown if it's running
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            // Clear QR code
+            document.getElementById('qrcode').innerHTML = '';
+            
+            // Reset status
+            document.getElementById('status').className = 'status pending';
+            document.getElementById('status').innerHTML = '<i class="fas fa-clock"></i><span>Zahlung ausstehend</span>';
         }
         
         // Initialize PeerJS for customer
@@ -1406,8 +1666,14 @@
             }
         });
         
-        // Initialize payment when page loads
-        window.addEventListener('DOMContentLoaded', initPayment);
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize payment when page loads
+            initPayment();
+            
+            // Set up edit details button
+            document.getElementById('edit-details-btn').addEventListener('click', editPaymentDetails);
+        });
     </script>
 </body>
 </html>

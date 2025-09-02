@@ -6,6 +6,7 @@
     <title>Produktmanager - Gittertier Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <style>
     :root {
         --color-bg: #ffffff;
@@ -667,6 +668,46 @@
         border-color: var(--color-error);
     }
 
+    /* Product Details */
+    .product-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .product-detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .product-detail-label {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .product-detail-value {
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .product-image-thumbnail {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+        background-color: var(--color-bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-muted);
+    }
+
     /* Animations */
     @keyframes fadeIn {
         from { opacity: 0; }
@@ -718,6 +759,10 @@
         
         .modal-buttons {
             flex-direction: column;
+        }
+        
+        .product-details {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -781,7 +826,6 @@
         <!-- Sidebar Navigation -->
         <aside class="admin-sidebar" id="sidebar">
             <div class="nav-container">
-                <!-- <div class="sidebar-title" style="font-size: var(--text-xs); color: var(--color-text-muted); padding: var(--spacing-md); text-transform: uppercase; letter-spacing: 0.5px;">Hauptmenü</div> -->
                 <a href="control" class="nav-link">
                     <i class="fas fa-cogs"></i>
                     Steuerung
@@ -803,7 +847,6 @@
                     Produktverwaltung
                 </a>
                 
-                <!--<div class="sidebar-title" style="font-size: var(--text-xs); color: var(--color-text-muted); padding: var(--spacing-md); text-transform: uppercase; letter-spacing: 0.5px;">Ansichten</div>-->
                 <a href="index" class="nav-link">
                     <i class="fas fa-cash-register"></i>
                     Kassenansicht
@@ -824,7 +867,6 @@
                     Analysen
                 </a>
                 
-                <!--<div class="sidebar-title" style="font-size: var(--text-xs); color: var(--color-text-muted); padding: var(--spacing-md); text-transform: uppercase; letter-spacing: 0.5px;">System</div>-->
                 <a href="settings" class="nav-link">
                     <i class="fas fa-cog"></i>
                     Einstellungen
@@ -845,6 +887,9 @@
                         <i class="fas fa-boxes"></i>
                         Produktverwaltung
                     </h2>
+                    <button class="toolbar-btn" onclick="exportAuditLog()">
+                        <i class="fas fa-history"></i> Audit-Log exportieren
+                    </button>
                 </div>
                 
                 <div class="toolbar">
@@ -891,6 +936,9 @@
             <input type="text" id="product-name" placeholder="Produktname" class="modal-input">
             <input type="number" step="0.01" id="product-price" placeholder="Preis (€)" class="modal-input">
             <input type="text" id="product-barcode" placeholder="Barcode" class="modal-input">
+            <input type="number" id="product-stock" placeholder="Lagerbestand" class="modal-input">
+            <input type="text" id="product-category" placeholder="Kategorie" class="modal-input">
+            <input type="text" id="product-image" placeholder="Bild-URL" class="modal-input">
             <div class="modal-buttons">
                 <button class="btn-save" id="saveProductBtn">
                     <i class="fas fa-save"></i> Speichern
@@ -913,40 +961,866 @@
         </div>
     </div>
 
+    <!-- Product Details Modal -->
+    <div id="details-modal" class="modal">
+        <div class="modal-header">
+            <h2 id="details-title">Produktdetails</h2>
+            <button class="modal-close" id="detailsModalClose">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div class="product-details" id="product-details">
+                <!-- Product details will be loaded here -->
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal()">
+                    <i class="fas fa-times"></i> Schließen
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="cloud-status" id="cloudStatus">
         <i class="fas fa-cloud"></i>
-        <span>Mit Cloud verbunden</span>
+        <span id="connection-status">Verbindung wird hergestellt...</span>
     </div>
 
     <script>
-        // Apply dark mode if enabled in localStorage
-        function applyDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            } else {
-                document.body.classList.remove('dark-mode');
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        // ==================== STORAGE MANAGER IMPLEMENTATION ====================
+        const storageManager = (function() {
+            // Constants for localStorage keys
+            const PREFIX_PRODUCT = 'product_';
+            const PREFIX_CUSTOMER = 'customer_';
+            const KEY_OFFLINE_QUEUE = 'offlineQueue';
+            const KEY_AUDIT_LOG = 'auditLog';
+            
+            // Current version of the data schema
+            const CURRENT_VERSION = 1;
+            
+            // Encryption key (generated per session)
+            let encryptionKey = null;
+            
+            // Initialize the storage manager
+            async function init() {
+                await generateEncryptionKey();
+                migrateLegacyData();
+                setupOfflineHandling();
             }
-        }
-
-        // Token verification (existing functionality)
-        (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlToken = decodeURIComponent(urlParams.get('token') || '');
-            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
-            const tokenIndex = validTokens.indexOf(urlToken);
-
-            if(tokenIndex === -1) {
-                const redirect = encodeURIComponent(window.location.href);
-                window.location.href = `login?redirect=${redirect}`;
-            } else {
-                // Remove used token and clean URL
-                validTokens.splice(tokenIndex, 1);
-                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
-                history.replaceState(null, null, window.location.pathname);
+            
+            // Generate encryption key for the session
+            async function generateEncryptionKey() {
+                try {
+                    // Check if key already exists in sessionStorage
+                    const keyData = sessionStorage.getItem('encryptionKey');
+                    
+                    if (keyData) {
+                        // Import existing key
+                        const keyBytes = Uint8Array.from(atob(keyData), c => c.charCodeAt(0));
+                        encryptionKey = await crypto.subtle.importKey(
+                            'raw',
+                            keyBytes,
+                            { name: 'AES-GCM' },
+                            false,
+                            ['encrypt', 'decrypt']
+                        );
+                    } else {
+                        // Generate new key
+                        const key = await crypto.subtle.generateKey(
+                            { name: 'AES-GCM', length: 256 },
+                            true,
+                            ['encrypt', 'decrypt']
+                        );
+                        
+                        // Export and store in sessionStorage
+                        const exportedKey = await crypto.subtle.exportKey('raw', key);
+                        const keyBytes = new Uint8Array(exportedKey);
+                        sessionStorage.setItem('encryptionKey', btoa(String.fromCharCode(...keyBytes)));
+                        
+                        encryptionKey = key;
+                    }
+                } catch (error) {
+                    console.error('Failed to generate encryption key:', error);
+                    // Continue without encryption
+                }
             }
+            
+            // Migrate legacy data to the new format
+            function migrateLegacyData() {
+                // Migrate products
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    
+                    // Check if this is a legacy product (starts with product_ but not in new format)
+                    if (key.startsWith(PREFIX_PRODUCT)) {
+                        try {
+                            const item = localStorage.getItem(key);
+                            const parsed = JSON.parse(item);
+                            
+                            // Check if it's legacy format (doesn't have version field)
+                            if (parsed && !parsed.version) {
+                                // Migrate to new format
+                                saveProduct(parsed, true); // silent migration
+                                console.log('Migrated legacy product:', key);
+                            }
+                        } catch (e) {
+                            // Not JSON, skip
+                        }
+                    }
+                }
+                
+                // Check for legacy products key (without prefix)
+                const legacyProducts = localStorage.getItem('products');
+                if (legacyProducts) {
+                    try {
+                        const products = JSON.parse(legacyProducts);
+                        for (const barcode in products) {
+                            if (products.hasOwnProperty(barcode)) {
+                                saveProduct(products[barcode], true); // silent migration
+                            }
+                        }
+                        localStorage.removeItem('products');
+                        console.log('Migrated legacy products collection');
+                    } catch (e) {
+                        console.error('Failed to migrate legacy products:', e);
+                    }
+                }
+            }
+            
+            // Setup offline/online event handlers
+            function setupOfflineHandling() {
+                window.addEventListener('offline', () => {
+                    updateConnectionStatus('offline');
+                    document.body.classList.add('offline');
+                });
+                
+                window.addEventListener('online', () => {
+                    updateConnectionStatus('online');
+                    document.body.classList.remove('offline');
+                    replayOfflineQueue();
+                });
+                
+                // Initial status check
+                if (!navigator.onLine) {
+                    document.body.classList.add('offline');
+                    updateConnectionStatus('offline');
+                } else {
+                    updateConnectionStatus('online');
+                }
+            }
+            
+            function updateConnectionStatus(status) {
+                const statusElement = document.getElementById('connection-status');
+                const cloudStatus = document.getElementById('cloudStatus');
+                
+                if (!statusElement) return;
+                
+                switch(status) {
+                    case 'online':
+                        statusElement.textContent = 'Mit Cloud verbunden';
+                        cloudStatus.className = 'cloud-status';
+                        break;
+                    case 'offline':
+                        statusElement.textContent = 'Offline-Modus';
+                        cloudStatus.className = 'cloud-status error';
+                        break;
+                    case 'syncing':
+                        statusElement.textContent = 'Synchronisiere...';
+                        cloudStatus.className = 'cloud-status syncing';
+                        break;
+                }
+            }
+            
+            // Validate product against schema
+            function validateProduct(product) {
+                if (!product || typeof product !== 'object') {
+                    throw new Error('Product must be an object');
+                }
+                
+                if (!product.barcode || typeof product.barcode !== 'string' || product.barcode.trim() === '') {
+                    throw new Error('Product barcode is required and must be a non-empty string');
+                }
+                
+                if (!product.name || typeof product.name !== 'string' || product.name.trim() === '') {
+                    throw new Error('Product name is required and must be a non-empty string');
+                }
+                
+                if (typeof product.price !== 'number' || !isFinite(product.price) || product.price < 0) {
+                    throw new Error('Product price is required and must be a non-negative number');
+                }
+                
+                if (typeof product.stock !== 'number' || !Number.isInteger(product.stock) || product.stock < 0) {
+                    throw new Error('Product stock is required and must be a non-negative integer');
+                }
+                
+                if (product.image && (typeof product.image !== 'string' || product.image.trim() === '')) {
+                    throw new Error('Product image must be a non-empty string if provided');
+                }
+                
+                if (product.category && (typeof product.category !== 'string' || product.category.trim() === '')) {
+                    throw new Error('Product category must be a non-empty string if provided');
+                }
+                
+                return true;
+            }
+            
+            // Validate customer against schema
+            function validateCustomer(customer) {
+                if (!customer || typeof customer !== 'object') {
+                    throw new Error('Customer must be an object');
+                }
+                
+                if (!customer.id || typeof customer.id !== 'string' || customer.id.trim() === '') {
+                    throw new Error('Customer ID is required and must be a non-empty string');
+                }
+                
+                if (!customer.name || typeof customer.name !== 'string' || customer.name.trim() === '') {
+                    throw new Error('Customer name is required and must be a non-empty string');
+                }
+                
+                if (customer.email && (typeof customer.email !== 'string' || customer.email.trim() === '')) {
+                    throw new Error('Customer email must be a non-empty string if provided');
+                }
+                
+                if (customer.loyaltyPoints && (typeof customer.loyaltyPoints !== 'number' || 
+                    !Number.isInteger(customer.loyaltyPoints) || customer.loyaltyPoints < 0)) {
+                    throw new Error('Customer loyalty points must be a non-negative integer if provided');
+                }
+                
+                if (customer.purchaseHistory && !Array.isArray(customer.purchaseHistory)) {
+                    throw new Error('Customer purchase history must be an array if provided');
+                }
+                
+                return true;
+            }
+            
+            // Create a data wrapper with version and timestamp
+            function createDataWrapper(data) {
+                return {
+                    version: CURRENT_VERSION,
+                    lastModified: new Date().toISOString(),
+                    data: data
+                };
+            }
+            
+            // Encrypt sensitive fields in an object
+            async function encryptSensitiveFields(obj) {
+                if (!encryptionKey) return obj;
+                
+                const result = {...obj};
+                
+                // Encrypt email if present
+                if (result.email) {
+                    try {
+                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        const encodedEmail = new TextEncoder().encode(result.email);
+                        
+                        const encrypted = await crypto.subtle.encrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encodedEmail
+                        );
+                        
+                        result.email = {
+                            encrypted: true,
+                            data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+                            iv: btoa(String.fromCharCode(...iv))
+                        };
+                    } catch (error) {
+                        console.error('Failed to encrypt email:', error);
+                    }
+                }
+                
+                // Encrypt authentication tokens if present
+                if (result.authToken) {
+                    try {
+                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        const encodedToken = new TextEncoder().encode(result.authToken);
+                        
+                        const encrypted = await crypto.subtle.encrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encodedToken
+                        );
+                        
+                        result.authToken = {
+                            encrypted: true,
+                            data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+                            iv: btoa(String.fromCharCode(...iv))
+                        };
+                    } catch (error) {
+                        console.error('Failed to encrypt auth token:', error);
+                    }
+                }
+                
+                return result;
+            }
+            
+            // Decrypt sensitive fields in an object
+            async function decryptSensitiveFields(obj) {
+                if (!encryptionKey) return obj;
+                
+                const result = {...obj};
+                
+                // Decrypt email if encrypted
+                if (result.email && result.email.encrypted) {
+                    try {
+                        const iv = Uint8Array.from(atob(result.email.iv), c => c.charCodeAt(0));
+                        const encryptedData = Uint8Array.from(atob(result.email.data), c => c.charCodeAt(0));
+                        
+                        const decrypted = await crypto.subtle.decrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encryptedData
+                        );
+                        
+                        result.email = new TextDecoder().decode(decrypted);
+                    } catch (error) {
+                        console.error('Failed to decrypt email:', error);
+                    }
+                }
+                
+                // Decrypt auth token if encrypted
+                if (result.authToken && result.authToken.encrypted) {
+                    try {
+                        const iv = Uint8Array.from(atob(result.authToken.iv), c => c.charCodeAt(0));
+                        const encryptedData = Uint8Array.from(atob(result.authToken.data), c => c.charCodeAt(0));
+                        
+                        const decrypted = await crypto.subtle.decrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encryptedData
+                        );
+                        
+                        result.authToken = new TextDecoder().decode(decrypted);
+                    } catch (error) {
+                        console.error('Failed to decrypt auth token:', error);
+                    }
+                }
+                
+                return result;
+            }
+            
+            // Store an item with compression and encryption
+            async function storeItem(key, data, skipAudit = false) {
+                try {
+                    // Create wrapper
+                    const wrappedData = createDataWrapper(data);
+                    
+                    // Compress the data
+                    const compressed = LZString.compressToBase64(JSON.stringify(wrappedData));
+                    
+                    // Store in localStorage
+                    localStorage.setItem(key, compressed);
+                    
+                    // Log to audit trail
+                    if (!skipAudit) {
+                        logAudit('storeItem', { key, data: wrappedData });
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Failed to store item:', error);
+                    
+                    // If offline, queue the operation
+                    if (!navigator.onLine) {
+                        queueOfflineAction({
+                            type: 'store',
+                            key,
+                            data,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                    
+                    return false;
+                }
+            }
+            
+            // Retrieve an item with decompression and decryption
+            async function retrieveItem(key) {
+                try {
+                    const item = localStorage.getItem(key);
+                    
+                    if (!item) return null;
+                    
+                    // Check if it's compressed (starts with base64-like pattern)
+                    if (item.startsWith('N') || item.startsWith('e') || item.startsWith('H')) {
+                        // Decompress
+                        const decompressed = LZString.decompressFromBase64(item);
+                        
+                        if (!decompressed) {
+                            // Might be legacy format, try parsing as JSON directly
+                            try {
+                                const legacyData = JSON.parse(item);
+                                
+                                // Log migration warning
+                                console.warn(`Migrating legacy format for key: ${key}`);
+                                
+                                // Store in new format
+                                await storeItem(key, legacyData, true);
+                                
+                                return legacyData;
+                            } catch (e) {
+                                console.error('Failed to parse legacy data:', e);
+                                return null;
+                            }
+                        }
+                        
+                        // Parse the JSON
+                        const parsed = JSON.parse(decompressed);
+                        
+                        // Handle versioning if needed in the future
+                        if (parsed.version !== CURRENT_VERSION) {
+                            console.warn(`Data version ${parsed.version} differs from current ${CURRENT_VERSION}`);
+                            // Future: implement migration logic here
+                        }
+                        
+                        return parsed.data;
+                    } else {
+                        // Legacy format, parse directly
+                        try {
+                            const legacyData = JSON.parse(item);
+                            
+                            // Log migration warning
+                            console.warn(`Migrating legacy format for key: ${key}`);
+                            
+                            // Store in new format
+                            await storeItem(key, legacyData, true);
+                            
+                            return legacyData;
+                        } catch (e) {
+                            console.error('Failed to parse legacy data:', e);
+                            return null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to retrieve item:', error);
+                    return null;
+                }
+            }
+            
+            // Queue an action for offline processing
+            function queueOfflineAction(action) {
+                try {
+                    // Get current queue
+                    const queue = JSON.parse(localStorage.getItem(KEY_OFFLINE_QUEUE) || '[]');
+                    
+                    // Add new action
+                    queue.push({
+                        timestamp: new Date().toISOString(),
+                        dataType: action.type,
+                        dataPayload: action
+                    });
+                    
+                    // Save back to storage
+                    localStorage.setItem(KEY_OFFLINE_QUEUE, JSON.stringify(queue));
+                    
+                    // Log to audit trail
+                    logAudit('queueOfflineAction', action);
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Failed to queue offline action:', error);
+                    return false;
+                }
+            }
+            
+            // Replay offline queue when coming back online
+            async function replayOfflineQueue() {
+                try {
+                    const queue = JSON.parse(localStorage.getItem(KEY_OFFLINE_QUEUE) || '[]');
+                    
+                    if (queue.length === 0) return;
+                    
+                    updateConnectionStatus('syncing');
+                    
+                    // Process each action in the queue
+                    for (const action of queue) {
+                        try {
+                            switch (action.dataType) {
+                                case 'store':
+                                    // Determine the correct storage method based on key prefix
+                                    if (action.dataPayload.key.startsWith(PREFIX_PRODUCT)) {
+                                        await saveProduct(action.dataPayload.data, true);
+                                    } else if (action.dataPayload.key.startsWith(PREFIX_CUSTOMER)) {
+                                        await saveCustomer(action.dataPayload.data, true);
+                                    } else {
+                                        // Generic storage
+                                        await storeItem(
+                                            action.dataPayload.key, 
+                                            action.dataPayload.data, 
+                                            true
+                                        );
+                                    }
+                                    break;
+                                
+                                case 'delete':
+                                    localStorage.removeItem(action.dataPayload.key);
+                                    logAudit('deleteItem', { key: action.dataPayload.key }, true);
+                                    break;
+                                
+                                // Add other action types as needed
+                            }
+                        } catch (error) {
+                            console.error('Failed to process offline action:', error);
+                        }
+                    }
+                    
+                    // Clear the queue
+                    localStorage.removeItem(KEY_OFFLINE_QUEUE);
+                    
+                    updateConnectionStatus('online');
+                    addActivity(`${queue.length} Offline-Änderungen erfolgreich synchronisiert`, 'success');
+                    
+                } catch (error) {
+                    console.error('Failed to replay offline queue:', error);
+                    updateConnectionStatus('online');
+                }
+            }
+            
+            // Log an audit event
+            function logAudit(action, details, skipCompression = false) {
+                try {
+                    // Get current audit log
+                    let auditLog = [];
+                    const logData = localStorage.getItem(KEY_AUDIT_LOG);
+                    
+                    if (logData) {
+                        if (skipCompression) {
+                            auditLog = JSON.parse(logData);
+                        } else {
+                            auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
+                        }
+                    }
+                    
+                    // Add new entry
+                    auditLog.push({
+                        timestamp: new Date().toISOString(),
+                        action,
+                        details,
+                        // Add user ID if available
+                        userId: localStorage.getItem('currentUserId') || 'system'
+                    });
+                    
+                    // Save back to storage
+                    if (skipCompression) {
+                        localStorage.setItem(KEY_AUDIT_LOG, JSON.stringify(auditLog));
+                    } else {
+                        localStorage.setItem(
+                            KEY_AUDIT_LOG, 
+                            LZString.compressToUTF16(JSON.stringify(auditLog))
+                        );
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Failed to log audit event:', error);
+                    return false;
+                }
+            }
+            
+            // Public API
+            return {
+                init,
+                
+                // Product management
+                async saveProduct(product, skipAudit = false) {
+                    try {
+                        // Validate product
+                        validateProduct(product);
+                        
+                        // Encrypt sensitive fields if any
+                        const processedProduct = await encryptSensitiveFields(product);
+                        
+                        // Store the product
+                        const success = await storeItem(
+                            `${PREFIX_PRODUCT}${product.barcode}`,
+                            processedProduct,
+                            skipAudit
+                        );
+                        
+                        if (success && !skipAudit) {
+                            showNotification('Produkt erfolgreich gespeichert', 'success');
+                        }
+                        
+                        return success;
+                    } catch (error) {
+                        console.error('Failed to save product:', error);
+                        showNotification(`Fehler beim Speichern: ${error.message}`, 'error');
+                        return false;
+                    }
+                },
+                
+                async getProducts() {
+                    const products = {};
+                    
+                    // Get all product keys
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        
+                        if (key.startsWith(PREFIX_PRODUCT)) {
+                            const product = await retrieveItem(key);
+                            if (product) {
+                                // Decrypt sensitive fields if any
+                                const decryptedProduct = await decryptSensitiveFields(product);
+                                products[decryptedProduct.barcode] = decryptedProduct;
+                            }
+                        }
+                    }
+                    
+                    return products;
+                },
+                
+                async deleteProduct(barcode) {
+                    try {
+                        const key = `${PREFIX_PRODUCT}${barcode}`;
+                        localStorage.removeItem(key);
+                        
+                        // Log to audit trail
+                        logAudit('deleteProduct', { barcode });
+                        
+                        // If offline, queue the deletion
+                        if (!navigator.onLine) {
+                            queueOfflineAction({
+                                type: 'delete',
+                                key,
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                        
+                        showNotification('Produkt erfolgreich gelöscht', 'success');
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to delete product:', error);
+                        showNotification('Fehler beim Löschen des Produkts', 'error');
+                        return false;
+                    }
+                },
+                
+                async importProducts(file) {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        
+                        reader.onload = async (e) => {
+                            try {
+                                const content = e.target.result;
+                                const products = JSON.parse(content);
+                                
+                                if (!Array.isArray(products)) {
+                                    throw new Error('Invalid format: expected array of products');
+                                }
+                                
+                                let successCount = 0;
+                                let errorCount = 0;
+                                
+                                for (const product of products) {
+                                    try {
+                                        if (await this.saveProduct(product, true)) {
+                                            successCount++;
+                                        } else {
+                                            errorCount++;
+                                        }
+                                    } catch (error) {
+                                        console.error('Failed to import product:', error);
+                                        errorCount++;
+                                    }
+                                }
+                                
+                                // Log import to audit trail
+                                logAudit('importProducts', { 
+                                    file: file.name, 
+                                    successCount, 
+                                    errorCount 
+                                });
+                                
+                                showNotification(
+                                    `Import abgeschlossen: ${successCount} erfolgreich, ${errorCount} fehlgeschlagen`,
+                                    successCount > 0 ? 'success' : 'error'
+                                );
+                                
+                                resolve({ successCount, errorCount });
+                            } catch (error) {
+                                console.error('Failed to parse import file:', error);
+                                showNotification('Ungültige Importdatei', 'error');
+                                reject(error);
+                            }
+                        };
+                        
+                        reader.onerror = () => {
+                            reject(new Error('Failed to read file'));
+                        };
+                        
+                        reader.readAsText(file);
+                    });
+                },
+                
+                async exportProducts() {
+                    try {
+                        const products = await this.getProducts();
+                        const dataStr = JSON.stringify(Object.values(products), null, 2);
+                        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                        
+                        const exportFileDefaultName = `products_${new Date().toISOString().split('T')[0]}.json`;
+                        
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', exportFileDefaultName);
+                        linkElement.click();
+                        
+                        // Log export to audit trail
+                        logAudit('exportProducts', { count: Object.keys(products).length });
+                        
+                        showNotification('Produkte erfolgreich exportiert', 'success');
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to export products:', error);
+                        showNotification('Fehler beim Exportieren der Produkte', 'error');
+                        return false;
+                    }
+                },
+                
+                // Customer management
+                async saveCustomer(customer, skipAudit = false) {
+                    try {
+                        // Validate customer
+                        validateCustomer(customer);
+                        
+                        // Encrypt sensitive fields
+                        const processedCustomer = await encryptSensitiveFields(customer);
+                        
+                        // Store the customer
+                        const success = await storeItem(
+                            `${PREFIX_CUSTOMER}${customer.id}`,
+                            processedCustomer,
+                            skipAudit
+                        );
+                        
+                        if (success && !skipAudit) {
+                            showNotification('Kunde erfolgreich gespeichert', 'success');
+                        }
+                        
+                        return success;
+                    } catch (error) {
+                        console.error('Failed to save customer:', error);
+                        showNotification(`Fehler beim Speichern: ${error.message}`, 'error');
+                        return false;
+                    }
+                },
+                
+                async getCustomers() {
+                    const customers = {};
+                    
+                    // Get all customer keys
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        
+                        if (key.startsWith(PREFIX_CUSTOMER)) {
+                            const customer = await retrieveItem(key);
+                            if (customer) {
+                                // Decrypt sensitive fields
+                                const decryptedCustomer = await decryptSensitiveFields(customer);
+                                customers[decryptedCustomer.id] = decryptedCustomer;
+                            }
+                        }
+                    }
+                    
+                    return customers;
+                },
+                
+                async deleteCustomer(id) {
+                    try {
+                        const key = `${PREFIX_CUSTOMER}${id}`;
+                        localStorage.removeItem(key);
+                        
+                        // Log to audit trail
+                        logAudit('deleteCustomer', { id });
+                        
+                        // If offline, queue the deletion
+                        if (!navigator.onLine) {
+                            queueOfflineAction({
+                                type: 'delete',
+                                key,
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                        
+                        showNotification('Kunde erfolgreich gelöscht', 'success');
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to delete customer:', error);
+                        showNotification('Fehler beim Löschen des Kunden', 'error');
+                        return false;
+                    }
+                },
+                
+                async searchCustomer(query) {
+                    try {
+                        const customers = await this.getCustomers();
+                        const results = [];
+                        
+                        const queryLower = query.toLowerCase();
+                        
+                        for (const id in customers) {
+                            const customer = customers[id];
+                            
+                            if (
+                                customer.name.toLowerCase().includes(queryLower) ||
+                                (customer.email && customer.email.toLowerCase().includes(queryLower)) ||
+                                customer.id.toLowerCase().includes(queryLower)
+                            ) {
+                                results.push(customer);
+                            }
+                        }
+                        
+                        return results;
+                    } catch (error) {
+                        console.error('Failed to search customers:', error);
+                        return [];
+                    }
+                },
+                
+                // Offline queue management
+                queueOfflineAction,
+                replayOfflineQueue,
+                
+                // Audit log management
+                logAudit,
+                
+                async exportAuditLog() {
+                    try {
+                        const logData = localStorage.getItem(KEY_AUDIT_LOG);
+                        
+                        if (!logData) {
+                            showNotification('Audit-Log ist leer', 'info');
+                            return false;
+                        }
+                        
+                        // Decompress if needed
+                        let auditLog;
+                        try {
+                            auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
+                        } catch (e) {
+                            // Might not be compressed
+                            auditLog = JSON.parse(logData || '[]');
+                        }
+                        
+                        const dataStr = JSON.stringify(auditLog, null, 2);
+                        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                        
+                        const exportFileDefaultName = `audit_log_${new Date().toISOString().split('T')[0]}.json`;
+                        
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', exportFileDefaultName);
+                        linkElement.click();
+                        
+                        showNotification('Audit-Log erfolgreich exportiert', 'success');
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to export audit log:', error);
+                        showNotification('Fehler beim Exportieren des Audit-Logs', 'error');
+                        return false;
+                    }
+                }
+            };
         })();
 
         // DOM Elements
@@ -956,22 +1830,24 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const modalOverlay = document.getElementById('modal-overlay');
         const themeToggle = document.getElementById('themeToggle');
-        const cloudStatus = document.getElementById('cloudStatus');
         const modalClose = document.getElementById('modalClose');
         const qrModalClose = document.getElementById('qrModalClose');
         const saveProductBtn = document.getElementById('saveProductBtn');
         const cancelBtn = document.getElementById('cancelBtn');
         
         // Product data management
-        let products = JSON.parse(localStorage.getItem('products')) || {};
-        let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
+        let products = {};
+        let activityLog = [];
         let currentEditBarcode = null;
         const cloudUrl = "https://raw.githubusercontent.com/Kleiner-Nobody/gittertier/main/products.json";
         
         // Initialize the application
-        function initialize() {
+        async function initialize() {
+            // Initialize storage manager
+            await storageManager.init();
+            
             applyDarkMode();
-            renderProducts();
+            await loadProducts();
             renderActivityLog();
             setupEventListeners();
             
@@ -979,9 +1855,6 @@
             if(activityLog.length === 0) {
                 addActivity('Produktmanager gestartet', 'success');
             }
-            
-            // Show cloud status
-            updateCloudStatus('connected');
         }
         
         // Toggle dark mode
@@ -991,6 +1864,17 @@
             localStorage.setItem('appSettings', JSON.stringify(settings));
             applyDarkMode();
             addActivity(settings.darkMode ? 'Dunkelmodus aktiviert' : 'Dunkelmodus deaktiviert', 'info');
+        }
+        
+        function applyDarkMode() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                document.body.classList.remove('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
         }
         
         // Mobile sidebar toggle
@@ -1028,11 +1912,17 @@
                 document.getElementById('product-name').value = product.name;
                 document.getElementById('product-price').value = product.price;
                 document.getElementById('product-barcode').value = product.barcode;
+                document.getElementById('product-stock').value = product.stock || 0;
+                document.getElementById('product-category').value = product.category || '';
+                document.getElementById('product-image').value = product.image || '';
             } else {
                 document.getElementById('modal-title').textContent = 'Neues Produkt';
                 document.getElementById('product-name').value = '';
                 document.getElementById('product-price').value = '';
                 document.getElementById('product-barcode').value = '';
+                document.getElementById('product-stock').value = 0;
+                document.getElementById('product-category').value = '';
+                document.getElementById('product-image').value = '';
             }
             
             modal.classList.add('active');
@@ -1081,51 +1971,61 @@
         });
 
         // Product management
-        function saveProduct() {
+        async function saveProduct() {
             const name = document.getElementById('product-name').value.trim();
             const price = parseFloat(document.getElementById('product-price').value);
             const barcode = document.getElementById('product-barcode').value.trim();
+            const stock = parseInt(document.getElementById('product-stock').value, 10) || 0;
+            const category = document.getElementById('product-category').value.trim();
+            const image = document.getElementById('product-image').value.trim();
             
             if (!name || isNaN(price) || !barcode) {
-                alert('Bitte füllen Sie alle Felder korrekt aus');
+                alert('Bitte füllen Sie alle Pflichtfelder korrekt aus');
                 return;
             }
             
-            // Update or create product
-            if (currentEditBarcode && currentEditBarcode !== barcode) {
-                // Remove old product if barcode changed
-                delete products[currentEditBarcode];
-            }
-            
-            products[barcode] = {
+            const product = {
                 name,
                 price,
                 barcode,
-                createdAt: currentEditBarcode ? products[currentEditBarcode]?.createdAt || new Date().toISOString() : new Date().toISOString(),
+                stock,
+                category: category || undefined,
+                image: image || undefined,
+                createdAt: currentEditBarcode && products[currentEditBarcode]?.createdAt || new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
             
-            // Save to localStorage
-            localStorage.setItem('products', JSON.stringify(products));
-            
-            // Update UI
-            renderProducts();
-            closeModal();
-            
-            // Add activity
-            const action = currentEditBarcode ? 'aktualisiert' : 'hinzugefügt';
-            addActivity(`Produkt ${name} wurde ${action}`, 'success');
+            try {
+                await storageManager.saveProduct(product);
+                await loadProducts();
+                closeModal();
+            } catch (error) {
+                console.error('Failed to save product:', error);
+            }
         }
         
-        function deleteProduct(barcode) {
+        async function deleteProduct(barcode) {
             if (!products[barcode]) return;
             
             const productName = products[barcode].name;
             if (confirm(`Möchten Sie "${productName}" wirklich löschen?`)) {
-                delete products[barcode];
-                localStorage.setItem('products', JSON.stringify(products));
+                try {
+                    await storageManager.deleteProduct(barcode);
+                    await loadProducts();
+                } catch (error) {
+                    console.error('Failed to delete product:', error);
+                }
+            }
+        }
+        
+        async function loadProducts() {
+            try {
+                products = await storageManager.getProducts();
                 renderProducts();
-                addActivity(`Produkt ${productName} wurde gelöscht`, 'error');
+            } catch (error) {
+                console.error('Failed to load products:', error);
+                products = {};
+                renderProducts();
             }
         }
         
@@ -1147,12 +2047,24 @@
             Object.values(products).forEach(product => {
                 const item = document.createElement('div');
                 item.className = 'product-item';
-                item.innerHTML = `
+                
+                // Create product details HTML
+                const detailsHtml = `
                     <div class="product-info">
                         <h3>${product.name}</h3>
                         <p><i class="fas fa-barcode"></i> ${product.barcode}</p>
-                        <div class="product-price">€${product.price.toFixed(2)}</div>
+                        <div class="product-details" style="margin-top: 8px;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                                <span class="product-price">€${product.price.toFixed(2)}</span>
+                                ${product.stock !== undefined ? `<span style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 4px 12px; border-radius: 20px; font-weight: 500;">Lager: ${product.stock}</span>` : ''}
+                                ${product.category ? `<span style="background: rgba(107, 114, 128, 0.1); color: #6b7280; padding: 4px 12px; border-radius: 20px; font-weight: 500;">${product.category}</span>` : ''}
+                            </div>
+                            ${product.image ? `<div class="product-image-thumbnail"><img src="${product.image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;"></div>` : ''}
+                        </div>
                     </div>
+                `;
+                
+                item.innerHTML = detailsHtml + `
                     <div class="product-actions">
                         <button onclick="showProductModal('${product.barcode}')">
                             <i class="fas fa-edit"></i> Bearbeiten
@@ -1163,29 +2075,87 @@
                         <button onclick="showQR('${product.barcode}')">
                             <i class="fas fa-qrcode"></i> QR
                         </button>
+                        <button onclick="showProductDetails('${product.barcode}')">
+                            <i class="fas fa-info-circle"></i> Details
+                        </button>
                     </div>
                 `;
                 list.appendChild(item);
             });
         }
         
-        function exportProducts() {
+        async function showProductDetails(barcode) {
+            const product = products[barcode];
+            if (!product) return;
+            
+            const modal = document.getElementById('details-modal');
+            const title = document.getElementById('details-title');
+            const detailsContainer = document.getElementById('product-details');
+            
+            title.textContent = product.name;
+            
+            // Get customers who purchased this product
+            let customersPurchased = 0;
             try {
-                const data = JSON.stringify(products, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `produkte_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                addActivity('Produkte exportiert', 'success');
+                const customers = await storageManager.getCustomers();
+                customersPurchased = Object.values(customers).filter(customer => 
+                    customer.purchaseHistory && customer.purchaseHistory.some(purchase => 
+                        purchase.items && purchase.items.some(item => item.barcode === barcode)
+                    )
+                ).length;
             } catch (error) {
-                addActivity(`Export fehlgeschlagen: ${error.message}`, 'error');
+                console.error('Failed to load customer data:', error);
             }
+            
+            detailsContainer.innerHTML = `
+                <div class="product-detail-item">
+                    <span class="product-detail-label">Barcode</span>
+                    <span class="product-detail-value">${product.barcode}</span>
+                </div>
+                <div class="product-detail-item">
+                    <span class="product-detail-label">Preis</span>
+                    <span class="product-detail-value">€${product.price.toFixed(2)}</span>
+                </div>
+                <div class="product-detail-item">
+                    <span class="product-detail-label">Lagerbestand</span>
+                    <span class="product-detail-value">${product.stock !== undefined ? product.stock : '<i class="fas fa-minus"></i>'}</span>
+                </div>
+                <div class="product-detail-item">
+                    <span class="product-detail-label">Kategorie</span>
+                    <span class="product-detail-value">${product.category || '<i class="fas fa-minus"></i>'}</span>
+                </div>
+                <div class="product-detail-item">
+                    <span class="product-detail-label">Von Kunden gekauft</span>
+                    <span class="product-detail-value">${customersPurchased} mal</span>
+                </div>
+                ${product.image ? `
+                <div class="product-detail-item">
+                    <span class="product-detail-label">Bild</span>
+                    <div class="product-detail-value">
+                        <img src="${product.image}" alt="${product.name}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+                    </div>
+                </div>
+                ` : ''}
+                <div class="product-detail-item">
+                    <span class="product-detail-label">Erstellt am</span>
+                    <span class="product-detail-value">${new Date(product.createdAt).toLocaleDateString('de-DE')}</span>
+                </div>
+                <div class="product-detail-item">
+                    <span class="product-detail-label">Zuletzt aktualisiert</span>
+                    <span class="product-detail-value">${new Date(product.updatedAt).toLocaleDateString('de-DE')}</span>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+            modalOverlay.classList.add('active');
+        }
+        
+        function exportProducts() {
+            storageManager.exportProducts();
+        }
+        
+        function exportAuditLog() {
+            storageManager.exportAuditLog();
         }
         
         function importProducts() {
@@ -1196,32 +2166,9 @@
             const file = e.target.files[0];
             if (!file) return;
             
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedProducts = JSON.parse(e.target.result);
-                    
-                    if (!isValidProductStructure(importedProducts)) {
-                        throw new Error('Ungültiges Dateiformat');
-                    }
-                    
-                    if (!confirm(`${Object.keys(importedProducts).length} Produkte importieren?`)) return;
-                    
-                    // Merge products
-                    Object.assign(products, importedProducts);
-                    
-                    // Save to localStorage
-                    localStorage.setItem('products', JSON.stringify(products));
-                    
-                    // Update UI
-                    renderProducts();
-                    
-                    addActivity(`${Object.keys(importedProducts).length} Produkte importiert`, 'success');
-                } catch (error) {
-                    addActivity(`Import fehlgeschlagen: ${error.message}`, 'error');
-                }
-            };
-            reader.readAsText(file);
+            storageManager.importProducts(file)
+                .then(() => loadProducts())
+                .catch(error => console.error('Import failed:', error));
         });
         
         // Load products from cloud JSON
@@ -1234,60 +2181,77 @@
                 
                 const cloudProducts = await response.json();
                 
-                if (!isValidProductStructure(cloudProducts)) {
-                    throw new Error('Ungültiges Cloud-Datenformat');
-                }
-                
                 const productCount = Object.keys(cloudProducts).length;
                 
                 if (confirm(`${productCount} Produkte aus der Cloud laden?`)) {
-                    // Merge cloud products with existing ones
-                    Object.assign(products, cloudProducts);
+                    // Convert cloud products to new format
+                    const productsToImport = Object.values(cloudProducts).map(product => ({
+                        name: product.name,
+                        price: product.price,
+                        barcode: product.barcode,
+                        stock: 0, // Default stock value
+                        category: '', // Empty category by default
+                        image: '', // Empty image by default
+                        createdAt: product.createdAt || new Date().toISOString(),
+                        updatedAt: product.updatedAt || new Date().toISOString()
+                    }));
                     
-                    // Save to localStorage
-                    localStorage.setItem('products', JSON.stringify(products));
+                    let successCount = 0;
+                    let errorCount = 0;
+                    
+                    for (const product of productsToImport) {
+                        try {
+                            if (await storageManager.saveProduct(product, true)) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        } catch (error) {
+                            console.error('Failed to import product:', error);
+                            errorCount++;
+                        }
+                    }
                     
                     // Update UI
-                    renderProducts();
+                    await loadProducts();
                     
-                    addActivity(`${productCount} Produkte aus der Cloud geladen`, 'success');
+                    addActivity(`${successCount} Produkte aus der Cloud geladen, ${errorCount} fehlgeschlagen`, 'success');
                     updateCloudStatus('connected');
+                    
+                    showNotification(
+                        `Cloud-Sync abgeschlossen: ${successCount} erfolgreich, ${errorCount} fehlgeschlagen`,
+                        successCount > 0 ? 'success' : 'error'
+                    );
                 }
             } catch (error) {
                 addActivity(`Cloud-Sync fehlgeschlagen: ${error.message}`, 'error');
                 updateCloudStatus('error');
                 setTimeout(() => updateCloudStatus('connected'), 3000);
+                
+                showNotification('Cloud-Sync fehlgeschlagen', 'error');
             }
         }
         
         function updateCloudStatus(status) {
-            cloudStatus.className = 'cloud-status';
+            const statusElement = document.getElementById('connection-status');
+            const cloudStatus = document.getElementById('cloudStatus');
+            
+            if (!statusElement) return;
             
             switch(status) {
                 case 'syncing':
-                    cloudStatus.classList.add('syncing');
-                    cloudStatus.innerHTML = '<i class="fas fa-sync spinner"></i> <span>Synchronisiere...</span>';
+                    cloudStatus.className = 'cloud-status syncing';
+                    statusElement.innerHTML = '<i class="fas fa-sync fa-spin"></i> Synchronisiere...';
                     break;
                 case 'connected':
-                    cloudStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Mit Cloud verbunden</span>';
+                    cloudStatus.className = 'cloud-status';
+                    statusElement.innerHTML = '<i class="fas fa-cloud"></i> Mit Cloud verbunden';
                     break;
                 case 'error':
-                    cloudStatus.classList.add('error');
-                    cloudStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Cloud-Fehler</span>';
+                    cloudStatus.className = 'cloud-status error';
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Cloud-Fehler';
                     break;
             }
-            
-            cloudStatus.style.display = 'flex';
-        }
-        
-        function isValidProductStructure(data) {
-            if (typeof data !== 'object' || Array.isArray(data)) return false;
-            
-            return Object.values(data).every(item => 
-                item.hasOwnProperty('name') &&
-                item.hasOwnProperty('price') &&
-                item.hasOwnProperty('barcode')
-            );
         }
         
         // Activity log
@@ -1299,13 +2263,25 @@
             };
             
             activityLog.push(entry);
+            // Keep only the last 50 activities
+            if (activityLog.length > 50) {
+                activityLog = activityLog.slice(-50);
+            }
             localStorage.setItem('activityLog', JSON.stringify(activityLog));
             renderActivityLog();
         }
         
         function renderActivityLog() {
             const list = document.getElementById('activity-list');
+            const storedLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+            activityLog = storedLog;
+            
             list.innerHTML = '';
+            
+            if (activityLog.length === 0) {
+                list.innerHTML = '<div class="activity-entry">Keine Aktivitäten aufgezeichnet</div>';
+                return;
+            }
             
             // Show latest activities first
             [...activityLog].reverse().forEach(entry => {
@@ -1329,6 +2305,42 @@
                 `;
                 list.appendChild(element);
             });
+        }
+        
+        function showNotification(message, type = 'success') {
+            // Create a simple notification system
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.left = '50%';
+            notification.style.transform = 'translateX(-50%)';
+            notification.style.padding = '12px 24px';
+            notification.style.borderRadius = '6px';
+            notification.style.zIndex = '10000';
+            notification.style.fontWeight = '500';
+            notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            
+            if (type === 'success') {
+                notification.style.backgroundColor = '#10b981';
+                notification.style.color = 'white';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#ef4444';
+                notification.style.color = 'white';
+            } else {
+                notification.style.backgroundColor = '#3b82f6';
+                notification.style.color = 'white';
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
         }
         
         // Event listeners
