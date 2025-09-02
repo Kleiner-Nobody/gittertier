@@ -90,7 +90,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 var(--spacing-lg);
+        padding: 0 var(--spacing-md);
         border-bottom: 1px solid var(--color-border);
         background-color: var(--color-bg);
         position: sticky;
@@ -101,33 +101,27 @@
     .logo {
         display: flex;
         align-items: center;
-        gap: var(--spacing-md);
+        gap: var(--spacing-sm);
         font-weight: 700;
-        font-size: var(--text-xl);
+        font-size: var(--text-lg);
     }
 
     .logo i {
-        font-size: var(--text-xl);
+        font-size: var(--text-lg);
         color: var(--color-accent);
     }
 
     .header-controls {
         display: flex;
-        gap: var(--spacing-md);
+        gap: var(--spacing-sm);
         align-items: center;
     }
 
     .time-display {
-        background-color: var(--color-bg-secondary);
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius);
-        font-size: var(--text-sm);
-        color: var(--color-text-muted);
         display: none;
     }
 
-    .notification-btn {
-        position: relative;
+    .sync-btn {
         background: transparent;
         border: none;
         width: 42px;
@@ -137,35 +131,37 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: var(--color-text);
         font-size: var(--text-lg);
         transition: var(--transition);
+        position: relative;
     }
 
-    .notification-btn:hover {
+    .sync-btn.idle {
+        color: var(--color-text-muted);
+    }
+
+    .sync-btn.syncing {
+        color: var(--color-warning);
+        animation: spin 1.5s linear infinite;
+    }
+
+    .sync-btn.success {
+        color: var(--color-success);
+    }
+
+    .sync-btn.error {
+        color: var(--color-error);
+    }
+
+    .sync-btn:hover {
         background-color: var(--color-bg-secondary);
-    }
-
-    .notification-badge {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        width: 18px;
-        height: 18px;
-        background: var(--color-error);
-        color: white;
-        border-radius: 50%;
-        font-size: var(--text-xs);
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     .logout-btn {
         background-color: transparent;
         color: var(--color-text);
         border: 1px solid var(--color-border);
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: var(--spacing-sm);
         border-radius: var(--radius);
         font-weight: 600;
         cursor: pointer;
@@ -173,6 +169,10 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+    }
+
+    .logout-btn span {
+        display: none;
     }
 
     .logout-btn:hover {
@@ -281,8 +281,8 @@
     /* Main content */
     .admin-content {
         flex: 1;
-        padding: var(--spacing-lg);
-        margin-left: var(--sidebar-width);
+        padding: var(--spacing-md);
+        margin-left: 0;
         transition: margin-left 0.3s ease;
     }
 
@@ -767,6 +767,11 @@
         to { transform: translateY(0); opacity: 1; }
     }
 
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
     /* Responsive Design */
     @media (max-width: 1024px) {
         .admin-sidebar {
@@ -787,12 +792,30 @@
     }
 
     @media (min-width: 768px) {
+        .admin-header {
+            padding: 0 var(--spacing-lg);
+        }
+        
         .time-display {
             display: block;
+            background-color: var(--color-bg-secondary);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius);
+            font-size: var(--text-sm);
+            color: var(--color-text-muted);
         }
         
         .logout-btn span {
             display: inline;
+        }
+        
+        .admin-content {
+            padding: var(--spacing-lg);
+            margin-left: var(--sidebar-width);
+        }
+        
+        .header-controls {
+            gap: var(--spacing-md);
         }
     }
 
@@ -848,55 +871,39 @@
         }
     }
 
-    /* Cloud sync indicator */
-    .cloud-indicator {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
-        background-color: var(--color-bg-secondary);
+    /* Notification */
+    .notification {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--color-text);
+        color: white;
+        padding: var(--spacing-md) var(--spacing-lg);
         border-radius: var(--radius);
-        font-size: var(--text-sm);
-        color: var(--color-text-muted);
-    }
-
-    .cloud-indicator.online {
-        color: var(--color-success);
-    }
-
-    .cloud-indicator.offline {
-        color: var(--color-error);
-    }
-
-    .cloud-indicator.syncing {
-        color: var(--color-warning);
-    }
-
-    .sync-btn {
-        background-color: transparent;
-        border: 1px solid var(--color-border);
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius);
+        z-index: 60;
+        display: none;
+        animation: slideUp 0.3s ease-out;
         font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
+        max-width: 90%;
+        text-align: center;
     }
 
-    .sync-btn:hover {
-        background-color: var(--color-bg-secondary);
+    .notification.success {
+        background-color: var(--color-success);
     }
 
-    .sync-btn.syncing {
-        animation: pulse 1.5s infinite;
+    .notification.error {
+        background-color: var(--color-error);
     }
 
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; }
-        100% { opacity: 1; }
+    .notification.info {
+        background-color: var(--color-accent);
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(20px) translateX(-50%); opacity: 0; }
+        to { transform: translateY(0) translateX(-50%); opacity: 1; }
     }
     </style>
 </head>
@@ -911,17 +918,8 @@
         </div>
         <div class="header-controls">
             <div class="time-display" id="timeDisplay"></div>
-            <div class="cloud-indicator" id="cloud-indicator">
-                <i class="fas fa-cloud"></i>
-                <span id="cloud-status">Verbinde...</span>
-            </div>
-            <button class="sync-btn" id="sync-btn">
+            <button class="sync-btn idle" id="sync-btn" title="Mit Cloud synchronisieren">
                 <i class="fas fa-sync"></i>
-                <span>Sync</span>
-            </button>
-            <button class="notification-btn" id="notificationBtn">
-                <i class=""></i>
-                <!-- <span class="notification-badge" id="notificationBadge">0</span> -->
             </button>
             <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
@@ -1045,23 +1043,6 @@
                     <input type="text" class="search-bar" id="note-search" placeholder="Notizen durchsuchen...">
                 </div>
 
-                <div class="filter-group">
-                    <div class="filter-title">
-                        <i class="fas fa-cloud"></i>
-                        Quelle
-                    </div>
-                    <div class="filter-options">
-                        <label class="filter-option">
-                            <input type="checkbox" id="filter-local" checked>
-                            Lokal
-                        </label>
-                        <label class="filter-option">
-                            <input type="checkbox" id="filter-cloud" checked>
-                            Cloud
-                        </label>
-                    </div>
-                </div>
-
                 <button class="apply-filter-btn" id="apply-filters">
                     Filter anwenden
                 </button>
@@ -1113,10 +1094,6 @@
                     </div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Quelle:</div>
-                    <div class="detail-value" id="detail-source"></div>
-                </div>
-                <div class="detail-row">
                     <div class="detail-label">Gesamtbetrag:</div>
                     <div class="detail-value" id="detail-total"></div>
                 </div>
@@ -1157,22 +1134,7 @@
         </div>
     </div>
 
-    <!-- Notification Center -->
-    <!-- <div class="notification-center" id="notificationCenter">
-        <div class="modal-header">
-            <h2 class="modal-title">Benachrichtigungen</h2>
-            <button class="close-modal" id="clear-notifications">Alle löschen</button>
-        </div>
-        <div class="notification-list">
-            <div class="notification-item notification-unread">
-                <div class="notification-icon"><i class="fas fa-exclamation-circle"></i></div>
-                <div class="notification-content">
-                    <div>Neue Transaktion abgeschlossen: €42.75</div>
-                    <div class="notification-time">Vor 5 Minuten</div>
-                </div>
-            </div>
-        </div>
-    </div> -->
+    <div class="notification" id="notification"></div>
 
     <script>
         // Initialize jsPDF
@@ -1181,647 +1143,8 @@
         let currentReceipt = null;
         let selectedReceipts = new Set();
         let allReceipts = [];
-        let cloudReceipts = [];
-        let isCloudConnected = false;
         
-        // ==================== STORAGE MANAGER IMPLEMENTATION ====================
-        const storageManager = (function() {
-            // Constants for localStorage keys
-            const PREFIX_RECEIPT = 'receipt_';
-            const KEY_OFFLINE_QUEUE = 'offlineQueue_receipts';
-            const KEY_AUDIT_LOG = 'auditLog_receipts';
-            
-            // Current version of the data schema
-            const CURRENT_VERSION = 1;
-            
-            // Encryption key (generated per session)
-            let encryptionKey = null;
-            
-            // Initialize the storage manager
-            async function init() {
-                await generateEncryptionKey();
-                migrateLegacyData();
-                setupOfflineHandling();
-            }
-            
-            // Generate encryption key for the session
-            async function generateEncryptionKey() {
-                try {
-                    // Check if key already exists in sessionStorage
-                    const keyData = sessionStorage.getItem('encryptionKey');
-                    
-                    if (keyData) {
-                        // Import existing key
-                        const keyBytes = Uint8Array.from(atob(keyData), c => c.charCodeAt(0));
-                        encryptionKey = await crypto.subtle.importKey(
-                            'raw',
-                            keyBytes,
-                            { name: 'AES-GCM' },
-                            false,
-                            ['encrypt', 'decrypt']
-                        );
-                    } else {
-                        // Generate new key
-                        const key = await crypto.subtle.generateKey(
-                            { name: 'AES-GCM', length: 256 },
-                            true,
-                            ['encrypt', 'decrypt']
-                        );
-                        
-                        // Export and store in sessionStorage
-                        const exportedKey = await crypto.subtle.exportKey('raw', key);
-                        const keyBytes = new Uint8Array(exportedKey);
-                        sessionStorage.setItem('encryptionKey', btoa(String.fromCharCode(...keyBytes)));
-                        
-                        encryptionKey = key;
-                    }
-                } catch (error) {
-                    console.error('Failed to generate encryption key:', error);
-                    // Continue without encryption
-                }
-            }
-            
-            // Migrate legacy data to the new format
-            function migrateLegacyData() {
-                // Migrate receipts
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    
-                    // Check if this is a legacy receipt (starts with receipt_ but not in new format)
-                    if (key.startsWith(PREFIX_RECEIPT)) {
-                        try {
-                            const item = localStorage.getItem(key);
-                            const parsed = JSON.parse(item);
-                            
-                            // Check if it's legacy format (doesn't have version field)
-                            if (parsed && !parsed.version) {
-                                // Migrate to new format
-                                saveReceipt(parsed, true); // silent migration
-                                console.log('Migrated legacy receipt:', key);
-                            }
-                        } catch (e) {
-                            // Not JSON, skip
-                        }
-                    }
-                }
-            }
-            
-            // Setup offline/online event handlers
-            function setupOfflineHandling() {
-                window.addEventListener('offline', () => {
-                    showNotification('Offline-Modus aktiviert. Änderungen werden später synchronisiert.', 'info');
-                    document.body.classList.add('offline');
-                    updateCloudStatus(false);
-                });
-                
-                window.addEventListener('online', () => {
-                    showNotification('Verbindung wiederhergestellt. Synchronisiere Änderungen...', 'success');
-                    document.body.classList.remove('offline');
-                    replayOfflineQueue();
-                    updateCloudStatus(true);
-                });
-                
-                // Initial status check
-                if (!navigator.onLine) {
-                    document.body.classList.add('offline');
-                    updateCloudStatus(false);
-                } else {
-                    updateCloudStatus(true);
-                }
-            }
-            
-            // Validate receipt against schema
-            function validateReceipt(receipt) {
-                if (!receipt || typeof receipt !== 'object') {
-                    throw new Error('Receipt must be an object');
-                }
-                
-                if (!receipt.id || typeof receipt.id !== 'string' || receipt.id.trim() === '') {
-                    throw new Error('Receipt ID is required and must be a non-empty string');
-                }
-                
-                if (!receipt.date || typeof receipt.date !== 'string' || receipt.date.trim() === '') {
-                    throw new Error('Receipt date is required and must be a non-empty string');
-                }
-                
-                if (typeof receipt.total !== 'number' || !isFinite(receipt.total) || receipt.total < 0) {
-                    throw new Error('Receipt total is required and must be a non-negative number');
-                }
-                
-                if (receipt.items && !Array.isArray(receipt.items)) {
-                    throw new Error('Receipt items must be an array if provided');
-                }
-                
-                if (receipt.status && (receipt.status !== 'Bestätigt' && receipt.status !== 'Abgelehnt')) {
-                    throw new Error('Receipt status must be either "Bestätigt" or "Abgelehnt"');
-                }
-                
-                return true;
-            }
-            
-            // Create a data wrapper with version and timestamp
-            function createDataWrapper(data) {
-                return {
-                    version: CURRENT_VERSION,
-                    lastModified: new Date().toISOString(),
-                    data: data
-                };
-            }
-            
-            // Encrypt sensitive fields in an object
-            async function encryptSensitiveFields(obj) {
-                if (!encryptionKey) return obj;
-                
-                const result = {...obj};
-                
-                // Encrypt customer information if present
-                if (result.customer) {
-                    try {
-                        const iv = crypto.getRandomValues(new Uint8Array(12));
-                        const encodedCustomer = new TextEncoder().encode(JSON.stringify(result.customer));
-                        
-                        const encrypted = await crypto.subtle.encrypt(
-                            { name: 'AES-GCM', iv },
-                            encryptionKey,
-                            encodedCustomer
-                        );
-                        
-                        result.customer = {
-                            encrypted: true,
-                            data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-                            iv: btoa(String.fromCharCode(...iv))
-                        };
-                    } catch (error) {
-                        console.error('Failed to encrypt customer data:', error);
-                    }
-                }
-                
-                return result;
-            }
-            
-            // Decrypt sensitive fields in an object
-            async function decryptSensitiveFields(obj) {
-                if (!encryptionKey) return obj;
-                
-                const result = {...obj};
-                
-                // Decrypt customer information if encrypted
-                if (result.customer && result.customer.encrypted) {
-                    try {
-                        const iv = Uint8Array.from(atob(result.customer.iv), c => c.charCodeAt(0));
-                        const encryptedData = Uint8Array.from(atob(result.customer.data), c => c.charCodeAt(0));
-                        
-                        const decrypted = await crypto.subtle.decrypt(
-                            { name: 'AES-GCM', iv },
-                            encryptionKey,
-                            encryptedData
-                        );
-                        
-                        result.customer = JSON.parse(new TextDecoder().decode(decrypted));
-                    } catch (error) {
-                        console.error('Failed to decrypt customer data:', error);
-                    }
-                }
-                
-                return result;
-            }
-            
-            // Store an item with compression and encryption
-            async function storeItem(key, data, skipAudit = false) {
-                try {
-                    // Create wrapper
-                    const wrappedData = createDataWrapper(data);
-                    
-                    // Compress the data
-                    const compressed = LZString.compressToBase64(JSON.stringify(wrappedData));
-                    
-                    // Store in localStorage
-                    localStorage.setItem(key, compressed);
-                    
-                    // Log to audit trail
-                    if (!skipAudit) {
-                        logAudit('storeItem', { key, data: wrappedData });
-                    }
-                    
-                    return true;
-                } catch (error) {
-                    console.error('Failed to store item:', error);
-                    
-                    // If offline, queue the operation
-                    if (!navigator.onLine) {
-                        queueOfflineAction({
-                            type: 'store',
-                            key,
-                            data,
-                            timestamp: new Date().toISOString()
-                        });
-                    }
-                    
-                    return false;
-                }
-            }
-            
-            // Retrieve an item with decompression and decryption
-            async function retrieveItem(key) {
-                try {
-                    const item = localStorage.getItem(key);
-                    
-                    if (!item) return null;
-                    
-                    // Check if it's compressed (starts with base64-like pattern)
-                    if (item.startsWith('N') || item.startsWith('e') || item.startsWith('H')) {
-                        // Decompress
-                        const decompressed = LZString.decompressFromBase64(item);
-                        
-                        if (!decompressed) {
-                            // Might be legacy format, try parsing as JSON directly
-                            try {
-                                const legacyData = JSON.parse(item);
-                                
-                                // Log migration warning
-                                console.warn(`Migrating legacy format for key: ${key}`);
-                                
-                                // Store in new format
-                                await storeItem(key, legacyData, true);
-                                
-                                return legacyData;
-                            } catch (e) {
-                                console.error('Failed to parse legacy data:', e);
-                                return null;
-                            }
-                        }
-                        
-                        // Parse the JSON
-                        const parsed = JSON.parse(decompressed);
-                        
-                        // Handle versioning if needed in the future
-                        if (parsed.version !== CURRENT_VERSION) {
-                            console.warn(`Data version ${parsed.version} differs from current ${CURRENT_VERSION}`);
-                            // Future: implement migration logic here
-                        }
-                        
-                        // Decrypt sensitive fields
-                        const decryptedData = await decryptSensitiveFields(parsed.data);
-                        return decryptedData;
-                    } else {
-                        // Legacy format, parse directly
-                        try {
-                            const legacyData = JSON.parse(item);
-                            
-                            // Log migration warning
-                            console.warn(`Migrating legacy format for key: ${key}`);
-                            
-                            // Store in new format
-                            await storeItem(key, legacyData, true);
-                            
-                            return legacyData;
-                        } catch (e) {
-                            console.error('Failed to parse legacy data:', e);
-                            return null;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Failed to retrieve item:', error);
-                    return null;
-                }
-            }
-            
-            // Queue an action for offline processing
-            function queueOfflineAction(action) {
-                try {
-                    // Get current queue
-                    const queue = JSON.parse(localStorage.getItem(KEY_OFFLINE_QUEUE) || '[]');
-                    
-                    // Add new action
-                    queue.push({
-                        timestamp: new Date().toISOString(),
-                        dataType: action.type,
-                        dataPayload: action
-                    });
-                    
-                    // Save back to storage
-                    localStorage.setItem(KEY_OFFLINE_QUEUE, JSON.stringify(queue));
-                    
-                    // Log to audit trail
-                    logAudit('queueOfflineAction', action);
-                    
-                    return true;
-                } catch (error) {
-                    console.error('Failed to queue offline action:', error);
-                    return false;
-                }
-            }
-            
-            // Replay offline queue when coming back online
-            async function replayOfflineQueue() {
-                try {
-                    const queue = JSON.parse(localStorage.getItem(KEY_OFFLINE_QUEUE) || '[]');
-                    
-                    if (queue.length === 0) return;
-                    
-                    showNotification(`Synchronisiere ${queue.length} offline Änderungen...`, 'info');
-                    
-                    // Process each action in the queue
-                    for (const action of queue) {
-                        try {
-                            switch (action.dataType) {
-                                case 'store':
-                                    // Determine the correct storage method based on key prefix
-                                    if (action.dataPayload.key.startsWith(PREFIX_RECEIPT)) {
-                                        await saveReceipt(action.dataPayload.data, true);
-                                    } else {
-                                        // Generic storage
-                                        await storeItem(
-                                            action.dataPayload.key, 
-                                            action.dataPayload.data, 
-                                            true
-                                        );
-                                    }
-                                    break;
-                                
-                                case 'delete':
-                                    localStorage.removeItem(action.dataPayload.key);
-                                    logAudit('deleteItem', { key: action.dataPayload.key }, true);
-                                    break;
-                                
-                                // Add other action types as needed
-                            }
-                        } catch (error) {
-                            console.error('Failed to process offline action:', error);
-                        }
-                    }
-                    
-                    // Clear the queue
-                    localStorage.removeItem(KEY_OFFLINE_QUEUE);
-                    
-                    showNotification('Offline-Änderungen erfolgreich synchronisiert', 'success');
-                    
-                } catch (error) {
-                    console.error('Failed to replay offline queue:', error);
-                }
-            }
-            
-            // Log an audit event
-            function logAudit(action, details, skipCompression = false) {
-                try {
-                    // Get current audit log
-                    let auditLog = [];
-                    const logData = localStorage.getItem(KEY_AUDIT_LOG);
-                    
-                    if (logData) {
-                        if (skipCompression) {
-                            auditLog = JSON.parse(logData);
-                        } else {
-                            auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
-                        }
-                    }
-                    
-                    // Add new entry
-                    auditLog.push({
-                        timestamp: new Date().toISOString(),
-                        action,
-                        details,
-                        // Add user ID if available
-                        userId: localStorage.getItem('currentUserId') || 'system'
-                    });
-                    
-                    // Save back to storage
-                    if (skipCompression) {
-                        localStorage.setItem(KEY_AUDIT_LOG, JSON.stringify(auditLog));
-                    } else {
-                        localStorage.setItem(
-                            KEY_AUDIT_LOG, 
-                            LZString.compressToUTF16(JSON.stringify(auditLog))
-                        );
-                    }
-                    
-                    return true;
-                } catch (error) {
-                    console.error('Failed to log audit event:', error);
-                    return false;
-                }
-            }
-            
-            // Public API
-            return {
-                init,
-                
-                // Receipt management
-                async saveReceipt(receipt, skipAudit = false) {
-                    try {
-                        // Validate receipt
-                        validateReceipt(receipt);
-                        
-                        // Encrypt sensitive fields if any
-                        const processedReceipt = await encryptSensitiveFields(receipt);
-                        
-                        // Store the receipt
-                        const success = await storeItem(
-                            `${PREFIX_RECEIPT}${receipt.id}`,
-                            processedReceipt,
-                            skipAudit
-                        );
-                        
-                        if (success && !skipAudit) {
-                            showNotification('Beleg erfolgreich gespeichert', 'success');
-                        }
-                        
-                        return success;
-                    } catch (error) {
-                        console.error('Failed to save receipt:', error);
-                        showNotification(`Fehler beim Speichern: ${error.message}`, 'error');
-                        return false;
-                    }
-                },
-                
-                async getReceipts() {
-                    const receipts = [];
-                    
-                    // Get all receipt keys
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        
-                        if (key.startsWith(PREFIX_RECEIPT)) {
-                            const receipt = await retrieveItem(key);
-                            if (receipt) {
-                                receipts.push(receipt);
-                            }
-                        }
-                    }
-                    
-                    return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
-                },
-                
-                async deleteReceipt(id) {
-                    try {
-                        const key = `${PREFIX_RECEIPT}${id}`;
-                        localStorage.removeItem(key);
-                        
-                        // Log to audit trail
-                        logAudit('deleteReceipt', { id });
-                        
-                        // If offline, queue the deletion
-                        if (!navigator.onLine) {
-                            queueOfflineAction({
-                                type: 'delete',
-                                key,
-                                timestamp: new Date().toISOString()
-                            });
-                        }
-                        
-                        showNotification('Beleg erfolgreich gelöscht', 'success');
-                        return true;
-                    } catch (error) {
-                        console.error('Failed to delete receipt:', error);
-                        showNotification('Fehler beim Löschen des Belegs', 'error');
-                        return false;
-                    }
-                },
-                
-                async importReceipts(file) {
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        
-                        reader.onload = async (e) => {
-                            try {
-                                const content = e.target.result;
-                                const receipts = JSON.parse(content);
-                                
-                                if (!Array.isArray(receipts)) {
-                                    throw new Error('Invalid format: expected array of receipts');
-                                }
-                                
-                                let successCount = 0;
-                                let errorCount = 0;
-                                
-                                for (const receipt of receipts) {
-                                    try {
-                                        if (await this.saveReceipt(receipt, true)) {
-                                            successCount++;
-                                        } else {
-                                            errorCount++;
-                                        }
-                                    } catch (error) {
-                                        console.error('Failed to import receipt:', error);
-                                        errorCount++;
-                                    }
-                                }
-                                
-                                // Log import to audit trail
-                                logAudit('importReceipts', { 
-                                    file: file.name, 
-                                    successCount, 
-                                    errorCount 
-                                });
-                                
-                                showNotification(
-                                    `Import abgeschlossen: ${successCount} erfolgreich, ${errorCount} fehlgeschlagen`,
-                                    successCount > 0 ? 'success' : 'error'
-                                );
-                                
-                                resolve({ successCount, errorCount });
-                            } catch (error) {
-                                console.error('Failed to parse import file:', error);
-                                showNotification('Ungültige Importdatei', 'error');
-                                reject(error);
-                            }
-                        };
-                        
-                        reader.onerror = () => {
-                            reject(new Error('Failed to read file'));
-                        };
-                        
-                        reader.readAsText(file);
-                    });
-                },
-                
-                async exportReceipts() {
-                    try {
-                        const receipts = await this.getReceipts();
-                        const dataStr = JSON.stringify(receipts, null, 2);
-                        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-                        
-                        const exportFileDefaultName = `receipts_${new Date().toISOString().split('T')[0]}.json`;
-                        
-                        const linkElement = document.createElement('a');
-                        linkElement.setAttribute('href', dataUri);
-                        linkElement.setAttribute('download', exportFileDefaultName);
-                        linkElement.click();
-                        
-                        // Log export to audit trail
-                        logAudit('exportReceipts', { count: receipts.length });
-                        
-                        showNotification('Belege erfolgreich exportiert', 'success');
-                        return true;
-                    } catch (error) {
-                        console.error('Failed to export receipts:', error);
-                        showNotification('Fehler beim Exportieren der Belege', 'error');
-                        return false;
-                    }
-                },
-                
-                // Offline queue management
-                queueOfflineAction,
-                replayOfflineQueue,
-                
-                // Audit log management
-                logAudit,
-                
-                async exportAuditLog() {
-                    try {
-                        const logData = localStorage.getItem(KEY_AUDIT_LOG);
-                        
-                        if (!logData) {
-                            showNotification('Audit-Log ist leer', 'info');
-                            return false;
-                        }
-                        
-                        // Decompress if needed
-                        let auditLog;
-                        try {
-                            auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
-                        } catch (e) {
-                            // Might not be compressed
-                            auditLog = JSON.parse(logData || '[]');
-                        }
-                        
-                        const dataStr = JSON.stringify(auditLog, null, 2);
-                        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-                        
-                        const exportFileDefaultName = `audit_log_${new Date().toISOString().split('T')[0]}.json`;
-                        
-                        const linkElement = document.createElement('a');
-                        linkElement.setAttribute('href', dataUri);
-                        linkElement.setAttribute('download', exportFileDefaultName);
-                        linkElement.click();
-                        
-                        showNotification('Audit-Log erfolgreich exportiert', 'success');
-                        return true;
-                    } catch (error) {
-                        console.error('Failed to export audit log:', error);
-                        showNotification('Fehler beim Exportieren des Audit-Logs', 'error');
-                        return false;
-                    }
-                }
-            };
-        })();
-        
-        // Initialize storage manager when DOM is loaded
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize storage manager
-            await storageManager.init();
-            
-            // Load receipts from localStorage
-            loadAndDisplayReceipts();
-            
-            // Load receipts from cloud
-            loadReceiptsFromCloud();
-            
-            // Apply dark mode if enabled in localStorage
-            applyDarkMode();
-        });
-
-        // Apply dark mode if enabled
+        // Apply dark mode if enabled in localStorage
         function applyDarkMode() {
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
             if (settings.darkMode) {
@@ -1830,6 +1153,9 @@
                 document.body.classList.remove('dark-mode');
             }
         }
+
+        // Apply dark mode on page load
+        applyDarkMode();
 
         // Token verification
         (function() {
@@ -1854,9 +1180,6 @@
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const timeDisplay = document.getElementById('timeDisplay');
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationCenter = document.getElementById('notificationCenter');
-        const notificationBadge = document.getElementById('notificationBadge');
         const logoutBtn = document.getElementById('logoutBtn');
         const filterToggle = document.getElementById('filterToggle');
         const filterPanel = document.getElementById('filterPanel');
@@ -1875,8 +1198,6 @@
         const saveNoteBtn = document.getElementById('save-note');
         const printReceiptBtn = document.getElementById('print-receipt');
         const syncBtn = document.getElementById('sync-btn');
-        const cloudIndicator = document.getElementById('cloud-indicator');
-        const cloudStatus = document.getElementById('cloud-status');
 
         // Time display function
         function updateTime() {
@@ -1899,17 +1220,26 @@
         updateTime();
         setInterval(updateTime, 1000);
         
-        // Update cloud status indicator
-        function updateCloudStatus(online) {
-            isCloudConnected = online;
-            if (online) {
-                cloudIndicator.classList.add('online');
-                cloudIndicator.classList.remove('offline');
-                cloudStatus.textContent = 'Online';
-            } else {
-                cloudIndicator.classList.remove('online');
-                cloudIndicator.classList.add('offline');
-                cloudStatus.textContent = 'Offline';
+        // Update sync button status
+        function updateSyncButtonStatus(status) {
+            syncBtn.className = 'sync-btn ' + status;
+            
+            // Update tooltip based on status
+            switch(status) {
+                case 'idle':
+                    syncBtn.title = 'Mit Cloud synchronisieren';
+                    break;
+                case 'syncing':
+                    syncBtn.title = 'Synchronisierung läuft...';
+                    break;
+                case 'success':
+                    syncBtn.title = 'Synchronisierung erfolgreich';
+                    setTimeout(() => updateSyncButtonStatus('idle'), 3000);
+                    break;
+                case 'error':
+                    syncBtn.title = 'Synchronisierung fehlgeschlagen';
+                    setTimeout(() => updateSyncButtonStatus('idle'), 3000);
+                    break;
             }
         }
         
@@ -1923,19 +1253,6 @@
         sidebarOverlay.addEventListener('click', () => {
             sidebar.classList.remove('active');
             sidebarOverlay.classList.remove('active');
-        });
-        
-        // Notification center toggle
-        notificationBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            notificationCenter.classList.toggle('active');
-        });
-        
-        // Close notification center when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!notificationBtn.contains(e.target) && !notificationCenter.contains(e.target)) {
-                notificationCenter.classList.remove('active');
-            }
         });
         
         // Logout functionality
@@ -1971,53 +1288,23 @@
         });
 
         // Load receipts from localStorage
-        async function loadReceipts() {
-            try {
-                return await storageManager.getReceipts();
-            } catch (error) {
-                console.error('Error loading receipts:', error);
-                showNotification('Fehler beim Laden der Belege', 'error');
-                return [];
-            }
-        }
-
-        // Load receipts from cloud
-        async function loadReceiptsFromCloud() {
-            try {
-                syncBtn.classList.add('syncing');
-                cloudIndicator.classList.add('syncing');
-                cloudStatus.textContent = 'Sync läuft...';
-                
-                const response = await fetch('https://raw.githubusercontent.com/Kleiner-Nobody/gittertier/main/archive.json');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                cloudReceipts = Array.isArray(data) ? data : [];
-                
-                updateCloudStatus(true);
-                cloudStatus.textContent = 'Sync abgeschlossen';
-                showNotification(`${cloudReceipts.length} Belege aus der Cloud geladen`, 'success');
-                
-                // Update the receipt list with cloud data
-                generateReceiptList([...allReceipts, ...cloudReceipts.map(r => ({...r, source: 'cloud'}))]);
-                
-            } catch (error) {
-                console.error('Error loading cloud receipts:', error);
-                updateCloudStatus(false);
-                cloudStatus.textContent = 'Sync fehlgeschlagen';
-                showNotification('Cloud-Sync fehlgeschlagen', 'error');
-            } finally {
-                setTimeout(() => {
-                    syncBtn.classList.remove('syncing');
-                    cloudIndicator.classList.remove('syncing');
-                    if (isCloudConnected) {
-                        cloudStatus.textContent = 'Online';
+        function loadReceipts() {
+            const receipts = [];
+            for(let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('receipt_')) {
+                    try {
+                        const receipt = JSON.parse(localStorage.getItem(key));
+                        receipts.push({
+                            id: key.replace('receipt_', ''),
+                            ...receipt
+                        });
+                    } catch (e) {
+                        console.error('Error parsing receipt:', e);
                     }
-                }, 2000);
+                }
             }
+            return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
         // Generate receipt list UI
@@ -2049,15 +1336,10 @@
                     statusClass = 'status-declined';
                 }
                 
-                // Determine source badge
-                const sourceBadge = receipt.source === 'cloud' 
-                    ? `<span class="status-badge" style="background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; margin-left: 8px;">Cloud</span>` 
-                    : '';
-                
                 html += `
-                    <div class="receipt-item" data-id="${receipt.id}" data-source="${receipt.source || 'local'}">
+                    <div class="receipt-item" data-id="${receipt.id}">
                         <div class="receipt-details">
-                            <div class="receipt-id">${receipt.id}${sourceBadge}</div>
+                            <div class="receipt-id">${receipt.id}</div>
                             <div class="receipt-date">${dateStr}</div>
                             ${receipt.note ? `<div class="receipt-note">${receipt.note}</div>` : ''}
                         </div>
@@ -2067,11 +1349,9 @@
                             <button class="receipt-action-btn view-btn" title="Details anzeigen">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            ${receipt.source !== 'cloud' ? `
                             <button class="receipt-action-btn delete-btn" title="Beleg löschen">
                                 <i class="fas fa-trash"></i>
                             </button>
-                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -2084,8 +1364,7 @@
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const receiptId = btn.closest('.receipt-item').dataset.id;
-                    const receiptSource = btn.closest('.receipt-item').dataset.source;
-                    const receipt = receipts.find(r => r.id === receiptId && (r.source || 'local') === receiptSource);
+                    const receipt = receipts.find(r => r.id === receiptId);
                     if (receipt) showReceiptDetails(receipt);
                 });
             });
@@ -2102,8 +1381,7 @@
                 item.addEventListener('click', (e) => {
                     if (!e.target.classList.contains('receipt-action-btn')) {
                         const receiptId = item.dataset.id;
-                        const receiptSource = item.dataset.source;
-                        const receipt = receipts.find(r => r.id === receiptId && (r.source || 'local') === receiptSource);
+                        const receipt = receipts.find(r => r.id === receiptId);
                         if (receipt) showReceiptDetails(receipt);
                     }
                 });
@@ -2133,7 +1411,6 @@
                 `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
             
             document.getElementById('detail-total').textContent = `€ ${receipt.total.toFixed(2)}`;
-            document.getElementById('detail-source').textContent = receipt.source === 'cloud' ? 'Cloud' : 'Lokal';
             
             const statusBadge = document.getElementById('detail-status');
             statusBadge.textContent = receipt.status;
@@ -2169,17 +1446,6 @@
             // Set note
             document.getElementById('note-input').value = receipt.note || '';
             
-            // Disable editing for cloud receipts
-            if (receipt.source === 'cloud') {
-                document.getElementById('note-input').disabled = true;
-                document.getElementById('toggle-status').style.display = 'none';
-                document.getElementById('save-note').style.display = 'none';
-            } else {
-                document.getElementById('note-input').disabled = false;
-                document.getElementById('toggle-status').style.display = 'block';
-                document.getElementById('save-note').style.display = 'block';
-            }
-            
             // Show modal
             modal.classList.add('active');
         }
@@ -2191,7 +1457,7 @@
             currentReceipt.status = currentReceipt.status === 'Bestätigt' ? 'Abgelehnt' : 'Bestätigt';
             
             // Update in localStorage
-            storageManager.saveReceipt(currentReceipt);
+            localStorage.setItem(`receipt_${currentReceipt.id}`, JSON.stringify(currentReceipt));
             
             // Update UI
             const statusBadge = document.getElementById('detail-status');
@@ -2199,7 +1465,7 @@
             statusBadge.className = 'status-badge ' + (currentReceipt.status === 'Bestätigt' ? 'status-confirmed' : 'status-declined');
             
             showNotification(`Status geändert zu "${currentReceipt.status}"`);
-            loadAndDisplayReceipts();
+            generateReceiptList(loadReceipts());
         });
         
         // Save note
@@ -2210,10 +1476,10 @@
             currentReceipt.note = note;
             
             // Update in localStorage
-            storageManager.saveReceipt(currentReceipt);
+            localStorage.setItem(`receipt_${currentReceipt.id}`, JSON.stringify(currentReceipt));
             
             showNotification("Notiz gespeichert");
-            loadAndDisplayReceipts();
+            generateReceiptList(loadReceipts());
         });
         
         // Print receipt
@@ -2284,7 +1550,7 @@
         });
 
         // Delete a single receipt
-        async function deleteReceipt(id) {
+        function deleteReceipt(id) {
             // Check if deletion is disabled in settings
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
             if (settings.archiveSettings?.disableDeletion) {
@@ -2293,15 +1559,15 @@
             }
             
             if(confirm('Diesen Beleg löschen?')) {
-                await storageManager.deleteReceipt(id);
+                localStorage.removeItem(`receipt_${id}`);
                 selectedReceipts.delete(id);
                 showNotification(`Beleg ${id} gelöscht`);
-                loadAndDisplayReceipts();
+                generateReceiptList(loadReceipts());
             }
         }
         
         // Delete selected receipts
-        bulkDeleteBtn.addEventListener('click', async () => {
+        bulkDeleteBtn.addEventListener('click', () => {
             // Check if deletion is disabled in settings
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
             if (settings.archiveSettings?.disableDeletion) {
@@ -2315,31 +1581,70 @@
             }
             
             if(confirm(`${selectedReceipts.size} Belege löschen?`)) {
-                for (const id of selectedReceipts) {
-                    await storageManager.deleteReceipt(id);
-                }
+                selectedReceipts.forEach(id => {
+                    localStorage.removeItem(`receipt_${id}`);
+                });
                 
                 const count = selectedReceipts.size;
                 selectedReceipts.clear();
                 showNotification(`${count} Belege gelöscht`);
-                loadAndDisplayReceipts();
+                generateReceiptList(loadReceipts());
             }
         });
 
         // Export all functionality
         exportAllBtn.addEventListener('click', function() {
-            storageManager.exportReceipts();
+            exportReceipts(allReceipts);
         });
         
+        // Export receipts
+        function exportReceipts(receipts) {
+            if(receipts.length === 0) {
+                showNotification("Keine Belege zum Exportieren", 'error');
+                return;
+            }
+            
+            const exportData = receipts.map(receipt => {
+                const { id, ...receiptData } = receipt;
+                return {
+                    key: `receipt_${id}`,
+                    value: receiptData
+                };
+            });
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `belege_export_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
         // Backup functionality
         backupBtn.addEventListener('click', function() {
-            storageManager.exportReceipts();
+            exportReceipts(allReceipts);
             showNotification("Backup erstellt");
         });
 
         // Sync functionality
         syncBtn.addEventListener('click', function() {
-            loadReceiptsFromCloud();
+            updateSyncButtonStatus('syncing');
+            
+            // Simulate cloud sync
+            setTimeout(() => {
+                // For demo purposes, we'll randomly choose success or error
+                const success = Math.random() > 0.3;
+                
+                if (success) {
+                    updateSyncButtonStatus('success');
+                    showNotification('Synchronisierung erfolgreich', 'success');
+                } else {
+                    updateSyncButtonStatus('error');
+                    showNotification('Synchronisierung fehlgeschlagen', 'error');
+                }
+            }, 2000);
         });
 
         // Filter functionality
@@ -2353,10 +1658,6 @@
         document.getElementById('filter-confirmed').addEventListener('change', filterReceipts);
         document.getElementById('filter-declined').addEventListener('change', filterReceipts);
         
-        // Source filter change
-        document.getElementById('filter-local').addEventListener('change', filterReceipts);
-        document.getElementById('filter-cloud').addEventListener('change', filterReceipts);
-        
         // Date filter change
         document.getElementById('start-date').addEventListener('change', filterReceipts);
         document.getElementById('end-date').addEventListener('change', filterReceipts);
@@ -2367,8 +1668,6 @@
             const noteSearchTerm = document.getElementById('note-search').value.toLowerCase();
             const showConfirmed = document.getElementById('filter-confirmed').checked;
             const showDeclined = document.getElementById('filter-declined').checked;
-            const showLocal = document.getElementById('filter-local').checked;
-            const showCloud = document.getElementById('filter-cloud').checked;
             
             const startDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
@@ -2377,13 +1676,6 @@
                 // Status filter
                 if ((receipt.status === 'Bestätigt' && !showConfirmed) || 
                     (receipt.status === 'Abgelehnt' && !showDeclined)) {
-                    return false;
-                }
-                
-                // Source filter
-                const source = receipt.source || 'local';
-                if ((source === 'local' && !showLocal) || 
-                    (source === 'cloud' && !showCloud)) {
                     return false;
                 }
                 
@@ -2417,15 +1709,6 @@
             generateReceiptList(filtered);
         }
 
-        // Load and display receipts
-        async function loadAndDisplayReceipts() {
-            const receipts = await loadReceipts();
-            generateReceiptList(receipts.map(r => ({...r, source: 'local'})));
-            
-            // Check if a specific receipt needs to be opened
-            checkForReceiptToOpen();
-        }
-
         function checkForReceiptToOpen() {
             const receiptIdToOpen = sessionStorage.getItem('openReceiptId');
             
@@ -2445,17 +1728,10 @@
 
         // Show notification function
         function showNotification(message, type = 'success') {
-            // Create notification element if it doesn't exist
-            let notification = document.querySelector('.notification');
-            if (!notification) {
-                notification = document.createElement('div');
-                notification.className = 'notification';
-                document.body.appendChild(notification);
-            }
-            
+            const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = 'notification';
-            if (type) notification.classList.add(type);
+            notification.classList.add(type);
             notification.style.display = 'block';
             
             setTimeout(() => {
@@ -2466,7 +1742,7 @@
         // Initial load
         document.addEventListener('DOMContentLoaded', () => {
             // Load receipts
-            loadAndDisplayReceipts();
+            generateReceiptList(loadReceipts());
             
             // Apply settings
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
