@@ -1640,13 +1640,6 @@
         function checkTutorialStatus() {
             try {
                 const tutorialSeen = localStorage.getItem('gittertier_tutorial_seen');
-                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                
-                // Check if tutorial is disabled in settings
-                if (settings.hideTutorial) {
-                    return;
-                }
-                
                 if (tutorialSeen === null) {
                     // Check if we can use localStorage
                     localStorage.setItem('gittertier_test', 'test');
@@ -1672,10 +1665,6 @@
         }
 
         function showWelcomeModal() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.hideTutorial) {
-                return;
-            }
             document.getElementById('tutorial-welcome-modal').style.display = 'flex';
             document.getElementById('tutorial-cutout').style.display = 'none';
             document.getElementById('tutorial-bubble').style.display = 'none';
@@ -2294,17 +2283,7 @@
             if (!scannedBarcodes.has(code)) {
                 scannedBarcodes.add(code);
                 setTimeout(() => scannedBarcodes.delete(code), 2000);
-                
-                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                if (settings.continuousScan !== false) {
-                    handleBarcode(code);
-                } else {
-                    // If continuous scan is disabled, stop scanner after detection
-                    handleBarcode(code);
-                    if (scannerActive) {
-                        toggleScanner();
-                    }
-                }
+                handleBarcode(code);
             }
         }
 
@@ -2314,21 +2293,13 @@
             playSound('scan');
             
             if (products[barcode]) {
-                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                
-                if (settings.autoAddToCart) {
-                    // Automatically add to cart if enabled
-                    addToCart(products[barcode]);
-                    showNotification(`${products[barcode].name} wurde automatisch zum Warenkorb hinzugefügt`);
-                } else {
-                    showProduct(products[barcode]);
-                    showNotification(`${products[barcode].name} erkannt`);
-                }
+                showProduct(products[barcode]);
+                showNotification(`${products[barcode].name} erkannt`);
             } else {
                 const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
                 if (settings.manualAdd === false) {
-                    showNotification('Produkt nicht gefunden und manuelle Eingabe deaktiviert!', 'error');
-                } else {
+                    showNotification('Nicht erlaubt!', 'error');
+                }else {
                     showProductModal(barcode);
                 }
             }
@@ -2376,12 +2347,12 @@
         }
 
         // Cart Management
-        function addToCart(product, quantity = 1) {
+        function addToCart(product) {
             const existing = cart.find(item => item.barcode === product.barcode);
             if (existing) {
-                existing.quantity += quantity;
+                existing.quantity++;
             } else {
-                cart.push({...product, quantity: quantity});
+                cart.push({...product, quantity: 1});
             }
             updateCartDisplay();
         }
@@ -2439,37 +2410,6 @@
         function showProductModal(barcode) {
             document.getElementById('product-barcode-input').value = barcode;
             document.getElementById('product-modal').style.display = 'flex';
-            
-            // Load product suggestions if enabled
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.productSuggestions) {
-                loadProductSuggestions();
-            }
-        }
-        
-        // Load product suggestions from existing products
-        function loadProductSuggestions() {
-            const productNames = Object.values(products).map(p => p.name);
-            const datalist = document.getElementById('product-suggestions');
-            
-            if (!datalist) {
-                const newDatalist = document.createElement('datalist');
-                newDatalist.id = 'product-suggestions';
-                document.body.appendChild(newDatalist);
-            }
-            
-            // Clear existing options
-            datalist.innerHTML = '';
-            
-            // Add new options
-            productNames.forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                datalist.appendChild(option);
-            });
-            
-            // Link datalist to input
-            document.getElementById('product-name-input').setAttribute('list', 'product-suggestions');
         }
 
         function saveProduct() {
@@ -2490,17 +2430,9 @@
 
             products[barcode] = { name, price, barcode };
             localStorage.setItem('products', JSON.stringify(products));
-            
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.autoAddToCart) {
-                addToCart(products[barcode]);
-                showNotification('Produkt gespeichert und zum Warenkorb hinzugefügt');
-            } else {
-                showProduct(products[barcode]);
-                showNotification('Produkt gespeichert');
-            }
-            
+            showProduct(products[barcode]);
             closeModal();
+            showNotification('Produkt gespeichert');
         }
 
         // QR Generation
@@ -2616,13 +2548,6 @@
 
         // UI Helpers
         function showNotification(message, type = 'success') {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            
-            // Check if notifications are enabled
-            if (settings.disableNotifications) {
-                return;
-            }
-            
             playSound(type);
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -2632,7 +2557,7 @@
             
             setTimeout(() => {
                 notification.style.display = 'none';
-            }, (settings.notificationDuration || 3) * 1000);
+            }, 3000);
         }
 
         function closeModal() {
@@ -2703,32 +2628,7 @@
             
             audio.play().catch(e => console.log('Sound playback error:', e));
         }
-        
-        // New function to handle product name input with suggestions
-        function setupProductNameSuggestions() {
-            const productNameInput = document.getElementById('product-name-input');
-            if (!productNameInput) return;
-            
-            productNameInput.addEventListener('input', function() {
-                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                if (!settings.productSuggestions) return;
-                
-                const value = this.value.toLowerCase();
-                if (value.length < 2) return;
-                
-                const suggestions = Object.values(products)
-                    .map(p => p.name)
-                    .filter(name => name.toLowerCase().includes(value))
-                    .slice(0, 5);
-                
-                // You could implement a custom dropdown here if desired
-            });
-        }
-        
-        // Initialize product name suggestions
-        document.addEventListener('DOMContentLoaded', function() {
-            setupProductNameSuggestions();
-        });
     </script>
 </body>
 </html>
+>>>>>>> parent of 5ada493 (index.html aktualisieren)
