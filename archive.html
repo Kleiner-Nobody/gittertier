@@ -10,6 +10,7 @@
     <style>
     :root {
         --color-bg: #ffffff;
+        --color-bg-secondary: #f9fafb;
         --color-text: #111111;
         --color-text-muted: #6b7280;
         --color-border: #e5e7eb;
@@ -18,6 +19,7 @@
         --color-success: #16a34a;
         --color-error: #dc2626;
         --color-warning: #d97706;
+        --color-info: #2563eb;
         --color-overlay: rgba(0, 0, 0, 0.5);
         
         --radius: 12px;
@@ -62,6 +64,7 @@
         --color-success: #10b981;
         --color-error: #ef4444;
         --color-warning: #f59e0b;
+        --color-info: #3b82f6;
         --color-overlay: rgba(0, 0, 0, 0.7);
         --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
@@ -514,6 +517,9 @@
         font-weight: 600;
         margin-bottom: var(--spacing-xs);
         color: var(--color-accent);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
     }
 
     .receipt-date {
@@ -549,6 +555,11 @@
     .status-declined {
         background-color: rgba(220, 38, 38, 0.1);
         color: var(--color-error);
+    }
+
+    .status-legacy {
+        background-color: rgba(217, 119, 6, 0.1);
+        color: var(--color-warning);
     }
 
     .receipt-actions {
@@ -676,16 +687,19 @@
     .detail-row {
         display: flex;
         margin-bottom: var(--spacing-md);
+        flex-wrap: wrap;
     }
 
     .detail-label {
         font-weight: 600;
         width: 120px;
         color: var(--color-text-muted);
+        flex-shrink: 0;
     }
 
     .detail-value {
         flex: 1;
+        min-width: 0;
     }
 
     .items-table {
@@ -727,6 +741,7 @@
         display: flex;
         gap: var(--spacing-md);
         justify-content: flex-end;
+        flex-wrap: wrap;
     }
 
     /* Notification Center */
@@ -751,6 +766,90 @@
         animation: slideIn 0.3s ease;
     }
 
+    /* Cloud sync indicator */
+    .cloud-indicator {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    .sync-btn {
+        background-color: transparent;
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm);
+        border-radius: var(--radius);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        min-width: 42px;
+        height: 42px;
+        justify-content: center;
+    }
+
+    .sync-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .sync-btn.online {
+        color: var(--color-success);
+    }
+
+    .sync-btn.offline {
+        color: var(--color-error);
+    }
+
+    .sync-btn.syncing {
+        color: var(--color-warning);
+        animation: pulse 1.5s infinite;
+    }
+
+    .sync-btn span {
+        display: none;
+    }
+
+    /* Legacy badge */
+    .legacy-badge {
+        background-color: rgba(217, 119, 6, 0.1);
+        color: var(--color-warning);
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: var(--text-xs);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Missing info button */
+    .missing-info-btn {
+        background-color: var(--color-warning);
+        color: white;
+        border: none;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+        width: 100%;
+        justify-content: center;
+    }
+
+    .missing-info-btn:hover {
+        background-color: #b45309;
+    }
+
     /* Animations */
     @keyframes fadeIn {
         from { opacity: 0; }
@@ -765,6 +864,12 @@
     @keyframes slideIn {
         from { transform: translateY(-10px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
     }
 
     /* Responsive Design */
@@ -792,6 +897,10 @@
         }
         
         .logout-btn span {
+            display: inline;
+        }
+
+        .sync-btn span {
             display: inline;
         }
     }
@@ -835,6 +944,14 @@
         .modal-footer {
             flex-direction: column;
         }
+
+        .cloud-indicator span {
+            display: none;
+        }
+
+        .cloud-indicator {
+            padding: var(--spacing-sm);
+        }
     }
 
     /* Dark mode support for system preference */
@@ -846,57 +963,6 @@
             --color-text-muted: #9ca3af;
             --color-border: #374151;
         }
-    }
-
-    /* Cloud sync indicator */
-    .cloud-indicator {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
-        background-color: var(--color-bg-secondary);
-        border-radius: var(--radius);
-        font-size: var(--text-sm);
-        color: var(--color-text-muted);
-    }
-
-    .cloud-indicator.online {
-        color: var(--color-success);
-    }
-
-    .cloud-indicator.offline {
-        color: var(--color-error);
-    }
-
-    .cloud-indicator.syncing {
-        color: var(--color-warning);
-    }
-
-    .sync-btn {
-        background-color: transparent;
-        border: 1px solid var(--color-border);
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius);
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .sync-btn:hover {
-        background-color: var(--color-bg-secondary);
-    }
-
-    .sync-btn.syncing {
-        animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; }
-        100% { opacity: 1; }
     }
     </style>
 </head>
@@ -920,7 +986,7 @@
                 <span>Sync</span>
             </button>
             <button class="notification-btn" id="notificationBtn">
-                <i class=""></i>
+                <i class="fas fa-bell"></i>
                 <!-- <span class="notification-badge" id="notificationBadge">0</span> -->
             </button>
             <button class="logout-btn" id="logoutBtn">
@@ -1139,6 +1205,22 @@
                     <div class="detail-label">Notizen:</div>
                     <textarea class="note-input" id="note-input" placeholder="Notizen zu diesem Beleg hinzufügen..."></textarea>
                 </div>
+
+                <div id="legacy-info" style="display: none;">
+                    <div class="detail-row">
+                        <div class="detail-label">Version:</div>
+                        <div class="detail-value">
+                            <span class="legacy-badge">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Ältere Version (Beta)
+                            </span>
+                        </div>
+                    </div>
+                    <button class="missing-info-btn" id="add-missing-info">
+                        <i class="fas fa-plus-circle"></i>
+                        Fehlende Informationen hinzufügen
+                    </button>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="action-btn" id="toggle-status">
@@ -1157,22 +1239,46 @@
         </div>
     </div>
 
-    <!-- Notification Center -->
-    <!-- <div class="notification-center" id="notificationCenter">
-        <div class="modal-header">
-            <h2 class="modal-title">Benachrichtigungen</h2>
-            <button class="close-modal" id="clear-notifications">Alle löschen</button>
-        </div>
-        <div class="notification-list">
-            <div class="notification-item notification-unread">
-                <div class="notification-icon"><i class="fas fa-exclamation-circle"></i></div>
-                <div class="notification-content">
-                    <div>Neue Transaktion abgeschlossen: €42.75</div>
-                    <div class="notification-time">Vor 5 Minuten</div>
+    <!-- Missing Information Modal -->
+    <div class="modal-overlay" id="missing-info-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Fehlende Informationen hinzufügen</h2>
+                <button class="close-modal" id="close-missing-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row">
+                    <div class="detail-label">Belegnummer:</div>
+                    <div class="detail-value" id="missing-detail-id"></div>
+                </div>
+                
+                <div class="detail-row" style="flex-direction: column; align-items: flex-start;">
+                    <div class="detail-label">Notizen:</div>
+                    <textarea class="note-input" id="missing-note-input" placeholder="Notizen zu diesem Beleg hinzufügen..."></textarea>
+                </div>
+                
+                <div class="detail-row" style="flex-direction: column; align-items: flex-start;">
+                    <div class="detail-label">Artikel bearbeiten:</div>
+                    <div id="items-editor">
+                        <!-- Items will be added here dynamically -->
+                    </div>
+                    <button class="action-btn" id="add-item-btn" style="margin-top: var(--spacing-md);">
+                        <i class="fas fa-plus"></i>
+                        Artikel hinzufügen
+                    </button>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button class="action-btn btn-primary" id="save-missing-info">
+                    <i class="fas fa-save"></i>
+                    Speichern
+                </button>
+                <button class="action-btn" id="cancel-missing-info">
+                    Abbrechen
+                </button>
+            </div>
         </div>
-    </div> -->
+    </div>
 
     <script>
         // Initialize jsPDF
@@ -1192,7 +1298,7 @@
             const KEY_AUDIT_LOG = 'auditLog_receipts';
             
             // Current version of the data schema
-            const CURRENT_VERSION = 1;
+            const CURRENT_VERSION = 2;
             
             // Encryption key (generated per session)
             let encryptionKey = null;
@@ -1255,6 +1361,21 @@
                             
                             // Check if it's legacy format (doesn't have version field)
                             if (parsed && !parsed.version) {
+                                // Check if it's the old compressed format
+                                if (parsed.data && typeof parsed.data === 'string') {
+                                    try {
+                                        // Decompress the data
+                                        const decompressed = LZString.decompressFromBase64(parsed.data);
+                                        if (decompressed) {
+                                            parsed.items = JSON.parse(decompressed);
+                                            parsed.isLegacy = true;
+                                            delete parsed.data;
+                                        }
+                                    } catch (e) {
+                                        console.error('Failed to decompress legacy receipt data', e);
+                                    }
+                                }
+                                
                                 // Migrate to new format
                                 saveReceipt(parsed, true); // silent migration
                                 console.log('Migrated legacy receipt:', key);
@@ -1877,6 +1998,16 @@
         const syncBtn = document.getElementById('sync-btn');
         const cloudIndicator = document.getElementById('cloud-indicator');
         const cloudStatus = document.getElementById('cloud-status');
+        const legacyInfo = document.getElementById('legacy-info');
+        const addMissingInfoBtn = document.getElementById('add-missing-info');
+        const missingInfoModal = document.getElementById('missing-info-modal');
+        const closeMissingModalBtn = document.getElementById('close-missing-modal');
+        const saveMissingInfoBtn = document.getElementById('save-missing-info');
+        const cancelMissingInfoBtn = document.getElementById('cancel-missing-info');
+        const missingNoteInput = document.getElementById('missing-note-input');
+        const itemsEditor = document.getElementById('items-editor');
+        const addItemBtn = document.getElementById('add-item-btn');
+        const missingDetailId = document.getElementById('missing-detail-id');
 
         // Time display function
         function updateTime() {
@@ -1903,10 +2034,14 @@
         function updateCloudStatus(online) {
             isCloudConnected = online;
             if (online) {
+                syncBtn.classList.add('online');
+                syncBtn.classList.remove('offline');
                 cloudIndicator.classList.add('online');
                 cloudIndicator.classList.remove('offline');
                 cloudStatus.textContent = 'Online';
             } else {
+                syncBtn.classList.remove('online');
+                syncBtn.classList.add('offline');
                 cloudIndicator.classList.remove('online');
                 cloudIndicator.classList.add('offline');
                 cloudStatus.textContent = 'Offline';
@@ -1968,6 +2103,38 @@
             if (e.target === receiptModal) {
                 receiptModal.classList.remove('active');
             }
+        });
+
+        // Close missing info modal
+        closeMissingModalBtn.addEventListener('click', () => {
+            missingInfoModal.classList.remove('active');
+        });
+        
+        // Close missing info modal when clicking outside
+        missingInfoModal.addEventListener('click', (e) => {
+            if (e.target === missingInfoModal) {
+                missingInfoModal.classList.remove('active');
+            }
+        });
+
+        // Cancel missing info
+        cancelMissingInfoBtn.addEventListener('click', () => {
+            missingInfoModal.classList.remove('active');
+        });
+
+        // Add missing info button
+        addMissingInfoBtn.addEventListener('click', () => {
+            showMissingInfoModal();
+        });
+
+        // Add item button
+        addItemBtn.addEventListener('click', () => {
+            addItemToEditor();
+        });
+
+        // Save missing info
+        saveMissingInfoBtn.addEventListener('click', () => {
+            saveMissingInfo();
         });
 
         // Load receipts from localStorage
@@ -2054,10 +2221,18 @@
                     ? `<span class="status-badge" style="background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; margin-left: 8px;">Cloud</span>` 
                     : '';
                 
+                // Legacy badge
+                const legacyBadge = receipt.isLegacy 
+                    ? `<span class="legacy-badge">
+                         <i class="fas fa-exclamation-triangle"></i>
+                         Beta
+                       </span>` 
+                    : '';
+                
                 html += `
-                    <div class="receipt-item" data-id="${receipt.id}" data-source="${receipt.source || 'local'}">
+                    <div class="receipt-item" data-id="${receipt.id}" data-source="${receipt.source || 'local'}" data-legacy="${receipt.isLegacy || 'false'}">
                         <div class="receipt-details">
-                            <div class="receipt-id">${receipt.id}${sourceBadge}</div>
+                            <div class="receipt-id">${receipt.id}${sourceBadge}${legacyBadge}</div>
                             <div class="receipt-date">${dateStr}</div>
                             ${receipt.note ? `<div class="receipt-note">${receipt.note}</div>` : ''}
                         </div>
@@ -2083,8 +2258,10 @@
             document.querySelectorAll('.view-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const receiptId = btn.closest('.receipt-item').dataset.id;
-                    const receiptSource = btn.closest('.receipt-item').dataset.source;
+                    const receiptItem = btn.closest('.receipt-item');
+                    const receiptId = receiptItem.dataset.id;
+                    const receiptSource = receiptItem.dataset.source;
+                    const isLegacy = receiptItem.dataset.legacy === 'true';
                     const receipt = receipts.find(r => r.id === receiptId && (r.source || 'local') === receiptSource);
                     if (receipt) showReceiptDetails(receipt);
                 });
@@ -2103,6 +2280,7 @@
                     if (!e.target.classList.contains('receipt-action-btn')) {
                         const receiptId = item.dataset.id;
                         const receiptSource = item.dataset.source;
+                        const isLegacy = item.dataset.legacy === 'true';
                         const receipt = receipts.find(r => r.id === receiptId && (r.source || 'local') === receiptSource);
                         if (receipt) showReceiptDetails(receipt);
                     }
@@ -2143,12 +2321,12 @@
             const itemsList = document.getElementById('items-list');
             itemsList.innerHTML = '';
             
-            if (receipt.items) {
+            if (receipt.items && receipt.items.length > 0) {
                 receipt.items.forEach(item => {
                     const row = document.createElement('tr');
                     const total = (item.quantity * item.price).toFixed(2);
                     row.innerHTML = `
-                        <td>${item.name}</td>
+                        <td>${item.name || 'Unbenannter Artikel'}</td>
                         <td>${item.quantity}</td>
                         <td>€ ${item.price.toFixed(2)}</td>
                         <td>€ ${total}</td>
@@ -2169,11 +2347,19 @@
             // Set note
             document.getElementById('note-input').value = receipt.note || '';
             
+            // Show/hide legacy info
+            if (receipt.isLegacy) {
+                legacyInfo.style.display = 'block';
+            } else {
+                legacyInfo.style.display = 'none';
+            }
+            
             // Disable editing for cloud receipts
             if (receipt.source === 'cloud') {
                 document.getElementById('note-input').disabled = true;
                 document.getElementById('toggle-status').style.display = 'none';
                 document.getElementById('save-note').style.display = 'none';
+                legacyInfo.style.display = 'none';
             } else {
                 document.getElementById('note-input').disabled = false;
                 document.getElementById('toggle-status').style.display = 'block';
@@ -2182,6 +2368,127 @@
             
             // Show modal
             modal.classList.add('active');
+        }
+
+        // Show missing info modal
+        function showMissingInfoModal() {
+            if (!currentReceipt) return;
+            
+            // Populate modal
+            missingDetailId.textContent = currentReceipt.id;
+            missingNoteInput.value = currentReceipt.note || '';
+            
+            // Populate items editor
+            itemsEditor.innerHTML = '';
+            if (currentReceipt.items && currentReceipt.items.length > 0) {
+                currentReceipt.items.forEach((item, index) => {
+                    addItemToEditor(item, index);
+                });
+            } else {
+                addItemToEditor();
+            }
+            
+            // Show modal
+            missingInfoModal.classList.add('active');
+        }
+
+        // Add item to editor
+        function addItemToEditor(item = {}, index = null) {
+            const itemIndex = index !== null ? index : Date.now();
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'item-editor';
+            itemDiv.style.marginBottom = '10px';
+            itemDiv.style.padding = '10px';
+            itemDiv.style.border = '1px solid var(--color-border)';
+            itemDiv.style.borderRadius = 'var(--radius-sm)';
+            
+            itemDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: end;">
+                    <div>
+                        <label style="font-size: var(--text-xs); color: var(--color-text-muted);">Name</label>
+                        <input type="text" class="search-bar" value="${item.name || ''}" placeholder="Artikelname" data-field="name" style="font-size: var(--text-sm);">
+                    </div>
+                    <div>
+                        <label style="font-size: var(--text-xs); color: var(--color-text-muted);">Menge</label>
+                        <input type="number" class="search-bar" value="${item.quantity || 1}" min="1" data-field="quantity" style="font-size: var(--text-sm);">
+                    </div>
+                    <div>
+                        <label style="font-size: var(--text-xs); color: var(--color-text-muted);">Preis</label>
+                        <input type="number" class="search-bar" value="${item.price || 0}" min="0" step="0.01" data-field="price" style="font-size: var(--text-sm);">
+                    </div>
+                    <div>
+                        <label style="font-size: var(--text-xs); color: var(--color-text-muted);">Gesamt</label>
+                        <input type="text" class="search-bar" value="${((item.quantity || 1) * (item.price || 0)).toFixed(2)}" readonly style="font-size: var(--text-sm); background-color: var(--color-bg-secondary);">
+                    </div>
+                    <button class="receipt-action-btn delete-item-btn" style="height: 38px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            itemsEditor.appendChild(itemDiv);
+            
+            // Add event listeners for calculations
+            const quantityInput = itemDiv.querySelector('input[data-field="quantity"]');
+            const priceInput = itemDiv.querySelector('input[data-field="price"]');
+            const totalInput = itemDiv.querySelector('input[readonly]');
+            
+            const calculateTotal = () => {
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                totalInput.value = (quantity * price).toFixed(2);
+            };
+            
+            quantityInput.addEventListener('input', calculateTotal);
+            priceInput.addEventListener('input', calculateTotal);
+            
+            // Add delete button listener
+            const deleteBtn = itemDiv.querySelector('.delete-item-btn');
+            deleteBtn.addEventListener('click', () => {
+                if (itemsEditor.children.length > 1) {
+                    itemDiv.remove();
+                }
+            });
+        }
+
+        // Save missing info
+        function saveMissingInfo() {
+            if (!currentReceipt) return;
+            
+            // Update note
+            currentReceipt.note = missingNoteInput.value;
+            
+            // Update items
+            currentReceipt.items = [];
+            const itemEditors = itemsEditor.querySelectorAll('.item-editor');
+            
+            itemEditors.forEach(editor => {
+                const name = editor.querySelector('input[data-field="name"]').value;
+                const quantity = parseFloat(editor.querySelector('input[data-field="quantity"]').value) || 0;
+                const price = parseFloat(editor.querySelector('input[data-field="price"]').value) || 0;
+                
+                if (name && quantity > 0 && price >= 0) {
+                    currentReceipt.items.push({
+                        name,
+                        quantity,
+                        price
+                    });
+                }
+            });
+            
+            // Remove legacy flag
+            currentReceipt.isLegacy = false;
+            
+            // Update in localStorage
+            storageManager.saveReceipt(currentReceipt);
+            
+            // Close modal
+            missingInfoModal.classList.remove('active');
+            
+            // Update UI
+            showNotification("Fehlende Informationen hinzugefügt");
+            showReceiptDetails(currentReceipt);
+            loadAndDisplayReceipts();
         }
 
         // Toggle receipt status
@@ -2227,11 +2534,78 @@
                 <head>
                     <title>Beleg ${currentReceipt.id}</title>
                     <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; }
-                        .header { text-align: center; margin-bottom: 20px; }
-                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                        th, td { border: 1px solid #ddd; padding: 8px; }
-                        .total { font-weight: bold; margin-top: 20px; }
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            padding: 20px; 
+                            color: #111827;
+                            background: white;
+                        }
+                        .header { 
+                            text-align: center; 
+                            margin-bottom: 20px; 
+                            border-bottom: 2px solid #2563eb;
+                            padding-bottom: 15px;
+                        }
+                        .header h2 {
+                            color: #2563eb;
+                            margin: 0;
+                        }
+                        .info-section {
+                            margin-bottom: 20px;
+                        }
+                        .info-row {
+                            display: flex;
+                            margin-bottom: 8px;
+                        }
+                        .info-label {
+                            font-weight: bold;
+                            width: 120px;
+                            color: #6b7280;
+                        }
+                        table { 
+                            width: 100%; 
+                            border-collapse: collapse; 
+                            margin: 20px 0; 
+                        }
+                        th, td { 
+                            border: 1px solid #e5e7eb; 
+                            padding: 10px; 
+                            text-align: left;
+                        }
+                        th {
+                            background-color: #f9fafb;
+                            font-weight: bold;
+                            color: #374151;
+                        }
+                        .total { 
+                            font-weight: bold; 
+                            margin-top: 20px; 
+                            text-align: right;
+                            font-size: 1.1em;
+                            padding: 10px;
+                            background-color: #f9fafb;
+                            border-radius: 6px;
+                        }
+                        .note-section {
+                            margin-top: 20px;
+                            padding: 15px;
+                            background-color: #f9fafb;
+                            border-radius: 6px;
+                            border-left: 4px solid #2563eb;
+                        }
+                        .legacy-notice {
+                            background-color: #fffbeb;
+                            border: 1px solid #f59e0b;
+                            color: #b45309;
+                            padding: 10px;
+                            border-radius: 6px;
+                            margin-top: 15px;
+                            font-size: 0.9em;
+                        }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display: none; }
+                        }
                     </style>
                 </head>
                 <body>
@@ -2239,9 +2613,19 @@
                         <h2>Beleg ${currentReceipt.id}</h2>
                     </div>
                     
-                    <div>
-                        <strong>Datum:</strong> ${new Date(currentReceipt.date).toLocaleString('de-DE')}<br>
-                        <strong>Status:</strong> ${currentReceipt.status}
+                    <div class="info-section">
+                        <div class="info-row">
+                            <div class="info-label">Datum:</div>
+                            <div>${new Date(currentReceipt.date).toLocaleString('de-DE')}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Status:</div>
+                            <div>${currentReceipt.status}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Quelle:</div>
+                            <div>${currentReceipt.source === 'cloud' ? 'Cloud' : 'Lokal'}</div>
+                        </div>
                     </div>
                     
                     <table>
@@ -2256,12 +2640,18 @@
                         <tbody>
                             ${currentReceipt.items ? currentReceipt.items.map(item => `
                                 <tr>
-                                    <td>${item.name}</td>
+                                    <td>${item.name || 'Unbenannter Artikel'}</td>
                                     <td>${item.quantity}</td>
                                     <td>€ ${item.price.toFixed(2)}</td>
                                     <td>€ ${(item.quantity * item.price).toFixed(2)}</td>
                                 </tr>
-                            `).join('') : ''}
+                            `).join('') : `
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 20px; color: #9ca3af;">
+                                        <i class="fas fa-exclamation-circle"></i> Artikelinformationen nicht verfügbar
+                                    </td>
+                                </tr>
+                            `}
                         </tbody>
                     </table>
                     
@@ -2270,17 +2660,28 @@
                     </div>
                     
                     ${currentReceipt.note ? `
-                        <div>
+                        <div class="note-section">
                             <strong>Notizen:</strong>
                             <p>${currentReceipt.note}</p>
                         </div>
                     ` : ''}
+                    
+                    ${currentReceipt.isLegacy ? `
+                        <div class="legacy-notice">
+                            <strong>Hinweis:</strong> Dieser Beleg stammt aus einer älteren Version und enthält möglicherweise nicht alle Informationen.
+                        </div>
+                    ` : ''}
+                    
+                    <div class="no-print" style="margin-top: 30px; text-align: center;">
+                        <button onclick="window.print()" style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                            Drucken
+                        </button>
+                    </div>
                 </body>
                 </html>
             `);
             
             printWindow.document.close();
-            printWindow.print();
         });
 
         // Delete a single receipt
@@ -2451,15 +2852,53 @@
                 notification = document.createElement('div');
                 notification.className = 'notification';
                 document.body.appendChild(notification);
+                
+                // Add styles for notification
+                const style = document.createElement('style');
+                style.textContent = `
+                    .notification {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        padding: 12px 20px;
+                        border-radius: 6px;
+                        color: white;
+                        font-weight: 500;
+                        z-index: 10000;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                        transform: translateX(100%);
+                        transition: transform 0.3s ease;
+                    }
+                    .notification.success {
+                        background-color: var(--color-success);
+                    }
+                    .notification.error {
+                        background-color: var(--color-error);
+                    }
+                    .notification.info {
+                        background-color: var(--color-info);
+                    }
+                    .notification.warning {
+                        background-color: var(--color-warning);
+                    }
+                    .notification.show {
+                        transform: translateX(0);
+                    }
+                `;
+                document.head.appendChild(style);
             }
             
             notification.textContent = message;
             notification.className = 'notification';
             if (type) notification.classList.add(type);
-            notification.style.display = 'block';
+            notification.classList.add('show');
             
             setTimeout(() => {
-                notification.style.display = 'none';
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.textContent = '';
+                    notification.className = 'notification';
+                }, 300);
             }, 3000);
         }
 
