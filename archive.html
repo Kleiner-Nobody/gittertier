@@ -167,8 +167,7 @@
     .logout-btn {
         background-color: transparent;
         color: var(--color-text);
-        border: 1px solid var(--color-border);
-        padding: var(--spacing-sm) var(--spacing-md);
+        border: 0px solid var(--color-border);
         border-radius: var(--radius);
         font-weight: 600;
         cursor: pointer;
@@ -387,6 +386,8 @@
         border: 1px solid var(--color-border);
         border-radius: var(--radius-sm);
         font-size: var(--text-sm);
+        background-color: var(--color-bg);
+        color: var(--color-text);
     }
 
     .apply-filter-btn {
@@ -642,7 +643,7 @@
         border-radius: var(--radius);
         padding: var(--spacing-xl);
         width: 100%;
-        max-width: 600px;
+        max-width: 700px;
         max-height: 90vh;
         overflow-y: auto;
         box-shadow: var(--shadow-lg);
@@ -692,7 +693,7 @@
 
     .detail-label {
         font-weight: 600;
-        width: 120px;
+        width: 140px;
         color: var(--color-text-muted);
         flex-shrink: 0;
     }
@@ -780,7 +781,7 @@
 
     .sync-btn {
         background-color: transparent;
-        border: 1px solid var(--color-border);
+        border: 0px;
         padding: var(--spacing-sm);
         border-radius: var(--radius);
         font-weight: 500;
@@ -814,6 +815,7 @@
     .sync-btn span {
         display: none;
     }
+
 
     /* Legacy badge */
     .legacy-badge {
@@ -952,6 +954,15 @@
         .cloud-indicator {
             padding: var(--spacing-sm);
         }
+        
+        .detail-row {
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+        
+        .detail-label {
+            width: 100%;
+        }
     }
 
     /* Dark mode support for system preference */
@@ -977,17 +988,9 @@
         </div>
         <div class="header-controls">
             <div class="time-display" id="timeDisplay"></div>
-            <div class="cloud-indicator" id="cloud-indicator">
-                <i class="fas fa-cloud"></i>
-                <span id="cloud-status">Verbinde...</span>
-            </div>
             <button class="sync-btn" id="sync-btn">
                 <i class="fas fa-sync"></i>
                 <span>Sync</span>
-            </button>
-            <button class="notification-btn" id="notificationBtn">
-                <i class="fas fa-bell"></i>
-                <!-- <span class="notification-badge" id="notificationBadge">0</span> -->
             </button>
             <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
@@ -1179,12 +1182,20 @@
                     </div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Quelle:</div>
-                    <div class="detail-value" id="detail-source"></div>
+                    <div class="detail-label">Kunde:</div>
+                    <div class="detail-value" id="detail-customer"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Händler:</div>
+                    <div class="detail-value" id="detail-merchant"></div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Gesamtbetrag:</div>
                     <div class="detail-value" id="detail-total"></div>
+                </div>
+                <div class="detail-row" id="detail-coupon-row" style="display: none;">
+                    <div class="detail-label">Gutschein:</div>
+                    <div class="detail-value" id="detail-coupon"></div>
                 </div>
 
                 <h3>Artikel</h3>
@@ -1293,67 +1304,29 @@
         // ==================== STORAGE MANAGER IMPLEMENTATION ====================
         const storageManager = (function() {
             // Constants for localStorage keys
+            const PAYMENT_ARCHIVE_KEY = 'payment_archive';
             const PREFIX_RECEIPT = 'receipt_';
             const KEY_OFFLINE_QUEUE = 'offlineQueue_receipts';
             const KEY_AUDIT_LOG = 'auditLog_receipts';
             
             // Current version of the data schema
-            const CURRENT_VERSION = 2;
-            
-            // Encryption key (generated per session)
-            let encryptionKey = null;
+            const CURRENT_VERSION = 3;
             
             // Initialize the storage manager
-            async function init() {
-                await generateEncryptionKey();
+            function init() {
                 migrateLegacyData();
                 setupOfflineHandling();
             }
             
-            // Generate encryption key for the session
-            async function generateEncryptionKey() {
-                try {
-                    // Check if key already exists in sessionStorage
-                    const keyData = sessionStorage.getItem('encryptionKey');
-                    
-                    if (keyData) {
-                        // Import existing key
-                        const keyBytes = Uint8Array.from(atob(keyData), c => c.charCodeAt(0));
-                        encryptionKey = await crypto.subtle.importKey(
-                            'raw',
-                            keyBytes,
-                            { name: 'AES-GCM' },
-                            false,
-                            ['encrypt', 'decrypt']
-                        );
-                    } else {
-                        // Generate new key
-                        const key = await crypto.subtle.generateKey(
-                            { name: 'AES-GCM', length: 256 },
-                            true,
-                            ['encrypt', 'decrypt']
-                        );
-                        
-                        // Export and store in sessionStorage
-                        const exportedKey = await crypto.subtle.exportKey('raw', key);
-                        const keyBytes = new Uint8Array(exportedKey);
-                        sessionStorage.setItem('encryptionKey', btoa(String.fromCharCode(...keyBytes)));
-                        
-                        encryptionKey = key;
-                    }
-                } catch (error) {
-                    console.error('Failed to generate encryption key:', error);
-                    // Continue without encryption
-                }
-            }
-            
             // Migrate legacy data to the new format
             function migrateLegacyData() {
-                // Migrate receipts
+                // Check if we have old format receipts that need migration
+                let migratedCount = 0;
+                
+                // Migrate individual receipt_ keys first
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     
-                    // Check if this is a legacy receipt (starts with receipt_ but not in new format)
                     if (key.startsWith(PREFIX_RECEIPT)) {
                         try {
                             const item = localStorage.getItem(key);
@@ -1377,13 +1350,19 @@
                                 }
                                 
                                 // Migrate to new format
-                                saveReceipt(parsed, true); // silent migration
+                                addReceiptToArchive(parsed);
+                                localStorage.removeItem(key);
+                                migratedCount++;
                                 console.log('Migrated legacy receipt:', key);
                             }
                         } catch (e) {
                             // Not JSON, skip
                         }
                     }
+                }
+                
+                if (migratedCount > 0) {
+                    showNotification(`${migratedCount} alte Belege migriert`, 'success');
                 }
             }
             
@@ -1425,8 +1404,8 @@
                     throw new Error('Receipt date is required and must be a non-empty string');
                 }
                 
-                if (typeof receipt.total !== 'number' || !isFinite(receipt.total) || receipt.total < 0) {
-                    throw new Error('Receipt total is required and must be a non-negative number');
+                if (typeof receipt.amount !== 'number' || !isFinite(receipt.amount) || receipt.amount < 0) {
+                    throw new Error('Receipt amount is required and must be a non-negative number');
                 }
                 
                 if (receipt.items && !Array.isArray(receipt.items)) {
@@ -1440,170 +1419,53 @@
                 return true;
             }
             
-            // Create a data wrapper with version and timestamp
-            function createDataWrapper(data) {
-                return {
-                    version: CURRENT_VERSION,
-                    lastModified: new Date().toISOString(),
-                    data: data
-                };
-            }
-            
-            // Encrypt sensitive fields in an object
-            async function encryptSensitiveFields(obj) {
-                if (!encryptionKey) return obj;
-                
-                const result = {...obj};
-                
-                // Encrypt customer information if present
-                if (result.customer) {
-                    try {
-                        const iv = crypto.getRandomValues(new Uint8Array(12));
-                        const encodedCustomer = new TextEncoder().encode(JSON.stringify(result.customer));
-                        
-                        const encrypted = await crypto.subtle.encrypt(
-                            { name: 'AES-GCM', iv },
-                            encryptionKey,
-                            encodedCustomer
-                        );
-                        
-                        result.customer = {
-                            encrypted: true,
-                            data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-                            iv: btoa(String.fromCharCode(...iv))
-                        };
-                    } catch (error) {
-                        console.error('Failed to encrypt customer data:', error);
-                    }
-                }
-                
-                return result;
-            }
-            
-            // Decrypt sensitive fields in an object
-            async function decryptSensitiveFields(obj) {
-                if (!encryptionKey) return obj;
-                
-                const result = {...obj};
-                
-                // Decrypt customer information if encrypted
-                if (result.customer && result.customer.encrypted) {
-                    try {
-                        const iv = Uint8Array.from(atob(result.customer.iv), c => c.charCodeAt(0));
-                        const encryptedData = Uint8Array.from(atob(result.customer.data), c => c.charCodeAt(0));
-                        
-                        const decrypted = await crypto.subtle.decrypt(
-                            { name: 'AES-GCM', iv },
-                            encryptionKey,
-                            encryptedData
-                        );
-                        
-                        result.customer = JSON.parse(new TextDecoder().decode(decrypted));
-                    } catch (error) {
-                        console.error('Failed to decrypt customer data:', error);
-                    }
-                }
-                
-                return result;
-            }
-            
-            // Store an item with compression and encryption
-            async function storeItem(key, data, skipAudit = false) {
+            // Get the payment archive
+            function getPaymentArchive() {
                 try {
-                    // Create wrapper
-                    const wrappedData = createDataWrapper(data);
-                    
-                    // Compress the data
-                    const compressed = LZString.compressToBase64(JSON.stringify(wrappedData));
-                    
-                    // Store in localStorage
-                    localStorage.setItem(key, compressed);
-                    
-                    // Log to audit trail
-                    if (!skipAudit) {
-                        logAudit('storeItem', { key, data: wrappedData });
-                    }
-                    
+                    const archive = localStorage.getItem(PAYMENT_ARCHIVE_KEY);
+                    return archive ? JSON.parse(archive) : [];
+                } catch (error) {
+                    console.error('Failed to get payment archive:', error);
+                    return [];
+                }
+            }
+            
+            // Save the payment archive
+            function savePaymentArchive(archive) {
+                try {
+                    localStorage.setItem(PAYMENT_ARCHIVE_KEY, JSON.stringify(archive));
                     return true;
                 } catch (error) {
-                    console.error('Failed to store item:', error);
-                    
-                    // If offline, queue the operation
-                    if (!navigator.onLine) {
-                        queueOfflineAction({
-                            type: 'store',
-                            key,
-                            data,
-                            timestamp: new Date().toISOString()
-                        });
-                    }
-                    
+                    console.error('Failed to save payment archive:', error);
                     return false;
                 }
             }
             
-            // Retrieve an item with decompression and decryption
-            async function retrieveItem(key) {
+            // Add a receipt to the archive
+            function addReceiptToArchive(receipt) {
                 try {
-                    const item = localStorage.getItem(key);
+                    validateReceipt(receipt);
                     
-                    if (!item) return null;
+                    const archive = getPaymentArchive();
                     
-                    // Check if it's compressed (starts with base64-like pattern)
-                    if (item.startsWith('N') || item.startsWith('e') || item.startsWith('H')) {
-                        // Decompress
-                        const decompressed = LZString.decompressFromBase64(item);
-                        
-                        if (!decompressed) {
-                            // Might be legacy format, try parsing as JSON directly
-                            try {
-                                const legacyData = JSON.parse(item);
-                                
-                                // Log migration warning
-                                console.warn(`Migrating legacy format for key: ${key}`);
-                                
-                                // Store in new format
-                                await storeItem(key, legacyData, true);
-                                
-                                return legacyData;
-                            } catch (e) {
-                                console.error('Failed to parse legacy data:', e);
-                                return null;
-                            }
-                        }
-                        
-                        // Parse the JSON
-                        const parsed = JSON.parse(decompressed);
-                        
-                        // Handle versioning if needed in the future
-                        if (parsed.version !== CURRENT_VERSION) {
-                            console.warn(`Data version ${parsed.version} differs from current ${CURRENT_VERSION}`);
-                            // Future: implement migration logic here
-                        }
-                        
-                        // Decrypt sensitive fields
-                        const decryptedData = await decryptSensitiveFields(parsed.data);
-                        return decryptedData;
+                    // Check if receipt already exists
+                    const existingIndex = archive.findIndex(r => r.id === receipt.id);
+                    
+                    if (existingIndex >= 0) {
+                        // Update existing receipt
+                        archive[existingIndex] = {...archive[existingIndex], ...receipt};
                     } else {
-                        // Legacy format, parse directly
-                        try {
-                            const legacyData = JSON.parse(item);
-                            
-                            // Log migration warning
-                            console.warn(`Migrating legacy format for key: ${key}`);
-                            
-                            // Store in new format
-                            await storeItem(key, legacyData, true);
-                            
-                            return legacyData;
-                        } catch (e) {
-                            console.error('Failed to parse legacy data:', e);
-                            return null;
-                        }
+                        // Add new receipt
+                        archive.push(receipt);
                     }
+                    
+                    // Sort by date (newest first)
+                    archive.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    return savePaymentArchive(archive);
                 } catch (error) {
-                    console.error('Failed to retrieve item:', error);
-                    return null;
+                    console.error('Failed to add receipt to archive:', error);
+                    return false;
                 }
             }
             
@@ -1647,22 +1509,11 @@
                         try {
                             switch (action.dataType) {
                                 case 'store':
-                                    // Determine the correct storage method based on key prefix
-                                    if (action.dataPayload.key.startsWith(PREFIX_RECEIPT)) {
-                                        await saveReceipt(action.dataPayload.data, true);
-                                    } else {
-                                        // Generic storage
-                                        await storeItem(
-                                            action.dataPayload.key, 
-                                            action.dataPayload.data, 
-                                            true
-                                        );
-                                    }
+                                    await addReceiptToArchive(action.dataPayload.data);
                                     break;
                                 
                                 case 'delete':
-                                    localStorage.removeItem(action.dataPayload.key);
-                                    logAudit('deleteItem', { key: action.dataPayload.key }, true);
+                                    deleteReceiptFromArchive(action.dataPayload.id);
                                     break;
                                 
                                 // Add other action types as needed
@@ -1690,11 +1541,7 @@
                     const logData = localStorage.getItem(KEY_AUDIT_LOG);
                     
                     if (logData) {
-                        if (skipCompression) {
-                            auditLog = JSON.parse(logData);
-                        } else {
-                            auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
-                        }
+                        auditLog = JSON.parse(logData);
                     }
                     
                     // Add new entry
@@ -1707,18 +1554,30 @@
                     });
                     
                     // Save back to storage
-                    if (skipCompression) {
-                        localStorage.setItem(KEY_AUDIT_LOG, JSON.stringify(auditLog));
-                    } else {
-                        localStorage.setItem(
-                            KEY_AUDIT_LOG, 
-                            LZString.compressToUTF16(JSON.stringify(auditLog))
-                        );
-                    }
+                    localStorage.setItem(KEY_AUDIT_LOG, JSON.stringify(auditLog));
                     
                     return true;
                 } catch (error) {
                     console.error('Failed to log audit event:', error);
+                    return false;
+                }
+            }
+            
+            // Delete a receipt from the archive
+            function deleteReceiptFromArchive(id) {
+                try {
+                    const archive = getPaymentArchive();
+                    const updatedArchive = archive.filter(receipt => receipt.id !== id);
+                    
+                    const success = savePaymentArchive(updatedArchive);
+                    
+                    if (success) {
+                        logAudit('deleteReceipt', { id });
+                    }
+                    
+                    return success;
+                } catch (error) {
+                    console.error('Failed to delete receipt from archive:', error);
                     return false;
                 }
             }
@@ -1733,18 +1592,12 @@
                         // Validate receipt
                         validateReceipt(receipt);
                         
-                        // Encrypt sensitive fields if any
-                        const processedReceipt = await encryptSensitiveFields(receipt);
-                        
                         // Store the receipt
-                        const success = await storeItem(
-                            `${PREFIX_RECEIPT}${receipt.id}`,
-                            processedReceipt,
-                            skipAudit
-                        );
+                        const success = addReceiptToArchive(receipt);
                         
                         if (success && !skipAudit) {
                             showNotification('Beleg erfolgreich gespeichert', 'success');
+                            logAudit('saveReceipt', { id: receipt.id });
                         }
                         
                         return success;
@@ -1756,42 +1609,18 @@
                 },
                 
                 async getReceipts() {
-                    const receipts = [];
-                    
-                    // Get all receipt keys
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        
-                        if (key.startsWith(PREFIX_RECEIPT)) {
-                            const receipt = await retrieveItem(key);
-                            if (receipt) {
-                                receipts.push(receipt);
-                            }
-                        }
-                    }
-                    
-                    return receipts.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    return getPaymentArchive();
                 },
                 
                 async deleteReceipt(id) {
                     try {
-                        const key = `${PREFIX_RECEIPT}${id}`;
-                        localStorage.removeItem(key);
+                        const success = deleteReceiptFromArchive(id);
                         
-                        // Log to audit trail
-                        logAudit('deleteReceipt', { id });
-                        
-                        // If offline, queue the deletion
-                        if (!navigator.onLine) {
-                            queueOfflineAction({
-                                type: 'delete',
-                                key,
-                                timestamp: new Date().toISOString()
-                            });
+                        if (success) {
+                            showNotification('Beleg erfolgreich gelöscht', 'success');
                         }
                         
-                        showNotification('Beleg erfolgreich gelöscht', 'success');
-                        return true;
+                        return success;
                     } catch (error) {
                         console.error('Failed to delete receipt:', error);
                         showNotification('Fehler beim Löschen des Belegs', 'error');
@@ -1897,14 +1726,7 @@
                             return false;
                         }
                         
-                        // Decompress if needed
-                        let auditLog;
-                        try {
-                            auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
-                        } catch (e) {
-                            // Might not be compressed
-                            auditLog = JSON.parse(logData || '[]');
-                        }
+                        const auditLog = JSON.parse(logData || '[]');
                         
                         const dataStr = JSON.stringify(auditLog, null, 2);
                         const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
@@ -1930,7 +1752,7 @@
         // Initialize storage manager when DOM is loaded
         document.addEventListener('DOMContentLoaded', async function() {
             // Initialize storage manager
-            await storageManager.init();
+            storageManager.init();
             
             // Load receipts from localStorage
             loadAndDisplayReceipts();
@@ -1975,9 +1797,6 @@
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const timeDisplay = document.getElementById('timeDisplay');
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationCenter = document.getElementById('notificationCenter');
-        const notificationBadge = document.getElementById('notificationBadge');
         const logoutBtn = document.getElementById('logoutBtn');
         const filterToggle = document.getElementById('filterToggle');
         const filterPanel = document.getElementById('filterPanel');
@@ -2058,19 +1877,6 @@
         sidebarOverlay.addEventListener('click', () => {
             sidebar.classList.remove('active');
             sidebarOverlay.classList.remove('active');
-        });
-        
-        // Notification center toggle
-        notificationBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            notificationCenter.classList.toggle('active');
-        });
-        
-        // Close notification center when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!notificationBtn.contains(e.target) && !notificationCenter.contains(e.target)) {
-                notificationCenter.classList.remove('active');
-            }
         });
         
         // Logout functionality
@@ -2234,9 +2040,10 @@
                         <div class="receipt-details">
                             <div class="receipt-id">${receipt.id}${sourceBadge}${legacyBadge}</div>
                             <div class="receipt-date">${dateStr}</div>
+                            ${receipt.customer ? `<div class="receipt-note">Kunde: ${receipt.customer}</div>` : ''}
                             ${receipt.note ? `<div class="receipt-note">${receipt.note}</div>` : ''}
                         </div>
-                        <div class="receipt-total">€${receipt.total.toFixed(2)}</div>
+                        <div class="receipt-total">€${receipt.amount.toFixed(2)}</div>
                         <div class="status-badge ${statusClass}">${receipt.status}</div>
                         <div class="receipt-actions">
                             <button class="receipt-action-btn view-btn" title="Details anzeigen">
@@ -2294,7 +2101,7 @@
         function updateIncomeTotal(receipts) {
             const total = receipts
                 .filter(r => r.status === 'Bestätigt')
-                .reduce((sum, r) => sum + parseFloat(r.total), 0);
+                .reduce((sum, r) => sum + parseFloat(r.amount), 0);
             document.getElementById('total-amount').textContent = `€${total.toFixed(2)}`;
         }
 
@@ -2310,8 +2117,25 @@
             document.getElementById('detail-date').textContent = 
                 `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
             
-            document.getElementById('detail-total').textContent = `€ ${receipt.total.toFixed(2)}`;
+            document.getElementById('detail-total').textContent = `€ ${receipt.amount.toFixed(2)}`;
             document.getElementById('detail-source').textContent = receipt.source === 'cloud' ? 'Cloud' : 'Lokal';
+            
+            // Customer info
+            document.getElementById('detail-customer').textContent = receipt.customer || 'Nicht angegeben';
+            
+            // Merchant info
+            const merchantInfo = receipt.merchant ? 
+                `${receipt.merchant.name} (seit ${new Date(receipt.merchant.setupDate).toLocaleDateString('de-DE')})` : 
+                'Nicht angegeben';
+            document.getElementById('detail-merchant').textContent = merchantInfo;
+            
+            // Coupon info
+            if (receipt.coupon) {
+                document.getElementById('detail-coupon-row').style.display = 'flex';
+                document.getElementById('detail-coupon').textContent = receipt.coupon;
+            } else {
+                document.getElementById('detail-coupon-row').style.display = 'none';
+            }
             
             const statusBadge = document.getElementById('detail-status');
             statusBadge.textContent = receipt.status;
@@ -2623,9 +2447,19 @@
                             <div>${currentReceipt.status}</div>
                         </div>
                         <div class="info-row">
-                            <div class="info-label">Quelle:</div>
-                            <div>${currentReceipt.source === 'cloud' ? 'Cloud' : 'Lokal'}</div>
+                            <div class="info-label">Kunde:</div>
+                            <div>${currentReceipt.customer || 'Nicht angegeben'}</div>
                         </div>
+                        <div class="info-row">
+                            <div class="info-label">Händler:</div>
+                            <div>${currentReceipt.merchant ? currentReceipt.merchant.name : 'Nicht angegeben'}</div>
+                        </div>
+                        ${currentReceipt.coupon ? `
+                        <div class="info-row">
+                            <div class="info-label">Gutschein:</div>
+                            <div>${currentReceipt.coupon}</div>
+                        </div>
+                        ` : ''}
                     </div>
                     
                     <table>
@@ -2656,7 +2490,7 @@
                     </table>
                     
                     <div class="total">
-                        Gesamtsumme: € ${currentReceipt.total.toFixed(2)}
+                        Gesamtsumme: € ${currentReceipt.amount.toFixed(2)}
                     </div>
                     
                     ${currentReceipt.note ? `
@@ -2803,7 +2637,9 @@
                     !receipt.id.toLowerCase().includes(searchTerm) && 
                     !receipt.date.toLowerCase().includes(searchTerm) &&
                     !receipt.status.toLowerCase().includes(searchTerm) &&
-                    !receipt.total.toString().includes(searchTerm)) {
+                    !receipt.amount.toString().includes(searchTerm) &&
+                    !(receipt.customer && receipt.customer.toLowerCase().includes(searchTerm)) &&
+                    !(receipt.merchant && receipt.merchant.name.toLowerCase().includes(searchTerm))) {
                     return false;
                 }
                 
