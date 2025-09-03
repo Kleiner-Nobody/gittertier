@@ -737,13 +737,14 @@
         z-index: 1000;
         align-items: center;
         justify-content: center;
+        padding: var(--spacing-md);
     }
     
     .superadmin-modal-content {
         background-color: var(--color-bg);
-        width: 90%;
+        width: 100%;
         max-width: 1200px;
-        max-height: 90vh;
+        max-height: 95vh;
         border-radius: var(--radius);
         box-shadow: var(--shadow-lg);
         overflow: hidden;
@@ -948,11 +949,12 @@
         z-index: 1000;
         align-items: center;
         justify-content: center;
+        padding: var(--spacing-md);
     }
     
     .view-modal-content {
         background-color: var(--color-bg);
-        width: 90%;
+        width: 100%;
         max-width: 800px;
         max-height: 80vh;
         border-radius: var(--radius);
@@ -1013,11 +1015,11 @@
     @media (max-width: 768px) {
         .superadmin-modal-content,
         .view-modal-content {
-            width: 95%;
+            width: 100%;
             height: 90vh;
             max-width: none;
             max-height: none;
-            border-radius: 0;
+            border-radius: var(--radius);
         }
         
         .localstorage-table {
@@ -1065,6 +1067,49 @@
         .search-container-fixed {
             position: relative;
         }
+        
+        /* Mobile-specific improvements */
+        .mobile-card {
+            background-color: var(--color-bg-secondary);
+            border-radius: var(--radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            border: 1px solid var(--color-border);
+        }
+        
+        .mobile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .mobile-card-title {
+            font-weight: 600;
+            color: var(--color-accent);
+            font-family: monospace;
+        }
+        
+        .mobile-card-content {
+            font-size: var(--text-sm);
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .mobile-card-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            justify-content: flex-end;
+        }
+        
+        .mobile-view {
+            display: none;
+        }
+        
+        .mobile-view.active {
+            display: block;
+        }
     }
 
     /* Special mobile optimizations for very small screens */
@@ -1073,6 +1118,7 @@
         .view-modal-content {
             width: 100%;
             height: 100%;
+            border-radius: 0;
         }
         
         .superadmin-header,
@@ -1092,6 +1138,31 @@
         .action-buttons button {
             font-size: var(--text-sm);
         }
+    }
+    
+    /* LZString decompression styles */
+    .decompress-btn {
+        margin-left: var(--spacing-sm);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--text-xs);
+    }
+    
+    .compression-badge {
+        display: inline-block;
+        background-color: var(--color-warning);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 6px;
+        border-radius: 10px;
+        margin-left: var(--spacing-sm);
+        vertical-align: middle;
+    }
+    
+    .compression-controls {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+        justify-content: flex-end;
     }
     </style>
 </head>
@@ -1859,20 +1930,26 @@
                         <!-- Summary will be inserted here -->
                     </div>
                     
-                    <table class="localstorage-table">
-                        <thead>
-                            <tr>
-                                <th>Schlüssel</th>
-                                <th>Typ</th>
-                                <th>Größe</th>
-                                <th>Wert (Vorschau)</th>
-                                <th>Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="localStorageTableBody">
-                            <!-- Table rows will be inserted here -->
-                        </tbody>
-                    </table>
+                    <!-- Mobile View (initially hidden) -->
+                    <div id="mobileLocalStorageView" class="mobile-view"></div>
+                    
+                    <!-- Desktop Table View -->
+                    <div id="desktopLocalStorageView" class="mobile-view active">
+                        <table class="localstorage-table">
+                            <thead>
+                                <tr>
+                                    <th>Schlüssel</th>
+                                    <th>Typ</th>
+                                    <th>Größe</th>
+                                    <th>Wert (Vorschau)</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="localStorageTableBody">
+                                <!-- Table rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1893,6 +1970,9 @@
             <div class="view-modal-footer">
                 <button class="btn btn-primary" id="copyValueBtn">
                     <i class="fas fa-copy"></i> Kopieren
+                </button>
+                <button class="btn btn-warning decompress-btn" id="decompressBtn" style="display: none;">
+                    <i class="fas fa-unlock"></i> Dekomprimieren
                 </button>
             </div>
         </div>
@@ -1922,6 +2002,13 @@
                         <div id="suggestionsList"></div>
                     </div>
                     
+                    <div class="compression-controls" id="compressionControls" style="display: none;">
+                        <span class="compression-badge">Komprimiert</span>
+                        <button class="btn btn-sm btn-warning" id="toggleCompressionBtn">
+                            <i class="fas fa-lock-open"></i> Dekomprimieren
+                        </button>
+                    </div>
+                    
                     <div class="action-buttons" style="margin-top: var(--spacing-md);">
                         <button class="btn btn-success" id="saveValueBtn">
                             <i class="fas fa-save"></i> Speichern
@@ -1936,6 +2023,9 @@
     </div>
 
     <script>
+        // LZString Compression Library (minified)
+        !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.LZString=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){var base64KeyStr="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";function compressToBase64(e){if(null==e)return"";var r=compress(e);return r=function(e){var r,r="";for(var i=0;i<e.length;i+=3)if(i+2==e.length)r+=base64KeyStr.charAt(e[i]>>2),r+=base64KeyStr.charAt((3&e[i])<<4|e[i+1]>>4),r+=base64KeyStr.charAt((15&e[i+1])<<2),r+="=";else if(i+1==e.length)r+=base64KeyStr.charAt(e[i]>>2),r+=base64KeyStr.charAt((3&e[i])<<4),r+="==",r+="=";else{var s=e[i]>>2;r+=base64KeyStr.charAt(s),s=(3&e[i])<<4|e[i+1]>>4,r+=base64KeyStr.charAt(s),s=(15&e[i+1])<<2|e[i+2]>>6,r+=base64KeyStr.charAt(s),s=63&e[i+2],r+=base64KeyStr.charAt(s)}return r}(r)}function decompressFromBase64(e){return null==e?"":""==e?null:function(e){var r,i,s,o,u,a=0,f=[];for(r=0;r<e.length&&"!"!=e.charAt(r);++r)o=base64KeyStr.indexOf(e.charAt(r)),o<0||(0==a?(f.push(o>>2),i=3&o,a=1):1==a?(f.push((i<<2|o>>4)>>0),s=15&o,a=2):2==a?(f.push((s<<4|o>>2)>>0),u=3&o,a=3):3==a&&(f.push((u<<6|o)>>0),a=0));return f}(e)}}function compressToUTF16(e){return null==e?"":compress(e,function(e){return function(e){for(var r="",i=0;i<e.length;i++)r+=String.fromCharCode(e[i]+32);return r}(e)})}function decompressFromUTF16(e){return null==e?"":""==e?null:compress(e,function(e){return function(e){for(var r=[],i=0;i<e.length;i++)r.push(e.charCodeAt(i)-32);return r}(e)})}function compressToUint8Array(e){for(var r=compress(e),i=new Uint8Array(2*r.length),s=0,o=r.length;s<o;s++){var u=r[s];i[2*s]=u>>>8,i[2*s+1]=255&u}return i}function decompressFromUint8Array(e){if(null===e)return decompress(e);for(var r=new Array(e.length/2),i=0,s=e.length;i<s;){var o=e[i++]<<8|e[i++];r[i/2-1]=o}return decompress(r)}function compressToEncodedURIComponent(e){return null==e?"":compress(e,function(e){return function(e){for(var r="",i=0;i<e.length;i++)0==e[i]?r+="!":r+=String.fromCharCode(e[i]+32);return r}(e)})}function decompressFromEncodedURIComponent(e){return null==e?"":""==e?null:(e=e.replace(/ /g,"+"),compress(e,function(e){return function(e){for(var r=[],i=0;i<e.length;i++)"!"==e[i]?r.push(0):r.push(e.charCodeAt(i)-32);return r}(e)}))}function compress(e,r){return null==e?"":_compress(e,15,function(e){return r(e)})}function _compress(e,r,i){if(null==e)return"";var s,o,u,a={},f={},l="",c="",p="",h=2,d=3,m=2,g=[],v=0,C=0;for(u=0;u<e.length;u+=1)if(l=e.charAt(u),Object.prototype.hasOwnProperty.call(a,l)||(a[l]=d++,f[l]=!0),c=p+l,Object.prototype.hasOwnProperty.call(a,c))p=c;else{if(Object.prototype.hasOwnProperty.call(f,p)){if(p.charCodeAt(0)<256){for(s=0;s<m;s++)v<<=1,C==r-1?(C=0,g.push(i(v)),v=0):C++;for(o=p.charCodeAt(0),s=0;s<8;s++)v=v<<1|1&o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o>>=1}else{for(o=1,s=0;s<m;s++)v=v<<1|o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o=0;for(o=p.charCodeAt(0),s=0;s<16;s++)v=v<<1|1&o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o>>=1}d--,delete f[p]}else for(o=a[p],s=0;s<m;s++)v=v<<1|1&o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o>>=1;d--,a[c]=d++,p=String(l)}for(p&&(Object.prototype.hasOwnProperty.call(f,p)?(p.charCodeAt(0)<256?(for(s=0;s<m;s++)v<<=1,C==r-1?(C=0,g.push(i(v)),v=0):C++;for(o=p.charCodeAt(0),s=0;s<8;s++)v=v<<1|1&o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o>>=1):(for(o=1,s=0;s<m;s++)v=v<<1|o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o=0;for(o=p.charCodeAt(0),s=0;s<16;s++)v=v<<1|1&o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o>>=1),d--,delete f[p]):(o=a[p],s=0;s<m;s++)v=v<<1|1&o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o>>=1),d--);for(o=2,s=0;s<m;s++)v=v<<1|1&o,C==r-1?(C=0,g.push(i(v)),v=0):C++,o>>=1;for(;;){if(v<<=1,C==r-1){g.push(i(v));break}C++}return g.join("")}function decompress(e){return null==e?"":""==e?null:_decompress(e.length,32768,function(r){return e.charCodeAt(r)})}function _decompress(e,r,i){var s,o,u,a,f,l,c,p=[],h=4,d=4,m=3,g="",v=[],C=0;function _decompress(){if(e===C)return null;var e=i(C++);return e}for(s=0;s<3;s+=1)p[s]=s;for(a=0,f=Math.pow(2,2),l=1;l!=f;)u=_decompress(),c=u>>1,0==(1&u)?(h=(c<<1)+1,d=h+1):(h=c+1,d=h),u=_decompress(),o=u>>1,0==(1&u)?(p[d]=p[h]+String(p[h]).charAt(0)):p[d]=o?p[o]+String(p[h]).charAt(0):String(p[h]).charAt(0),v.push(p[d]),h+=2,d+=2,f=Math.pow(2,m),m+=1;return v.join("")}return{compressToBase64:compressToBase64,decompressFromBase64:decompressFromBase64,compressToUTF16:compressToUTF16,decompressFromUTF16:decompressFromUTF16,compressToUint8Array:compressToUint8Array,decompressFromUint8Array:decompressFromUint8Array,compressToEncodedURIComponent:compressToEncodedURIComponent,decompressFromEncodedURIComponent:decompressFromEncodedURIComponent,compress:compress,decompress:decompress}});
+
         // Apply dark mode if enabled in localStorage
         function applyDarkMode() {
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
@@ -2405,6 +2495,7 @@
             const viewModalContent = document.getElementById('viewModalContent');
             const closeViewModalBtn = document.getElementById('closeViewModalBtn');
             const copyValueBtn = document.getElementById('copyValueBtn');
+            const decompressBtn = document.getElementById('decompressBtn');
             const editModal = document.getElementById('editModal');
             const editKeyName = document.getElementById('editKeyName');
             const valueEditor = document.getElementById('valueEditor');
@@ -2412,6 +2503,10 @@
             const saveValueBtn = document.getElementById('saveValueBtn');
             const cancelEditBtn = document.getElementById('cancelEditBtn');
             const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+            const toggleCompressionBtn = document.getElementById('toggleCompressionBtn');
+            const compressionControls = document.getElementById('compressionControls');
+            const mobileLocalStorageView = document.getElementById('mobileLocalStorageView');
+            const desktopLocalStorageView = document.getElementById('desktopLocalStorageView');
             
             // Super Admin password
             const SUPER_ADMIN_PASSWORD = "malochen";
@@ -2423,6 +2518,10 @@
             let allSuggestions = {};
             let allKeys = [];
             let filteredKeys = [];
+            let currentEditIsCompressed = false;
+            let currentViewIsCompressed = false;
+            let currentViewKey = null;
+            let currentViewValue = null;
             
             // Debounce function
             function debounce(func, wait) {
@@ -2476,6 +2575,57 @@
                 });
             });
             
+            // Decompress value in view modal
+            decompressBtn.addEventListener('click', () => {
+                if (currentViewIsCompressed) {
+                    try {
+                        const decompressed = LZString.decompressFromEncodedURIComponent(currentViewValue);
+                        if (decompressed) {
+                            viewModalContent.textContent = decompressed;
+                            decompressBtn.innerHTML = '<i class="fas fa-lock"></i> Komprimieren';
+                            currentViewIsCompressed = false;
+                        } else {
+                            showStatus('Dekompression fehlgeschlagen', 'error', superAdminMessage);
+                        }
+                    } catch (error) {
+                        showStatus('Fehler bei der Dekompression: ' + error.message, 'error', superAdminMessage);
+                    }
+                } else {
+                    viewModalContent.textContent = currentViewValue;
+                    decompressBtn.innerHTML = '<i class="fas fa-unlock"></i> Dekomprimieren';
+                    currentViewIsCompressed = true;
+                }
+            });
+            
+            // Toggle compression in edit modal
+            toggleCompressionBtn.addEventListener('click', () => {
+                if (currentEditIsCompressed) {
+                    try {
+                        const decompressed = LZString.decompressFromEncodedURIComponent(currentData);
+                        if (decompressed) {
+                            currentData = decompressed;
+                            renderEditor(currentData);
+                            toggleCompressionBtn.innerHTML = '<i class="fas fa-lock"></i> Komprimieren';
+                            currentEditIsCompressed = false;
+                        } else {
+                            showStatus('Dekompression fehlgeschlagen', 'error', superAdminMessage);
+                        }
+                    } catch (error) {
+                        showStatus('Fehler bei der Dekompression: ' + error.message, 'error', superAdminMessage);
+                    }
+                } else {
+                    try {
+                        const compressed = LZString.compressToEncodedURIComponent(currentData);
+                        currentData = compressed;
+                        renderEditor(currentData);
+                        toggleCompressionBtn.innerHTML = '<i class="fas fa-unlock"></i> Dekomprimieren';
+                        currentEditIsCompressed = true;
+                    } catch (error) {
+                        showStatus('Fehler bei der Kompression: ' + error.message, 'error', superAdminMessage);
+                    }
+                }
+            });
+            
             // Super Admin authentication
             superAdminLoginBtn.addEventListener('click', () => {
                 if (superAdminPassword.value === SUPER_ADMIN_PASSWORD) {
@@ -2492,6 +2642,7 @@
             function loadLocalStorageData() {
                 // Clear previous data
                 localStorageTableBody.innerHTML = '';
+                mobileLocalStorageView.innerHTML = '';
                 
                 // Get all keys
                 allKeys = Object.keys(localStorage);
@@ -2521,12 +2672,32 @@
                         // Determine type
                         let type = 'string';
                         let parsedValue = value;
+                        let isCompressed = false;
                         
-                        try {
-                            parsedValue = JSON.parse(value);
-                            type = Array.isArray(parsedValue) ? 'array' : typeof parsedValue;
-                        } catch (e) {
-                            type = 'string';
+                        // Check if value is compressed
+                        if (value && value.startsWith('N4I')) {
+                            isCompressed = true;
+                            try {
+                                const decompressed = LZString.decompressFromEncodedURIComponent(value);
+                                if (decompressed) {
+                                    try {
+                                        parsedValue = JSON.parse(decompressed);
+                                        type = Array.isArray(parsedValue) ? 'array' : typeof parsedValue;
+                                    } catch (e) {
+                                        parsedValue = decompressed;
+                                        type = 'string (decompressed)';
+                                    }
+                                }
+                            } catch (e) {
+                                // Not a compressed value
+                            }
+                        } else {
+                            try {
+                                parsedValue = JSON.parse(value);
+                                type = Array.isArray(parsedValue) ? 'array' : typeof parsedValue;
+                            } catch (e) {
+                                type = 'string';
+                            }
                         }
                         
                         // Update summary
@@ -2535,7 +2706,7 @@
                         }
                         summary.itemsByType[type]++;
                         
-                        // Create table row
+                        // Create table row for desktop
                         const row = document.createElement('tr');
                         
                         // Key cell
@@ -2546,6 +2717,12 @@
                         // Type cell
                         const typeCell = document.createElement('td');
                         typeCell.textContent = type;
+                        if (isCompressed) {
+                            const compressionBadge = document.createElement('span');
+                            compressionBadge.className = 'compression-badge';
+                            compressionBadge.textContent = 'compressed';
+                            typeCell.appendChild(compressionBadge);
+                        }
                         
                         // Size cell
                         const sizeCell = document.createElement('td');
@@ -2589,6 +2766,66 @@
                         row.appendChild(actionsCell);
                         
                         localStorageTableBody.appendChild(row);
+                        
+                        // Create mobile card view
+                        if (window.innerWidth <= 768) {
+                            const card = document.createElement('div');
+                            card.className = 'mobile-card';
+                            
+                            const cardHeader = document.createElement('div');
+                            cardHeader.className = 'mobile-card-header';
+                            
+                            const cardTitle = document.createElement('div');
+                            cardTitle.className = 'mobile-card-title';
+                            cardTitle.textContent = key;
+                            
+                            const cardType = document.createElement('div');
+                            cardType.textContent = type;
+                            if (isCompressed) {
+                                const compressionBadge = document.createElement('span');
+                                compressionBadge.className = 'compression-badge';
+                                compressionBadge.textContent = 'compressed';
+                                cardType.appendChild(compressionBadge);
+                            }
+                            
+                            cardHeader.appendChild(cardTitle);
+                            cardHeader.appendChild(cardType);
+                            
+                            const cardContent = document.createElement('div');
+                            cardContent.className = 'mobile-card-content';
+                            cardContent.textContent = value.length > 100 ? value.substring(0, 100) + '...' : value;
+                            
+                            const cardActions = document.createElement('div');
+                            cardActions.className = 'mobile-card-actions';
+                            
+                            const mobileViewBtn = document.createElement('button');
+                            mobileViewBtn.className = 'btn btn-primary btn-sm';
+                            mobileViewBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                            mobileViewBtn.title = 'Anzeigen';
+                            mobileViewBtn.addEventListener('click', () => viewItem(key, value));
+                            
+                            const mobileEditBtn = document.createElement('button');
+                            mobileEditBtn.className = 'btn btn-primary btn-sm';
+                            mobileEditBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                            mobileEditBtn.title = 'Bearbeiten';
+                            mobileEditBtn.addEventListener('click', () => editItem(key, value));
+                            
+                            const mobileDeleteBtn = document.createElement('button');
+                            mobileDeleteBtn.className = 'btn btn-danger btn-sm';
+                            mobileDeleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                            mobileDeleteBtn.title = 'Löschen';
+                            mobileDeleteBtn.addEventListener('click', () => deleteItem(key));
+                            
+                            cardActions.appendChild(mobileViewBtn);
+                            cardActions.appendChild(mobileEditBtn);
+                            cardActions.appendChild(mobileDeleteBtn);
+                            
+                            card.appendChild(cardHeader);
+                            card.appendChild(cardContent);
+                            card.appendChild(cardActions);
+                            
+                            mobileLocalStorageView.appendChild(card);
+                        }
                     } catch (error) {
                         console.error('Error processing key:', key, error);
                     }
@@ -2605,6 +2842,15 @@
                 });
                 
                 localStorageSummary.innerHTML = summaryHTML;
+                
+                // Show/hide views based on screen size
+                if (window.innerWidth <= 768) {
+                    desktopLocalStorageView.classList.remove('active');
+                    mobileLocalStorageView.classList.add('active');
+                } else {
+                    desktopLocalStorageView.classList.add('active');
+                    mobileLocalStorageView.classList.remove('active');
+                }
             }
             
             // Apply filters to keys
@@ -2674,9 +2920,32 @@
             
             // View item in detail
             function viewItem(key, value) {
-                let parsedValue = value;
+                currentViewKey = key;
+                currentViewValue = value;
+                currentViewIsCompressed = false;
+                
+                // Check if value is compressed
+                let isCompressed = false;
+                let displayValue = value;
+                
+                if (value && value.startsWith('N4I')) {
+                    isCompressed = true;
+                    currentViewIsCompressed = true;
+                    try {
+                        const decompressed = LZString.decompressFromEncodedURIComponent(value);
+                        if (decompressed) {
+                            displayValue = decompressed;
+                        }
+                    } catch (e) {
+                        // Not a compressed value
+                        isCompressed = false;
+                        currentViewIsCompressed = false;
+                    }
+                }
+                
+                let parsedValue = displayValue;
                 try {
-                    parsedValue = JSON.parse(value);
+                    parsedValue = JSON.parse(displayValue);
                 } catch (e) {
                     // Not JSON, use as is
                 }
@@ -2686,6 +2955,15 @@
                 
                 viewModalTitle.textContent = `Schlüssel: ${key}`;
                 viewModalContent.textContent = formattedValue;
+                
+                // Show/hide decompress button
+                if (isCompressed) {
+                    decompressBtn.style.display = 'inline-block';
+                    decompressBtn.innerHTML = '<i class="fas fa-unlock"></i> Dekomprimieren';
+                } else {
+                    decompressBtn.style.display = 'none';
+                }
+                
                 viewModal.style.display = 'flex';
             }
             
@@ -2693,6 +2971,23 @@
             function editItem(key, value) {
                 currentEditKey = key;
                 currentEditPath = null;
+                currentEditIsCompressed = false;
+                
+                // Check if value is compressed
+                if (value && value.startsWith('N4I')) {
+                    try {
+                        const decompressed = LZString.decompressFromEncodedURIComponent(value);
+                        if (decompressed) {
+                            value = decompressed;
+                            currentEditIsCompressed = true;
+                        }
+                    } catch (e) {
+                        // Not a compressed value
+                    currentEditIsCompressed = false;
+                    console.error('Error decompressing value:', e);
+                    showStatus('Fehler beim Dekomprimieren des Werts', 'error', superAdminMessage);
+                }
+                }
                 
                 try {
                     currentData = JSON.parse(value);
@@ -2702,6 +2997,15 @@
                 
                 editKeyName.textContent = key;
                 renderEditor(currentData);
+                
+                // Show compression controls if value was compressed
+                if (currentEditIsCompressed) {
+                    compressionControls.style.display = 'flex';
+                    toggleCompressionBtn.innerHTML = '<i class="fas fa-unlock"></i> Dekomprimieren';
+                } else {
+                    compressionControls.style.display = 'none';
+                }
+                
                 editModal.style.display = 'flex';
             }
             
@@ -2838,16 +3142,34 @@
                 keys.forEach(key => {
                     try {
                         const value = localStorage.getItem(key);
-                        const parsedValue = JSON.parse(value);
+                        let parsedValue = value;
                         
-                        if (typeof parsedValue === 'object' && parsedValue !== null) {
-                            // Process object values
-                            extractSuggestions(parsedValue, '');
+                        // Check if value is compressed
+                        if (value && value.startsWith('N4I')) {
+                            try {
+                                const decompressed = LZString.decompressFromEncodedURIComponent(value);
+                                if (decompressed) {
+                                    parsedValue = decompressed;
+                                }
+                            } catch (e) {
+                                // Not a compressed value
+                            }
+                        }
+                        
+                        try {
+                            parsedValue = JSON.parse(parsedValue);
+                            
+                            if (typeof parsedValue === 'object' && parsedValue !== null) {
+                                // Process object values
+                                extractSuggestions(parsedValue, '');
+                            }
+                        } catch (e) {
+                            // Not JSON, skip
+                            allSuggestions[''] = allSuggestions[''] || new Set();
+                            allSuggestions[''].add(parsedValue);
                         }
                     } catch (e) {
-                        // Not JSON, skip
-                    allSuggestions[''] = allSuggestions[''] || new Set();
-                        allSuggestions[''].add(value);
+                        console.error('Error processing key for suggestions:', key, e);
                     }
                 });
             }
@@ -2952,10 +3274,18 @@
             // Save edited value
             saveValueBtn.addEventListener('click', () => {
                 try {
-                    if (typeof currentData === 'object') {
-                        localStorage.setItem(currentEditKey, JSON.stringify(currentData));
+                    let valueToSave = currentData;
+                    if (currentEditIsCompressed) {
+                        // If it was compressed, we compress the string representation
+                        let stringValue = typeof valueToSave === 'object' ? JSON.stringify(valueToSave) : String(valueToSave);
+                        valueToSave = LZString.compressToEncodedURIComponent(stringValue);
+                        localStorage.setItem(currentEditKey, valueToSave);
                     } else {
-                        localStorage.setItem(currentEditKey, currentData);
+                        if (typeof valueToSave === 'object') {
+                            localStorage.setItem(currentEditKey, JSON.stringify(valueToSave));
+                        } else {
+                            localStorage.setItem(currentEditKey, valueToSave);
+                        }
                     }
                     
                     showStatus('Wert erfolgreich gespeichert', 'success', superAdminMessage);
@@ -2989,7 +3319,7 @@
                 
                 keys.forEach(key => {
                     try {
-                        data[key] = JSON.parse(localStorage.getItem(key));
+                        data[key] = localStorage.getItem(key);
                     } catch (e) {
                         data[key] = localStorage.getItem(key);
                     }
@@ -3090,6 +3420,7 @@
             localStorageSearch.addEventListener('input', debounce((e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 const rows = localStorageTableBody.querySelectorAll('tr');
+                const cards = mobileLocalStorageView.querySelectorAll('.mobile-card');
                 
                 rows.forEach(row => {
                     const key = row.querySelector('.key-cell').textContent.toLowerCase();
@@ -3099,6 +3430,17 @@
                         row.style.display = '';
                     } else {
                         row.style.display = 'none';
+                    }
+                });
+                
+                cards.forEach(card => {
+                    const key = card.querySelector('.mobile-card-title').textContent.toLowerCase();
+                    const value = card.querySelector('.mobile-card-content').textContent.toLowerCase();
+                    
+                    if (key.includes(searchTerm) || value.includes(searchTerm)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
                     }
                 });
                 
@@ -3155,6 +3497,11 @@
             filterSettings.addEventListener('change', loadLocalStorageData);
             sortBy.addEventListener('change', loadLocalStorageData);
             sortOrderLs.addEventListener('change', loadLocalStorageData);
+            
+            // Window resize listener to toggle between mobile and desktop views
+            window.addEventListener('resize', debounce(() => {
+                loadLocalStorageData();
+            }, 250));
         })();
     </script>
 </body>
