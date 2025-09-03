@@ -599,75 +599,93 @@
         box-shadow: var(--focus-ring);
     }
 
-    /* Modal Styles - REDESIGNED FOR MOBILE */
-    .modal {
-        display: none;
+    /* NEW: Modal Overlay and Modal Styles (Redesigned) */
+    .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
         background-color: var(--color-overlay);
-        z-index: 100;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-md);
+        z-index: 1000;
+        display: none;
+        animation: fadeIn 0.3s ease;
     }
 
-    .modal-content {
+    .modal-overlay.active {
+        display: block;
+    }
+
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         background-color: var(--color-bg);
         border-radius: var(--radius);
-        padding: var(--spacing-lg);
-        width: 100%;
+        box-shadow: var(--shadow-lg);
+        z-index: 1001;
+        width: 90%;
         max-width: 500px;
         max-height: 90vh;
         overflow-y: auto;
-        box-shadow: var(--shadow-md);
-        animation: scaleIn 0.3s cubic-bezier(0.2, 0, 0, 1);
-        position: relative;
+        display: none;
+        animation: scaleIn 0.3s ease;
+    }
+
+    .modal.active {
+        display: block;
     }
 
     .modal-header {
-        margin-bottom: var(--spacing-lg);
-        position: relative;
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
-    .modal-title {
-        font-weight: 600;
+    .modal-header h2 {
         font-size: var(--text-xl);
-        margin-bottom: var(--spacing-xs);
+        font-weight: 600;
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
-        padding-right: var(--spacing-xl);
     }
 
     .modal-close {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        background: var(--color-bg);
-        border: 1px solid var(--color-border);
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+        background: none;
+        border: none;
+        font-size: var(--text-xl);
+        cursor: pointer;
+        color: var(--color-text-muted);
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        font-size: var(--text-xl);
-        z-index: 10;
-        box-shadow: var(--shadow);
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+
+    .modal-close:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .modal-content {
+        padding: var(--spacing-lg);
     }
 
     .modal-input {
         width: 100%;
         padding: var(--spacing-md);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
+        border-radius: var(--radius);
         margin-bottom: var(--spacing-md);
         font-size: var(--text-base);
         transition: var(--transition);
+        background: var(--color-bg);
+        color: var(--color-text);
     }
 
     .modal-input:focus {
@@ -676,42 +694,42 @@
         box-shadow: var(--focus-ring);
     }
 
-    .modal-actions {
+    .modal-buttons {
         display: flex;
         gap: var(--spacing-md);
         margin-top: var(--spacing-lg);
-        flex-wrap: wrap;
     }
 
     .modal-btn {
         flex: 1;
         padding: var(--spacing-md);
+        border: none;
         border-radius: var(--radius);
         font-weight: 600;
         cursor: pointer;
-        transition: var(--transition);
-        min-width: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
     }
 
-    .modal-btn.primary {
-        background-color: var(--color-accent);
+    .btn-save {
+        background: var(--color-success);
         color: white;
-        border: none;
     }
 
-    .modal-btn.primary:hover {
-        background-color: var(--color-accent-hover);
+    .btn-save:hover {
+        background: #0f9c5a;
     }
 
-    .modal-btn.secondary {
-        background-color: transparent;
+    .btn-cancel {
+        background: var(--color-bg);
         border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text);
     }
 
-    .modal-btn.secondary:hover {
-        background-color: #f9fafb;
-        color: var(--color-text);
+    .btn-cancel:hover {
+        background: var(--color-bg-secondary);
     }
 
     /* Notification */
@@ -761,8 +779,8 @@
     }
 
     @keyframes scaleIn {
-        from { transform: scale(0.95); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
+        from { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+        to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
 
     /* Responsive Design */
@@ -842,29 +860,13 @@
             width: 100%;
         }
 
-        /* Mobile-optimized modals */
         .modal {
-            padding: var(--spacing-sm);
-            align-items: flex-end;
+            width: 95%;
+            padding: 0;
         }
 
-        .modal-content {
-            border-radius: var(--radius) var(--radius) 0 0;
-            max-height: 85vh;
-            padding: var(--spacing-lg) var(--spacing-md);
-            animation: slideUp 0.3s ease-out;
-        }
-
-        .modal-title {
-            font-size: var(--text-lg);
-        }
-
-        .modal-actions {
+        .modal-buttons {
             flex-direction: column;
-        }
-
-        .modal-btn {
-            width: 100%;
         }
     }
 
@@ -881,7 +883,7 @@
             padding: var(--spacing-md);
         }
         
-        .modal-title {
+        .modal-header h2 {
             font-size: var(--text-base);
         }
     }
@@ -1432,38 +1434,39 @@
         </button>
     </div>
 
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+
     <!-- Product Modal - REDESIGNED -->
     <div id="product-modal" class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-plus-circle"></i> Produkt erfassen</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-plus-circle"></i>
-                    Produkt erfassen
-                </h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-                <p class="text-muted">Bitte geben Sie die Produktdetails ein</p>
-            </div>
+            <p class="text-muted">Bitte geben Sie die Produktdetails ein</p>
             <input type="text" id="product-name-input" class="modal-input" placeholder="Produktname">
             <input type="number" id="product-price-input" class="modal-input" placeholder="Preis (€)" step="0.01">
             <input type="text" id="product-barcode-input" class="modal-input" placeholder="Barcode" readonly>
-            <div class="modal-actions">
-                <button class="modal-btn secondary" onclick="closeModal()">Abbrechen</button>
-                <button class="modal-btn primary" onclick="saveProduct()">Speichern</button>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">
+                    <i class="fas fa-times"></i> Abbrechen
+                </button>
+                <button class="modal-btn btn-save" onclick="saveProduct()">
+                    <i class="fas fa-save"></i> Speichern
+                </button>
             </div>
         </div>
     </div>
     
     <!-- QR Modal - REDESIGNED -->
     <div id="qr-modal" class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-qrcode"></i> Bezahlung initiieren</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-qrcode"></i>
-                    Bezahlung initiieren
-                </h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-                <p class="text-muted">Generieren Sie einen QR-Code zur Zahlung</p>
-            </div>
+            <p class="text-muted">Generieren Sie einen QR-Code zur Zahlung</p>
             <div style="text-align: center; margin: var(--spacing-xl) 0;">
                 <button class="scan-btn" onclick="generateQR()" style="margin: 0 auto;">
                     <i class="fas fa-sync-alt"></i>
@@ -2021,7 +2024,7 @@
                 try {
                     // Get current audit log
                     let auditLog = [];
-                    const logData = localStorage.getItem(KEY_AUDIT_LOG);
+                    const logData = localStorage.getItem(KEY_AUTID_LOG);
                     
                     if (logData) {
                         if (skipCompression) {
@@ -2373,7 +2376,7 @@
         
         // Main App Variables
         let cart = [];
-        let products = JSON.parse(localStorage.getItem('products')) || {};
+        let products = {};
         let scannerActive = false;
         let mediaStream = null;
         let currentBarcode = null;
@@ -2411,8 +2414,8 @@
             // Initialize storage manager
             await storageManager.init();
             
-            // Load products from localStorage
-            products = JSON.parse(localStorage.getItem('products')) || {};
+            // Load products from storageManager
+            products = await storageManager.getProducts();
             
             // Apply settings
             applySettings();
@@ -2430,6 +2433,12 @@
             checkTutorialStatus();
             document.getElementById('tutorial-cutout').style.display = 'none';
             document.getElementById('tutorial-bubble').style.display = 'none';
+            
+            // Set up modal event listeners
+            document.getElementById('modal-overlay').addEventListener('click', closeModal);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
             
             // Check if we need to resume a tutorial in progress
             try {
@@ -2735,10 +2744,11 @@
         // Product Management
         function showProductModal(barcode) {
             document.getElementById('product-barcode-input').value = barcode;
-            document.getElementById('product-modal').style.display = 'flex';
+            document.getElementById('product-modal').classList.add('active');
+            document.getElementById('modal-overlay').classList.add('active');
         }
 
-        function saveProduct() {
+        async function saveProduct() {
             const name = document.getElementById('product-name-input').value.trim();
             const price = parseFloat(document.getElementById('product-price-input').value);
             const barcode = document.getElementById('product-barcode-input').value;
@@ -2754,11 +2764,26 @@
                 return;
             }
 
-            products[barcode] = { name, price, barcode };
-            localStorage.setItem('products', JSON.stringify(products));
-            showProduct(products[barcode]);
-            closeModal();
-            showNotification('Produkt gespeichert');
+            const product = { 
+                name, 
+                price, 
+                barcode,
+                stock: 0,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            try {
+                await storageManager.saveProduct(product);
+                // Reload products from storage
+                products = await storageManager.getProducts();
+                showProduct(product);
+                closeModal();
+                showNotification('Produkt gespeichert');
+            } catch (error) {
+                console.error('Failed to save product:', error);
+                showNotification('Fehler beim Speichern des Produkts', 'error');
+            }
         }
 
         // QR Generation
@@ -2888,8 +2913,9 @@
 
         function closeModal() {
             document.querySelectorAll('.modal').forEach(modal => {
-                modal.style.display = 'none';
+                modal.classList.remove('active');
             });
+            document.getElementById('modal-overlay').classList.remove('active');
             document.getElementById('product-name-input').value = '';
             document.getElementById('product-price-input').value = '';
         }
@@ -2903,18 +2929,13 @@
                 return;
             }
             currentBarcode = null;
-            document.getElementById('product-modal').style.display = 'flex';
+            showProductModal();
         });
         
         document.getElementById('clear-cart').addEventListener('click', () => {
             cart = [];
             updateCartDisplay();
             showNotification('Warenkorb geleert');
-        });
-        
-        // Close modals with ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
         });
 
         function playSound(type) {
@@ -3064,7 +3085,8 @@
                         document.querySelector('.payment-footer').style.zIndex = '10005';
                     },
                     simulate: function() {
-                        document.getElementById('qr-modal').style.display = 'flex';
+                        document.getElementById('qr-modal').classList.add('active');
+                        document.getElementById('modal-overlay').classList.add('active');
                     }
                 }
             ];
@@ -3466,7 +3488,6 @@
                     price: 9.99,
                     barcode: '123456789'
                 };
-                localStorage.setItem('products', JSON.stringify(products));
             }
             
             // Show the product card
