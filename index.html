@@ -1337,7 +1337,7 @@
             </div>
         </div>
         <div class="header-controls">
-            <button class="control-btn" onclick="window.location.href='admin'">
+            <button class="control-btn" onclick="window.location.href='user'">
                 <i class="fas fa-cog"></i>
             </button>
             <button class="control-btn" onclick="showWelcomeModal()">
@@ -1488,7 +1488,7 @@
             </div>
             <h2 class="maintenance-title">Wartungsarbeiten</h2>
             <p class="maintenance-message">Der Shop ist derzeit wegen Wartungsarbeiten geschlossen. Bitte versuchen Sie es später erneut.</p>
-            <button class="pay-btn" onclick="location.href='settings'">
+            <button class="pay-btn" onclick="location.href='user'">
                 <i class="fas fa-cog"></i>
                 Einstellungen
             </button>
@@ -1636,6 +1636,35 @@
                         }
                     }
                 }
+
+                function applyUserSettings() {
+                    const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
+                    
+                    // Apply scanner settings
+                    if (settings.continuousScan) {
+                        // Auto-start scanner if continuous scanning is enabled
+                        setTimeout(() => {
+                            if (!scannerActive) {
+                                toggleScanner();
+                            }
+                        }, 1000);
+                    }
+                    
+                    // Apply sound settings
+                    if (settings.scanSound === false) {
+                        // Disable scan sounds
+                        playSound = function() {}; // Override to do nothing
+                    }
+
+                        // Apply font size
+                        if (settings.fontSize) {
+                            document.documentElement.style.fontSize = 
+                                settings.fontSize === 'small' ? '14px' : 
+                                settings.fontSize === 'large' ? '18px' : '16px';
+                        }
+
+                }
+
                 
                 // Check for legacy products key (without prefix)
                 const legacyProducts = localStorage.getItem('products');
@@ -2420,6 +2449,7 @@
             // Apply settings
             applySettings();
             checkShopStatus();
+            applyUserSettings();
             setInterval(checkShopStatus, 60000);
             
             // Initialize currency symbol
@@ -2628,13 +2658,23 @@
             playSound('scan');
             
             if (products[barcode]) {
-                showProduct(products[barcode]);
-                showNotification(`${products[barcode].name} erkannt`);
+                // Check if auto add to cart is enabled
+                const userSettings = JSON.parse(localStorage.getItem('userSettings')) || {};
+                
+                if (userSettings.autoAddToCart) {
+                    // Auto add to cart
+                    currentProduct = products[barcode];
+                    addCurrentProductToCart();
+                    showNotification(`${products[barcode].name} automatisch hinzugefügt`);
+                } else {
+                    showProduct(products[barcode]);
+                    showNotification(`${products[barcode].name} erkannt`);
+                }
             } else {
                 const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
                 if (settings.manualAdd === false) {
                     showNotification('Nicht erlaubt!', 'error');
-                }else {
+                } else {
                     showProductModal(barcode);
                 }
             }
@@ -2966,7 +3006,7 @@
             tutorialSteps = [
                 {
                     title: "Header-Bedienelemente",
-                    content: "Oben rechts finden Sie verschiedene Bedienelemente: Einstellungen (nur für Administratoren), Hilfe (öffnet dieses Tutorial), Support (Fragen & Anliegen) und Info (Über diese App).",
+                    content: "Oben rechts finden Sie verschiedene Bedienelemente: Einstellungen, Hilfe (öffnet dieses Tutorial), Support (Fragen & Anliegen) und Info (Über diese App).",
                     element: ".header-controls",
                     position: "bottom",
                     action: null

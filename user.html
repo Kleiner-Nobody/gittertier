@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Benutzereinstellungen - Gittertier Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+    /* Add the same CSS variables and styles from customer.html */
     :root {
         --color-bg: #ffffff;
-        --color-bg-secondary: #f9fafb;
         --color-text: #111111;
         --color-text-muted: #6b7280;
         --color-border: #e5e7eb;
@@ -16,7 +19,9 @@
         --color-accent-hover: #1d4ed8;
         --color-success: #16a34a;
         --color-error: #dc2626;
-        --color-warning: #d97706;
+        --color-warning: #f59e0b;
+        --color-warning-bg: #fffbeb;
+        --color-warning-border: #fcd34d;
         --color-overlay: rgba(0, 0, 0, 0.5);
         
         --radius: 12px;
@@ -45,22 +50,7 @@
         --text-3xl: 1.875rem;
         
         --header-height: 64px;
-    }
-
-    .dark-mode {
-        --color-bg: #111827;
-        --color-bg-secondary: #1f2937;
-        --color-text: #f3f4f6;
-        --color-text-muted: #9ca3af;
-        --color-border: #374151;
-        --color-accent: #3b82f6;
-        --color-accent-hover: #2563eb;
-        --color-success: #10b981;
-        --color-error: #ef4444;
-        --color-warning: #f59e0b;
-        --color-overlay: rgba(0, 0, 0, 0.7);
-        --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --footer-height: 80px;
     }
 
     * {
@@ -75,10 +65,11 @@
         color: var(--color-text);
         line-height: 1.5;
         min-height: 100vh;
+        padding-bottom: var(--footer-height);
     }
 
-    /* Header Styles */
-    .user-header {
+    /* Header Styles - matching customer.html */
+    header {
         height: var(--header-height);
         display: flex;
         align-items: center;
@@ -104,149 +95,171 @@
         color: var(--color-accent);
     }
 
-    .back-btn {
-        background: none;
-        border: none;
-        color: var(--color-text);
-        font-size: var(--text-lg);
-        cursor: pointer;
+    .header-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        align-items: center;
+    }
+
+    .action-btn {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: var(--spacing-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
         border-radius: var(--radius);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-weight: 500;
+        cursor: pointer;
         transition: var(--transition);
+        min-width: 140px;
     }
 
-    .back-btn:hover {
-        background-color: var(--color-bg-secondary);
+    .action-btn:hover {
+        background-color: #f9fafb;
+        border-color: var(--color-accent);
     }
 
-    /* Main content */
-    .user-content {
-        padding: var(--spacing-xl);
+    .action-btn:focus {
+        outline: none;
+        box-shadow: var(--focus-ring);
+    }
+
+    .action-btn i {
+        font-size: var(--text-lg);
+    }
+
+    /* Main Content */
+    main {
         max-width: 800px;
         margin: 0 auto;
+        padding: var(--spacing-xl) var(--spacing-lg);
     }
 
-    /* Settings specific styles */
-    .settings-container {
-        max-width: 100%;
-        margin: 0 auto;
-        animation: fadeIn 0.5s ease-out;
-    }
-
-    .settings-section {
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        border: 1px solid var(--color-border);
-        margin-bottom: var(--spacing-lg);
-        overflow: hidden;
-        box-shadow: var(--shadow);
-        transition: var(--transition);
-    }
-
-    .settings-section:hover {
-        box-shadow: var(--shadow-md);
-    }
-
-    .section-header {
-        padding: var(--spacing-lg);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        cursor: pointer;
-        background-color: var(--color-bg-secondary);
-        transition: var(--transition);
-    }
-
-    .section-header:hover {
-        background-color: var(--color-bg);
+    .section {
+        margin-bottom: var(--spacing-xl);
     }
 
     .section-title {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-md);
-        font-weight: 600;
         font-size: var(--text-lg);
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text);
     }
 
-    .section-title i {
-        color: var(--color-accent);
-        width: 24px;
+    /* Settings Card - matching customer.html payment card style */
+    .settings-card {
+        background: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow);
+        padding: var(--spacing-xl);
+        position: relative;
+        overflow: hidden;
+        animation: fadeIn 0.4s ease-out;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .settings-header {
+        margin-bottom: var(--spacing-xl);
         text-align: center;
     }
 
-    .section-toggle {
-        transition: var(--transition);
+    .settings-title {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-sm);
+        color: var(--color-text);
     }
 
-    .section-content {
-        padding: var(--spacing-lg);
+    .settings-subtitle {
+        color: var(--color-text-muted);
+        font-size: var(--text-base);
     }
 
-    .settings-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--spacing-md);
+    /* Form Elements */
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+        text-align: left;
     }
 
-    .setting-card {
-        background-color: var(--color-bg-secondary);
-        border-radius: var(--radius);
+    .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-xs);
+        font-weight: 500;
+        color: var(--color-text);
+    }
+
+    .form-control {
+        width: 100%;
         padding: var(--spacing-md);
-        transition: var(--transition);
         border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--text-base);
+        transition: var(--transition);
+        background-color: var(--color-bg);
+        color: var(--color-text);
     }
 
-    .setting-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+    .form-control:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
     }
 
-    .setting-title {
+    .radio-group {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-sm);
+    }
+
+    .radio-option {
+        flex: 1;
         display: flex;
         align-items: center;
-        gap: var(--spacing-sm);
-        margin-bottom: var(--spacing-sm);
+        justify-content: center;
+        padding: var(--spacing-md);
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
     }
 
-    .setting-title i {
-        color: var(--color-accent);
+    .radio-option.selected {
+        border-color: var(--color-accent);
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    .radio-option i {
+        margin-right: var(--spacing-xs);
         font-size: var(--text-lg);
     }
 
-    .setting-title h3 {
-        font-size: var(--text-base);
-        font-weight: 600;
-    }
-
-    .setting-description {
-        font-size: var(--text-sm);
-        color: var(--color-text-muted);
+    .switch-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         margin-bottom: var(--spacing-md);
-        line-height: 1.5;
+        padding: var(--spacing-sm) 0;
+        border-bottom: 1px solid var(--color-border);
     }
 
-    .setting-control {
+    .switch-label {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .setting-control.vertical {
         flex-direction: column;
-        align-items: flex-start;
-        gap: var(--spacing-md);
+        gap: var(--spacing-xs);
     }
-    
-    .setting-option {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        align-items: center;
-        padding: var(--spacing-sm) 0;
+
+    .switch-title {
+        font-weight: 600;
+        font-size: var(--text-base);
+    }
+
+    .switch-description {
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
     }
 
     .switch {
@@ -294,37 +307,12 @@
         transform: translateX(24px);
     }
 
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-xs);
-    }
-
-    .form-label {
-        font-weight: 500;
-        font-size: var(--text-sm);
-    }
-
-    .form-input {
-        padding: var(--spacing-md);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius);
-        font-size: var(--text-base);
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        transition: var(--transition);
-    }
-
-    .form-input:focus {
-        outline: none;
-        border-color: var(--color-accent);
-        box-shadow: var(--focus-ring);
-    }
-
-    .btn {
-        padding: var(--spacing-md) var(--spacing-lg);
+    .save-btn {
+        background-color: var(--color-accent);
+        color: white;
         border: none;
         border-radius: var(--radius);
+        padding: var(--spacing-md) var(--spacing-lg);
         font-weight: 600;
         cursor: pointer;
         transition: var(--transition);
@@ -332,33 +320,21 @@
         align-items: center;
         justify-content: center;
         gap: var(--spacing-sm);
+        width: 100%;
+        margin-top: var(--spacing-xl);
     }
 
-    .btn-primary {
-        background-color: var(--color-accent);
-        color: white;
-    }
-
-    .btn-primary:hover {
+    .save-btn:hover {
         background-color: var(--color-accent-hover);
     }
 
-    .btn-success {
-        background-color: var(--color-success);
-        color: white;
+    .save-btn:focus {
+        outline: none;
+        box-shadow: var(--focus-ring);
     }
 
-    .btn-success:hover {
-        background-color: #0f9c5a;
-    }
-
-    .admin-access {
-        margin-top: var(--spacing-xl);
-        padding: var(--spacing-lg);
-        background-color: var(--color-bg-secondary);
-        border-radius: var(--radius);
-        border: 1px solid var(--color-border);
-        text-align: center;
+    .save-btn i {
+        font-size: var(--text-lg);
     }
 
     .status-message {
@@ -367,6 +343,7 @@
         margin-top: var(--spacing-md);
         font-weight: 500;
         display: none;
+        text-align: center;
     }
 
     .success-message {
@@ -381,401 +358,254 @@
         border: 1px solid rgba(220, 38, 38, 0.2);
     }
 
-    /* Animations */
+    /* Animation Keyframes */
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
     }
 
     /* Responsive Design */
-    @media (min-width: 768px) {
-        .settings-grid {
-            grid-template-columns: repeat(2, 1fr);
+    @media (max-width: 768px) {
+        .settings-card {
+            padding: var(--spacing-lg);
+        }
+        
+        .settings-title {
+            font-size: var(--text-xl);
+        }
+        
+        .radio-group {
+            flex-direction: column;
         }
     }
 
-    @media (max-width: 640px) {
-        .user-content {
-            padding: var(--spacing-md);
-        }
-        
-        .setting-control {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--spacing-md);
-        }
+        .control-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-xs);
+        background: none;
+        border: none;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        color: var(--color-text-muted);
+        font-size: var(--text-xs);
+        cursor: pointer;
+        transition: var(--transition);
+        flex: 1;
+        min-width: 60px;
+    }
+
+    .control-btn:hover {
+        background-color: #f9fafb;
+        color: var(--color-text);
+    }
+
+    .control-btn:focus {
+        outline: none;
+        box-shadow: var(--focus-ring);
+    }
+
+    .control-btn i {
+        font-size: var(--text-lg);
     }
 
     @media (max-width: 480px) {
-        .settings-grid {
-            grid-template-columns: 1fr;
+        header {
+            padding: 0 var(--spacing-md);
+        }
+        
+        .logo {
+            font-size: var(--text-lg);
+        }
+        
+        .settings-card {
+            padding: var(--spacing-md);
+        }
+        
+        .settings-title {
+            font-size: var(--text-lg);
+        }
+        
+        .settings-subtitle {
+            font-size: var(--text-sm);
         }
     }
 
-    /* Dark mode support for system preference */
+    /* Dark mode support */
     @media (prefers-color-scheme: dark) {
         :root {
             --color-bg: #111827;
-            --color-bg-secondary: #1f2937;
             --color-text: #f3f4f6;
             --color-text-muted: #9ca3af;
             --color-border: #374151;
+        }
+        
+        body {
+            background-color: var(--color-bg);
+        }
+        
+        .settings-card {
+            background-color: #1f2937;
+            border-color: var(--color-border);
+        }
+        
+        .form-control {
+            background-color: #1f2937;
+            color: var(--color-text);
+            border-color: var(--color-border);
+        }
+        
+        .radio-option {
+            background-color: #1f2937;
         }
     }
     </style>
 </head>
 <body>
-    <div class="user-header">
+    <header>
         <div class="logo">
-            <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Gittertier Pro</span>
+        </div>
+        <div class="header-controls">
+            <!-- Admin access button like in index.html -->
+            <button class="control-btn" onclick="window.location.href='admin'">
+                <i class="fas fa-user-shield"></i>
+                <span>Admin</span>
+            </button>
+            <button class="control-btn" onclick="goBack()">
                 <i class="fas fa-arrow-left"></i>
                 <span>Zurück</span>
             </button>
-            <i class="fas fa-user-cog"></i>
-            <span>Benutzereinstellungen</span>
         </div>
-    </div>
+    </header>
 
-    <main class="user-content">
-        <div class="settings-container">
-            <div class="settings-section">
-                <div class="section-header" data-section="payment">
-                    <div class="section-title">
+    <main>
+        <div class="settings-card">
+            <div class="settings-header">
+                <h1 class="settings-title">Benutzereinstellungen</h1>
+                <p class="settings-subtitle">Passen Sie Ihre Einkaufserfahrung an</p>
+            </div>
+            
+            <!-- Payment Settings -->
+            <div class="form-group">
+                <label for="defaultPaymentMethod">Standard-Zahlungsmethode</label>
+                <div class="radio-group">
+                    <div class="radio-option" data-value="cash" onclick="selectPaymentMethod('cash')">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Bar</span>
+                    </div>
+                    <div class="radio-option" data-value="card" onclick="selectPaymentMethod('card')">
                         <i class="fas fa-credit-card"></i>
-                        <span>Zahlungseinstellungen</span>
-                    </div>
-                    <div class="section-toggle">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-                <div class="section-content">
-                    <div class="settings-grid">
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-money-bill-wave"></i>
-                                <h3>Standard-Zahlungsmethode</h3>
-                            </div>
-                            <div class="setting-description">
-                                Wählen Sie Ihre bevorzugte Zahlungsmethode.
-                            </div>
-                            <div class="setting-control">
-                                <select id="defaultPaymentMethod" class="form-input">
-                                    <option value="cash">Bar</option>
-                                    <option value="card">Karte</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-user"></i>
-                                <h3>Name für Belege</h3>
-                            </div>
-                            <div class="setting-description">
-                                Name, der auf Belegen angezeigt wird.
-                            </div>
-                            <div class="setting-control">
-                                <input type="text" id="receiptName" class="form-input" placeholder="Vor- und Nachname">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <div class="section-header" data-section="scanner">
-                    <div class="section-title">
-                        <i class="fas fa-barcode"></i>
-                        <span>Scanner-Einstellungen</span>
-                    </div>
-                    <div class="section-toggle">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-                <div class="section-content">
-                    <div class="settings-grid">
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-sync-alt"></i>
-                                <h3>Kontinuierliches Scannen</h3>
-                            </div>
-                            <div class="setting-description">
-                                Der Scanner scannt kontinuierlich nach Barcodes.
-                            </div>
-                            <div class="setting-control">
-                                <label class="switch">
-                                    <input type="checkbox" id="continuousScan">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-cart-plus"></i>
-                                <h3>Automatisch zum Warenkorb hinzufügen</h3>
-                            </div>
-                            <div class="setting-description">
-                                Gescannte Produkte werden automatisch zum Warenkorb hinzugefügt.
-                            </div>
-                            <div class="setting-control">
-                                <label class="switch">
-                                    <input type="checkbox" id="autoAddToCart">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-volume-up"></i>
-                                <h3>Scan-Sound</h3>
-                            </div>
-                            <div class="setting-description">
-                                Sound bei erfolgreichem Scan abspielen.
-                            </div>
-                            <div class="setting-control">
-                                <label class="switch">
-                                    <input type="checkbox" id="scanSound" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-vibration"></i>
-                                <h3>Haptisches Feedback</h3>
-                            </div>
-                            <div class="setting-description">
-                                Vibration bei erfolgreichen Aktionen (nur mobile Geräte).
-                            </div>
-                            <div class="setting-control">
-                                <label class="switch">
-                                    <input type="checkbox" id="hapticFeedback">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <div class="section-header" data-section="appearance">
-                    <div class="section-title">
-                        <i class="fas fa-paint-brush"></i>
-                        <span>Darstellung</span>
-                    </div>
-                    <div class="section-toggle">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-                <div class="section-content">
-                    <div class="settings-grid">
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-moon"></i>
-                                <h3>Dark Mode</h3>
-                            </div>
-                            <div class="setting-description">
-                                Dunkles Farbschema aktivieren.
-                            </div>
-                            <div class="setting-control">
-                                <label class="switch">
-                                    <input type="checkbox" id="darkMode">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-text-height"></i>
-                                <h3>Schriftgröße</h3>
-                            </div>
-                            <div class="setting-description">
-                                Anpassung der Schriftgröße.
-                            </div>
-                            <div class="setting-control">
-                                <select id="fontSize" class="form-input">
-                                    <option value="small">Klein</option>
-                                    <option value="medium" selected>Mittel</option>
-                                    <option value="large">Groß</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-language"></i>
-                                <h3>Sprache</h3>
-                            </div>
-                            <div class="setting-description">
-                                Sprache der Benutzeroberfläche.
-                            </div>
-                            <div class="setting-control">
-                                <select id="language" class="form-input">
-                                    <option value="de" selected>Deutsch</option>
-                                    <option value="en">English</option>
-                                    <option value="fr">Français</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <div class="section-header" data-section="quickActions">
-                    <div class="section-title">
-                        <i class="fas fa-bolt"></i>
-                        <span>Schnellaktionen</span>
-                    </div>
-                    <div class="section-toggle">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-                <div class="section-content">
-                    <div class="settings-grid">
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-toggle-on"></i>
-                                <h3>Schnellaktionen aktivieren</h3>
-                            </div>
-                            <div class="setting-description">
-                                Zeigen Sie Schnellaktionen auf der Hauptseite an.
-                            </div>
-                            <div class="setting-control">
-                                <label class="switch">
-                                    <input type="checkbox" id="quickActionsEnabled" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-box"></i>
-                                <h3>Standard-Menge</h3>
-                            </div>
-                            <div class="setting-description">
-                                Standardmenge beim Hinzufügen von Produkten.
-                            </div>
-                            <div class="setting-control">
-                                <input type="number" id="defaultQuantity" class="form-input" min="1" max="99" value="1">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <div class="section-header" data-section="receipt">
-                    <div class="section-title">
-                        <i class="fas fa-receipt"></i>
-                        <span>Belegeinstellungen</span>
-                    </div>
-                    <div class="section-toggle">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-                <div class="section-content">
-                    <div class="settings-grid">
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-print"></i>
-                                <h3>Belegformat</h3>
-                            </div>
-                            <div class="setting-description">
-                                Format für gedruckte Belege.
-                            </div>
-                            <div class="setting-control">
-                                <select id="receiptFormat" class="form-input">
-                                    <option value="detailed" selected>Detailliert</option>
-                                    <option value="compact">Kompakt</option>
-                                    <option value="simple">Einfach</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-envelope"></i>
-                                <h3>E-Mail-Beleg</h3>
-                            </div>
-                            <div class="setting-description">
-                                Beleg nach Bezahlung per E-Mail senden.
-                            </div>
-                            <div class="setting-control">
-                                <label class="switch">
-                                    <input type="checkbox" id="emailReceipt">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-title">
-                                <i class="fas fa-at"></i>
-                                <h3>E-Mail-Adresse</h3>
-                            </div>
-                            <div class="setting-description">
-                                E-Mail-Adresse für Belegversand.
-                            </div>
-                            <div class="setting-control">
-                                <input type="email" id="emailAddress" class="form-input" placeholder="email@beispiel.de">
-                            </div>
-                        </div>
+                        <span>Karte</span>
                     </div>
                 </div>
             </div>
             
-            <div class="setting-card">
-                <button class="btn btn-primary" id="saveUserSettings" style="width: 100%;">
-                    <i class="fas fa-save"></i> Einstellungen speichern
-                </button>
-                <div class="status-message" id="userSettingsMessage"></div>
+            <div class="form-group">
+                <label for="receiptName">Name für Belege</label>
+                <input type="text" id="receiptName" class="form-control" placeholder="Vor- und Nachname">
             </div>
             
-            <div class="admin-access">
-                <h3>Admin-Zugang</h3>
-                <p>Für erweiterte Einstellungen benötigen Sie Administratorrechte.</p>
-                <button class="btn btn-primary" onclick="window.location.href='settings.html'">
-                    <i class="fas fa-lock"></i> Admin-Einstellungen öffnen
-                </button>
+            <!-- Scanner Settings -->
+            <div class="switch-container">
+                <div class="switch-label">
+                    <span class="switch-title">Kontinuierliches Scannen</span>
+                    <span class="switch-description">Der Scanner scannt kontinuierlich nach Barcodes</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="continuousScan">
+                    <span class="slider"></span>
+                </label>
             </div>
+            
+            <div class="switch-container">
+                <div class="switch-label">
+                    <span class="switch-title">Automatisch zum Warenkorb hinzufügen</span>
+                    <span class="switch-description">Gescannte Produkte werden automatisch zum Warenkorb hinzugefügt</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="autoAddToCart">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="switch-container">
+                <div class="switch-label">
+                    <span class="switch-title">Scan-Sound</span>
+                    <span class="switch-description">Sound bei erfolgreichem Scan abspielen</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="scanSound" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <!-- Appearance Settings -->
+             <div class="switch-container">
+                <div class="switch-label">
+                    <span class="switch-title">Dark Mode</span>
+                    <span class="switch-description">Dunkles Farbschema aktivieren</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="darkMode">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label for="fontSize">Schriftgröße</label>
+                <select id="fontSize" class="form-control">
+                    <option value="small">Klein</option>
+                    <option value="medium" selected>Mittel</option>
+                    <option value="large">Groß</option>
+                </select>
+            </div>
+            
+            <!-- Receipt Settings -->
+            <div class="form-group">
+                <label for="receiptFormat">Belegformat</label>
+                <select id="receiptFormat" class="form-control">
+                    <option value="detailed" selected>Detailliert</option>
+                    <option value="compact">Kompakt</option>
+                    <option value="simple">Einfach</option>
+                </select>
+            </div>
+            
+            <button class="save-btn" id="saveUserSettings">
+                <i class="fas fa-save"></i>
+                Einstellungen speichern
+            </button>
+            
+            <div class="status-message" id="userSettingsMessage"></div>
         </div>
     </main>
 
     <script>
+        let selectedPaymentMethod = null;
+        
         // Load user settings
         function loadUserSettings() {
             const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
             
             // Payment settings
-            document.getElementById('defaultPaymentMethod').value = settings.defaultPaymentMethod || 'cash';
+            if (settings.defaultPaymentMethod) {
+                selectPaymentMethod(settings.defaultPaymentMethod);
+            }
             document.getElementById('receiptName').value = settings.receiptName || '';
             
             // Scanner settings
             document.getElementById('continuousScan').checked = settings.continuousScan || false;
             document.getElementById('autoAddToCart').checked = settings.autoAddToCart || false;
             document.getElementById('scanSound').checked = settings.scanSound !== false; // default true
-            document.getElementById('hapticFeedback').checked = settings.hapticFeedback || false;
             
             // Appearance settings
             document.getElementById('darkMode').checked = settings.darkMode || false;
             document.getElementById('fontSize').value = settings.fontSize || 'medium';
-            document.getElementById('language').value = settings.language || 'de';
-            
-            // Quick actions
-            document.getElementById('quickActionsEnabled').checked = settings.quickActionsEnabled !== false; // default true
-            document.getElementById('defaultQuantity').value = settings.defaultQuantity || 1;
             
             // Receipt settings
             document.getElementById('receiptFormat').value = settings.receiptFormat || 'detailed';
-            document.getElementById('emailReceipt').checked = settings.emailReceipt || false;
-            document.getElementById('emailAddress').value = settings.emailAddress || '';
             
             // Apply dark mode if enabled
             if (settings.darkMode) {
@@ -783,32 +613,38 @@
             }
         }
         
+        // Select payment method
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            
+            // Update UI
+            document.querySelectorAll('.radio-option').forEach(option => {
+                if (option.getAttribute('data-value') === method) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        }
+        
         // Save user settings
         function saveUserSettings() {
             const settings = {
                 // Payment settings
-                defaultPaymentMethod: document.getElementById('defaultPaymentMethod').value,
+                defaultPaymentMethod: selectedPaymentMethod || 'cash',
                 receiptName: document.getElementById('receiptName').value,
                 
                 // Scanner settings
                 continuousScan: document.getElementById('continuousScan').checked,
                 autoAddToCart: document.getElementById('autoAddToCart').checked,
                 scanSound: document.getElementById('scanSound').checked,
-                hapticFeedback: document.getElementById('hapticFeedback').checked,
                 
                 // Appearance settings
                 darkMode: document.getElementById('darkMode').checked,
                 fontSize: document.getElementById('fontSize').value,
-                language: document.getElementById('language').value,
-                
-                // Quick actions
-                quickActionsEnabled: document.getElementById('quickActionsEnabled').checked,
-                defaultQuantity: parseInt(document.getElementById('defaultQuantity').value) || 1,
                 
                 // Receipt settings
-                receiptFormat: document.getElementById('receiptFormat').value,
-                emailReceipt: document.getElementById('emailReceipt').checked,
-                emailAddress: document.getElementById('emailAddress').value
+                receiptFormat: document.getElementById('receiptFormat').value
             };
             
             localStorage.setItem('userSettings', JSON.stringify(settings));
@@ -824,12 +660,6 @@
                 messageElement.style.display = 'none';
             }, 3000);
             
-            // Apply dark mode immediately
-            if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
         }
         
         // Go back to previous page
@@ -843,29 +673,6 @@
             
             // Set up save button
             document.getElementById('saveUserSettings').addEventListener('click', saveUserSettings);
-            
-            // Set up collapsible sections
-            document.querySelectorAll('.section-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    const content = header.nextElementSibling;
-                    const isActive = content.classList.contains('active');
-                    
-                    // Close all sections first
-                    document.querySelectorAll('.section-content').forEach(section => {
-                        section.classList.remove('active');
-                    });
-                    
-                    document.querySelectorAll('.section-toggle i').forEach(icon => {
-                        icon.className = 'fas fa-chevron-down';
-                    });
-                    
-                    // If the clicked section was not active, open it
-                    if (!isActive) {
-                        content.classList.add('active');
-                        header.querySelector('.section-toggle i').className = 'fas fa-chevron-up';
-                    }
-                });
-            });
         });
     </script>
 </body>
