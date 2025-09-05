@@ -1633,12 +1633,10 @@
         }
         
         // Generate receipt
-function generateReceipt() {
+        function generateReceipt() {
     const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
-    const receiptFormat = settings.receiptFormat || 'compact';
+    const receiptFormat = settings.receiptFormat || 'detailed';
     
-    const statusEl = document.getElementById('status');
-    const statusText = statusEl.textContent.trim();
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
@@ -1647,389 +1645,437 @@ function generateReceipt() {
     const shortPaymentId = paymentId.split('-').pop().substr(0, 8);
     let yPos = 20;
 
-    // Gemeinsamer Header für alle Formate
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, pageWidth, 40, 'F');
-    
-    // Logo und Titel
-    doc.setFontSize(20);
-    doc.setTextColor(37, 99, 235);
-    doc.setFont(undefined, 'bold');
-    
-    // Warenkorb Icon zeichnen
-    doc.setFontSize(16);
-    doc.text("\uf07a", 20, 25, { align: 'left', isOutputR2L: false, baseline: 'middle', charSpace: 0, rotation: 0 }); // FontAwesome shopping cart
-    
-    doc.setFontSize(20);
-    doc.setTextColor(37, 99, 235);
-    doc.text("Gittertier Pro", 40, 25);
-    
-    // Belegnummer und Datum
-    doc.setFontSize(10);
-    doc.setTextColor(107, 114, 128);
-    doc.text(`Belegnummer: ${shortPaymentId}`, pageWidth - 20, 15, null, 'right');
-    doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 20, 25, null, 'right');
-    
-    // Trennlinie unter Header
-    doc.setDrawColor(229, 231, 235);
-    doc.line(20, 40, pageWidth - 20, 40);
-    
-    yPos = 50;
+    // Gemeinsamer Header für alle Belegtypen
+    function drawHeader() {
+        // Hintergrund für den Header
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, pageWidth, 40, 'F');
+        
+        // Logo und Titel
+        doc.setFontSize(16);
+        doc.setTextColor(37, 99, 235);
+        doc.setFont(undefined, 'bold');
+        doc.text("Gittertier Pro", 20, 20);
+        
+        // Untertitel
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.setFont(undefined, 'normal');
+        doc.text("Kassenbeleg", 20, 26);
+        
+        // Trennlinie
+        doc.setDrawColor(229, 231, 235);
+        doc.line(15, 35, pageWidth - 15, 35);
+        
+        // Belegnummer und Datum
+        doc.text(`Beleg: ${shortPaymentId}`, pageWidth - 60, 20);
+        doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 60, 26);
+        
+        return 45; // Gibt die Startposition für den Inhalt zurück
+    }
 
-    // Kundeninformationen für alle Formate
-    doc.setFontSize(12);
-    doc.setTextColor(17, 17, 17);
-    doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
-    yPos += 8;
-    doc.text(`Zahlungsmethode: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
-    
-    // E-Mail-Info falls zutreffend
-    if (paymentData.emailReceipt) {
+    // Zeichnet die Fußzeile
+    function drawFooter() {
+        const footerY = pageHeight - 30;
+        
+        doc.setDrawColor(229, 231, 235);
+        doc.line(15, footerY - 10, pageWidth - 15, footerY - 10);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text("Vielen Dank für Ihren Einkauf!", pageWidth / 2, footerY, null, 'center');
+        doc.text("www.gittertier-pro.de", pageWidth / 2, footerY + 6, null, 'center');
+        
+        // QR-Code für den Beleg
+        try {
+            const qrSize = 25;
+            const qrX = pageWidth - 25;
+            const qrY = footerY - 25;
+            
+            const qrData = {
+                id: shortPaymentId,
+                date: paymentDate,
+                time: paymentTime,
+                total: paymentData.finalTotal.toFixed(2)
+            };
+            
+            const qrText = JSON.stringify(qrData);
+            QRCode.toCanvas(document.createElement('canvas'), qrText, { width: qrSize }, function(err, canvas) {
+                if (!err) {
+                    const imgData = canvas.toDataURL('image/jpeg');
+                    doc.addImage(imgData, 'JPEG', qrX - qrSize, qrY, qrSize, qrSize);
+                }
+            });
+        } catch (e) {
+            console.error('QR-Code konnte nicht generiert werden:', e);
+        }
+    }
+
+    // Simple Beleg
+    function generateSimpleReceipt() {
+        yPos = drawHeader();
+        
+        doc.setFontSize(14);
+        doc.setTextColor(17, 17, 17);
+        doc.setFont(undefined, 'bold');
+        doc.text("EINKAUFSBELEG", pageWidth / 2, yPos, null, 'center');
+        yPos += 15;
+        
+        // Kundendaten
+        doc.setFontSize(12);
+        doc.setTextColor(55, 65, 81);
+        doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
         yPos += 8;
-        doc.text(`E-Mail: ${paymentData.emailAddress}`, 20, yPos);
+        doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
+        yPos += 15;
+        
+        // Artikel (nur Namen und Gesamtpreise)
+        doc.setFontSize(11);
+        doc.setTextColor(17, 17, 17);
+        
+        paymentData.items.forEach((item) => {
+            if (yPos > pageHeight - 50) {
+                doc.addPage();
+                yPos = 20;
+                drawHeader();
+                yPos += 40;
+            }
+            
+            doc.text(`${item.quantity}x ${item.name}`, 20, yPos);
+            doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
+            yPos += 8;
+        });
+        
+        // Rabatt, falls vorhanden
+        if (appliedCoupon) {
+            if (yPos > pageHeight - 50) {
+                doc.addPage();
+                yPos = 20;
+                drawHeader();
+                yPos += 40;
+            }
+            
+            yPos += 5;
+            doc.setTextColor(22, 163, 74);
+            let discountText = '';
+            
+            if (appliedCoupon.type === 'percent') {
+                discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
+            } else {
+                discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
+            }
+            
+            doc.text(discountText, pageWidth - 20, yPos, null, 'right');
+            doc.setTextColor(17, 17, 17);
+            yPos += 8;
+        }
+        
+        // Gesamtsumme
+        yPos += 10;
+        doc.setDrawColor(229, 231, 235);
+        doc.line(20, yPos, pageWidth - 20, yPos);
+        yPos += 15;
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text("Gesamtsumme:", 20, yPos);
+        doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
+        
+        drawFooter();
     }
-    
-    yPos += 15;
 
-    // Je nach Format unterschiedliche Darstellung
+    // Compact Beleg (aktuelles Design)
+    function generateCompactReceipt() {
+        yPos = drawHeader();
+        
+        doc.setFontSize(12);
+        doc.setTextColor(55, 65, 81);
+        
+        // Kundendaten
+        doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
+        yPos += 8;
+        doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
+        yPos += 15;
+        
+        // Artikelübersicht
+        doc.setFontSize(11);
+        doc.setTextColor(17, 17, 17);
+        
+        paymentData.items.forEach((item) => {
+            if (yPos > pageHeight - 60) {
+                doc.addPage();
+                yPos = 20;
+                drawHeader();
+                yPos += 40;
+            }
+            
+            // Artikelbox
+            doc.setFillColor(249, 250, 251);
+            doc.roundedRect(15, yPos - 5, pageWidth - 30, 25, 3, 3, 'F');
+            doc.setDrawColor(229, 231, 235);
+            doc.roundedRect(15, yPos - 5, pageWidth - 30, 25, 3, 3, 'S');
+            
+            // Artikelinfo
+            doc.text(item.name, 25, yPos + 3);
+            doc.text(`${item.quantity} x € ${item.price.toFixed(2)}`, 25, yPos + 10);
+            doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos + 6, null, 'right');
+            
+            yPos += 30;
+        });
+        
+        // Rabatt, falls vorhanden
+        if (appliedCoupon) {
+            if (yPos > pageHeight - 40) {
+                doc.addPage();
+                yPos = 20;
+                drawHeader();
+                yPos += 40;
+            }
+            
+            yPos += 5;
+            doc.setTextColor(22, 163, 74);
+            let discountText = '';
+            
+            if (appliedCoupon.type === 'percent') {
+                discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
+            } else {
+                discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
+            }
+            
+            doc.text(discountText, pageWidth - 25, yPos, null, 'right');
+            doc.setTextColor(17, 17, 17);
+            yPos += 10;
+        }
+        
+        // Gesamtsumme
+        yPos += 10;
+        doc.setDrawColor(229, 231, 235);
+        doc.line(20, yPos, pageWidth - 20, yPos);
+        yPos += 15;
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text("Gesamtsumme:", 20, yPos);
+        doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
+        
+        // Status der Zahlung
+        const statusEl = document.getElementById('status');
+        const statusText = statusEl.textContent.trim();
+        yPos += 15;
+        
+        const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
+        doc.setTextColor(...statusColor);
+        doc.text(`Status: ${statusText}`, pageWidth / 2, yPos, null, 'center');
+        
+        drawFooter();
+    }
+
+    // Detailed Beleg (sehr detailliert)
+    function generateDetailedReceipt() {
+        yPos = drawHeader();
+        
+        doc.setFontSize(14);
+        doc.setTextColor(17, 17, 17);
+        doc.setFont(undefined, 'bold');
+        doc.text("DETAILIERTER EINKAUFSBELEG", pageWidth / 2, yPos, null, 'center');
+        yPos += 15;
+        
+        // Kundendaten-Block
+        doc.setFillColor(249, 250, 251);
+        doc.roundedRect(15, yPos, pageWidth - 30, 40, 3, 3, 'F');
+        doc.setDrawColor(229, 231, 235);
+        doc.roundedRect(15, yPos, pageWidth - 30, 40, 3, 3, 'S');
+        
+        doc.setFontSize(11);
+        doc.setTextColor(55, 65, 81);
+        doc.text("KUNDENINFORMATIONEN", 25, yPos + 8);
+        
+        doc.setFontSize(10);
+        doc.text(`Name: ${paymentData.customerName}`, 25, yPos + 16);
+        doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 25, yPos + 24);
+        
+        const contactX = pageWidth / 2 + 20;
+        if (paymentData.emailReceipt && paymentData.emailAddress) {
+            doc.text(`E-Mail: ${paymentData.emailAddress}`, contactX, yPos + 16);
+        }
+        
+        doc.text(`Datum: ${paymentDate} ${paymentTime}`, contactX, yPos + 24);
+        
+        yPos += 50;
+        
+        // Detaillierte Artikeltabelle
+        doc.setFontSize(11);
+        doc.setTextColor(55, 65, 81);
+        doc.text("ARTIKELDETAILS", 20, yPos);
+        yPos += 8;
+        
+        // Tabellenkopf
+        doc.setFillColor(243, 244, 246);
+        doc.rect(20, yPos, pageWidth - 40, 12, 'F');
+        doc.setDrawColor(209, 213, 219); 
+        doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+        
+        doc.setTextColor(17, 17, 17);
+        doc.setFont(undefined, 'bold');
+        doc.text("Artikel", 25, yPos + 8);
+        doc.text("Barcode", 50, yPos + 8);
+        doc.text("Menge", 100, yPos + 8);
+        doc.text("Einzelpreis", 140, yPos + 8);
+        doc.text("Gesamt", pageWidth - 25, yPos + 8, null, 'right');
+        
+        yPos += 15;
+        
+        // Tabellenzeilen
+        doc.setFont(undefined, 'normal');
+        paymentData.items.forEach((item) => {
+            if (yPos > pageHeight - 50) {
+                doc.addPage();
+                yPos = 20;
+                drawHeader();
+                yPos += 40;
+                
+                // Erneuter Tabellenkopf auf neuer Seite
+                doc.setFillColor(243, 244, 246);
+                doc.rect(20, yPos, pageWidth - 40, 12, 'F');
+                doc.setDrawColor(209, 213, 219);
+                doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+                
+                doc.setTextColor(17, 17, 17);
+                doc.setFont(undefined, 'bold');
+                doc.text("Artikel", 25, yPos + 8);
+                doc.text("Barcode", 50, yPos + 8);
+                doc.text("Menge", 100, yPos + 8);
+                doc.text("Einzelpreis", 140, yPos + 8);
+                doc.text("Gesamt", pageWidth - 25, yPos + 8, null, 'right');
+                
+                yPos += 15;
+            }
+            
+            // Zeilen mit abwechselnden Hintergrundfarben für bessere Lesbarkeit
+            const rowColor = paymentData.items.indexOf(item) % 2 === 0 ? [255, 255, 255] : [249, 250, 251];
+            doc.setFillColor(...rowColor);
+            doc.rect(20, yPos, pageWidth - 40, 12, 'F');
+            doc.setDrawColor(209, 213, 219);
+            doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+            
+            // Artikelname (gekürzt falls zu lang)
+            const itemName = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
+            doc.text(itemName, 25, yPos + 8);
+            
+            // Barcode
+            doc.text(item.barcode || '–', 50, yPos + 8);
+            
+            // Menge
+            doc.text(item.quantity.toString(), 100, yPos + 8);
+            
+            // Einzelpreis
+            doc.text(`€ ${item.price.toFixed(2)}`, 140, yPos + 8);
+            
+            // Gesamtpreis
+            doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
+            
+            yPos += 15;
+        });
+        
+        // Rabattzeile, falls vorhanden
+        if (appliedCoupon) {
+            if (yPos > pageHeight - 40) {
+                doc.addPage();
+                yPos = 20;
+                drawHeader();
+                yPos += 40;
+            }
+            
+            doc.setFillColor(236, 253, 245);
+            doc.rect(20, yPos, pageWidth - 40, 12, 'F');
+            doc.setDrawColor(209, 213, 219);
+            doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+            
+            doc.setTextColor(22, 163, 74);
+            
+            let discountText = '';
+            let discountAmount = 0;
+            
+            if (appliedCoupon.type === 'percent') {
+                discountText = `Rabatt (${appliedCoupon.code}) -${appliedCoupon.discount}%`;
+                discountAmount = paymentData.total * (appliedCoupon.discount / 100);
+            } else {
+                discountText = `Rabatt (${appliedCoupon.code})`;
+                discountAmount = appliedCoupon.discount;
+            }
+            
+            doc.text(discountText, 25, yPos + 8);
+            doc.text(`-€ ${discountAmount.toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
+            
+            yPos += 20;
+        }
+        
+        // Zwischensumme
+        doc.setFontSize(11);
+        doc.setTextColor(55, 65, 81);
+        doc.text("Zwischensumme:", pageWidth - 80, yPos + 8, null, 'right');
+        doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
+        yPos += 10;
+        
+        // Gesamtsumme
+        doc.setDrawColor(229, 231, 235);
+        doc.line(pageWidth - 100, yPos, pageWidth - 20, yPos);
+        yPos += 15;
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(17, 17, 17);
+        doc.text("Gesamtsumme:", pageWidth - 80, yPos, null, 'right');
+        doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+        yPos += 15;
+        
+        // Zahlungsdetails
+        doc.setFontSize(11);
+        doc.setTextColor(55, 65, 81);
+        doc.text("ZAHLUNGSINFORMATIONEN", 20, yPos);
+        yPos += 8;
+        
+        doc.setFillColor(249, 250, 251);
+        doc.roundedRect(20, yPos, pageWidth - 40, 30, 3, 3, 'F');
+        doc.setDrawColor(229, 231, 235);
+        doc.roundedRect(20, yPos, pageWidth - 40, 30, 3, 3, 'S');
+        
+        doc.setTextColor(17, 17, 17);
+        doc.text(`Zahlungsmethode: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Kartenzahlung'}`, 25, yPos + 10);
+        doc.text(`Belegnummer: ${shortPaymentId}`, 25, yPos + 18);
+        doc.text(`Transaktionsstatus: ${document.getElementById('status').textContent.trim()}`, 25, yPos + 26);
+        
+        yPos += 40;
+        
+        // Hinweise
+        doc.setTextColor(107, 114, 128);
+        doc.setFontSize(9);
+        doc.text("Hinweis: Bewahren Sie diesen Beleg als Kaufnachweis auf.", 20, yPos);
+        doc.text("Umtausch oder Rückgabe nur mit Vorlage des Originalbelegs möglich.", 20, yPos + 6);
+    }
+
+    // Je nach Format die entsprechende Funktion aufrufen
     if (receiptFormat === 'simple') {
-        generateSimpleReceipt(doc, yPos, pageWidth, pageHeight);
-    } else if (receiptFormat === 'detailed') {
-        generateDetailedReceipt(doc, yPos, pageWidth, pageHeight);
+        generateSimpleReceipt();
+    } else if (receiptFormat === 'compact') {
+        generateCompactReceipt();
     } else {
-        generateCompactReceipt(doc, yPos, pageWidth, pageHeight);
+        generateDetailedReceipt();
     }
 
-    // Speichern des PDF
+    // PDF speichern
     doc.save(`gittertier_beleg_${shortPaymentId}.pdf`);
 
-    // E-Mail-Bestätigung falls aktiviert
-    if (paymentData.emailReceipt && settings.emailReceipt) {
+    // Wenn E-Mail-Beleg aktiviert ist, Hinweis anzeigen
+    if (paymentData.emailReceipt) {
         alert(`Beleg wurde an ${paymentData.emailAddress} gesendet`);
     }
 
-    // Weiterleitung nach kurzer Verzögerung
+    // Nach kurzer Verzögerung zurück zur Startseite
     setTimeout(() => {
         window.location.href = 'index';
     }, 1500);
 }
-
-// Einfaches Belegformat
-function generateSimpleReceipt(doc, yPos, pageWidth, pageHeight) {
-    doc.setFontSize(14);
-    doc.setTextColor(17, 17, 17);
-    doc.setFont(undefined, 'bold');
-    doc.text("Zusammenfassung", pageWidth/2, yPos, null, 'center');
-    yPos += 15;
-    
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'normal');
-    
-    // Einfache Artikelauflistung
-    paymentData.items.forEach((item) => {
-        if (yPos > pageHeight - 40) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        doc.text(`${item.quantity}x ${item.name}`, 20, yPos);
-        doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
-        yPos += 8;
-    });
-    
-    // Rabatt anzeigen falls vorhanden
-    if (appliedCoupon) {
-        if (yPos > pageHeight - 40) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        yPos += 5;
-        let discountText = '';
-        
-        if (appliedCoupon.type === 'percent') {
-            discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
-        } else {
-            discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
-        }
-        
-        doc.setTextColor(22, 163, 74);
-        doc.text(discountText, pageWidth - 20, yPos, null, 'right');
-        doc.setTextColor(17, 17, 17);
-    }
-    
-    // Gesamtsumme
-    yPos += 10;
-    doc.setDrawColor(229, 231, 235);
-    doc.line(20, yPos, pageWidth - 20, yPos);
-    
-    yPos += 15;
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text("Gesamtsumme:", 20, yPos);
-    doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
-    
-    // Status
-    yPos += 20;
-    doc.setFontSize(12);
-    const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
-    doc.setTextColor(...statusColor);
-    doc.text(`Status: ${statusText}`, pageWidth/2, yPos, null, 'center');
-    
-    // Dankesnachricht
-    yPos += 15;
-    doc.setFontSize(10);
-    doc.setTextColor(107, 114, 128);
-    doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
-}
-
-// Kompaktes Belegformat (aktuelles Design)
-function generateCompactReceipt(doc, yPos, pageWidth, pageHeight) {
-    // Artikel-Header
-    doc.setDrawColor(229, 231, 235);
-    doc.line(20, yPos, pageWidth - 20, yPos);
-    
-    yPos += 10;
-    doc.setFontSize(12);
-    doc.setTextColor(17, 17, 17);
-    doc.setFont(undefined, 'bold');
-    doc.text("Artikel", 25, yPos);
-    doc.text("Menge", 120, yPos);
-    doc.text("Preis", pageWidth - 25, yPos, null, 'right');
-    
-    yPos += 10;
-    
-    // Artikel-Liste
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    
-    paymentData.items.forEach((item) => {
-        if (yPos > pageHeight - 60) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        doc.text(item.name.substring(0, 30), 25, yPos);
-        doc.text(`${item.quantity}x`, 120, yPos);
-        doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
-        yPos += 8;
-    });
-    
-    // Rabatt anzeigen falls vorhanden
-    if (appliedCoupon) {
-        if (yPos > pageHeight - 40) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        yPos += 5;
-        let discountText = '';
-        
-        if (appliedCoupon.type === 'percent') {
-            discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
-        } else {
-            discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
-        }
-        
-        doc.setTextColor(22, 163, 74);
-        doc.text(discountText, pageWidth - 25, yPos, null, 'right');
-        doc.setTextColor(17, 17, 17);
-    }
-    
-    // Gesamtsumme
-    yPos += 10;
-    doc.setDrawColor(229, 231, 235);
-    doc.line(20, yPos, pageWidth - 20, yPos);
-    
-    yPos += 15;
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text("Gesamtsumme:", 25, yPos);
-    doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
-    
-    // Status
-    yPos += 20;
-    doc.setFontSize(12);
-    const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
-    doc.setTextColor(...statusColor);
-    doc.text(`Status: ${statusText}`, pageWidth/2, yPos, null, 'center');
-    
-    // Dankesnachricht
-    yPos += 15;
-    doc.setFontSize(10);
-    doc.setTextColor(107, 114, 128);
-    doc.text("Vielen Dank für Ihren Einkauf!", pageWidth/2, yPos, null, 'center');
-}
-
-// Detailliertes Belegformat
-function generateDetailedReceipt(doc, yPos, pageWidth, pageHeight) {
-    // Tabellen-Header
-    doc.setFontSize(12);
-    doc.setTextColor(17, 17, 17);
-    doc.setFont(undefined, 'bold');
-    
-    // Spaltenbreiten definieren
-    const col1 = 20;  // Position Barcode
-    const col2 = 40;  // Position Artikelname
-    const col3 = 120; // Position Menge
-    const col4 = 140; // Position Einzelpreis
-    const col5 = 170; // Position Gesamtpreis
-    
-    // Tabellenüberschriften
-    doc.text("Barcode", col1, yPos);
-    doc.text("Artikel", col2, yPos);
-    doc.text("Menge", col3, yPos);
-    doc.text("Einzelpreis", col4, yPos);
-    doc.text("Gesamt", col5, yPos);
-    
-    yPos += 10;
-    doc.setDrawColor(229, 231, 235);
-    doc.line(20, yPos, pageWidth - 20, yPos);
-    yPos += 5;
-    
-    // Artikel in Tabellenform
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    
-    paymentData.items.forEach((item) => {
-        if (yPos > pageHeight - 40) {
-            doc.addPage();
-            yPos = 20;
-            
-            // Tabellenüberschrift auf neuer Seite wiederholen
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text("Barcode", col1, yPos);
-            doc.text("Artikel", col2, yPos);
-            doc.text("Menge", col3, yPos);
-            doc.text("Einzelpreis", col4, yPos);
-            doc.text("Gesamt", col5, yPos);
-            
-            yPos += 10;
-            doc.line(20, yPos, pageWidth - 20, yPos);
-            yPos += 5;
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-        }
-        
-        // Barcode (gekürzt falls zu lang)
-        const shortBarcode = item.barcode.length > 12 ? item.barcode.substring(0, 9) + '...' : item.barcode;
-        doc.text(shortBarcode, col1, yPos);
-        
-        // Artikelname (gekürzt falls zu lang)
-        const shortName = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
-        doc.text(shortName, col2, yPos);
-        
-        // Menge
-        doc.text(`${item.quantity}`, col3, yPos);
-        
-        // Einzelpreis
-        doc.text(`€ ${item.price.toFixed(2)}`, col4, yPos);
-        
-        // Gesamtpreis
-        doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, col5, yPos);
-        
-        yPos += 8;
-    });
-    
-    // Rabatt anzeigen falls vorhanden
-    if (appliedCoupon) {
-        if (yPos > pageHeight - 40) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        yPos += 10;
-        let discountText = '';
-        let discountAmount = 0;
-        
-        if (appliedCoupon.type === 'percent') {
-            discountAmount = paymentData.total * (appliedCoupon.discount / 100);
-            discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
-        } else {
-            discountAmount = appliedCoupon.discount;
-            discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
-        }
-        
-        doc.setTextColor(22, 163, 74);
-        doc.text(discountText, pageWidth - 20, yPos, null, 'right');
-        doc.text(`-€ ${discountAmount.toFixed(2)}`, pageWidth - 20, yPos + 8, null, 'right');
-        doc.setTextColor(17, 17, 17);
-        yPos += 16;
-    }
-    
-    // Gesamtsumme
-    yPos += 10;
-    doc.setDrawColor(229, 231, 235);
-    doc.line(20, yPos, pageWidth - 20, yPos);
-    
-    yPos += 15;
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text("Zwischensumme:", 20, yPos);
-    doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
-    
-    yPos += 10;
-    if (appliedCoupon) {
-        doc.setTextColor(22, 163, 74);
-        doc.text("Rabatt:", 20, yPos);
-        
-        if (appliedCoupon.type === 'percent') {
-            doc.text(`-${appliedCoupon.discount}%`, pageWidth - 20, yPos, null, 'right');
-        } else {
-            doc.text(`-€ ${appliedCoupon.discount.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
-        }
-        
-        yPos += 10;
-    }
-    
-    doc.setTextColor(17, 17, 17);
-    doc.setDrawColor(229, 231, 235);
-    doc.line(20, yPos, pageWidth - 20, yPos);
-    
-    yPos += 15;
-    doc.setFontSize(16);
-    doc.text("Gesamtsumme:", 20, yPos);
-    doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
-    
-    // Zahlungsdetails
-    yPos += 25;
-    doc.setFontSize(12);
-    doc.setTextColor(107, 114, 128);
-    doc.text("Zahlungsdetails:", 20, yPos);
-    
-    yPos += 10;
-    doc.text(`Zahlungsmethode: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
-    
-    yPos += 8;
-    doc.text(`Belegnummer: ${shortPaymentId}`, 20, yPos);
-    
-    yPos += 8;
-    doc.text(`Datum: ${paymentDate}`, 20, yPos);
-    
-    yPos += 8;
-    doc.text(`Uhrzeit: ${paymentTime}`, 20, yPos);
-    
-    // Status
-    yPos += 20;
-    doc.setFontSize(12);
-    const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
-    doc.setTextColor(...statusColor);
-    doc.text(`Status: ${statusText}`, pageWidth/2, yPos, null, 'center');
-    
-    // Dankesnachricht
-    yPos += 15;
-    doc.setFontSize(10);
-    doc.setTextColor(107, 114, 128);
-    doc.text("Vielen Dank für Ihren Einkauf bei Gittertier Pro!", pageWidth/2, yPos, null, 'center');
-    
-    // Footer mit Copyright
-    yPos = pageHeight - 20;
-    doc.setFontSize(8);
-    doc.setTextColor(156, 163, 175);
-    doc.text("© " + new Date().getFullYear() + " Gittertier Pro - Alle Rechte vorbehalten", pageWidth/2, yPos, null, 'center');
-}
-
 
       // Clean up PeerJS connection when leaving the page
         window.addEventListener('beforeunload', () => {
