@@ -99,7 +99,7 @@
         background-color: var(--color-bg);
         position: sticky;
         top: 0;
-        z-index: 100;
+        z-index: 50;
     }
 
     .logo {
@@ -185,45 +185,12 @@
         left: 0;
         overflow-y: auto;
         transition: transform 0.3s ease, width 0.3s ease;
-        z-index: 90;
+        z-index: 40;
         padding: var(--spacing-lg) 0;
-        display: flex;
-        flex-direction: column;
     }
 
-    .sidebar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 var(--spacing-md) var(--spacing-lg);
-        margin-bottom: var(--spacing-md);
-        border-bottom: 1px solid var(--color-border);
-    }
-
-    .sidebar-title {
-        font-weight: 600;
-        font-size: var(--text-lg);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .sidebar-toggle {
-        background: transparent;
-        border: none;
-        color: var(--color-text-muted);
-        cursor: pointer;
-        font-size: var(--text-lg);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .sidebar-toggle:hover {
-        background-color: var(--color-bg-secondary);
+    .admin-sidebar.collapsed {
+        width: var(--sidebar-width-collapsed);
     }
 
     .nav-container {
@@ -231,18 +198,17 @@
         flex-direction: column;
         gap: var(--spacing-xs);
         padding: 0 var(--spacing-md);
-        flex: 1;
     }
 
     .nav-category {
         margin-top: var(--spacing-md);
         margin-bottom: var(--spacing-xs);
-        padding: var(--spacing-sm) var(--spacing-md);
         font-size: var(--text-xs);
         font-weight: 600;
-        text-transform: uppercase;
         color: var(--color-text-muted);
-        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: var(--spacing-sm) var(--spacing-md);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -299,40 +265,9 @@
         color: var(--color-accent);
     }
 
-    .new-feature {
-        background-color: var(--color-success);
-        color: white;
-        font-size: var(--text-xs);
-        padding: 2px 8px;
-        border-radius: 10px;
-        margin-left: auto;
-    }
-
-    .sidebar-footer {
-        padding: var(--spacing-md);
-        margin-top: auto;
-        border-top: 1px solid var(--color-border);
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-sm);
-    }
-
-    .sidebar-footer-info {
-        font-size: var(--text-xs);
-        color: var(--color-text-muted);
-        text-align: center;
-    }
-
-    /* Collapsed sidebar */
-    .admin-sidebar.collapsed {
-        width: var(--sidebar-width-collapsed);
-    }
-
-    .admin-sidebar.collapsed .sidebar-title,
     .admin-sidebar.collapsed .nav-link span,
-    .admin-sidebar.collapsed .new-feature,
-    .admin-sidebar.collapsed .nav-category span,
-    .admin-sidebar.collapsed .sidebar-footer-info {
+    .admin-sidebar.collapsed .nav-category span:first-child,
+    .admin-sidebar.collapsed .new-feature {
         display: none;
     }
 
@@ -342,16 +277,38 @@
     }
 
     .admin-sidebar.collapsed .nav-category i {
-        transform: none !important;
+        transform: none;
+        margin: 0;
     }
 
-    .admin-sidebar.collapsed .sidebar-header {
+    .new-feature {
+        background-color: var(--color-success);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    .sidebar-toggle {
+        position: absolute;
+        bottom: var(--spacing-md);
+        right: var(--spacing-md);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
         justify-content: center;
-        padding: 0 var(--spacing-sm) var(--spacing-lg);
+        cursor: pointer;
+        transition: var(--transition);
     }
 
-    .admin-content.collapsed {
-        margin-left: var(--sidebar-width-collapsed);
+    .sidebar-toggle:hover {
+        background-color: var(--color-accent);
+        color: white;
     }
 
     /* Sidebar overlay for mobile */
@@ -362,7 +319,7 @@
         right: 0;
         bottom: 0;
         background-color: var(--color-overlay);
-        z-index: 85;
+        z-index: 35;
         display: none;
     }
 
@@ -372,6 +329,10 @@
         padding: var(--spacing-lg);
         margin-left: var(--sidebar-width);
         transition: margin-left 0.3s ease;
+    }
+
+    .admin-sidebar.collapsed ~ .admin-content {
+        margin-left: var(--sidebar-width-collapsed);
     }
 
     /* Dashboard header */
@@ -505,30 +466,6 @@
         margin: var(--spacing-lg) 0;
     }
 
-    .chart-toggles {
-        display: flex;
-        gap: var(--spacing-sm);
-        margin-bottom: var(--spacing-md);
-        flex-wrap: wrap;
-    }
-
-    .chart-toggle {
-        background-color: var(--color-bg);
-        border: 1px solid var(--color-border);
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius);
-        font-size: var(--text-sm);
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .chart-toggle.active {
-        background-color: var(--color-accent);
-        color: white;
-        border-color: var(--color-accent);
-    }
-
     /* Tables */
     .table-container {
         overflow-x: auto;
@@ -618,19 +555,23 @@
     .btn-primary {
         background-color: var(--color-accent);
         color: white;
+        border-color: var(--color-accent);
     }
 
     .btn-primary:hover {
         background-color: var(--color-accent-hover);
+        border-color: var(--color-accent-hover);
     }
 
     .btn-success {
         background-color: var(--color-success);
         color: white;
+        border-color: var(--color-success);
     }
 
     .btn-success:hover {
         background-color: #0f9c5a;
+        border-color: #0f9c5a;
     }
 
     /* Empty state */
@@ -660,63 +601,29 @@
         justify-content: center;
         z-index: 1000;
         padding: var(--spacing-md);
-        opacity: 0;
-        visibility: hidden;
-        transition: var(--transition-slow);
-    }
-
-    .modal.active {
-        opacity: 1;
-        visibility: visible;
     }
 
     .modal-content {
         background-color: var(--color-bg);
         border-radius: var(--radius);
-        padding: var(--spacing-lg);
-        max-width: 800px;
-        width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
+        padding: var(--spacing-xl);
+        max-width: 90%;
+        max-height: 90%;
+        overflow: auto;
+        width: 600px;
         box-shadow: var(--shadow-lg);
-        transform: scale(0.9);
-        transition: var(--transition-slow);
-    }
-
-    .modal.active .modal-content {
-        transform: scale(1);
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--spacing-lg);
-        padding-bottom: var(--spacing-md);
-        border-bottom: 1px solid var(--color-border);
-    }
-
-    .modal-title {
-        font-size: var(--text-xl);
-        font-weight: 700;
+        position: relative;
     }
 
     .modal-close {
-        background: transparent;
+        position: absolute;
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        background: none;
         border: none;
         font-size: var(--text-xl);
         cursor: pointer;
         color: var(--color-text-muted);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal-close:hover {
-        background-color: var(--color-bg-secondary);
     }
 
     /* Animations */
@@ -741,25 +648,27 @@
             transform: translateX(0);
         }
         
-        .admin-content {
-            margin-left: 0;
-        }
-        
-        .admin-sidebar.collapsed {
-            transform: translateX(-100%);
-            width: var(--sidebar-width-collapsed);
-        }
-        
-        .admin-sidebar.collapsed.active {
-            transform: translateX(0);
-        }
-        
-        .admin-content.collapsed {
+        .admin-content, .admin-sidebar.collapsed ~ .admin-content {
             margin-left: 0;
         }
         
         .sidebar-overlay.active {
             display: block;
+        }
+
+        .admin-sidebar.collapsed {
+            width: var(--sidebar-width);
+        }
+
+        .admin-sidebar.collapsed .nav-link span,
+        .admin-sidebar.collapsed .nav-category span:first-child,
+        .admin-sidebar.collapsed .new-feature {
+            display: flex;
+        }
+
+        .admin-sidebar.collapsed .nav-category {
+            justify-content: space-between;
+            padding: var(--spacing-sm) var(--spacing-md);
         }
     }
 
@@ -798,18 +707,19 @@
         .action-buttons {
             flex-direction: column;
         }
-        
+
+        .action-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
         .card-header {
             flex-direction: column;
             align-items: flex-start;
         }
-        
-        .dashboard-title {
-            font-size: var(--text-xl);
-        }
-        
-        .dashboard-subtitle {
-            font-size: var(--text-base);
+
+        .modal-content {
+            padding: var(--spacing-lg);
         }
     }
 
@@ -845,19 +755,12 @@
 
     <div class="admin-container">
         <aside class="admin-sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">Navigation</div>
-                <button class="sidebar-toggle" id="sidebarToggle">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            </div>
-            
             <div class="nav-container">
-                <div class="nav-category" data-category="management">
-                    <span>Management</span>
+                <div class="nav-category" data-category="operations">
+                    <span>Betrieb</span>
                     <i class="fas fa-chevron-down"></i>
                 </div>
-                <div class="nav-category-content" data-category="management">
+                <div class="nav-category-content" data-category="operations">
                     <a href="control" class="nav-link">
                         <i class="fas fa-cogs"></i>
                         <span>Steuerung</span>
@@ -869,6 +772,22 @@
                         <span>Navigation</span>
                     </a>
                     
+                    <a href="index" class="nav-link">
+                        <i class="fas fa-cash-register"></i>
+                        <span>Kassenansicht</span>
+                    </a>
+                    
+                    <a href="merchant" class="nav-link">
+                        <i class="fas fa-store"></i>
+                        <span>Händleransicht</span>
+                    </a>
+                </div>
+                
+                <div class="nav-category" data-category="management">
+                    <span>Verwaltung</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="nav-category-content" data-category="management">
                     <a href="admin" class="nav-link">
                         <i class="fas fa-tachometer-alt"></i>
                         <span>Dashboard</span>
@@ -879,41 +798,20 @@
                         <span>Produktverwaltung</span>
                     </a>
                     
-                    <a href="index" class="nav-link">
-                        <i class="fas fa-cash-register"></i>
-                        <span>Kassenansicht</span>
-                    </a>
-                </div>
-                
-                <div class="nav-category" data-category="data">
-                    <span>Daten & Analyse</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="nav-category-content" data-category="data">
                     <a href="archive" class="nav-link">
                         <i class="fas fa-archive"></i>
                         <span>Archiv</span>
                     </a>
-                    
-                    <a href="merchant" class="nav-link">
-                        <i class="fas fa-store"></i>
-                        <span>Händleransicht</span>
-                    </a>
-                    
+                </div>
+                
+                <div class="nav-category" data-category="analysis">
+                    <span>Analyse</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="nav-category-content" data-category="analysis">
                     <a href="analytics" class="nav-link">
                         <i class="fas fa-chart-line"></i>
                         <span>Analysen</span>
-                    </a>
-                </div>
-                
-                <div class="nav-category" data-category="system">
-                    <span>System</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="nav-category-content" data-category="system">
-                    <a href="settings" class="nav-link">
-                        <i class="fas fa-cog"></i>
-                        <span>Einstellungen</span>
                     </a>
                     
                     <a href="log" class="nav-link active">
@@ -921,21 +819,32 @@
                         <span>Admin Logs</span>
                     </a>
                 </div>
+                
+                <div class="nav-category" data-category="settings">
+                    <span>Einstellungen</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="nav-category-content" data-category="settings">
+                    <a href="settings" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Systemeinstellungen</span>
+                    </a>
+                    
+                    <a href="user-management" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Benutzerverwaltung</span>
+                    </a>
+                </div>
             </div>
             
-            <div class="sidebar-footer">
-                <div class="sidebar-footer-info" id="sidebarInfo">
-                    Systemstatus: <span class="status-badge status-success">Online</span>
-                </div>
-                <div class="sidebar-footer-info" id="storageInfo">
-                    Speicher: 75% belegt
-                </div>
+            <div class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-chevron-left"></i>
             </div>
         </aside>
         
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <main class="admin-content" id="adminContent">
+        <main class="admin-content">
             <div class="dashboard-header">
                 <h1 class="dashboard-title">Admin Logs</h1>
                 <p class="dashboard-subtitle">End-of-Day Reports & Audit Logs</p>
@@ -961,13 +870,13 @@
                         <i class="fas fa-sync"></i>
                         Zurücksetzen
                     </button>
-                    <button class="action-btn" id="quick-filter-7d">
+                    <button class="action-btn btn-primary" id="quick-filter-7d">
                         <i class="fas fa-calendar"></i>
                         Letzte 7 Tage
                     </button>
-                    <button class="action-btn" id="quick-filter-today">
-                        <i class="fas fa-calendar-day"></i>
-                        Heute
+                    <button class="action-btn btn-primary" id="quick-filter-30d">
+                        <i class="fas fa-calendar"></i>
+                        Letzte 30 Tage
                     </button>
                 </div>
             </div>
@@ -1005,15 +914,15 @@
                     <div class="summary-card-value" id="failed-transactions">0</div>
                     <div class="summary-card-label">Fehlgeschlagene Transaktionen</div>
                 </div>
-                
+
                 <div class="summary-card">
                     <div class="summary-card-icon">
                         <i class="fas fa-euro-sign"></i>
                     </div>
-                    <div class="summary-card-value" id="average-cart">€0.00</div>
-                    <div class="summary-card-label">Durchschn. Warenkorb</div>
+                    <div class="summary-card-value" id="avg-transaction">€0.00</div>
+                    <div class="summary-card-label">Durchschn. Transaktionswert</div>
                 </div>
-                
+
                 <div class="summary-card">
                     <div class="summary-card-icon">
                         <i class="fas fa-box"></i>
@@ -1028,16 +937,17 @@
                 <div class="card-header">
                     <h2 class="card-title">
                         <i class="fas fa-chart-line"></i>
-                        Verkaufsstatistik
+                        Umsatzentwicklung
                     </h2>
-                    <div class="chart-toggles">
-                        <button class="chart-toggle active" data-chart-type="daily">Täglich</button>
-                        <button class="chart-toggle" data-chart-type="weekly">Wöchentlich</button>
-                        <button class="chart-toggle" data-chart-type="monthly">Monatlich</button>
+                    <div class="action-buttons">
+                        <button class="action-btn" id="toggle-chart-type">
+                            <i class="fas fa-exchange-alt"></i>
+                            Diagrammtyp wechseln
+                        </button>
                     </div>
                 </div>
                 <div class="chart-container">
-                    <canvas id="salesChart"></canvas>
+                    <canvas id="sales-chart"></canvas>
                 </div>
             </div>
 
@@ -1089,6 +999,37 @@
                 </div>
             </div>
 
+            <!-- Top Products -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-star"></i>
+                        Top-Produkte
+                    </h2>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table" id="products-table">
+                        <thead>
+                            <tr>
+                                <th>Produkt</th>
+                                <th>Verkaufte Menge</th>
+                                <th>Umsatz</th>
+                                <th>Anteil am Gesamtumsatz</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-body">
+                            <!-- Top products will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="empty-state" id="empty-products" style="display: none;">
+                    <i class="fas fa-box-open"></i>
+                    <p>Keine Verkaufsdaten verfügbar</p>
+                </div>
+            </div>
+
             <!-- Audit Log -->
             <div class="dashboard-card">
                 <div class="card-header">
@@ -1107,7 +1048,7 @@
                         </button>
                         <button class="action-btn" id="filter-audit">
                             <i class="fas fa-filter"></i>
-                            Filter anwenden
+                            Filter
                         </button>
                     </div>
                 </div>
@@ -1137,25 +1078,13 @@
         </main>
     </div>
 
-    <!-- Modal for detailed view -->
-    <div class="modal" id="detailModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Details</h2>
-                <button class="modal-close" id="modalClose">&times;</button>
-            </div>
-            <div id="modalBody">
-                <!-- Modal content will be loaded here -->
-            </div>
-        </div>
-    </div>
-
     <script>
         // Initialize jsPDF
         const { jsPDF } = window.jspdf;
         
-        // Chart instance
+        // Global variables
         let salesChart = null;
+        let chartType = 'line'; // 'line' or 'bar'
         
         // Token verification
         (function() {
@@ -1227,33 +1156,46 @@
             // Sidebar toggle (collapse/expand)
             document.getElementById('sidebarToggle').addEventListener('click', () => {
                 const sidebar = document.getElementById('sidebar');
-                const content = document.getElementById('adminContent');
                 sidebar.classList.toggle('collapsed');
-                content.classList.toggle('collapsed');
+                
+                // Update toggle icon
+                const icon = document.querySelector('#sidebarToggle i');
+                if (sidebar.classList.contains('collapsed')) {
+                    icon.className = 'fas fa-chevron-right';
+                } else {
+                    icon.className = 'fas fa-chevron-left';
+                }
                 
                 // Save state to localStorage
-                const isCollapsed = sidebar.classList.contains('collapsed');
-                localStorage.setItem('sidebarCollapsed', isCollapsed);
-                
-                // Update icon
-                const icon = document.getElementById('sidebarToggle').querySelector('i');
-                icon.classList.toggle('fa-chevron-left');
-                icon.classList.toggle('fa-chevron-right');
+                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                settings.sidebarCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('appSettings', JSON.stringify(settings));
             });
             
-            // Category toggles
+            // Nav category toggles
             document.querySelectorAll('.nav-category').forEach(category => {
                 category.addEventListener('click', () => {
                     const categoryName = category.getAttribute('data-category');
                     const content = document.querySelector(`.nav-category-content[data-category="${categoryName}"]`);
                     
-                    category.classList.toggle('collapsed');
                     content.classList.toggle('collapsed');
+                    category.classList.toggle('collapsed');
                     
                     // Save state to localStorage
-                    const categories = JSON.parse(localStorage.getItem('collapsedCategories') || '{}');
-                    categories[categoryName] = category.classList.contains('collapsed');
-                    localStorage.setItem('collapsedCategories', JSON.stringify(categories));
+                    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                    if (!settings.collapsedCategories) {
+                        settings.collapsedCategories = [];
+                    }
+                    
+                    if (content.classList.contains('collapsed')) {
+                        if (!settings.collapsedCategories.includes(categoryName)) {
+                            settings.collapsedCategories.push(categoryName);
+                        }
+                    } else {
+                        settings.collapsedCategories = settings.collapsedCategories.filter(c => c !== categoryName);
+                    }
+                    
+                    localStorage.setItem('appSettings', JSON.stringify(settings));
                 });
             });
             
@@ -1276,7 +1218,7 @@
             document.getElementById('apply-date-filter').addEventListener('click', () => {
                 loadReports();
                 loadAuditLog();
-                updateSalesChart();
+                loadTopProducts();
             });
             
             // Reset filter
@@ -1285,7 +1227,7 @@
                 document.getElementById('end-date').value = '';
                 loadReports();
                 loadAuditLog();
-                updateSalesChart();
+                loadTopProducts();
             });
             
             // Quick filters
@@ -1299,17 +1241,20 @@
                 
                 loadReports();
                 loadAuditLog();
-                updateSalesChart();
+                loadTopProducts();
             });
             
-            document.getElementById('quick-filter-today').addEventListener('click', () => {
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('start-date').value = today;
-                document.getElementById('end-date').value = today;
+            document.getElementById('quick-filter-30d').addEventListener('click', () => {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 30);
+                
+                document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
+                document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
                 
                 loadReports();
                 loadAuditLog();
-                updateSalesChart();
+                loadTopProducts();
             });
             
             // Export reports
@@ -1320,7 +1265,7 @@
             // Generate report
             document.getElementById('generate-report').addEventListener('click', () => {
                 loadReports();
-                updateSalesChart();
+                loadTopProducts();
             });
             
             // Export audit log
@@ -1335,27 +1280,23 @@
                 }
             });
             
+            // Filter audit log
+            document.getElementById('filter-audit').addEventListener('click', () => {
+                showAuditFilterModal();
+            });
+            
+            // Toggle chart type
+            document.getElementById('toggle-chart-type').addEventListener('click', () => {
+                chartType = chartType === 'line' ? 'bar' : 'line';
+                createSalesChart();
+            });
+            
             // View charts
             document.getElementById('view-charts').addEventListener('click', () => {
-                showChartModal();
-            });
-            
-            // Chart type toggles
-            document.querySelectorAll('.chart-toggle').forEach(toggle => {
-                toggle.addEventListener('click', () => {
-                    document.querySelectorAll('.chart-toggle').forEach(t => t.classList.remove('active'));
-                    toggle.classList.add('active');
-                    
-                    updateSalesChart();
-                });
-            });
-            
-            // Modal close
-            document.getElementById('modalClose').addEventListener('click', () => {
-                document.getElementById('detailModal').classList.remove('active');
+                showChartsModal();
             });
         }
-
+        
         // Load reports from localStorage
         function loadReports() {
             const startDate = document.getElementById('start-date').value;
@@ -1412,16 +1353,15 @@
                 totalTransactions += 1;
             });
             
-            // Calculate average cart value
-            const averageCart = totalTransactions > 0 ? totalSales / totalTransactions : 0;
-            
             // Update summary cards
             document.getElementById('total-sales').textContent = `€${totalSales.toFixed(2)}`;
             document.getElementById('total-transactions').textContent = totalTransactions;
             document.getElementById('successful-transactions').textContent = successfulTransactions;
             document.getElementById('failed-transactions').textContent = failedTransactions;
-            document.getElementById('average-cart').textContent = `€${averageCart.toFixed(2)}`;
             document.getElementById('total-products').textContent = totalProducts;
+            
+            const avgTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+            document.getElementById('avg-transaction').textContent = `€${avgTransaction.toFixed(2)}`;
             
             // Update reports table
             const reportsBody = document.getElementById('reports-body');
@@ -1459,6 +1399,161 @@
                 `;
                 
                 reportsBody.appendChild(row);
+            });
+            
+            // Create sales chart
+            createSalesChart();
+        }
+        
+        // Create sales chart
+        function createSalesChart() {
+            const ctx = document.getElementById('sales-chart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (salesChart) {
+                salesChart.destroy();
+            }
+            
+            // Get data for chart
+            const receipts = getReceiptsFromStorage();
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            // Group receipts by date
+            const receiptsByDate = {};
+            
+            receipts.forEach(receipt => {
+                const receiptDate = new Date(receipt.date);
+                const dateKey = receiptDate.toISOString().split('T')[0];
+                
+                // Apply date filter
+                if (startDate && dateKey < startDate) return;
+                if (endDate && dateKey > endDate) return;
+                
+                if (!receiptsByDate[dateKey]) {
+                    receiptsByDate[dateKey] = 0;
+                }
+                
+                receiptsByDate[dateKey] += receipt.amount;
+            });
+            
+            // Sort dates
+            const sortedDates = Object.keys(receiptsByDate).sort((a, b) => new Date(a) - new Date(b));
+            
+            // Prepare chart data
+            const labels = sortedDates.map(date => new Date(date).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' }));
+            const data = sortedDates.map(date => receiptsByDate[date]);
+            
+            // Create chart
+            salesChart = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tagesumsatz (€)',
+                        data: data,
+                        backgroundColor: chartType === 'bar' ? 'rgba(37, 99, 235, 0.2)' : 'transparent',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Umsatz: €' + context.raw.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Load top products
+        function loadTopProducts() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            // Get all receipts from localStorage
+            const receipts = getReceiptsFromStorage();
+            
+            // Calculate product sales
+            const productSales = {};
+            let totalSales = 0;
+            
+            receipts.forEach(receipt => {
+                const receiptDate = new Date(receipt.date);
+                const dateKey = receiptDate.toISOString().split('T')[0];
+                
+                // Apply date filter
+                if (startDate && dateKey < startDate) return;
+                if (endDate && dateKey > endDate) return;
+                
+                if (receipt.items) {
+                    receipt.items.forEach(item => {
+                        const productId = item.id || item.name;
+                        if (!productSales[productId]) {
+                            productSales[productId] = {
+                                name: item.name,
+                                quantity: 0,
+                                revenue: 0
+                            };
+                        }
+                        
+                        const quantity = item.quantity || 1;
+                        productSales[productId].quantity += quantity;
+                        productSales[productId].revenue += item.price * quantity;
+                        totalSales += item.price * quantity;
+                    });
+                }
+            });
+            
+            // Convert to array and sort by revenue
+            const topProducts = Object.values(productSales).sort((a, b) => b.revenue - a.revenue);
+            
+            // Update products table
+            const productsBody = document.getElementById('products-body');
+            productsBody.innerHTML = '';
+            
+            if (topProducts.length === 0) {
+                document.getElementById('empty-products').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('empty-products').style.display = 'none';
+            
+            // Show top 10 products
+            topProducts.slice(0, 10).forEach(product => {
+                const row = document.createElement('tr');
+                const revenueShare = totalSales > 0 ? (product.revenue / totalSales * 100) : 0;
+                
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.quantity}</td>
+                    <td>€${product.revenue.toFixed(2)}</td>
+                    <td>${revenueShare.toFixed(1)}%</td>
+                `;
+                
+                productsBody.appendChild(row);
             });
         }
         
@@ -1580,140 +1675,6 @@
                 console.error('Error loading audit log:', error);
                 return [];
             }
-        }
-        
-        // Update sales chart
-        function updateSalesChart() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            const chartType = document.querySelector('.chart-toggle.active').getAttribute('data-chart-type');
-            
-            // Get all receipts from localStorage
-            const receipts = getReceiptsFromStorage();
-            
-            // Filter receipts by date
-            const filteredReceipts = receipts.filter(receipt => {
-                const receiptDate = new Date(receipt.date).toISOString().split('T')[0];
-                if (startDate && receiptDate < startDate) return false;
-                if (endDate && receiptDate > endDate) return false;
-                return true;
-            });
-            
-            // Group by time period based on chart type
-            let labels = [];
-            let data = [];
-            
-            if (chartType === 'daily') {
-                // Group by day
-                const salesByDay = {};
-                
-                filteredReceipts.forEach(receipt => {
-                    const date = new Date(receipt.date).toLocaleDateString('de-DE', {
-                        day: '2-digit',
-                        month: '2-digit'
-                    });
-                    
-                    if (!salesByDay[date]) {
-                        salesByDay[date] = 0;
-                    }
-                    
-                    salesByDay[date] += receipt.amount;
-                });
-                
-                labels = Object.keys(salesByDay);
-                data = Object.values(salesByDay);
-            } else if (chartType === 'weekly') {
-                // Group by week
-                const salesByWeek = {};
-                
-                filteredReceipts.forEach(receipt => {
-                    const date = new Date(receipt.date);
-                    const weekNumber = getWeekNumber(date);
-                    const weekLabel = `KW ${weekNumber}`;
-                    
-                    if (!salesByWeek[weekLabel]) {
-                        salesByWeek[weekLabel] = 0;
-                    }
-                    
-                    salesByWeek[weekLabel] += receipt.amount;
-                });
-                
-                labels = Object.keys(salesByWeek);
-                data = Object.values(salesByWeek);
-            } else if (chartType === 'monthly') {
-                // Group by month
-                const salesByMonth = {};
-                
-                filteredReceipts.forEach(receipt => {
-                    const date = new Date(receipt.date);
-                    const month = date.toLocaleDateString('de-DE', { month: 'long' });
-                    
-                    if (!salesByMonth[month]) {
-                        salesByMonth[month] = 0;
-                    }
-                    
-                    salesByMonth[month] += receipt.amount;
-                });
-                
-                labels = Object.keys(salesByMonth);
-                data = Object.values(salesByMonth);
-            }
-            
-            // Get canvas context
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            
-            // Destroy previous chart if it exists
-            if (salesChart) {
-                salesChart.destroy();
-            }
-            
-            // Create new chart
-            salesChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Umsatz (€)',
-                        data: data,
-                        backgroundColor: 'rgba(37, 99, 235, 0.5)',
-                        borderColor: 'rgba(37, 99, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + value;
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Umsatz: €' + context.raw.toFixed(2);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Helper function to get week number
-        function getWeekNumber(date) {
-            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
-            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
         }
         
         // Export reports as PDF
@@ -1879,14 +1840,41 @@
                 return receiptDate === date;
             });
             
-            // Set modal title
-            document.getElementById('modalTitle').textContent = `Tagesbericht: ${new Date(date).toLocaleDateString('de-DE')}`;
+            // Create a modal to display daily report
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" id="close-modal">&times;</button>
+                    <h2>Tagesbericht: ${new Date(date).toLocaleDateString('de-DE')}</h2>
+                    <div id="daily-report-content">
+                        <p>Lade Bericht...</p>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal handler
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            // Generate daily report content
+            const content = document.getElementById('daily-report-content');
             
             // Calculate totals
             let totalSales = 0;
             let successfulTransactions = 0;
             let failedTransactions = 0;
-            let totalProducts = 0;
+            let productSales = {};
             
             dailyReceipts.forEach(receipt => {
                 totalSales += receipt.amount;
@@ -1896,53 +1884,63 @@
                     failedTransactions += 1;
                 }
                 
+                // Track product sales
                 if (receipt.items) {
-                    totalProducts += receipt.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+                    receipt.items.forEach(item => {
+                        const productId = item.id || item.name;
+                        if (!productSales[productId]) {
+                            productSales[productId] = {
+                                name: item.name,
+                                quantity: 0,
+                                revenue: 0
+                            };
+                        }
+                        
+                        const quantity = item.quantity || 1;
+                        productSales[productId].quantity += quantity;
+                        productSales[productId].revenue += item.price * quantity;
+                    });
                 }
             });
             
-            const avgCart = dailyReceipts.length > 0 ? totalSales / dailyReceipts.length : 0;
+            // Convert to array and sort by revenue
+            const topProducts = Object.values(productSales).sort((a, b) => b.revenue - a.revenue);
             
-            // Generate modal content
-            const modalBody = document.getElementById('modalBody');
-            modalBody.innerHTML = `
+            content.innerHTML = `
                 <div style="margin-bottom: 20px;">
                     <h3>Zusammenfassung</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px;">
-                        <div style="background: var(--color-bg-secondary); padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--color-accent);">€${totalSales.toFixed(2)}</div>
-                            <div style="font-size: 14px; color: var(--color-text-muted);">Gesamtumsatz</div>
-                        </div>
-                        <div style="background: var(--color-bg-secondary); padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--color-accent);">${dailyReceipts.length}</div>
-                            <div style="font-size: 14px; color: var(--color-text-muted);">Transaktionen</div>
-                        </div>
-                        <div style="background: var(--color-bg-secondary); padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--color-success);">${successfulTransactions}</div>
-                            <div style="font-size: 14px; color: var(--color-text-muted);">Erfolgreich</div>
-                        </div>
-                        <div style="background: var(--color-bg-secondary); padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--color-error);">${failedTransactions}</div>
-                            <div style="font-size: 14px; color: var(--color-text-muted);">Fehlgeschlagen</div>
-                        </div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                        <div style="background: var(--color-bg-secondary); padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--color-accent);">€${avgCart.toFixed(2)}</div>
-                            <div style="font-size: 14px; color: var(--color-text-muted);">Durchschn. Warenkorb</div>
-                        </div>
-                        <div style="background: var(--color-bg-secondary); padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--color-accent);">${totalProducts}</div>
-                            <div style="font-size: 14px; color: var(--color-text-muted);">Verkaufte Produkte</div>
-                        </div>
-                    </div>
+                    <p>Gesamtumsatz: €${totalSales.toFixed(2)}</p>
+                    <p>Transaktionen: ${dailyReceipts.length}</p>
+                    <p>Erfolgreich: ${successfulTransactions}</p>
+                    <p>Fehlgeschlagen: ${failedTransactions}</p>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <h3>Top-Produkte</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <th style="text-align: left; padding: 8px;">Produkt</th>
+                                <th style="text-align: left; padding: 8px;">Menge</th>
+                                <th style="text-align: left; padding: 8px;">Umsatz</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${topProducts.slice(0, 5).map(product => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px;">${product.name}</td>
+                                    <td style="padding: 8px;">${product.quantity}</td>
+                                    <td style="padding: 8px;">€${product.revenue.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
                 <div>
                     <h3>Transaktionen</h3>
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; min-width: 500px;">
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
                             <thead>
-                                <tr style="border-bottom: 1px solid var(--color-border);">
+                                <tr style="border-bottom: 1px solid #ccc; position: sticky; top: 0; background: white;">
                                     <th style="text-align: left; padding: 8px;">Zeit</th>
                                     <th style="text-align: left; padding: 8px;">Belegnummer</th>
                                     <th style="text-align: left; padding: 8px;">Betrag</th>
@@ -1951,15 +1949,11 @@
                             </thead>
                             <tbody>
                                 ${dailyReceipts.map(receipt => `
-                                    <tr style="border-bottom: 1px solid var(--color-border);">
+                                    <tr style="border-bottom: 1px solid #eee;">
                                         <td style="padding: 8px;">${new Date(receipt.date).toLocaleTimeString('de-DE')}</td>
                                         <td style="padding: 8px;">${receipt.id}</td>
                                         <td style="padding: 8px;">€${receipt.amount.toFixed(2)}</td>
-                                        <td style="padding: 8px;">
-                                            <span class="status-badge ${receipt.status === 'Bestätigt' ? 'status-success' : 'status-error'}">
-                                                ${receipt.status}
-                                            </span>
-                                        </td>
+                                        <td style="padding: 8px;">${receipt.status}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -1967,32 +1961,152 @@
                     </div>
                 </div>
             `;
-            
-            // Show modal
-            document.getElementById('detailModal').classList.add('active');
         }
         
-        // Show chart modal
-        function showChartModal() {
-            // Set modal title
-            document.getElementById('modalTitle').textContent = 'Verkaufsstatistik';
-            
-            // Create canvas for modal chart
-            const modalBody = document.getElementById('modalBody');
-            modalBody.innerHTML = `
-                <div style="height: 400px; width: 100%;">
-                    <canvas id="modalChart"></canvas>
+        // Show audit filter modal
+        function showAuditFilterModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" id="close-modal">&times;</button>
+                    <h2>Audit-Log Filter</h2>
+                    <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 20px;">
+                        <div>
+                            <label for="audit-user">Benutzer:</label>
+                            <input type="text" id="audit-user" class="date-input" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label for="audit-action">Aktion:</label>
+                            <input type="text" id="audit-action" class="date-input" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label for="audit-status">Status:</label>
+                            <select id="audit-status" class="date-input" style="width: 100%;">
+                                <option value="">Alle</option>
+                                <option value="success">Erfolg</option>
+                                <option value="warning">Warnung</option>
+                                <option value="error">Fehler</option>
+                            </select>
+                        </div>
+                        <button class="apply-filter-btn" id="apply-audit-filter" style="align-self: flex-end;">
+                            <i class="fas fa-check"></i>
+                            Filter anwenden
+                        </button>
+                    </div>
                 </div>
             `;
             
-            // Get chart data from main chart
-            const chartData = salesChart.data;
+            document.body.appendChild(modal);
             
-            // Create chart in modal
-            const ctx = document.getElementById('modalChart').getContext('2d');
+            // Close modal handler
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            // Apply filter handler
+            document.getElementById('apply-audit-filter').addEventListener('click', () => {
+                // Implement filter logic here
+                showNotification('Filterfunktion wird demnächst verfügbar sein', 'info');
+                document.body.removeChild(modal);
+            });
+        }
+        
+        // Show charts modal
+        function showChartsModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" id="close-modal">&times;</button>
+                    <h2>Verkaufsdiagramme</h2>
+                    <div style="display: flex; flex-direction: column; gap: 24px; margin-top: 20px;">
+                        <div>
+                            <h3>Umsatz nach Wochentag</h3>
+                            <div class="chart-container">
+                                <canvas id="weekday-chart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Umsatz nach Stunde</h3>
+                            <div class="chart-container">
+                                <canvas id="hourly-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal handler
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            // Create charts
+            setTimeout(() => {
+                createWeekdayChart();
+                createHourlyChart();
+            }, 100);
+        }
+        
+        // Create weekday chart
+        function createWeekdayChart() {
+            const ctx = document.getElementById('weekday-chart').getContext('2d');
+            
+            // Get data for chart
+            const receipts = getReceiptsFromStorage();
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            // Group receipts by weekday
+            const weekdaySales = [0, 0, 0, 0, 0, 0, 0]; // Sunday to Saturday
+            
+            receipts.forEach(receipt => {
+                const receiptDate = new Date(receipt.date);
+                const dateKey = receiptDate.toISOString().split('T')[0];
+                const weekday = receiptDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                
+                // Apply date filter
+                if (startDate && dateKey < startDate) return;
+                if (endDate && dateKey > endDate) return;
+                
+                weekdaySales[weekday] += receipt.amount;
+            });
+            
+            // Prepare chart data
+            const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+            const labels = weekdays;
+            const data = weekdaySales;
+            
+            // Create chart
             new Chart(ctx, {
                 type: 'bar',
-                data: chartData,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Umsatz nach Wochentag (€)',
+                        data: data,
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -2008,7 +2122,7 @@
                     },
                     plugins: {
                         legend: {
-                            display: false
+                            position: 'top',
                         },
                         tooltip: {
                             callbacks: {
@@ -2020,9 +2134,76 @@
                     }
                 }
             });
+        }
+        
+        // Create hourly chart
+        function createHourlyChart() {
+            const ctx = document.getElementById('hourly-chart').getContext('2d');
             
-            // Show modal
-            document.getElementById('detailModal').classList.add('active');
+            // Get data for chart
+            const receipts = getReceiptsFromStorage();
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            // Group receipts by hour
+            const hourlySales = Array(24).fill(0);
+            
+            receipts.forEach(receipt => {
+                const receiptDate = new Date(receipt.date);
+                const dateKey = receiptDate.toISOString().split('T')[0];
+                const hour = receiptDate.getHours();
+                
+                // Apply date filter
+                if (startDate && dateKey < startDate) return;
+                if (endDate && dateKey > endDate) return;
+                
+                hourlySales[hour] += receipt.amount;
+            });
+            
+            // Prepare chart data
+            const labels = Array.from({length: 24}, (_, i) => i + ':00');
+            const data = hourlySales;
+            
+            // Create chart
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Umsatz nach Stunde (€)',
+                        data: data,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Umsatz: €' + context.raw.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         // Show notification
@@ -2067,6 +2248,30 @@
             applyDarkMode();
             setupEventListeners();
             
+            // Load sidebar state
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.sidebarCollapsed) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.add('collapsed');
+                
+                // Update toggle icon
+                const icon = document.querySelector('#sidebarToggle i');
+                icon.className = 'fas fa-chevron-right';
+            }
+            
+            // Load category collapsed states
+            if (settings.collapsedCategories) {
+                settings.collapsedCategories.forEach(category => {
+                    const content = document.querySelector(`.nav-category-content[data-category="${category}"]`);
+                    const header = document.querySelector(`.nav-category[data-category="${category}"]`);
+                    
+                    if (content && header) {
+                        content.classList.add('collapsed');
+                        header.classList.add('collapsed');
+                    }
+                });
+            }
+            
             // Set default date range to last 7 days
             const endDate = new Date();
             const startDate = new Date();
@@ -2078,39 +2283,7 @@
             // Load data
             loadReports();
             loadAuditLog();
-            updateSalesChart();
-            
-            // Restore sidebar state
-            const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isSidebarCollapsed) {
-                const sidebar = document.getElementById('sidebar');
-                const content = document.getElementById('adminContent');
-                sidebar.classList.add('collapsed');
-                content.classList.add('collapsed');
-                
-                // Update icon
-                const icon = document.getElementById('sidebarToggle').querySelector('i');
-                icon.classList.remove('fa-chevron-left');
-                icon.classList.add('fa-chevron-right');
-            }
-            
-            // Restore category states
-            const categories = JSON.parse(localStorage.getItem('collapsedCategories') || '{}');
-            for (const category in categories) {
-                if (categories[category]) {
-                    const categoryEl = document.querySelector(`.nav-category[data-category="${category}"]`);
-                    const contentEl = document.querySelector(`.nav-category-content[data-category="${category}"]`);
-                    
-                    if (categoryEl && contentEl) {
-                        categoryEl.classList.add('collapsed');
-                        contentEl.classList.add('collapsed');
-                    }
-                }
-            }
-            
-            // Update storage info
-            const usedSpace = Math.floor((JSON.stringify(localStorage).length / 5000) * 100); // Approximation
-            document.getElementById('storageInfo').textContent = `Speicher: ${Math.min(usedSpace, 100)}% belegt`;
+            loadTopProducts();
         });
     </script>
 </body>
