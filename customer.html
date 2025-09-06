@@ -405,7 +405,7 @@
 
     /* Payment Modal Specific Styles */
     #payment-modal .modal-content {
-        max-width: 90%;
+        max-width: 95%;
         max-height: 90vh;
         overflow-y: auto;
     }
@@ -512,7 +512,6 @@
     }
 
     .coupon-content {
-        display: none;
         margin-top: var(--spacing-md);
     }
 
@@ -531,11 +530,12 @@
 
     .apply-coupon-btn {
         white-space: nowrap;
+        padding: var(--spacing-sm);
     }
 
     .coupon-result {
         margin-top: var(--spacing-sm);
-        padding: var(--spacing-sm);
+        padding: 10px;
         border-radius: var(--radius-sm);
         font-size: var(--text-sm);
     }
@@ -598,6 +598,42 @@
 
     .payment-details-value {
         font-weight: 600;
+    }
+
+    /* Step-by-step tutorial styles */
+    .step {
+        display: none;
+    }
+    
+    .step.active {
+        display: block;
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    .step-indicators {
+        display: flex;
+        justify-content: center;
+        margin-bottom: var(--spacing-lg);
+        gap: var(--spacing-sm);
+    }
+    
+    .step-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--color-border);
+        transition: var(--transition);
+    }
+    
+    .step-indicator.active {
+        background-color: var(--color-accent);
+        transform: scale(1.2);
+    }
+    
+    .step-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: var(--spacing-xl);
     }
 
     /* Animation Keyframes */
@@ -846,74 +882,118 @@
     <div id="payment-modal" class="modal">
         <div class="modal-content">
             <div class="payment-modal-header">
-                <!-- <button class="payment-modal-back" onclick="window.location.href='index'">
-                    <i class="fas fa-arrow-left"></i>
-                </button>-->
                 <h2 class="payment-modal-title">Infos bearbeiten</h2>
             </div>
             
-            <div class="form-group">
-                <label for="customer-name">Ihr Name</label>
-                <input type="text" id="customer-name" class="form-control" placeholder="Vor- und Nachname">
+            <!-- Step indicators -->
+            <div class="step-indicators">
+                <div class="step-indicator active" data-step="1"></div>
+                <div class="step-indicator" data-step="2"></div>
+                <div class="step-indicator" data-step="3"></div>
+                <div class="step-indicator" data-step="4"></div>
             </div>
             
-            <div class="form-group">
-                <label>Zahlungsmethode</label>
-                <div class="radio-group">
-                    <div class="radio-option" data-value="cash" onclick="selectPaymentMethod('cash')">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <span>Bar</span>
-                    </div>
-                    <div class="radio-option" data-value="card" onclick="selectPaymentMethod('card')">
-                        <i class="fas fa-credit-card"></i>
-                        <span>Karte</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="coupon-section">
-                <div class="coupon-header" onclick="toggleCouponSection()">
-                    <span class="coupon-title">Gutschein anwenden</span>
-                    <i class="fas fa-chevron-down" id="coupon-chevron"></i>
+            <!-- Step 1: Customer Name -->
+            <div class="step active" id="step-1">
+                <div class="form-group">
+                    <label for="customer-name">Ihr Name</label>
+                    <input type="text" id="customer-name" class="form-control" placeholder="Vor- und Nachname">
                 </div>
                 
-                <div class="coupon-content" id="coupon-content">
-                    <div class="coupon-input-group">
-                        <input type="text" id="coupon-code" class="form-control coupon-input" placeholder="Gutscheincode eingeben">
-                        <button class="action-btn apply-coupon-btn" onclick="applyCoupon()">
-                            Anwenden
-                        </button>
+                <div class="step-navigation">
+                    <button class="modal-btn secondary" onclick="window.location.href='index'">
+                        Abbrechen
+                    </button>
+                    <button class="modal-btn primary" onclick="showStep(2)">
+                        Weiter
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Payment Method -->
+            <div class="step" id="step-2">
+                <div class="form-group">
+                    <label>Zahlungsmethode</label>
+                    <div class="radio-group">
+                        <div class="radio-option" data-value="cash" onclick="selectPaymentMethod('cash')">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Bar</span>
+                        </div>
+                        <div class="radio-option" data-value="card" onclick="selectPaymentMethod('card')">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Karte</span>
+                        </div>
                     </div>
-                    <div id="coupon-result" class="coupon-result"></div>
+                </div>
+                
+                <div class="step-navigation">
+                    <button class="modal-btn secondary" onclick="showStep(1)">
+                        <i class="fas fa-arrow-left"></i>
+                        Zurück
+                    </button>
+                    <button class="modal-btn primary" onclick="showStep(3)">
+                        Weiter
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </div>
             
-            <!-- Email Receipt Section -->
-            <div class="form-group">
+            <!-- Step 3: Coupon -->
+            <div class="step" id="step-3">
+                <div class="coupon-section">
+                    <div class="coupon-header" onclick="toggleCouponSection()">
+                        <span class="coupon-title">Gutschein anwenden</span>
+                        <i class="" id="coupon-chevron"></i>
+                    </div>
+                    
+                    <div class="coupon-content" id="coupon-content">
+                        <div class="coupon-input-group">
+                            <input type="text" id="coupon-code" class="form-control coupon-input" placeholder="Gutscheincode eingeben">
+                            <button class="action-btn apply-coupon-btn" onclick="applyCoupon()">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                        <div id="coupon-result" class="coupon-result"></div>
+                    </div>
+                </div>
+                
+                <div class="step-navigation">
+                    <button class="modal-btn secondary" onclick="showStep(2)">
+                        <i class="fas fa-arrow-left"></i>
+                        Zurück
+                    </button>
+                    <button class="modal-btn primary" onclick="showStep(4)">
+                        Weiter
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Summary -->
+            <div class="step" id="step-4">
+                <div class="form-group">
+                    <h3>Zusammenfassung</h3>
+                    <div id="payment-summary">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
                 <div class="remember-choice">
-                    <input type="checkbox" id="email-receipt-checkbox">
-                    <label for="email-receipt-checkbox">Beleg per E-Mail senden</label>
+                    <input type="checkbox" id="remember-choice">
+                    <label for="remember-choice">Meine Auswahl merken</label>
                 </div>
-                <input type="email" id="email-address-input" class="form-control" placeholder="E-Mail-Adresse" style="margin-top: 8px; display: none;">
-            </div>
-            
-            <div class="form-group">
-                <h3>Zusammenfassung</h3>
-                <div id="payment-summary">
-                    <!-- Will be populated by JavaScript -->
+                
+                <div class="step-navigation">
+                    <button class="modal-btn secondary" onclick="showStep(3)">
+                        <i class="fas fa-arrow-left"></i>
+                        Zurück
+                    </button>
+                    <button class="modal-btn primary" onclick="processPayment()">
+                        <i class="fas fa-check"></i>
+                        Bezahlung bestätigen
+                    </button>
                 </div>
-            </div>
-            
-            <div class="remember-choice">
-                <input type="checkbox" id="remember-choice">
-                <label for="remember-choice">Meine Auswahl merken</label>
-            </div>
-            
-            <div class="modal-actions">
-                <button class="modal-btn primary" onclick="processPayment()">
-                    <i class="fas fa-check"></i>
-                    Bezahlung bestätigen
-                </button>
             </div>
         </div>
     </div>
@@ -982,6 +1062,7 @@
     let appliedCoupon = null;
     let coupons = [];
     let userPreferences = null;
+    let currentStep = 1;
     
     // Initialize payment
     function initPayment() {
@@ -1008,63 +1089,20 @@
             // Load user preferences
             loadUserPreferences();
             
-            // Load user settings
-            const userSettings = JSON.parse(localStorage.getItem('userSettings')) || {};
+            // Display payment data immediately
+            displayPaymentData();
             
-            // Check if we have saved preferences
-            if (userPreferences && userPreferences.rememberChoice) {
-                // Use saved preferences
-                document.getElementById('customer-name').value = userPreferences.customerName || '';
-                
-                if (userPreferences.paymentMethod) {
-                    selectPaymentMethod(userPreferences.paymentMethod);
-                }
-                
-                if (userPreferences.couponCode) {
-                    // Try to apply the saved coupon
-                    appliedCoupon = coupons.find(c => c.code === userPreferences.couponCode);
-                    if (appliedCoupon) {
-                        document.getElementById('coupon-code').value = appliedCoupon.code;
-                        document.getElementById('coupon-result').innerHTML = 
-                            `<div class="coupon-success">Gespeicherter Gutschein: ${appliedCoupon.code}</div>`;
-                    }
-                }
-                
-                // Update summary with saved preferences
-                updatePaymentSummary();
-                
-                // Don't show modal if we have all required info
-                if (userPreferences.customerName && userPreferences.paymentMethod) {
-                    // Hide modal and proceed directly to payment
-                    document.getElementById('payment-modal').style.display = 'none';
-                    // Use setTimeout to ensure DOM is ready before generating QR
-                    setTimeout(processPaymentWithSavedPreferences, 100);
-                } else {
-                    // Show modal but prefill with saved data
-                    document.getElementById('payment-modal').style.display = 'flex';
-                }
+            // Generate QR code immediately with available data
+            generateQR();
+            startCountdown();
+            initializePeerJS();
+            
+            // Show modal if we don't have saved preferences
+            if (!userPreferences || !userPreferences.rememberChoice || !userPreferences.customerName || !userPreferences.paymentMethod) {
+                showModal('payment-modal');
             } else {
-                // Use user settings as defaults
-                if (userSettings.receiptName) {
-                    document.getElementById('customer-name').value = userSettings.receiptName;
-                }
-                
-                if (userSettings.defaultPaymentMethod) {
-                    selectPaymentMethod(userSettings.defaultPaymentMethod);
-                }
-                
-                // Set email receipt preferences from user settings
-                if (userSettings.emailReceipt) {
-                    document.getElementById('email-receipt-checkbox').checked = true;
-                    document.getElementById('email-address-input').style.display = 'block';
-                    
-                    if (userSettings.emailAddress) {
-                        document.getElementById('email-address-input').value = userSettings.emailAddress;
-                    }
-                }
-                
-                // Show modal for new users
-                document.getElementById('payment-modal').style.display = 'flex';
+                // Use saved preferences
+                processPaymentWithSavedPreferences();
             }
             
         } catch(error) {
@@ -1072,6 +1110,24 @@
             document.getElementById('error-message').textContent = error.message;
             showModal('error-modal');
         }
+    }
+    
+    // Display payment data
+    function displayPaymentData() {
+        document.getElementById('amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
+        const itemsList = document.getElementById('items-list');
+        itemsList.innerHTML = '';
+        
+        paymentData.items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item-box';
+            div.innerHTML = `
+                <h3>${item.name}</h3>
+                <p>${item.quantity}x € ${item.price.toFixed(2)}</p>
+                <p>Summe: € ${(item.quantity * item.price).toFixed(2)}</p>
+            `;
+            itemsList.appendChild(div);
+        });
     }
     
     // Load user preferences from localStorage
@@ -1177,24 +1233,12 @@
         // Show edit button
         document.getElementById('edit-details-btn').style.display = 'block';
         
-        // Display payment data
+        // Update displayed amount
         document.getElementById('amount').textContent = `€ ${finalTotal.toFixed(2)}`;
-        const itemsList = document.getElementById('items-list');
-        itemsList.innerHTML = '';
-        
-        paymentData.items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'item-box';
-            div.innerHTML = `
-                <h3>${item.name}</h3>
-                <p>${item.quantity}x € ${item.price.toFixed(2)}</p>
-                <p>Summe: € ${(item.quantity * item.price).toFixed(2)}</p>
-            `;
-            itemsList.appendChild(div);
-        });
         
         // Show discount if applied
         if (appliedCoupon) {
+            const itemsList = document.getElementById('items-list');
             const discountDiv = document.createElement('div');
             discountDiv.className = 'item-box';
             let discountText = '';
@@ -1209,12 +1253,8 @@
             itemsList.appendChild(discountDiv);
         }
         
-        // Generate QR code after a small delay to ensure DOM is ready
-        setTimeout(() => {
-            generateQR();
-            startCountdown();
-            initializePeerJS();
-        }, 100);
+        // Regenerate QR code with updated data
+        generateQR();
     }
     
     // Update payment summary in the modal
@@ -1264,6 +1304,35 @@
         summaryElement.innerHTML = html;
     }
     
+    // Show step in the tutorial modal
+    function showStep(stepNumber) {
+        // Validate current step before proceeding
+        if (stepNumber > currentStep) {
+            if (currentStep === 1 && !document.getElementById('customer-name').value.trim()) {
+                alert('Bitte geben Sie Ihren Namen ein');
+                return;
+            }
+            if (currentStep === 2 && !selectedPaymentMethod) {
+                alert('Bitte wählen Sie eine Zahlungsmethode aus');
+                return;
+            }
+        }
+        
+        // Hide current step
+        document.getElementById(`step-${currentStep}`).classList.remove('active');
+        document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.remove('active');
+        
+        // Show new step
+        currentStep = stepNumber;
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.add('active');
+        
+        // Update summary if we're on the last step
+        if (currentStep === 4) {
+            updatePaymentSummary();
+        }
+    }
+    
     // Select payment method
     function selectPaymentMethod(method) {
         selectedPaymentMethod = method;
@@ -1290,13 +1359,13 @@
             loadCoupons();
         }
         
-        if (content.classList.contains('expanded')) {
+        /*if (content.classList.contains('expanded')) {
             chevron.classList.remove('fa-chevron-down');
             chevron.classList.add('fa-chevron-up');
         } else {
             chevron.classList.remove('fa-chevron-up');
             chevron.classList.add('fa-chevron-down');
-        }
+        } */
     }
     
     // Apply coupon
@@ -1328,22 +1397,17 @@
     // Process payment
     function processPayment() {
         const customerName = document.getElementById('customer-name').value.trim();
-        const emailReceipt = document.getElementById('email-receipt-checkbox').checked;
-        const emailAddress = document.getElementById('email-address-input').value.trim();
         
         // Validate inputs
         if (!customerName) {
             alert('Bitte geben Sie Ihren Namen ein');
+            showStep(1);
             return;
         }
         
         if (!selectedPaymentMethod) {
             alert('Bitte wählen Sie eine Zahlungsmethode aus');
-            return;
-        }
-        
-        if (emailReceipt && !emailAddress) {
-            alert('Bitte geben Sie eine E-Mail-Adresse ein');
+            showStep(2);
             return;
         }
         
@@ -1351,7 +1415,7 @@
         saveUserPreferences();
         
         // Hide payment modal
-        document.getElementById('payment-modal').style.display = 'none';
+        closeModal('payment-modal');
         
         // Show payment details summary
         document.getElementById('payment-details-summary').style.display = 'block';
@@ -1381,27 +1445,13 @@
         paymentData.customerName = customerName;
         paymentData.paymentMethod = selectedPaymentMethod;
         paymentData.coupon = appliedCoupon ? appliedCoupon.code : null;
-        paymentData.emailReceipt = emailReceipt;
-        paymentData.emailAddress = emailAddress;
         
-        // Display payment data
+        // Update displayed amount
         document.getElementById('amount').textContent = `€ ${finalTotal.toFixed(2)}`;
-        const itemsList = document.getElementById('items-list');
-        itemsList.innerHTML = '';
-        
-        paymentData.items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'item-box';
-            div.innerHTML = `
-                <h3>${item.name}</h3>
-                <p>${item.quantity}x € ${item.price.toFixed(2)}</p>
-                <p>Summe: € ${(item.quantity * item.price).toFixed(2)}</p>
-            `;
-            itemsList.appendChild(div);
-        });
         
         // Show discount if applied
         if (appliedCoupon) {
+            const itemsList = document.getElementById('items-list');
             const discountDiv = document.createElement('div');
             discountDiv.className = 'item-box';
             let discountText = '';
@@ -1416,15 +1466,36 @@
             itemsList.appendChild(discountDiv);
         }
         
+        // Regenerate QR code with updated data
         generateQR();
-        startCountdown();
-        initializePeerJS();
     }
     
     // Edit payment details
     function editPaymentDetails() {
         // Show the payment modal again
-        document.getElementById('payment-modal').style.display = 'flex';
+        showModal('payment-modal');
+        
+        // Prefill with current values
+        document.getElementById('customer-name').value = paymentData.customerName || '';
+        
+        if (paymentData.paymentMethod) {
+            selectPaymentMethod(paymentData.paymentMethod);
+        }
+        
+        if (paymentData.coupon) {
+            appliedCoupon = coupons.find(c => c.code === paymentData.coupon);
+            if (appliedCoupon) {
+                document.getElementById('coupon-code').value = appliedCoupon.code;
+                document.getElementById('coupon-result').innerHTML = 
+                    `<div class="coupon-success">Aktiver Gutschein: ${appliedCoupon.code}</div>`;
+                document.getElementById('coupon-content').classList.add('expanded');
+                /* document.getElementById('coupon-chevron').classList.remove('fa-chevron-down');
+                document.getElementById('coupon-chevron').classList.add('fa-chevron-up'); */
+            }
+        }
+        
+        // Update summary
+        updatePaymentSummary();
         
         // Hide the summary and edit button
         document.getElementById('payment-details-summary').style.display = 'none';
@@ -1509,32 +1580,6 @@
         closeModal('connecting-modal');
         showModal('success-modal');
     }
-
-    function applyUserSettings() {
-        const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
-        
-        // Apply receipt name if available
-        if (settings.receiptName && document.getElementById('customer-name')) {
-            document.getElementById('customer-name').value = settings.receiptName;
-        }
-        
-        // Apply default payment method if available
-        if (settings.defaultPaymentMethod && document.querySelectorAll('.radio-option').length > 0) {
-            selectPaymentMethod(settings.defaultPaymentMethod);
-        }
-        
-        // Apply dark mode
-        if (settings.darkMode) {
-            document.body.classList.add('dark-mode');
-        }
-        
-        // Apply font size
-        if (settings.fontSize) {
-            document.documentElement.style.fontSize = 
-                settings.fontSize === 'small' ? '14px' : 
-                settings.fontSize === 'large' ? '18px' : '16px';
-        }
-    }
     
     // Handle payment decline from merchant
     function handlePaymentDecline() {
@@ -1573,18 +1618,16 @@
         // Create optimized data structure for QR code
         const qrData = {
             p: paymentId,           // Payment ID
-            t: paymentData.finalTotal,   // Total amount
+            t: paymentData.finalTotal || paymentData.total,   // Total amount
             i: paymentData.items.map(item => ({
                 n: item.name,       // Shortened property names
                 q: item.quantity,
                 p: item.price,
                 b: item.barcode
             })),
-            c: paymentData.customerName,
-            m: selectedPaymentMethod,
-            cp: paymentData.coupon,
-            er: paymentData.emailReceipt,
-            ea: paymentData.emailAddress
+            c: paymentData.customerName || 'Kunde',
+            m: selectedPaymentMethod || 'unknown',
+            cp: paymentData.coupon || null
         };
 
         try {
@@ -1636,451 +1679,441 @@
         showModal('success-modal');
     }
     
-        // Generate receipt
-        function generateReceipt() {
-    const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
-    const receiptFormat = settings.receiptFormat || 'detailed';
-    
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    const paymentDate = new Date().toLocaleDateString('de-DE');
-    const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-    const shortPaymentId = paymentId.split('-').pop().substr(0, 8);
-    let yPos = 20;
+    // Generate receipt
+    function generateReceipt() {
+        const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
+        const receiptFormat = settings.receiptFormat || 'detailed';
+        
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+        const paymentDate = new Date().toLocaleDateString('de-DE');
+        const paymentTime = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        const shortPaymentId = paymentId.split('-').pop().substr(0, 8);
+        let yPos = 20;
 
-    // Gemeinsamer Header für alle Belegtypen
-    function drawHeader() {
-        // Hintergrund für den Header
-        doc.setFillColor(255, 255, 255);
-        doc.rect(0, 0, pageWidth, 40, 'F');
-        
-        // Logo und Titel
-        doc.setFontSize(16);
-        doc.setTextColor(37, 99, 235);
-        doc.setFont(undefined, 'bold');
-        doc.text("Gittertier Pro", 20, 20);
-        
-        // Untertitel
-        doc.setFontSize(10);
-        doc.setTextColor(107, 114, 128);
-        doc.setFont(undefined, 'normal');
-        doc.text("Kassenbeleg", 20, 26);
-        
-        // Trennlinie
-        doc.setDrawColor(229, 231, 235);
-        doc.line(15, 35, pageWidth - 15, 35);
-        
-        // Belegnummer und Datum
-        doc.text(`Beleg: ${shortPaymentId}`, pageWidth - 60, 20);
-        doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 60, 26);
-        
-        return 45; // Gibt die Startposition für den Inhalt zurück
-    }
-
-    // Zeichnet die Fußzeile
-    function drawFooter() {
-        const footerY = pageHeight - 30;
-        
-        doc.setDrawColor(229, 231, 235);
-        doc.line(15, footerY - 10, pageWidth - 15, footerY - 10);
-        
-        doc.setFontSize(10);
-        doc.setTextColor(107, 114, 128);
-        doc.text("Vielen Dank für Ihren Einkauf!", pageWidth / 2, footerY, null, 'center');
-        doc.text("www.gittertier-pro.de", pageWidth / 2, footerY + 6, null, 'center');
-        
-        // QR-Code für den Beleg
-        try {
-            const qrSize = 25;
-            const qrX = pageWidth - 25;
-            const qrY = footerY - 25;
+        // Gemeinsamer Header für alle Belegtypen
+        function drawHeader() {
+            // Hintergrund für den Header
+            doc.setFillColor(255, 255, 255);
+            doc.rect(0, 0, pageWidth, 40, 'F');
             
-            const qrData = {
-                id: shortPaymentId,
-                date: paymentDate,
-                time: paymentTime,
-                total: paymentData.finalTotal.toFixed(2)
-            };
+            // Logo und Titel
+            doc.setFontSize(16);
+            doc.setTextColor(37, 99, 235);
+            doc.setFont(undefined, 'bold');
+            doc.text("Gittertier Pro", 20, 20);
             
-            const qrText = JSON.stringify(qrData);
-            QRCode.toCanvas(document.createElement('canvas'), qrText, { width: qrSize }, function(err, canvas) {
-                if (!err) {
-                    const imgData = canvas.toDataURL('image/jpeg');
-                    doc.addImage(imgData, 'JPEG', qrX - qrSize, qrY, qrSize, qrSize);
-                }
-            });
-        } catch (e) {
-            console.error('QR-Code konnte nicht generiert werden:', e);
-        }
-    }
-
-    // Simple Beleg
-    function generateSimpleReceipt() {
-        yPos = drawHeader();
-        
-        doc.setFontSize(14);
-        doc.setTextColor(17, 17, 17);
-        doc.setFont(undefined, 'bold');
-        doc.text("EINKAUFSBELEG", pageWidth / 2, yPos, null, 'center');
-        yPos += 15;
-        
-        // Kundendaten
-        doc.setFontSize(12);
-        doc.setTextColor(55, 65, 81);
-        doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
-        yPos += 8;
-        doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
-        yPos += 15;
-        
-        // Artikel (nur Namen und Gesamtpreise)
-        doc.setFontSize(11);
-        doc.setTextColor(17, 17, 17);
-        
-        paymentData.items.forEach((item) => {
-            if (yPos > pageHeight - 50) {
-                doc.addPage();
-                yPos = 20;
-                drawHeader();
-                yPos += 40;
-            }
+            // Untertitel
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128);
+            doc.setFont(undefined, 'normal');
+            doc.text("Kassenbeleg", 20, 26);
             
-            doc.text(`${item.quantity}x ${item.name}`, 20, yPos);
-            doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
-            yPos += 8;
-        });
-        
-        // Rabatt, falls vorhanden
-        if (appliedCoupon) {
-            if (yPos > pageHeight - 50) {
-                doc.addPage();
-                yPos = 20;
-                drawHeader();
-                yPos += 40;
-            }
-            
-            yPos += 5;
-            doc.setTextColor(22, 163, 74);
-            let discountText = '';
-            
-            if (appliedCoupon.type === 'percent') {
-                discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
-            } else {
-                discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
-            }
-            
-            doc.text(discountText, pageWidth - 20, yPos, null, 'right');
-            doc.setTextColor(17, 17, 17);
-            yPos += 8;
-        }
-        
-        // Gesamtsumme
-        yPos += 10;
-        doc.setDrawColor(229, 231, 235);
-        doc.line(20, yPos, pageWidth - 20, yPos);
-        yPos += 15;
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.text("Gesamtsumme:", 20, yPos);
-        doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
-        
-        drawFooter();
-    }
-
-    // Compact Beleg (aktuelles Design)
-    function generateCompactReceipt() {
-        yPos = drawHeader();
-        
-        doc.setFontSize(12);
-        doc.setTextColor(55, 65, 81);
-        
-        // Kundendaten
-        doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
-        yPos += 8;
-        doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
-        yPos += 15;
-        
-        // Artikelübersicht
-        doc.setFontSize(11);
-        doc.setTextColor(17, 17, 17);
-        
-        paymentData.items.forEach((item) => {
-            if (yPos > pageHeight - 60) {
-                doc.addPage();
-                yPos = 20;
-                drawHeader();
-                yPos += 40;
-            }
-            
-            // Artikelbox
-            doc.setFillColor(249, 250, 251);
-            doc.roundedRect(15, yPos - 5, pageWidth - 30, 25, 3, 3, 'F');
+            // Trennlinie
             doc.setDrawColor(229, 231, 235);
-            doc.roundedRect(15, yPos - 5, pageWidth - 30, 25, 3, 3, 'S');
+            doc.line(15, 35, pageWidth - 15, 35);
             
-            // Artikelinfo
-            doc.text(item.name, 25, yPos + 3);
-            doc.text(`${item.quantity} x € ${item.price.toFixed(2)}`, 25, yPos + 10);
-            doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos + 6, null, 'right');
+            // Belegnummer und Datum
+            doc.text(`Beleg: ${shortPaymentId}`, pageWidth - 60, 20);
+            doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 60, 26);
             
-            yPos += 30;
-        });
-        
-        // Rabatt, falls vorhanden
-        if (appliedCoupon) {
-            if (yPos > pageHeight - 40) {
-                doc.addPage();
-                yPos = 20;
-                drawHeader();
-                yPos += 40;
-            }
-            
-            yPos += 5;
-            doc.setTextColor(22, 163, 74);
-            let discountText = '';
-            
-            if (appliedCoupon.type === 'percent') {
-                discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
-            } else {
-                discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
-            }
-            
-            doc.text(discountText, pageWidth - 25, yPos, null, 'right');
-            doc.setTextColor(17, 17, 17);
-            yPos += 10;
+            return 45; // Gibt die Startposition für den Inhalt zurück
         }
-        
-        // Gesamtsumme
-        yPos += 10;
-        doc.setDrawColor(229, 231, 235);
-        doc.line(20, yPos, pageWidth - 20, yPos);
-        yPos += 15;
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.text("Gesamtsumme:", 20, yPos);
-        doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
-        
-        // Status der Zahlung
-        const statusEl = document.getElementById('status');
-        const statusText = statusEl.textContent.trim();
-        yPos += 15;
-        
-        const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
-        doc.setTextColor(...statusColor);
-        doc.text(`Status: ${statusText}`, pageWidth / 2, yPos, null, 'center');
-        
-        drawFooter();
-    }
 
-    // Detailed Beleg (sehr detailliert)
-    function generateDetailedReceipt() {
-        yPos = drawHeader();
-        
-        doc.setFontSize(14);
-        doc.setTextColor(17, 17, 17);
-        doc.setFont(undefined, 'bold');
-        doc.text("DETAILIERTER EINKAUFSBELEG", pageWidth / 2, yPos, null, 'center');
-        yPos += 15;
-        
-        // Kundendaten-Block
-        doc.setFillColor(249, 250, 251);
-        doc.roundedRect(15, yPos, pageWidth - 30, 40, 3, 3, 'F');
-        doc.setDrawColor(229, 231, 235);
-        doc.roundedRect(15, yPos, pageWidth - 30, 40, 3, 3, 'S');
-        
-        doc.setFontSize(11);
-        doc.setTextColor(55, 65, 81);
-        doc.text("KUNDENINFORMATIONEN", 25, yPos + 8);
-        
-        doc.setFontSize(10);
-        doc.text(`Name: ${paymentData.customerName}`, 25, yPos + 16);
-        doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 25, yPos + 24);
-        
-        const contactX = pageWidth / 2 + 20;
-        if (paymentData.emailReceipt && paymentData.emailAddress) {
-            doc.text(`E-Mail: ${paymentData.emailAddress}`, contactX, yPos + 16);
-        }
-        
-        doc.text(`Datum: ${paymentDate} ${paymentTime}`, contactX, yPos + 24);
-        
-        yPos += 50;
-        
-        // Detaillierte Artikeltabelle
-        doc.setFontSize(11);
-        doc.setTextColor(55, 65, 81);
-        doc.text("ARTIKELDETAILS", 20, yPos);
-        yPos += 8;
-        
-        // Tabellenkopf
-        doc.setFillColor(243, 244, 246);
-        doc.rect(20, yPos, pageWidth - 40, 12, 'F');
-        doc.setDrawColor(209, 213, 219); 
-        doc.rect(20, yPos, pageWidth - 40, 12, 'S');
-        
-        doc.setTextColor(17, 17, 17);
-        doc.setFont(undefined, 'bold');
-        doc.text("Artikel", 25, yPos + 8);
-        doc.text("Barcode", 50, yPos + 8);
-        doc.text("Menge", 100, yPos + 8);
-        doc.text("Einzelpreis", 140, yPos + 8);
-        doc.text("Gesamt", pageWidth - 25, yPos + 8, null, 'right');
-        
-        yPos += 15;
-        
-        // Tabellenzeilen
-        doc.setFont(undefined, 'normal');
-        paymentData.items.forEach((item) => {
-            if (yPos > pageHeight - 50) {
-                doc.addPage();
-                yPos = 20;
-                drawHeader();
-                yPos += 40;
+        // Zeichnet die Fußzeile
+        function drawFooter() {
+            const footerY = pageHeight - 30;
+            
+            doc.setDrawColor(229, 231, 235);
+            doc.line(15, footerY - 10, pageWidth - 15, footerY - 10);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128);
+            doc.text("Vielen Dank für Ihren Einkauf!", pageWidth / 2, footerY, null, 'center');
+            doc.text("www.gittertier-pro.de", pageWidth / 2, footerY + 6, null, 'center');
+            
+            // QR-Code für den Beleg
+            try {
+                const qrSize = 25;
+                const qrX = pageWidth - 25;
+                const qrY = footerY - 25;
                 
-                // Erneuter Tabellenkopf auf neuer Seite
-                doc.setFillColor(243, 244, 246);
+                const qrData = {
+                    id: shortPaymentId,
+                    date: paymentDate,
+                    time: paymentTime,
+                    total: paymentData.finalTotal.toFixed(2)
+                };
+                
+                const qrText = JSON.stringify(qrData);
+                QRCode.toCanvas(document.createElement('canvas'), qrText, { width: qrSize }, function(err, canvas) {
+                    if (!err) {
+                        const imgData = canvas.toDataURL('image/jpeg');
+                        doc.addImage(imgData, 'JPEG', qrX - qrSize, qrY, qrSize, qrSize);
+                    }
+                });
+            } catch (e) {
+                console.error('QR-Code konnte nicht generiert werden:', e);
+            }
+        }
+
+        // Simple Beleg
+        function generateSimpleReceipt() {
+            yPos = drawHeader();
+            
+            doc.setFontSize(14);
+            doc.setTextColor(17, 17, 17);
+            doc.setFont(undefined, 'bold');
+            doc.text("EINKAUFSBELEG", pageWidth / 2, yPos, null, 'center');
+            yPos += 15;
+            
+            // Kundendaten
+            doc.setFontSize(12);
+            doc.setTextColor(55, 65, 81);
+            doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
+            yPos += 8;
+            doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
+            yPos += 15;
+            
+            // Artikel (nur Namen und Gesamtpreise)
+            doc.setFontSize(11);
+            doc.setTextColor(17, 17, 17);
+            
+            paymentData.items.forEach((item) => {
+                if (yPos > pageHeight - 50) {
+                    doc.addPage();
+                    yPos = 20;
+                    drawHeader();
+                    yPos += 40;
+                }
+                
+                doc.text(`${item.quantity}x ${item.name}`, 20, yPos);
+                doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
+                yPos += 8;
+            });
+            
+            // Rabatt, falls vorhanden
+            if (appliedCoupon) {
+                if (yPos > pageHeight - 50) {
+                    doc.addPage();
+                    yPos = 20;
+                    drawHeader();
+                    yPos += 40;
+                }
+                
+                yPos += 5;
+                doc.setTextColor(22, 163, 74);
+                let discountText = '';
+                
+                if (appliedCoupon.type === 'percent') {
+                    discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
+                } else {
+                    discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
+                }
+                
+                doc.text(discountText, pageWidth - 20, yPos, null, 'right');
+                doc.setTextColor(17, 17, 17);
+                yPos += 8;
+            }
+            
+            // Gesamtsumme
+            yPos += 10;
+            doc.setDrawColor(229, 231, 235);
+            doc.line(20, yPos, pageWidth - 20, yPos);
+            yPos += 15;
+            
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text("Gesamtsumme:", 20, yPos);
+            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
+            
+            drawFooter();
+        }
+
+        // Compact Beleg (aktuelles Design)
+        function generateCompactReceipt() {
+            yPos = drawHeader();
+            
+            doc.setFontSize(12);
+            doc.setTextColor(55, 65, 81);
+            
+            // Kundendaten
+            doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
+            yPos += 8;
+            doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
+            yPos += 15;
+            
+            // Artikelübersicht
+            doc.setFontSize(11);
+            doc.setTextColor(17, 17, 17);
+            
+            paymentData.items.forEach((item) => {
+                if (yPos > pageHeight - 60) {
+                    doc.addPage();
+                    yPos = 20;
+                    drawHeader();
+                    yPos += 40;
+                }
+                
+                // Artikelbox
+                doc.setFillColor(249, 250, 251);
+                doc.roundedRect(15, yPos - 5, pageWidth - 30, 25, 3, 3, 'F');
+                doc.setDrawColor(229, 231, 235);
+                doc.roundedRect(15, yPos - 5, pageWidth - 30, 25, 3, 3, 'S');
+                
+                // Artikelinfo
+                doc.text(item.name, 25, yPos + 3);
+                doc.text(`${item.quantity} x € ${item.price.toFixed(2)}`, 25, yPos + 10);
+                doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos + 6, null, 'right');
+                
+                yPos += 30;
+            });
+            
+            // Rabatt, falls vorhanden
+            if (appliedCoupon) {
+                if (yPos > pageHeight - 40) {
+                    doc.addPage();
+                    yPos = 20;
+                    drawHeader();
+                    yPos += 40;
+                }
+                
+                yPos += 5;
+                doc.setTextColor(22, 163, 74);
+                let discountText = '';
+                
+                if (appliedCoupon.type === 'percent') {
+                    discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
+                } else {
+                    discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
+                }
+                
+                doc.text(discountText, pageWidth - 25, yPos, null, 'right');
+                doc.setTextColor(17, 17, 17);
+                yPos += 10;
+            }
+            
+            // Gesamtsumme
+            yPos += 10;
+            doc.setDrawColor(229, 231, 235);
+            doc.line(20, yPos, pageWidth - 20, yPos);
+            yPos += 15;
+            
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text("Gesamtsumme:", 20, yPos);
+            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
+            
+            // Status der Zahlung
+            const statusEl = document.getElementById('status');
+            const statusText = statusEl.textContent.trim();
+            yPos += 15;
+            
+            const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
+            doc.setTextColor(...statusColor);
+            doc.text(`Status: ${statusText}`, pageWidth / 2, yPos, null, 'center');
+            
+            drawFooter();
+        }
+
+        // Detailed Beleg (sehr detailliert)
+        function generateDetailedReceipt() {
+            yPos = drawHeader();
+            
+            doc.setFontSize(14);
+            doc.setTextColor(17, 17, 17);
+            doc.setFont(undefined, 'bold');
+            doc.text("DETAILIERTER EINKAUFSBELEG", pageWidth / 2, yPos, null, 'center');
+            yPos += 15;
+            
+            // Kundendaten-Block
+            doc.setFillColor(249, 250, 251);
+            doc.roundedRect(15, yPos, pageWidth - 30, 40, 3, 3, 'F');
+            doc.setDrawColor(229, 231, 235);
+            doc.roundedRect(15, yPos, pageWidth - 30, 40, 3, 3, 'S');
+            
+            doc.setFontSize(11);
+            doc.setTextColor(55, 65, 81);
+            doc.text("KUNDENINFORMATIONEN", 25, yPos + 8);
+            
+            doc.setFontSize(10);
+            doc.text(`Name: ${paymentData.customerName}`, 25, yPos + 16);
+            doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 25, yPos + 24);
+            
+            const contactX = pageWidth / 2 + 20;
+            doc.text(`Datum: ${paymentDate} ${paymentTime}`, contactX, yPos + 24);
+            
+            yPos += 50;
+            
+            // Detaillierte Artikeltabelle
+            doc.setFontSize(11);
+            doc.setTextColor(55, 65, 81);
+            doc.text("ARTIKELDETAILS", 20, yPos);
+            yPos += 8;
+            
+            // Tabellenkopf
+            doc.setFillColor(243, 244, 246);
+            doc.rect(20, yPos, pageWidth - 40, 12, 'F');
+            doc.setDrawColor(209, 213, 219); 
+            doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+            
+            doc.setTextColor(17, 17, 17);
+            doc.setFont(undefined, 'bold');
+            doc.text("Artikel", 25, yPos + 8);
+            doc.text("Barcode", 50, yPos + 8);
+            doc.text("Menge", 100, yPos + 8);
+            doc.text("Einzelpreis", 140, yPos + 8);
+            doc.text("Gesamt", pageWidth - 25, yPos + 8, null, 'right');
+            
+            yPos += 15;
+            
+            // Tabellenzeilen
+            doc.setFont(undefined, 'normal');
+            paymentData.items.forEach((item) => {
+                if (yPos > pageHeight - 50) {
+                    doc.addPage();
+                    yPos = 20;
+                    drawHeader();
+                    yPos += 40;
+                    
+                    // Erneuter Tabellenkopf auf neuer Seite
+                    doc.setFillColor(243, 244, 246);
+                    doc.rect(20, yPos, pageWidth - 40, 12, 'F');
+                    doc.setDrawColor(209, 213, 219);
+                    doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+                    
+                    doc.setTextColor(17, 17, 17);
+                    doc.setFont(undefined, 'bold');
+                    doc.text("Artikel", 25, yPos + 8);
+                    doc.text("Barcode", 50, yPos + 8);
+                    doc.text("Menge", 100, yPos + 8);
+                    doc.text("Einzelpreis", 140, yPos + 8);
+                    doc.text("Gesamt", pageWidth - 25, yPos + 8, null, 'right');
+                    
+                    yPos += 15;
+                }
+                
+                // Zeilen mit abwechselnden Hintergrundfarben für bessere Lesbarkeit
+                const rowColor = paymentData.items.indexOf(item) % 2 === 0 ? [255, 255, 255] : [249, 250, 251];
+                doc.setFillColor(...rowColor);
                 doc.rect(20, yPos, pageWidth - 40, 12, 'F');
                 doc.setDrawColor(209, 213, 219);
                 doc.rect(20, yPos, pageWidth - 40, 12, 'S');
                 
-                doc.setTextColor(17, 17, 17);
-                doc.setFont(undefined, 'bold');
-                doc.text("Artikel", 25, yPos + 8);
-                doc.text("Barcode", 50, yPos + 8);
-                doc.text("Menge", 100, yPos + 8);
-                doc.text("Einzelpreis", 140, yPos + 8);
-                doc.text("Gesamt", pageWidth - 25, yPos + 8, null, 'right');
+                // Artikelname (gekürzt falls zu lang)
+                const itemName = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
+                doc.text(itemName, 25, yPos + 8);
+                
+                // Barcode
+                doc.text(item.barcode || '–', 50, yPos + 8);
+                
+                // Menge
+                doc.text(item.quantity.toString(), 100, yPos + 8);
+                
+                // Einzelpreis
+                doc.text(`€ ${item.price.toFixed(2)}`, 140, yPos + 8);
+                
+                // Gesamtpreis
+                doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
                 
                 yPos += 15;
+            });
+            
+            // Rabattzeile, falls vorhanden
+            if (appliedCoupon) {
+                if (yPos > pageHeight - 40) {
+                    doc.addPage();
+                    yPos = 20;
+                    drawHeader();
+                    yPos += 40;
+                }
+                
+                doc.setFillColor(236, 253, 245);
+                doc.rect(20, yPos, pageWidth - 40, 12, 'F');
+                doc.setDrawColor(209, 213, 219);
+                doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+                
+                doc.setTextColor(22, 163, 74);
+                
+                let discountText = '';
+                let discountAmount = 0;
+                
+                if (appliedCoupon.type === 'percent') {
+                    discountText = `Rabatt (${appliedCoupon.code}) -${appliedCoupon.discount}%`;
+                    discountAmount = paymentData.total * (appliedCoupon.discount / 100);
+                } else {
+                    discountText = `Rabatt (${appliedCoupon.code})`;
+                    discountAmount = appliedCoupon.discount;
+                }
+                
+                doc.text(discountText, 25, yPos + 8);
+                doc.text(`-€ ${discountAmount.toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
+                
+                yPos += 20;
             }
             
-            // Zeilen mit abwechselnden Hintergrundfarben für bessere Lesbarkeit
-            const rowColor = paymentData.items.indexOf(item) % 2 === 0 ? [255, 255, 255] : [249, 250, 251];
-            doc.setFillColor(...rowColor);
-            doc.rect(20, yPos, pageWidth - 40, 12, 'F');
-            doc.setDrawColor(209, 213, 219);
-            doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+            // Zwischensumme
+            doc.setFontSize(11);
+            doc.setTextColor(55, 65, 81);
+            doc.text("Zwischensumme:", pageWidth - 80, yPos + 8, null, 'right');
+            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
+            yPos += 10;
             
-            // Artikelname (gekürzt falls zu lang)
-            const itemName = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
-            doc.text(itemName, 25, yPos + 8);
-            
-            // Barcode
-            doc.text(item.barcode || '–', 50, yPos + 8);
-            
-            // Menge
-            doc.text(item.quantity.toString(), 100, yPos + 8);
-            
-            // Einzelpreis
-            doc.text(`€ ${item.price.toFixed(2)}`, 140, yPos + 8);
-            
-            // Gesamtpreis
-            doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
-            
+            // Gesamtsumme
+            doc.setDrawColor(229, 231, 235);
+            doc.line(pageWidth - 100, yPos, pageWidth - 20, yPos);
             yPos += 15;
-        });
-        
-        // Rabattzeile, falls vorhanden
-        if (appliedCoupon) {
-            if (yPos > pageHeight - 40) {
-                doc.addPage();
-                yPos = 20;
-                drawHeader();
-                yPos += 40;
-            }
             
-            doc.setFillColor(236, 253, 245);
-            doc.rect(20, yPos, pageWidth - 40, 12, 'F');
-            doc.setDrawColor(209, 213, 219);
-            doc.rect(20, yPos, pageWidth - 40, 12, 'S');
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(17, 17, 17);
+            doc.text("Gesamtsumme:", pageWidth - 80, yPos, null, 'right');
+            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+            yPos += 15;
             
-            doc.setTextColor(22, 163, 74);
+            // Zahlungsdetails
+            doc.setFontSize(11);
+            doc.setTextColor(55, 65, 81);
+            doc.text("ZAHLUNGSINFORMATIONEN", 20, yPos);
+            yPos += 8;
             
-            let discountText = '';
-            let discountAmount = 0;
+            doc.setFillColor(249, 250, 251);
+            doc.roundedRect(20, yPos, pageWidth - 40, 30, 3, 3, 'F');
+            doc.setDrawColor(229, 231, 235);
+            doc.roundedRect(20, yPos, pageWidth - 40, 30, 3, 3, 'S');
             
-            if (appliedCoupon.type === 'percent') {
-                discountText = `Rabatt (${appliedCoupon.code}) -${appliedCoupon.discount}%`;
-                discountAmount = paymentData.total * (appliedCoupon.discount / 100);
-            } else {
-                discountText = `Rabatt (${appliedCoupon.code})`;
-                discountAmount = appliedCoupon.discount;
-            }
+            doc.setTextColor(17, 17, 17);
+            doc.text(`Zahlungsmethode: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Kartenzahlung'}`, 25, yPos + 10);
+            doc.text(`Belegnummer: ${shortPaymentId}`, 25, yPos + 18);
+            doc.text(`Transaktionsstatus: ${document.getElementById('status').textContent.trim()}`, 25, yPos + 26);
             
-            doc.text(discountText, 25, yPos + 8);
-            doc.text(`-€ ${discountAmount.toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
+            yPos += 40;
             
-            yPos += 20;
+            // Hinweise
+            doc.setTextColor(107, 114, 128);
+            doc.setFontSize(9);
+            doc.text("Hinweis: Bewahren Sie diesen Beleg als Kaufnachweis auf.", 20, yPos);
+            doc.text("Umtausch oder Rückgabe nur mit Vorlage des Originalbelegs möglich.", 20, yPos + 6);
         }
-        
-        // Zwischensumme
-        doc.setFontSize(11);
-        doc.setTextColor(55, 65, 81);
-        doc.text("Zwischensumme:", pageWidth - 80, yPos + 8, null, 'right');
-        doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
-        yPos += 10;
-        
-        // Gesamtsumme
-        doc.setDrawColor(229, 231, 235);
-        doc.line(pageWidth - 100, yPos, pageWidth - 20, yPos);
-        yPos += 15;
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.setTextColor(17, 17, 17);
-        doc.text("Gesamtsumme:", pageWidth - 80, yPos, null, 'right');
-        doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
-        yPos += 15;
-        
-        // Zahlungsdetails
-        doc.setFontSize(11);
-        doc.setTextColor(55, 65, 81);
-        doc.text("ZAHLUNGSINFORMATIONEN", 20, yPos);
-        yPos += 8;
-        
-        doc.setFillColor(249, 250, 251);
-        doc.roundedRect(20, yPos, pageWidth - 40, 30, 3, 3, 'F');
-        doc.setDrawColor(229, 231, 235);
-        doc.roundedRect(20, yPos, pageWidth - 40, 30, 3, 3, 'S');
-        
-        doc.setTextColor(17, 17, 17);
-        doc.text(`Zahlungsmethode: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Kartenzahlung'}`, 25, yPos + 10);
-        doc.text(`Belegnummer: ${shortPaymentId}`, 25, yPos + 18);
-        doc.text(`Transaktionsstatus: ${document.getElementById('status').textContent.trim()}`, 25, yPos + 26);
-        
-        yPos += 40;
-        
-        // Hinweise
-        doc.setTextColor(107, 114, 128);
-        doc.setFontSize(9);
-        doc.text("Hinweis: Bewahren Sie diesen Beleg als Kaufnachweis auf.", 20, yPos);
-        doc.text("Umtausch oder Rückgabe nur mit Vorlage des Originalbelegs möglich.", 20, yPos + 6);
+
+        // Je nach Format die entsprechende Funktion aufrufen
+        if (receiptFormat === 'simple') {
+            generateSimpleReceipt();
+        } else if (receiptFormat === 'compact') {
+            generateCompactReceipt();
+        } else {
+            generateDetailedReceipt();
+        }
+
+        // PDF speichern
+        doc.save(`gittertier_beleg_${shortPaymentId}.pdf`);
+
+        // Nach kurzer Verzögerung zurück zur Startseite
+        setTimeout(() => {
+            window.location.href = 'index';
+        }, 1500);
     }
-
-    // Je nach Format die entsprechende Funktion aufrufen
-    if (receiptFormat === 'simple') {
-        generateSimpleReceipt();
-    } else if (receiptFormat === 'compact') {
-        generateCompactReceipt();
-    } else {
-        generateDetailedReceipt();
-    }
-
-    // PDF speichern
-    doc.save(`gittertier_beleg_${shortPaymentId}.pdf`);
-
-    // Wenn E-Mail-Beleg aktiviert ist, Hinweis anzeigen
-    if (paymentData.emailReceipt) {
-        alert(`Beleg wurde an ${paymentData.emailAddress} gesendet`);
-    }
-
-    // Nach kurzer Verzögerung zurück zur Startseite
-    setTimeout(() => {
-        window.location.href = 'index';
-    }, 1500);
-}
-
 
     // Clean up PeerJS connection when leaving the page
     window.addEventListener('beforeunload', () => {
@@ -2092,16 +2125,10 @@
     // Set up event listeners
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize payment when page loads
-        applyUserSettings();    
         initPayment();
         
         // Set up edit details button
         document.getElementById('edit-details-btn').addEventListener('click', editPaymentDetails);
-        
-        // Set up email receipt checkbox
-        document.getElementById('email-receipt-checkbox').addEventListener('change', function() {
-            document.getElementById('email-address-input').style.display = this.checked ? 'block' : 'none';
-        });
         
         // Load coupons
         loadCoupons();

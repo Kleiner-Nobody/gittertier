@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysen - Gittertier Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <style>
     :root {
         --color-bg: #ffffff;
@@ -20,7 +19,6 @@
         --color-success: #16a34a;
         --color-error: #dc2626;
         --color-warning: #d97706;
-        --color-info: #2563eb;
         --color-overlay: rgba(0, 0, 0, 0.5);
         
         --radius: 12px;
@@ -52,11 +50,6 @@
         --header-height: 64px;
         --sidebar-width: 280px;
         --sidebar-width-collapsed: 80px;
-        
-        --safe-area-inset-top: env(safe-area-inset-top, 0px);
-        --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
-        --safe-area-inset-left: env(safe-area-inset-left, 0px);
-        --safe-area-inset-right: env(safe-area-inset-right, 0px);
     }
 
     .dark-mode {
@@ -70,7 +63,6 @@
         --color-success: #10b981;
         --color-error: #ef4444;
         --color-warning: #f59e0b;
-        --color-info: #3b82f6;
         --color-overlay: rgba(0, 0, 0, 0.7);
         --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
@@ -91,16 +83,12 @@
         min-height: 100vh;
         display: flex;
         flex-direction: column;
-        padding-left: var(--safe-area-inset-left);
-        padding-right: var(--safe-area-inset-right);
         overflow-x: hidden;
-        width: 100%;
-        max-width: 100vw;
     }
 
     /* Header Styles */
     .admin-header {
-        height: calc(var(--header-height) + var(--safe-area-inset-top));
+        height: var(--header-height);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -110,9 +98,6 @@
         position: sticky;
         top: 0;
         z-index: 50;
-        padding-top: var(--safe-area-inset-top);
-        width: 100%;
-        max-width: 100vw;
     }
 
     .logo {
@@ -141,6 +126,41 @@
         font-size: var(--text-sm);
         color: var(--color-text-muted);
         display: none;
+    }
+
+    .notification-btn {
+        position: relative;
+        background: transparent;
+        border: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--color-text);
+        font-size: var(--text-lg);
+        transition: var(--transition);
+    }
+
+    .notification-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        background: var(--color-error);
+        color: white;
+        border-radius: 50%;
+        font-size: var(--text-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .logout-btn {
@@ -185,29 +205,21 @@
     .admin-container {
         display: flex;
         flex: 1;
-        width: 100%;
-        max-width: 100vw;
-        overflow-x: hidden;
     }
 
     /* Sidebar */
     .admin-sidebar {
-        width: var(--sidebar-width-collapsed);
+        width: var(--sidebar-width);
         background-color: var(--color-bg);
         border-right: 1px solid var(--color-border);
-        height: calc(100vh - var(--header-height) - var(--safe-area-inset-top));
+        height: calc(100vh - var(--header-height));
         position: fixed;
-        top: calc(var(--header-height) + var(--safe-area-inset-top));
+        top: var(--header-height);
         left: 0;
         overflow-y: auto;
-        transition: transform 0.3s ease, width 0.3s ease;
+        transition: transform 0.3s ease;
         z-index: 40;
         padding: var(--spacing-lg) 0;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .admin-sidebar.expanded {
-        width: var(--sidebar-width);
     }
 
     .nav-container {
@@ -215,39 +227,6 @@
         flex-direction: column;
         gap: var(--spacing-xs);
         padding: 0 var(--spacing-md);
-    }
-
-    .nav-category {
-        margin-top: var(--spacing-md);
-        margin-bottom: var(--spacing-xs);
-        font-size: var(--text-xs);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        padding: var(--spacing-sm) var(--spacing-md);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
-    }
-
-    .nav-category i {
-        transition: var(--transition);
-    }
-
-    .nav-category.collapsed i {
-        transform: rotate(-90deg);
-    }
-
-    .nav-category-content {
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-        max-height: 500px;
-    }
-
-    .nav-category-content.collapsed {
-        max-height: 0;
     }
 
     .nav-link {
@@ -260,7 +239,6 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-md);
-        white-space: nowrap;
     }
 
     .nav-link:hover {
@@ -275,27 +253,10 @@
     .nav-link i {
         width: 24px;
         text-align: center;
-        flex-shrink: 0;
     }
 
     .nav-link.active i {
         color: var(--color-accent);
-    }
-
-    .admin-sidebar:not(.expanded) .nav-link span,
-    .admin-sidebar:not(.expanded) .nav-category span:first-child,
-    .admin-sidebar:not(.expanded) .new-feature {
-        display: none;
-    }
-
-    .admin-sidebar:not(.expanded) .nav-category {
-        justify-content: center;
-        padding: var(--spacing-sm);
-    }
-
-    .admin-sidebar:not(.expanded) .nav-category i {
-        transform: none;
-        margin: 0;
     }
 
     .new-feature {
@@ -307,31 +268,10 @@
         margin-left: auto;
     }
 
-    .sidebar-toggle {
-        position: absolute;
-        bottom: var(--spacing-md);
-        right: var(--spacing-md);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background-color: var(--color-bg-secondary);
-        border: 1px solid var(--color-border);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .sidebar-toggle:hover {
-        background-color: var(--color-accent);
-        color: white;
-    }
-
     /* Sidebar overlay for mobile */
     .sidebar-overlay {
         position: fixed;
-        top: calc(var(--header-height) + var(--safe-area-inset-top));
+        top: var(--header-height);
         left: 0;
         right: 0;
         bottom: 0;
@@ -344,34 +284,17 @@
     .admin-content {
         flex: 1;
         padding: var(--spacing-lg);
-        margin-left: var(--sidebar-width-collapsed);
+        margin-left: var(--sidebar-width);
         transition: margin-left 0.3s ease;
-        padding-bottom: calc(var(--spacing-lg) + var(--safe-area-inset-bottom));
-        width: 100%;
-        max-width: 100vw;
+        max-width: 100%;
         overflow-x: hidden;
     }
 
-    .admin-sidebar.expanded ~ .admin-content {
-        margin-left: var(--sidebar-width);
-    }
-
-    /* Dashboard header */
-    .dashboard-header {
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
         margin-bottom: var(--spacing-xl);
-        width: 100%;
-        max-width: 100%;
-    }
-
-    .dashboard-title {
-        font-size: var(--text-2xl);
-        font-weight: 700;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .dashboard-subtitle {
-        color: var(--color-text-muted);
-        font-size: var(--text-lg);
     }
 
     /* Cards */
@@ -381,10 +304,7 @@
         border: 1px solid var(--color-border);
         padding: var(--spacing-lg);
         box-shadow: var(--shadow);
-        margin-bottom: var(--spacing-xl);
         overflow: hidden;
-        width: 100%;
-        max-width: 100%;
     }
 
     .card-header {
@@ -392,8 +312,6 @@
         justify-content: space-between;
         align-items: flex-start;
         margin-bottom: var(--spacing-lg);
-        flex-wrap: wrap;
-        gap: var(--spacing-md);
     }
 
     .card-title {
@@ -408,348 +326,6 @@
         color: var(--color-accent);
     }
 
-    /* Date filter */
-    .date-filter {
-        display: flex;
-        gap: var(--spacing-md);
-        margin-bottom: var(--spacing-lg);
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .date-input {
-        padding: var(--spacing-sm);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        font-size: var(--text-sm);
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        min-width: 140px;
-    }
-
-    .apply-filter-btn {
-        background-color: var(--color-accent);
-        color: white;
-        border: none;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .apply-filter-btn:hover {
-        background-color: var(--color-accent-hover);
-    }
-
-    /* Summary cards */
-    .summary-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: var(--spacing-md);
-        margin-bottom: var(--spacing-lg);
-        width: 100%;
-    }
-
-    .summary-card {
-        background-color: var(--color-bg-secondary);
-        border-radius: var(--radius);
-        padding: var(--spacing-lg);
-        text-align: center;
-        transition: var(--transition);
-        width: 100%;
-    }
-
-    .summary-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .summary-card-icon {
-        font-size: var(--text-2xl);
-        color: var(--color-accent);
-        margin-bottom: var(--spacing-sm);
-    }
-
-    .summary-card-value {
-        font-size: var(--text-2xl);
-        font-weight: 700;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .summary-card-label {
-        color: var(--color-text-muted);
-        font-size: var(--text-sm);
-    }
-
-    /* Charts */
-    .chart-container {
-        position: relative;
-        height: 300px;
-        width: 100%;
-        margin: var(--spacing-lg) 0;
-        overflow-x: auto;
-        overflow-y: hidden;
-    }
-
-    /* Tables */
-    .table-container {
-        overflow-x: auto;
-        margin: var(--spacing-lg) 0;
-        -webkit-overflow-scrolling: touch;
-        width: 100%;
-        max-width: 100%;
-    }
-
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 600px;
-    }
-
-    .data-table th,
-    .data-table td {
-        padding: var(--spacing-sm);
-        text-align: left;
-        border-bottom: 1px solid var(--color-border);
-    }
-
-    .data-table th {
-        font-weight: 600;
-        color: var(--color-text-muted);
-        background-color: var(--color-bg-secondary);
-        position: sticky;
-        top: 0;
-    }
-
-    .data-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    .data-table tr:hover {
-        background-color: var(--color-bg-secondary);
-    }
-
-    /* Status badges */
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: var(--text-xs);
-        font-weight: 600;
-        display: inline-block;
-    }
-
-    .status-success {
-        background-color: rgba(22, 163, 74, 0.1);
-        color: var(--color-success);
-    }
-
-    .status-warning {
-        background-color: rgba(217, 119, 6, 0.1);
-        color: var(--color-warning);
-    }
-
-    .status-error {
-        background-color: rgba(220, 38, 38, 0.1);
-        color: var(--color-error);
-    }
-
-    /* Action buttons */
-    .action-buttons {
-        display: flex;
-        gap: var(--spacing-md);
-        margin-bottom: var(--spacing-lg);
-        flex-wrap: wrap;
-    }
-
-    .action-btn {
-        background-color: var(--color-bg);
-        border: 1px solid var(--color-border);
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        white-space: nowrap;
-    }
-
-    .action-btn:hover {
-        background-color: var(--color-bg-secondary);
-    }
-
-    .btn-primary {
-        background-color: var(--color-accent);
-        color: white;
-        border-color: var(--color-accent);
-    }
-
-    .btn-primary:hover {
-        background-color: var(--color-accent-hover);
-        border-color: var(--color-accent-hover);
-    }
-
-    .btn-success {
-        background-color: var(--color-success);
-        color: white;
-        border-color: var(--color-success);
-    }
-
-    .btn-success:hover {
-        background-color: #0f9c5a;
-        border-color: #0f9c5a;
-    }
-
-    /* Empty state */
-    .empty-state {
-        text-align: center;
-        padding: var(--spacing-xl);
-        color: var(--color-text-muted);
-    }
-
-    .empty-state i {
-        font-size: var(--text-3xl);
-        color: var(--color-accent);
-        margin-bottom: var(--spacing-md);
-        display: block;
-    }
-
-    /* Modal */
-    .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: var(--color-overlay);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        padding: var(--spacing-md);
-    }
-
-    .modal-content {
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        max-width: 90%;
-        max-height: 90%;
-        overflow: auto;
-        width: 600px;
-        box-shadow: var(--shadow-lg);
-        position: relative;
-    }
-
-    .modal-close {
-        position: absolute;
-        top: var(--spacing-md);
-        right: var(--spacing-md);
-        background: none;
-        border: none;
-        font-size: var(--text-xl);
-        cursor: pointer;
-        color: var(--color-text-muted);
-    }
-
-    /* Analytics Tabs */
-    .analytics-tabs {
-        display: flex;
-        border-bottom: 1px solid var(--color-border);
-        margin-bottom: var(--spacing-lg);
-        overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Firefox */
-        width: 100%;
-        max-width: 100%;
-    }
-    
-    .analytics-tabs::-webkit-scrollbar {
-        display: none; /* Chrome, Safari */
-    }
-    
-    .analytics-tab {
-        padding: var(--spacing-md) var(--spacing-lg);
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        transition: var(--transition);
-        flex: 0 0 auto;
-    }
-    
-    .analytics-tab.active {
-        border-bottom-color: var(--color-accent);
-        color: var(--color-accent);
-        font-weight: 600;
-    }
-    
-    .analytics-content {
-        display: none;
-        width: 100%;
-        max-width: 100%;
-    }
-    
-    .analytics-content.active {
-        display: block;
-    }
-    
-    /* Stock alerts */
-    .stock-alert {
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    
-    .stock-low {
-        background-color: rgba(217, 119, 6, 0.1);
-        color: var(--color-warning);
-    }
-    
-    .stock-out {
-        background-color: rgba(220, 38, 38, 0.1);
-        color: var(--color-error);
-    }
-    
-    .stock-ok {
-        background-color: rgba(22, 163, 74, 0.1);
-        color: var(--color-success);
-    }
-    
-    .coupon-usage {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
-    
-    .usage-bar {
-        flex-grow: 1;
-        height: 8px;
-        background-color: var(--color-bg-secondary);
-        border-radius: 4px;
-        overflow: hidden;
-    }
-    
-    .usage-fill {
-        height: 100%;
-        background-color: var(--color-accent);
-        border-radius: 4px;
-    }
-
-    /* Dashboard grid */
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: var(--spacing-lg);
-        margin-bottom: var(--spacing-xl);
-    }
-
-    /* Stat cards */
     .stat-cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -786,12 +362,255 @@
         color: var(--color-text-muted);
     }
 
-    /* Data controls */
+    .chart-container {
+        height: 250px;
+        position: relative;
+        margin-top: 20px;
+    }
+
+    .chart-expand {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 6px 12px;
+        font-size: var(--text-xs);
+        cursor: pointer;
+        z-index: 10;
+        transition: var(--transition);
+    }
+
+    .chart-expand:hover {
+        background-color: rgba(255, 255, 255, 1);
+    }
+
+    .dark-mode .chart-expand {
+        background-color: rgba(31, 41, 55, 0.8);
+        color: var(--color-text);
+    }
+
+    .dark-mode .chart-expand:hover {
+        background-color: rgba(31, 41, 55, 1);
+    }
+
     .data-controls {
         display: flex;
         gap: var(--spacing-md);
         margin-bottom: var(--spacing-lg);
         flex-wrap: wrap;
+    }
+
+    .date-input {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        transition: var(--transition);
+    }
+
+    .date-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .action-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .action-btn.primary {
+        background-color: var(--color-accent);
+        color: white;
+        border-color: var(--color-accent);
+    }
+
+    .action-btn.primary:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    th {
+        font-weight: 600;
+        color: var(--color-text);
+        background-color: var(--color-bg-secondary);
+    }
+
+    tr:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-confirmed {
+        background-color: rgba(22, 163, 74, 0.1);
+        color: var(--color-success);
+    }
+
+    .status-canceled {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: var(--spacing-lg);
+        margin-top: 30px;
+    }
+
+    .expandable-chart {
+        position: relative;
+    }
+
+    .expandable-chart.expanded .chart-container {
+        height: 400px;
+    }
+
+    .chart-fullscreen {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .chart-fullscreen.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .chart-fullscreen-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        width: 100%;
+        max-width: 800px;
+        max-height: 80vh;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+    }
+
+    .chart-fullscreen-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    /* New styles for additional analytics */
+    .stock-alert {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .stock-low {
+        background-color: rgba(217, 119, 6, 0.1);
+        color: var(--color-warning);
+    }
+    
+    .stock-out {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+    
+    .stock-ok {
+        background-color: rgba(22, 163, 74, 0.1);
+        color: var(--color-success);
+    }
+    
+    .analytics-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--color-border);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .analytics-tab {
+        padding: var(--spacing-md) var(--spacing-lg);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: var(--transition);
+    }
+    
+    .analytics-tab.active {
+        border-bottom-color: var(--color-accent);
+        color: var(--color-accent);
+        font-weight: 600;
+    }
+    
+    .analytics-content {
+        display: none;
+    }
+    
+    .analytics-content.active {
+        display: block;
+    }
+    
+    .coupon-usage {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+    
+    .usage-bar {
+        flex-grow: 1;
+        height: 8px;
+        background-color: var(--color-bg-secondary);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .usage-fill {
+        height: 100%;
+        background-color: var(--color-accent);
+        border-radius: 4px;
     }
 
     /* Animations */
@@ -800,43 +619,30 @@
         to { opacity: 1; }
     }
 
-    @keyframes scaleIn {
-        from { transform: scale(0.95); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-    }
-
-    /* Responsive Design - Mobile First */
+    /* Responsive Design */
     @media (max-width: 1024px) {
         .admin-sidebar {
             transform: translateX(-100%);
-            width: var(--sidebar-width);
         }
         
         .admin-sidebar.active {
             transform: translateX(0);
         }
         
-        .admin-content, .admin-sidebar.expanded ~ .admin-content {
+        .admin-content {
             margin-left: 0;
         }
         
         .sidebar-overlay.active {
             display: block;
         }
-
-        .admin-sidebar:not(.expanded) {
-            width: var(--sidebar-width);
+        
+        .dashboard-grid {
+            grid-template-columns: 1fr;
         }
-
-        .admin-sidebar:not(.expanded) .nav-link span,
-        .admin-sidebar:not(.expanded) .nav-category span:first-child,
-        .admin-sidebar:not(.expanded) .new-feature {
-            display: flex;
-        }
-
-        .admin-sidebar:not(.expanded) .nav-category {
-            justify-content: space-between;
-            padding: var(--spacing-sm) var(--spacing-md);
+        
+        .analytics-grid {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -867,95 +673,28 @@
             flex-direction: column;
         }
         
+        .chart-container {
+            height: 200px;
+        }
+        
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+        
         .analytics-tabs {
             overflow-x: auto;
             white-space: nowrap;
         }
-        
-        .chart-container {
-            height: 250px;
-        }
-        
-        .summary-cards {
-            grid-template-columns: 1fr 1fr;
-        }
-        
-        .dashboard-title {
-            font-size: var(--text-xl);
-        }
-        
-        .dashboard-subtitle {
-            font-size: var(--text-base);
-        }
-        
-        .card-title {
-            font-size: var(--text-base);
-        }
-        
-        .summary-card-value {
-            font-size: var(--text-xl);
-        }
-        
-        .date-filter {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .date-input {
-            width: 100%;
-        }
     }
 
     @media (max-width: 640px) {
-        .admin-header {
-            padding: 0 var(--spacing-md);
-        }
-        
-        .admin-content {
-            padding: var(--spacing-md);
-        }
-        
-        .date-filter {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .date-input {
-            width: 100%;
-        }
-        
-        .summary-cards {
-            grid-template-columns: 1fr;
-        }
-        
-        .action-buttons {
-            flex-direction: column;
-        }
-
-        .action-btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .card-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .modal-content {
-            padding: var(--spacing-lg);
-        }
-
         .stat-cards {
             grid-template-columns: 1fr;
         }
         
         .analytics-grid {
             grid-template-columns: 1fr;
-        }
-        
-        .dashboard-card {
-            padding: var(--spacing-md);
         }
     }
 
@@ -973,27 +712,6 @@
             align-items: flex-start;
             gap: var(--spacing-md);
         }
-        
-        .summary-card {
-            padding: var(--spacing-md);
-        }
-        
-        .summary-card-value {
-            font-size: var(--text-lg);
-        }
-        
-        .modal-content {
-            padding: var(--spacing-md);
-        }
-        
-        .analytics-tab {
-            padding: var(--spacing-md);
-        }
-        
-        /* Mobile-specific chart improvements */
-        .chart-container {
-            height: 220px;
-        }
     }
 
     /* Dark mode support for system preference */
@@ -1006,48 +724,12 @@
             --color-border: #374151;
         }
     }
-    
-    /* Mobile-specific improvements */
-    .touch-button {
-        min-height: 44px;
-        min-width: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    /* Improved mobile scrolling */
-    .mobile-scroll {
-        -webkit-overflow-scrolling: touch;
-        overflow: auto;
-    }
-    
-    /* Better form elements for mobile */
-    select, input, button {
-        font-size: 16px; /* Prevents zoom on iOS */
-    }
-    
-    /* Prevent text selection on interactive elements */
-    .no-select {
-        -webkit-tap-highlight-color: transparent;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-    
-    /* Improved focus states for mobile */
-    button:focus, a:focus {
-        outline: 2px solid var(--color-accent);
-        outline-offset: 2px;
-    }
     </style>
 </head>
 <body>
     <div class="admin-header">
         <div class="logo">
-            <button class="hamburger touch-button no-select" id="hamburger">
+            <button class="hamburger" id="hamburger">
                 <i class="fas fa-bars"></i>
             </button>
             <i class="fas fa-shopping-cart"></i>
@@ -1055,7 +737,7 @@
         </div>
         <div class="header-controls">
             <div class="time-display" id="timeDisplay"></div>
-            <button class="logout-btn touch-button no-select" id="logoutBtn">
+            <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Abmelden</span>
             </button>
@@ -1065,228 +747,144 @@
     <div class="admin-container">
         <aside class="admin-sidebar" id="sidebar">
             <div class="nav-container">
-                <div class="nav-category no-select" data-category="operations">
-                    <span>Betrieb</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="nav-category-content" data-category="operations">
-                    <a href="control" class="nav-link touch-button">
-                        <i class="fas fa-cogs"></i>
-                        <span>Steuerung</span>
-                        <span class="new-feature">NEU</span>
-                    </a>
-                    
-                    <a href="navi" class="nav-link touch-button">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <span>Navigation</span>
-                    </a>
-                    
-                    <a href="index" class="nav-link touch-button">
-                        <i class="fas fa-cash-register"></i>
-                        <span>Kassenansicht</span>
-                    </a>
-                    
-                    <a href="merchant" class="nav-link touch-button">
-                        <i class="fas fa-store"></i>
-                        <span>Händleransicht</span>
-                    </a>
-                </div>
+                <a href="control" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    <span>Steuerung</span>
+                    <span class="new-feature">NEU</span>
+                </a>
                 
-                <div class="nav-category no-select" data-category="management">
-                    <span>Verwaltung</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="nav-category-content" data-category="management">
-                    <a href="admin" class="nav-link touch-button">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    
-                    <a href="products" class="nav-link touch-button">
-                        <i class="fas fa-box"></i>
-                        <span>Produktverwaltung</span>
-                    </a>
-                    
-                    <a href="archive" class="nav-link touch-button">
-                        <i class="fas fa-archive"></i>
-                        <span>Archiv</span>
-                    </a>
-                </div>
+                <a href="navi" class="nav-link">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Navigation</span>
+                </a>
                 
-                <div class="nav-category no-select" data-category="analysis">
-                    <span>Analyse</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="nav-category-content" data-category="analysis">
-                    <a href="analytics" class="nav-link active touch-button">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Analysen</span>
-                    </a>
-                    
-                    <a href="log" class="nav-link touch-button">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Admin Logs</span>
-                    </a>
-                </div>
+                <a href="admin" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
                 
-                <div class="nav-category no-select" data-category="settings">
+                <a href="products" class="nav-link">
+                    <i class="fas fa-box"></i>
+                    <span>Produktverwaltung</span>
+                </a>
+                
+                <a href="index" class="nav-link">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Kassenansicht</span>
+                </a>
+                
+                <a href="archive" class="nav-link">
+                    <i class="fas fa-archive"></i>
+                    <span>Archiv</span>
+                </a>
+                
+                <a href="merchant" class="nav-link">
+                    <i class="fas fa-store"></i>
+                    <span>Händleransicht</span>
+                </a>
+                
+                <a href="analytics" class="nav-link active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analysen</span>
+                </a>
+                
+                <a href="settings" class="nav-link">
+                    <i class="fas fa-cog"></i>
                     <span>Einstellungen</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="nav-category-content" data-category="settings">
-                    <a href="settings" class="nav-link touch-button">
-                        <i class="fas fa-cog"></i>
-                        <span>Systemeinstellungen</span>
-                    </a>
-                    
-                    <a href="user-management" class="nav-link touch-button">
-                        <i class="fas fa-users"></i>
-                        <span>Benutzerverwaltung</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="sidebar-toggle touch-button no-select" id="sidebarToggle">
-                <i class="fas fa-chevron-right"></i>
+                </a>
             </div>
         </aside>
         
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="admin-content">
-            <div class="dashboard-header">
-                <h1 class="dashboard-title">Analysen</h1>
-                <p class="dashboard-subtitle">Umfassende Verkaufs- und Betriebsanalysen</p>
-            </div>
-
-            <!-- Analytics Tabs -->
-            <div class="analytics-tabs" id="analyticsTabs">
-                <div class="analytics-tab active touch-button no-select" data-tab="overview">Übersicht</div>
-                <div class="analytics-tab touch-button no-select" data-tab="products">Produkte</div>
-                <div class="analytics-tab touch-button no-select" data-tab="customers">Kunden</div>
-                <div class="analytics-tab touch-button no-select" data-tab="coupons">Gutscheine</div>
-                <div class="analytics-tab touch-button no-select" data-tab="reports">Tagesberichte</div>
-                <div class="analytics-tab touch-button no-select" data-tab="audit">Audit-Log</div>
-            </div>
-
-            <!-- Overview Content -->
-            <div class="analytics-content active" id="overviewContent">
-                <!-- Date filter section -->
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Übersicht
+                        </h2>
+                    </div>
+                    <div class="stat-cards" id="statsGrid"></div>
+                </div>
+                
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2 class="card-title">
                             <i class="fas fa-filter"></i>
-                            Filter
+                            Zeitraum
                         </h2>
                     </div>
-                    <div class="date-filter">
-                        <input type="date" id="start-date" class="date-input">
-                        <span>bis</span>
-                        <input type="date" id="end-date" class="date-input">
-                        <button class="apply-filter-btn touch-button" id="apply-date-filter">
+                    <div class="data-controls">
+                        <input type="date" id="startDate" class="date-input">
+                        <input type="date" id="endDate" class="date-input">
+                        <button class="action-btn primary" id="applyFilter">
                             <i class="fas fa-check"></i>
-                            Filter anwenden
+                            Anwenden
                         </button>
-                        <button class="action-btn touch-button" id="reset-filter">
-                            <i class="fas fa-sync"></i>
-                            Zurücksetzen
-                        </button>
-                        <button class="action-btn btn-primary touch-button" id="quick-filter-7d">
-                            <i class="fas fa-calendar"></i>
-                            Letzte 7 Tage
-                        </button>
-                        <button class="action-btn btn-primary touch-button" id="quick-filter-30d">
-                            <i class="fas fa-calendar"></i>
-                            Letzte 30 Tage
+                        <button class="action-btn" id="exportBtn">
+                            <i class="fas fa-file-export"></i>
+                            Export
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Summary cards -->
-                <div class="summary-cards">
-                    <div class="summary-card">
-                        <div class="summary-card-icon">
-                            <i class="fas fa-euro-sign"></i>
-                        </div>
-                        <div class="summary-card-value" id="total-sales">€0.00</div>
-                        <div class="summary-card-label">Gesamtumsatz</div>
-                    </div>
-                    
-                    <div class="summary-card">
-                        <div class="summary-card-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <div class="summary-card-value" id="total-transactions">0</div>
-                        <div class="summary-card-label">Transaktionen</div>
-                    </div>
-                    
-                    <div class="summary-card">
-                        <div class="summary-card-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="summary-card-value" id="successful-transactions">0</div>
-                        <div class="summary-card-label">Erfolgreiche Transaktionen</div>
-                    </div>
-                    
-                    <div class="summary-card">
-                        <div class="summary-card-icon">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
-                        <div class="summary-card-value" id="failed-transactions">0</div>
-                        <div class="summary-card-label">Fehlgeschlagene Transaktionen</div>
-                    </div>
+            <div class="analytics-tabs" id="analyticsTabs">
+                <div class="analytics-tab active" data-tab="overview">Übersicht</div>
+                <div class="analytics-tab" data-tab="products">Produkte</div>
+                <div class="analytics-tab" data-tab="customers">Kunden</div>
+                <div class="analytics-tab" data-tab="coupons">Gutscheine</div>
+                <div class="analytics-tab" data-tab="merchants">Händler</div>
+            </div>
 
-                    <div class="summary-card">
-                        <div class="summary-card-icon">
-                            <i class="fas fa-euro-sign"></i>
-                        </div>
-                        <div class="summary-card-value" id="avg-transaction">€0.00</div>
-                        <div class="summary-card-label">Durchschn. Transaktionswert</div>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="summary-card-icon">
-                            <i class="fas fa-box"></i>
-                        </div>
-                        <div class="summary-card-value" id="total-products">0</div>
-                        <div class="summary-card-label">Verkaufte Produkte</div>
-                    </div>
-                </div>
-
-                <!-- Sales Chart -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-chart-line"></i>
-                            Umsatzentwicklung
-                        </h2>
-                        <div class="action-buttons">
-                            <button class="action-btn touch-button" id="toggle-chart-type">
-                                <i class="fas fa-exchange-alt"></i>
-                                Diagrammtyp wechseln
+            <div class="analytics-content active" id="overviewContent">
+                <div class="analytics-grid">
+                    <div class="dashboard-card expandable-chart" id="revenueChartContainer">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-euro-sign"></i>
+                                Umsatzentwicklung
+                            </h2>
+                            <button class="chart-expand" data-chart="revenue">
+                                <i class="fas fa-expand"></i> Mehr anzeigen
                             </button>
                         </div>
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="sales-chart"></canvas>
+
+                    <div class="dashboard-card expandable-chart" id="productsChartContainer">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-star"></i>
+                                Top Produkte
+                            </h2>
+                            <button class="chart-expand" data-chart="products">
+                                <i class="fas fa-expand"></i> Mehr anzeigen
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="productsChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Recent Transactions -->
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2 class="card-title">
                             <i class="fas fa-receipt"></i>
                             Letzte Transaktionen
                         </h2>
-                        <button class="action-btn touch-button" id="refreshTransactions">
+                        <button class="action-btn" id="refreshTransactions">
                             <i class="fas fa-sync-alt"></i>
                             Aktualisieren
                         </button>
                     </div>
-                    
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table">
+                    <div style="overflow-x: auto;">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Datum</th>
@@ -1301,38 +899,7 @@
                 </div>
             </div>
 
-            <!-- Products Content -->
             <div class="analytics-content" id="productsContent">
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-star"></i>
-                            Top-Produkte
-                        </h2>
-                    </div>
-                    
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table" id="products-table">
-                            <thead>
-                                <tr>
-                                    <th>Produkt</th>
-                                    <th>Verkaufte Menge</th>
-                                    <th>Umsatz</th>
-                                    <th>Anteil am Gesamtumsatz</th>
-                                </tr>
-                            </thead>
-                            <tbody id="products-body">
-                                <!-- Top products will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="empty-state" id="empty-products" style="display: none;">
-                        <i class="fas fa-box-open"></i>
-                        <p>Keine Verkaufsdaten verfügbar</p>
-                    </div>
-                </div>
-
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2 class="card-title">
@@ -1340,8 +907,8 @@
                             Knappe Produkte
                         </h2>
                     </div>
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table">
+                    <div style="overflow-x: auto;">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Produkt</th>
@@ -1362,8 +929,8 @@
                             Ausverkaufte Produkte
                         </h2>
                     </div>
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table">
+                    <div style="overflow-x: auto;">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Produkt</th>
@@ -1376,9 +943,29 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Häufig knappe Produkte (letzte 30 Tage)
+                        </h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Produkt</th>
+                                    <th>Barcode</th>
+                                    <th>Anzahl Knappphasen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="frequentlyLowStockTable"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            <!-- Customers Content -->
             <div class="analytics-content" id="customersContent">
                 <div class="dashboard-card">
                     <div class="card-header">
@@ -1387,8 +974,8 @@
                             Top-Kunden nach Umsatz
                         </h2>
                     </div>
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table">
+                    <div style="overflow-x: auto;">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Kunde</th>
@@ -1409,8 +996,8 @@
                             Häufigste Einkäufer
                         </h2>
                     </div>
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table">
+                    <div style="overflow-x: auto;">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Kunde</th>
@@ -1424,7 +1011,44 @@
                 </div>
             </div>
 
-            <!-- Coupons Content -->
+            
+        <!-- Neue Section für Händler-Analysen -->
+        <div class="analytics-content" id="merchantsContent">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-store"></i>
+                        Top-Händler nach Umsatz
+                    </h2>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Händler</th>
+                                <th>Anzahl Verkäufe</th>
+                                <th>Gesamtumsatz</th>
+                                <th>Durchschnittlicher Verkauf</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topMerchantsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        Umsatzentwicklung nach Händler
+                    </h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="merchantsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
             <div class="analytics-content" id="couponsContent">
                 <div class="dashboard-card">
                     <div class="card-header">
@@ -1433,8 +1057,8 @@
                             Gutschein-Statistiken
                         </h2>
                     </div>
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table">
+                    <div style="overflow-x: auto;">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Gutscheincode</th>
@@ -1448,118 +1072,926 @@
                         </table>
                     </div>
                 </div>
-            </div>
 
-            <!-- Reports Content -->
-            <div class="analytics-content" id="reportsContent">
-                <!-- End-of-Day Reports -->
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                            End-of-Day Reports
+                            <i class="fas fa-calendar"></i>
+                            Gutschein-Nutzung über Zeit
                         </h2>
-                        <div class="action-buttons">
-                            <button class="action-btn btn-primary touch-button" id="export-reports">
-                                <i class="fas fa-file-export"></i>
-                                Exportieren
-                            </button>
-                            <button class="action-btn btn-success touch-button" id="generate-report">
-                                <i class="fas fa-sync"></i>
-                                Report aktualisieren
-                            </button>
-                            <button class="action-btn touch-button" id="view-charts">
-                                <i class="fas fa-chart-bar"></i>
-                                Diagramme anzeigen
-                            </button>
-                        </div>
                     </div>
-                    
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table" id="reports-table">
-                            <thead>
-                                <tr>
-                                    <th>Datum</th>
-                                    <th>Umsatz</th>
-                                    <th>Transaktionen</th>
-                                    <th>Erfolgreich</th>
-                                    <th>Fehlgeschlagen</th>
-                                    <th>Durchschn. Warenkorb</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reports-body">
-                                <!-- Reports will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="empty-state" id="empty-reports" style="display: none;">
-                        <i class="fas fa-file-invoice"></i>
-                        <p>Keine Berichte für den ausgewählten Zeitraum</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Audit Content -->
-            <div class="analytics-content" id="auditContent">
-                <!-- Audit Log -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-clipboard-list"></i>
-                            Audit Log
-                        </h2>
-                        <div class="action-buttons">
-                            <button class="action-btn btn-primary touch-button" id="export-audit">
-                                <i class="fas fa-file-export"></i>
-                                Exportieren
-                            </button>
-                            <button class="action-btn touch-button" id="clear-audit">
-                                <i class="fas fa-trash"></i>
-                                Log leeren
-                            </button>
-                            <button class="action-btn touch-button" id="filter-audit">
-                                <i class="fas fa-filter"></i>
-                                Filter
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="table-container mobile-scroll">
-                        <table class="data-table" id="audit-table">
-                            <thead>
-                                <tr>
-                                    <th>Zeitpunkt</th>
-                                    <th>Benutzer</th>
-                                    <th>Aktion</th>
-                                    <th>Details</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="audit-body">
-                                <!-- Audit logs will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="empty-state" id="empty-audit" style="display: none;">
-                        <i class="fas fa-clipboard-list"></i>
-                        <p>Keine Audit-Logs verfügbar</p>
+                    <div class="chart-container">
+                        <canvas id="couponUsageChart"></canvas>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Chart Fullscreen Modal -->
+    <div class="chart-fullscreen" id="chartFullscreen">
+        <div class="chart-fullscreen-content">
+            <button class="chart-fullscreen-close" id="closeFullscreen">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="chart-container" style="height: 70vh;" id="fullscreenChartContainer"></div>
+        </div>
+    </div>
+
     <script>
-        // Initialize jsPDF
-        const { jsPDF } = window.jspdf;
-        
-        // Global variables
-        let salesChart = null;
-        let chartType = 'line'; // 'line' or 'bar'
-        
+        // ==================== STORAGE MANAGER IMPLEMENTATION ====================
+        const storageManager = (function() {
+            // Constants for localStorage keys
+            const PREFIX_PRODUCT = 'product_';
+            const PREFIX_CUSTOMER = 'customer_';
+            const PREFIX_RECEIPT = 'receipt_';
+            const KEY_OFFLINE_QUEUE = 'offlineQueue';
+            const KEY_AUDIT_LOG = 'auditLog';
+            
+            // Current version of the data schema
+            const CURRENT_VERSION = 1;
+            
+            // Encryption key (generated per session)
+            let encryptionKey = null;
+            
+            // Initialize the storage manager
+            async function init() {
+                await generateEncryptionKey();
+                migrateLegacyData();
+                setupOfflineHandling();
+            }
+            
+            // Generate encryption key for the session
+            async function generateEncryptionKey() {
+                try {
+                    // Check if key already exists in sessionStorage
+                    const keyData = sessionStorage.getItem('encryptionKey');
+                    
+                    if (keyData) {
+                        // Import existing key
+                        const keyBytes = Uint8Array.from(atob(keyData), c => c.charCodeAt(0));
+                        encryptionKey = await crypto.subtle.importKey(
+                            'raw',
+                            keyBytes,
+                            { name: 'AES-GCM' },
+                            false,
+                            ['encrypt', 'decrypt']
+                        );
+                    } else {
+                        // Generate new key
+                        const key = await crypto.subtle.generateKey(
+                            { name: 'AES-GCM', length: 256 },
+                            true,
+                            ['encrypt', 'decrypt']
+                        );
+                        
+                        // Export and store in sessionStorage
+                        const exportedKey = await crypto.subtle.exportKey('raw', key);
+                        const keyBytes = new Uint8Array(exportedKey);
+                        sessionStorage.setItem('encryptionKey', btoa(String.fromCharCode(...keyBytes)));
+                        
+                        encryptionKey = key;
+                    }
+                } catch (error) {
+                    console.error('Failed to generate encryption key:', error);
+                    // Continue without encryption
+                }
+            }
+            
+            // Migrate legacy data to the new format
+            function migrateLegacyData() {
+                // Migrate products
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    
+                    // Check if this is a legacy product (starts with product_ but not in new format)
+                    if (key.startsWith(PREFIX_PRODUCT)) {
+                        try {
+                            const item = localStorage.getItem(key);
+                            const parsed = JSON.parse(item);
+                            
+                            // Check if it's legacy format (doesn't have version field)
+                            if (parsed && !parsed.version) {
+                                // Migrate to new format
+                                saveProduct(parsed, true); // silent migration
+                                console.log('Migrated legacy product:', key);
+                            }
+                        } catch (e) {
+                            // Not JSON, skip
+                        }
+                    }
+                }
+                
+                // Check for legacy products key (without prefix)
+                const legacyProducts = localStorage.getItem('products');
+                if (legacyProducts) {
+                    try {
+                        const products = JSON.parse(legacyProducts);
+                        for (const barcode in products) {
+                            if (products.hasOwnProperty(barcode)) {
+                                saveProduct(products[barcode], true); // silent migration
+                            }
+                        }
+                        localStorage.removeItem('products');
+                        console.log('Migrated legacy products collection');
+                    } catch (e) {
+                        console.error('Failed to migrate legacy products:', e);
+                    }
+                }
+                
+                // Migrate receipts
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    
+                    if (key.startsWith(PREFIX_RECEIPT)) {
+                        try {
+                            const item = localStorage.getItem(key);
+                            const parsed = JSON.parse(item);
+                            
+                            if (parsed && !parsed.version) {
+                                // Migrate to new format
+                                storeItem(key, parsed, true);
+                                console.log('Migrated legacy receipt:', key);
+                            }
+                        } catch (e) {
+                            // Not JSON, skip
+                        }
+                    }
+                }
+            }
+            
+            // Setup offline/online event handlers
+            function setupOfflineHandling() {
+                window.addEventListener('offline', () => {
+                    updateConnectionStatus('offline');
+                    document.body.classList.add('offline');
+                });
+                
+                window.addEventListener('online', () => {
+                    updateConnectionStatus('online');
+                    document.body.classList.remove('offline');
+                    replayOfflineQueue();
+                });
+                
+                // Initial status check
+                if (!navigator.onLine) {
+                    document.body.classList.add('offline');
+                    updateConnectionStatus('offline');
+                } else {
+                    updateConnectionStatus('online');
+                }
+            }
+            
+            function updateConnectionStatus(status) {
+                const statusElement = document.getElementById('connection-status');
+                const cloudStatus = document.getElementById('cloudStatus');
+                
+                if (!statusElement) return;
+                
+                switch(status) {
+                    case 'online':
+                        statusElement.textContent = 'Mit Cloud verbunden';
+                        cloudStatus.className = 'cloud-status';
+                        break;
+                    case 'offline':
+                        statusElement.textContent = 'Offline-Modus';
+                        cloudStatus.className = 'cloud-status error';
+                        break;
+                    case 'syncing':
+                        statusElement.textContent = 'Synchronisiere...';
+                        cloudStatus.className = 'cloud-status syncing';
+                        break;
+                }
+            }
+            
+            // Validate product against schema
+            function validateProduct(product) {
+                if (!product || typeof product !== 'object') {
+                    throw new Error('Product must be an object');
+                }
+                
+                if (!product.barcode || typeof product.barcode !== 'string' || product.barcode.trim() === '') {
+                    throw new Error('Product barcode is required and must be a non-empty string');
+                }
+                
+                if (!product.name || typeof product.name !== 'string' || product.name.trim() === '') {
+                    throw new Error('Product name is required and must be a non-empty string');
+                }
+                
+                if (typeof product.price !== 'number' || !isFinite(product.price) || product.price < 0) {
+                    throw new Error('Product price is required and must be a non-negative number');
+                }
+                
+                if (typeof product.stock !== 'number' || !Number.isInteger(product.stock) || product.stock < 0) {
+                    throw new Error('Product stock is required and must be a non-negative integer');
+                }
+                
+                if (product.image && (typeof product.image !== 'string' || product.image.trim() === '')) {
+                    throw new Error('Product image must be a non-empty string if provided');
+                }
+                
+                if (product.category && (typeof product.category !== 'string' || product.category.trim() === '')) {
+                    throw new Error('Product category must be a non-empty string if provided');
+                }
+                
+                return true;
+            }
+            
+            // Validate customer against schema
+            function validateCustomer(customer) {
+                if (!customer || typeof customer !== 'object') {
+                    throw new Error('Customer must be an object');
+                }
+                
+                if (!customer.id || typeof customer.id !== 'string' || customer.id.trim() === '') {
+                    throw new Error('Customer ID is required and must be a non-empty string');
+                }
+                
+                if (!customer.name || typeof customer.name !== 'string' || customer.name.trim() === '') {
+                    throw new Error('Customer name is required and must be a non-empty string');
+                }
+                
+                if (customer.email && (typeof customer.email !== 'string' || customer.email.trim() === '')) {
+                    throw new Error('Customer email must be a non-empty string if provided');
+                }
+                
+                if (customer.loyaltyPoints && (typeof customer.loyaltyPoints !== 'number' || 
+                    !Number.isInteger(customer.loyaltyPoints) || customer.loyaltyPoints < 0)) {
+                    throw new Error('Customer loyalty points must be a non-negative integer if provided');
+                }
+                
+                if (customer.purchaseHistory && !Array.isArray(customer.purchaseHistory)) {
+                    throw new Error('Customer purchase history must be an array if provided');
+                }
+                
+                return true;
+            }
+            
+            // Create a data wrapper with version and timestamp
+            function createDataWrapper(data) {
+                return {
+                    version: CURRENT_VERSION,
+                    lastModified: new Date().toISOString(),
+                    data: data
+                };
+            }
+            
+            // Encrypt sensitive fields in an object
+            async function encryptSensitiveFields(obj) {
+                if (!encryptionKey) return obj;
+                
+                const result = {...obj};
+                
+                // Encrypt email if present
+                if (result.email) {
+                    try {
+                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        const encodedEmail = new TextEncoder().encode(result.email);
+                        
+                        const encrypted = await crypto.subtle.encrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encodedEmail
+                        );
+                        
+                        result.email = {
+                            encrypted: true,
+                            data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+                            iv: btoa(String.fromCharCode(...iv))
+                        };
+                    } catch (error) {
+                        console.error('Failed to encrypt email:', error);
+                    }
+                }
+                
+                // Encrypt authentication tokens if present
+                if (result.authToken) {
+                    try {
+                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        const encodedToken = new TextEncoder().encode(result.authToken);
+                        
+                        const encrypted = await crypto.subtle.encrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encodedToken
+                        );
+                        
+                        result.authToken = {
+                            encrypted: true,
+                            data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+                            iv: btoa(String.fromCharCode(...iv))
+                        };
+                    } catch (error) {
+                        console.error('Failed to encrypt auth token:', error);
+                    }
+                }
+                
+                return result;
+            }
+            
+            // Decrypt sensitive fields in an object
+            async function decryptSensitiveFields(obj) {
+                if (!encryptionKey) return obj;
+                
+                const result = {...obj};
+                
+                // Decrypt email if encrypted
+                if (result.email && result.email.encrypted) {
+                    try {
+                        const iv = Uint8Array.from(atob(result.email.iv), c => c.charCodeAt(0));
+                        const encryptedData = Uint8Array.from(atob(result.email.data), c => c.charCodeAt(0));
+                        
+                        const decrypted = await crypto.subtle.decrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encryptedData
+                        );
+                        
+                        result.email = new TextDecoder().decode(decrypted);
+                    } catch (error) {
+                        console.error('Failed to decrypt email:', error);
+                    }
+                }
+                
+                // Decrypt auth token if encrypted
+                if (result.authToken && result.authToken.encrypted) {
+                    try {
+                        const iv = Uint8Array.from(atob(result.authToken.iv), c => c.charCodeAt(0));
+                        const encryptedData = Uint8Array.from(atob(result.authToken.data), c => c.charCodeAt(0));
+                        
+                        const decrypted = await crypto.subtle.decrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encryptedData
+                        );
+                        
+                        result.authToken = new TextDecoder().decode(decrypted);
+                    } catch (error) {
+                        console.error('Failed to decrypt auth token:', error);
+                    }
+                }
+                
+                return result;
+            }
+            
+            // Store an item with compression and encryption
+            async function storeItem(key, data, skipAudit = false) {
+                try {
+                    // Create wrapper
+                    const wrappedData = createDataWrapper(data);
+                    
+                    // Compress the data
+                    const compressed = LZString.compressToBase64(JSON.stringify(wrappedData));
+                    
+                    // Store in localStorage
+                    localStorage.setItem(key, compressed);
+                    
+                    // Log to audit trail
+                    if (!skipAudit) {
+                        logAudit('storeItem', { key, data: wrappedData });
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Failed to store item:', error);
+                    
+                    // If offline, queue the operation
+                    if (!navigator.onLine) {
+                        queueOfflineAction({
+                            type: 'store',
+                            key,
+                            data,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                    
+                    return false;
+                }
+            }
+            
+            // Retrieve an item with decompression and decryption
+            async function retrieveItem(key) {
+                try {
+                    const item = localStorage.getItem(key);
+                    
+                    if (!item) return null;
+                    
+                    // Check if it's compressed (starts with base64-like pattern)
+                    if (item.startsWith('N') || item.startsWith('e') || item.startsWith('H')) {
+                        // Decompress
+                        const decompressed = LZString.decompressFromBase64(item);
+                        
+                        if (!decompressed) {
+                            // Might be legacy format, try parsing as JSON directly
+                            try {
+                                const legacyData = JSON.parse(item);
+                                
+                                // Log migration warning
+                                console.warn(`Migrating legacy format for key: ${key}`);
+                                
+                                // Store in new format
+                                await storeItem(key, legacyData, true);
+                                
+                                return legacyData;
+                            } catch (e) {
+                                console.error('Failed to parse legacy data:', e);
+                                return null;
+                            }
+                        }
+                        
+                        // Parse the JSON
+                        const parsed = JSON.parse(decompressed);
+                        
+                        // Handle versioning if needed in the future
+                        if (parsed.version !== CURRENT_VERSION) {
+                            console.warn(`Data version ${parsed.version} differs from current ${CURRENT_VERSION}`);
+                            // Future: implement migration logic here
+                        }
+                        
+                        return parsed.data;
+                    } else {
+                        // Legacy format, parse directly
+                        try {
+                            const legacyData = JSON.parse(item);
+                            
+                            // Log migration warning
+                            console.warn(`Migrating legacy format for key: ${key}`);
+                            
+                            // Store in new format
+                            await storeItem(key, legacyData, true);
+                            
+                            return legacyData;
+                        } catch (e) {
+                            console.error('Failed to parse legacy data:', e);
+                            return null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to retrieve item:', error);
+                    return null;
+                }
+            }
+            
+            // Queue an action for offline processing
+            function queueOfflineAction(action) {
+                try {
+                    // Get current queue
+                    const queue = JSON.parse(localStorage.getItem(KEY_OFFLINE_QUEUE) || '[]');
+                    
+                    // Add new action
+                    queue.push({
+                        timestamp: new Date().toISOString(),
+                        dataType: action.type,
+                        dataPayload: action
+                    });
+                    
+                    // Save back to storage
+                    localStorage.setItem(KEY_OFFLINE_QUEUE, JSON.stringify(queue));
+                    
+                    // Log to audit trail
+                    logAudit('queueOfflineAction', action);
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Failed to queue offline action:', error);
+                    return false;
+                }
+            }
+            
+            // Replay offline queue when coming back online
+            async function replayOfflineQueue() {
+                try {
+                    const queue = JSON.parse(localStorage.getItem(KEY_OFFLINE_QUEUE) || '[]');
+                    
+                    if (queue.length === 0) return;
+                    
+                    updateConnectionStatus('syncing');
+                    
+                    // Process each action in the queue
+                    for (const action of queue) {
+                        try {
+                            switch (action.dataType) {
+                                case 'store':
+                                    // Determine the correct storage method based on key prefix
+                                    if (action.dataPayload.key.startsWith(PREFIX_PRODUCT)) {
+                                        await saveProduct(action.dataPayload.data, true);
+                                    } else if (action.dataPayload.key.startsWith(PREFIX_CUSTOMER)) {
+                                        await saveCustomer(action.dataPayload.data, true);
+                                    } else {
+                                        // Generic storage
+                                        await storeItem(
+                                            action.dataPayload.key, 
+                                            action.dataPayload.data, 
+                                            true
+                                        );
+                                    }
+                                    break;
+                                
+                                case 'delete':
+                                    localStorage.removeItem(action.dataPayload.key);
+                                    logAudit('deleteItem', { key: action.dataPayload.key }, true);
+                                    break;
+                                
+                                // Add other action types as needed
+                            }
+                        } catch (error) {
+                            console.error('Failed to process offline action:', error);
+                        }
+                    }
+                    
+                    // Clear the queue
+                    localStorage.removeItem(KEY_OFFLINE_QUEUE);
+                    
+                    updateConnectionStatus('online');
+                    addActivity(`${queue.length} Offline-Änderungen erfolgreich synchronisiert`, 'success');
+                    
+                } catch (error) {
+                    console.error('Failed to replay offline queue:', error);
+                    updateConnectionStatus('online');
+                }
+            }
+            
+            // Log an audit event
+            function logAudit(action, details, skipCompression = false) {
+                try {
+                    // Get current audit log
+                    let auditLog = [];
+                    const logData = localStorage.getItem(KEY_AUDIT_LOG);
+                    
+                    if (logData) {
+                        if (skipCompression) {
+                            auditLog = JSON.parse(logData);
+                        } else {
+                            auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
+                        }
+                    }
+                    
+                    // Add new entry
+                    auditLog.push({
+                        timestamp: new Date().toISOString(),
+                        action,
+                        details,
+                        // Add user ID if available
+                        userId: localStorage.getItem('currentUserId') || 'system'
+                    });
+                    
+                    // Save back to storage
+                    if (skipCompression) {
+                        localStorage.setItem(KEY_AUDIT_LOG, JSON.stringify(auditLog));
+                    } else {
+                        localStorage.setItem(
+                            KEY_AUDIT_LOG, 
+                            LZString.compressToUTF16(JSON.stringify(auditLog))
+                        );
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Failed to log audit event:', error);
+                    return false;
+                }
+            }
+            
+            // Public API
+            return {
+                init,
+                
+                // Product management
+                async saveProduct(product, skipAudit = false) {
+                    try {
+                        // Validate product
+                        validateProduct(product);
+                        
+                        // Encrypt sensitive fields if any
+                        const processedProduct = await encryptSensitiveFields(product);
+                        
+                        // Store the product
+                        const success = await storeItem(
+                            `${PREFIX_PRODUCT}${product.barcode}`,
+                            processedProduct,
+                            skipAudit
+                        );
+                        
+                        if (success && !skipAudit) {
+                            showNotification('Produkt erfolgreich gespeichert', 'success');
+                        }
+                        
+                        return success;
+                    } catch (error) {
+                        console.error('Failed to save product:', error);
+                        showNotification(`Fehler beim Speichern: ${error.message}`, 'error');
+                        return false;
+                    }
+                },
+                
+                async getProducts() {
+                    const products = {};
+                    
+                    // Get all product keys
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        
+                        if (key.startsWith(PREFIX_PRODUCT)) {
+                            const product = await retrieveItem(key);
+                            if (product) {
+                                // Decrypt sensitive fields if any
+                                const decryptedProduct = await decryptSensitiveFields(product);
+                                products[decryptedProduct.barcode] = decryptedProduct;
+                            }
+                        }
+                    }
+                    
+                    return products;
+                },
+                
+                async deleteProduct(barcode) {
+                    try {
+                        const key = `${PREFIX_PRODUCT}${barcode}`;
+                        localStorage.removeItem(key);
+                        
+                        // Log to audit trail
+                        logAudit('deleteProduct', { barcode });
+                        
+                        // If offline, queue the deletion
+                        if (!navigator.onLine) {
+                            queueOfflineAction({
+                                type: 'delete',
+                                key,
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                        
+                        showNotification('Produkt erfolgreich gelöscht', 'success');
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to delete product:', error);
+                        showNotification('Fehler beim Löschen des Produkts', 'error');
+                        return false;
+                    }
+                },
+                
+                async importProducts(file) {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        
+                        reader.onload = async (e) => {
+                            try {
+                                const content = e.target.result;
+                                const products = JSON.parse(content);
+                                
+                                if (!Array.isArray(products)) {
+                                    throw new Error('Invalid format: expected array of products');
+                                }
+                                
+                                let successCount = 0;
+                                let errorCount = 0;
+                                
+                                for (const product of products) {
+                                    try {
+                                        if (await this.saveProduct(product, true)) {
+                                            successCount++;
+                                        } else {
+                                            errorCount++;
+                                        }
+                                    } catch (error) {
+                                        console.error('Failed to import product:', error);
+                                        errorCount++;
+                                    }
+                                }
+                                
+                                // Log import to audit trail
+                                logAudit('importProducts', { 
+                                    file: file.name, 
+                                    successCount, 
+                                    errorCount 
+                                });
+                                
+                                showNotification(
+                                    `Import abgeschlossen: ${successCount} erfolgreich, ${errorCount} fehlgeschlagen`,
+                                    successCount > 0 ? 'success' : 'error'
+                                );
+                                
+                                resolve({ successCount, errorCount });
+                            } catch (error) {
+                                console.error('Failed to parse import file:', error);
+                                showNotification('Ungültige Importdatei', 'error');
+                                reject(error);
+                            }
+                        };
+                        
+                        reader.onerror = () => {
+                            reject(new Error('Failed to read file'));
+                        };
+                        
+                        reader.readAsText(file);
+                    });
+                },
+                
+                async exportProducts() {
+                    try {
+                        const products = await this.getProducts();
+                        const dataStr = JSON.stringify(Object.values(products), null, 2);
+                        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                        
+                        const exportFileDefaultName = `products_${new Date().toISOString().split('T')[0]}.json`;
+                        
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', exportFileDefaultName);
+                        linkElement.click();
+                        
+                        // Log export to audit trail
+                        logAudit('exportProducts', { count: Object.keys(products).length });
+                        
+                        showNotification('Produkte erfolgreich exportiert', 'success');
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to export products:', error);
+                        showNotification('Fehler beim Exportieren der Produkte', 'error');
+                        return false;
+                    }
+                },
+                
+                // Customer management
+                async saveCustomer(customer, skipAudit = false) {
+                    try {
+                        // Validate customer
+                        validateCustomer(customer);
+                        
+                        // Encrypt sensitive fields
+                        const processedCustomer = await encryptSensitiveFields(customer);
+                        
+                        // Store the customer
+                        const success = await storeItem(
+                            `${PREFIX_CUSTOMER}${customer.id}`,
+                            processedCustomer,
+                            skipAudit
+                        );
+                        
+                        if (success && !skipAudit) {
+                            showNotification('Kunde erfolgreich gespeichert', 'success');
+                        }
+                        
+                        return success;
+                    } catch (error) {
+                        console.error('Failed to save customer:', error);
+                        showNotification(`Fehler beim Speichern: ${error.message}`, 'error');
+                        return false;
+                    }
+                },
+                
+                async getCustomers() {
+                    const customers = {};
+                    
+                    // Get all customer keys
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        
+                        if (key.startsWith(PREFIX_CUSTOMER)) {
+                            const customer = await retrieveItem(key);
+                            if (customer) {
+                                // Decrypt sensitive fields
+                                const decryptedCustomer = await decryptSensitiveFields(customer);
+                                customers[decryptedCustomer.id] = decryptedCustomer;
+                            }
+                        }
+                    }
+                    
+                    return customers;
+                },
+                
+                async deleteCustomer(id) {
+                    try {
+                        const key = `${PREFIX_CUSTOMER}${id}`;
+                        localStorage.removeItem(key);
+                        
+                        // Log to audit trail
+                        logAudit('deleteCustomer', { id });
+                        
+                        // If offline, queue the deletion
+                        if (!navigator.onLine) {
+                            queueOfflineAction({
+                                type: 'delete',
+                                key,
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                        
+                        showNotification('Kunde erfolgreich gelöscht', 'success');
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to delete customer:', error);
+                        showNotification('Fehler beim Löschen des Kunden', 'error');
+                        return false;
+                    }
+                },
+                
+                async searchCustomer(query) {
+                    try {
+                        const customers = await this.getCustomers();
+                        const results = [];
+                        
+                        const queryLower = query.toLowerCase();
+                        
+                        for (const id in customers) {
+                            const customer = customers[id];
+                            
+                            if (
+                                customer.name.toLowerCase().includes(queryLower) ||
+                                (customer.email && customer.email.toLowerCase().includes(queryLower)) ||
+                                customer.id.toLowerCase().includes(queryLower)
+                            ) {
+                                results.push(customer);
+                            }
+                        }
+                        
+                        return results;
+                    } catch (error) {
+                        console.error('Failed to search customers:', error);
+                        return [];
+                    }
+                },
+                
+                // Receipt management
+                async getReceipts() {
+                    const receipts = [];
+                    
+                    // Get all receipt keys
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        
+                        if (key.startsWith(PREFIX_RECEIPT)) {
+                            const receipt = await retrieveItem(key);
+                            if (receipt) {
+                                // Add the receipt ID
+                                receipt.id = key.replace(PREFIX_RECEIPT, '');
+                                receipts.push(receipt);
+                            }
+                        }
+                    }
+                    
+                    return receipts;
+                },
+                
+                // Offline queue management
+                queueOfflineAction,
+                replayOfflineQueue,
+                
+                // Audit log management
+                logAudit,
+                
+                async exportAuditLog() {
+                    try {
+                        const logData = localStorage.getItem(KEY_AUDIT_LOG);
+                        
+                        if (!logData) {
+                            showNotification('Audit-Log ist leer', 'info');
+                            return false;
+                        }
+                        
+                        // Decompress if needed
+                        let auditLog;
+                        try {
+                            auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
+                        } catch (e) {
+                            // Might not be compressed
+                            auditLog = JSON.parse(logData || '[]');
+                        }
+                        
+                        const dataStr = JSON.stringify(auditLog, null, 2);
+                        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                        
+                        const exportFileDefaultName = `audit_log_${new Date().toISOString().split('T')[0]}.json`;
+                        
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', exportFileDefaultName);
+                        linkElement.click();
+                        
+                        showNotification('Audit-Log erfolgreich exportiert', 'success');
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to export audit log:', error);
+                        showNotification('Fehler beim Exportieren des Audit-Logs', 'error');
+                        return false;
+                    }
+                }
+            };
+        })();
+
+        // Apply dark mode if enabled in localStorage
+        function applyDarkMode() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // Apply dark mode on page load
+        applyDarkMode();
+
         // Token verification
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1578,16 +2010,22 @@
             }
         })();
 
-        // Apply dark mode if enabled in localStorage
-        function applyDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        }
-
+        // DOM Elements
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const refreshTransactionsBtn = document.getElementById('refreshTransactions');
+        const applyFilterBtn = document.getElementById('applyFilter');
+        const chartExpandBtns = document.querySelectorAll('.chart-expand');
+        const chartFullscreen = document.getElementById('chartFullscreen');
+        const closeFullscreen = document.getElementById('closeFullscreen');
+        const fullscreenChartContainer = document.getElementById('fullscreenChartContainer');
+        const analyticsTabs = document.querySelectorAll('.analytics-tab');
+        const analyticsContents = document.querySelectorAll('.analytics-content');
+        
         // Time display function
         function updateTime() {
             const now = new Date();
@@ -1602,661 +2040,239 @@
                 month: 'long',
                 year: 'numeric'
             });
-            document.getElementById('timeDisplay').textContent = `${dateString}, ${timeString}`;
+            timeDisplay.textContent = `${dateString}, ${timeString}`;
         }
         
         // Update time every second
         updateTime();
         setInterval(updateTime, 1000);
         
-        // Set up event listeners
-        function setupEventListeners() {
-            // Hamburger menu toggle for mobile
-            document.getElementById('hamburger').addEventListener('click', () => {
-                const sidebar = document.getElementById('sidebar');
-                const sidebarOverlay = document.getElementById('sidebarOverlay');
-                sidebar.classList.toggle('active');
-                sidebarOverlay.classList.toggle('active');
-            });
+        // Hamburger menu toggle for mobile
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+        
+        // Logout functionality
+        logoutBtn.addEventListener('click', () => {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
             
-            // Close sidebar when clicking overlay
-            document.getElementById('sidebarOverlay').addEventListener('click', () => {
-                const sidebar = document.getElementById('sidebar');
-                const sidebarOverlay = document.getElementById('sidebarOverlay');
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-            });
-            
-            // Sidebar toggle (collapse/expand)
-            document.getElementById('sidebarToggle').addEventListener('click', () => {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.classList.toggle('expanded');
-                
-                // Update toggle icon
-                const icon = document.querySelector('#sidebarToggle i');
-                if (sidebar.classList.contains('expanded')) {
-                    icon.className = 'fas fa-chevron-left';
-                } else {
-                    icon.className = 'fas fa-chevron-right';
+            if (settings.logoutConfirmation) {
+                if (!confirm('Möchten Sie sich wirklich abmelden?')) {
+                    return;
                 }
-                
-                // Save state to localStorage
-                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                settings.sidebarCollapsed = !sidebar.classList.contains('expanded');
-                localStorage.setItem('appSettings', JSON.stringify(settings));
-            });
+            }
             
-            // Nav category toggles
-            document.querySelectorAll('.nav-category').forEach(category => {
-                category.addEventListener('click', () => {
-                    const categoryName = category.getAttribute('data-category');
-                    const content = document.querySelector(`.nav-category-content[data-category="${categoryName}"]`);
-                    
-                    content.classList.toggle('collapsed');
-                    category.classList.toggle('collapsed');
-                    
-                    // Save state to localStorage
-                    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                    if (!settings.collapsedCategories) {
-                        settings.collapsedCategories = [];
-                    }
-                    
-                    if (content.classList.contains('collapsed')) {
-                        if (!settings.collapsedCategories.includes(categoryName)) {
-                            settings.collapsedCategories.push(categoryName);
-                        }
-                    } else {
-                        settings.collapsedCategories = settings.collapsedCategories.filter(c => c !== categoryName);
-                    }
-                    
-                    localStorage.setItem('appSettings', JSON.stringify(settings));
-                });
-            });
-            
-            // Logout functionality
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            sessionStorage.removeItem('validTokens');
+            localStorage.removeItem('authToken');
+            window.location.reload();
+        });
+
+        // Analytics tabs functionality
+        analyticsTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
                 
-                if (settings.logoutConfirmation) {
-                    if (!confirm('Möchten Sie sich wirklich abmelden?')) {
-                        return;
-                    }
-                }
+                // Update active tab
+                analyticsTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
                 
-                sessionStorage.removeItem('validTokens');
-                localStorage.removeItem('authToken');
-                window.location.reload();
-            });
-            
-            // Analytics tabs
-            document.querySelectorAll('.analytics-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.getAttribute('data-tab');
-                    
-                    // Update active tab
-                    document.querySelectorAll('.analytics-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    // Show corresponding content
-                    document.querySelectorAll('.analytics-content').forEach(content => {
-                        content.classList.remove('active');
-                        if (content.id === `${tabName}Content`) {
-                            content.classList.add('active');
-                        }
-                    });
-                    
-                    // Load data for the selected tab
-                    if (tabName === 'overview') {
-                        loadAnalyticsData();
-                    } else if (tabName === 'products') {
-                        loadProductAnalytics();
-                    } else if (tabName === 'customers') {
-                        loadCustomerAnalytics();
-                    } else if (tabName === 'coupons') {
-                        loadCouponAnalytics();
-                    } else if (tabName === 'reports') {
-                        loadReports();
-                    } else if (tabName === 'audit') {
-                        loadAuditLog();
+                // Show corresponding content
+                analyticsContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabName}Content`) {
+                        content.classList.add('active');
                     }
                 });
             });
-            
-            // Apply date filter
-            document.getElementById('apply-date-filter').addEventListener('click', () => {
-                loadReports();
-                loadAuditLog();
-                loadTopProducts();
-                loadAnalyticsData();
+        });
+
+        // Chart expand functionality
+        chartExpandBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const chartType = this.getAttribute('data-chart');
+                const chartCanvas = document.getElementById(`${chartType}Chart`);
+                
+                // Clone the chart to fullscreen
+                fullscreenChartContainer.innerHTML = '';
+                const clone = chartCanvas.cloneNode(true);
+                clone.id = `${chartType}ChartFullscreen`;
+                fullscreenChartContainer.appendChild(clone);
+                
+                // Initialize chart in fullscreen
+                initFullscreenChart(chartType, clone);
+                
+                // Show fullscreen
+                chartFullscreen.classList.add('active');
             });
+        });
+
+        // Close fullscreen
+        closeFullscreen.addEventListener('click', () => {
+            chartFullscreen.classList.remove('active');
+        });
+
+        // Initialize chart in fullscreen
+        function initFullscreenChart(chartType, canvas) {
+            const data = getChartData(chartType);
             
-            // Reset filter
-            document.getElementById('reset-filter').addEventListener('click', () => {
-                document.getElementById('start-date').value = '';
-                document.getElementById('end-date').value = '';
-                loadReports();
-                loadAuditLog();
-                loadTopProducts();
-                loadAnalyticsData();
-            });
-            
-            // Quick filters
-            document.getElementById('quick-filter-7d').addEventListener('click', () => {
-                const endDate = new Date();
-                const startDate = new Date();
-                startDate.setDate(startDate.getDate() - 7);
-                
-                document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
-                document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
-                
-                loadReports();
-                loadAuditLog();
-                loadTopProducts();
-                loadAnalyticsData();
-            });
-            
-            document.getElementById('quick-filter-30d').addEventListener('click', () => {
-                const endDate = new Date();
-                const startDate = new Date();
-                startDate.setDate(startDate.getDate() - 30);
-                
-                document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
-                document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
-                
-                loadReports();
-                loadAuditLog();
-                loadTopProducts();
-                loadAnalyticsData();
-            });
-            
-            // Export reports
-            document.getElementById('export-reports').addEventListener('click', () => {
-                exportReports();
-            });
-            
-            // Generate report
-            document.getElementById('generate-report').addEventListener('click', () => {
-                loadReports();
-                loadTopProducts();
-            });
-            
-            // Export audit log
-            document.getElementById('export-audit').addEventListener('click', () => {
-                exportAuditLog();
-            });
-            
-            // Clear audit log
-            document.getElementById('clear-audit').addEventListener('click', () => {
-                if (confirm('Möchten Sie wirklich alle Audit-Logs löschen?')) {
-                    clearAuditLog();
-                }
-            });
-            
-            // Filter audit log
-            document.getElementById('filter-audit').addEventListener('click', () => {
-                showAuditFilterModal();
-            });
-            
-            // Toggle chart type
-            document.getElementById('toggle-chart-type').addEventListener('click', () => {
-                chartType = chartType === 'line' ? 'bar' : 'line';
-                createSalesChart();
-            });
-            
-            // View charts
-            document.getElementById('view-charts').addEventListener('click', () => {
-                showChartsModal();
-            });
-            
-            // Refresh transactions
-            document.getElementById('refreshTransactions').addEventListener('click', () => {
-                loadAnalyticsData();
-            });
-        }
-        
-        // Load reports from localStorage
-        function loadReports() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            // Get all receipts from localStorage
-            const receipts = getReceiptsFromStorage();
-            
-            // Group receipts by date
-            const receiptsByDate = {};
-            let totalSales = 0;
-            let totalTransactions = 0;
-            let successfulTransactions = 0;
-            let failedTransactions = 0;
-            let totalProducts = 0;
-            
-            receipts.forEach(receipt => {
-                const receiptDate = new Date(receipt.date);
-                const dateKey = receiptDate.toISOString().split('T')[0];
-                
-                // Apply date filter
-                if (startDate && dateKey < startDate) return;
-                if (endDate && dateKey > endDate) return;
-                
-                if (!receiptsByDate[dateKey]) {
-                    receiptsByDate[dateKey] = {
-                        date: dateKey,
-                        sales: 0,
-                        transactions: 0,
-                        successful: 0,
-                        failed: 0,
-                        items: 0
-                    };
-                }
-                
-                receiptsByDate[dateKey].sales += receipt.amount;
-                receiptsByDate[dateKey].transactions += 1;
-                
-                if (receipt.status === 'Bestätigt') {
-                    receiptsByDate[dateKey].successful += 1;
-                    successfulTransactions += 1;
-                } else {
-                    receiptsByDate[dateKey].failed += 1;
-                    failedTransactions += 1;
-                }
-                
-                if (receipt.items) {
-                    const itemCount = receipt.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
-                    receiptsByDate[dateKey].items += itemCount;
-                    totalProducts += itemCount;
-                }
-                
-                totalSales += receipt.amount;
-                totalTransactions += 1;
-            });
-            
-            // Update summary cards
-            document.getElementById('total-sales').textContent = `€${totalSales.toFixed(2)}`;
-            document.getElementById('total-transactions').textContent = totalTransactions;
-            document.getElementById('successful-transactions').textContent = successfulTransactions;
-            document.getElementById('failed-transactions').textContent = failedTransactions;
-            document.getElementById('total-products').textContent = totalProducts;
-            
-            const avgTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
-            document.getElementById('avg-transaction').textContent = `€${avgTransaction.toFixed(2)}`;
-            
-            // Update reports table
-            const reportsBody = document.getElementById('reports-body');
-            reportsBody.innerHTML = '';
-            
-            if (Object.keys(receiptsByDate).length === 0) {
-                document.getElementById('empty-reports').style.display = 'block';
-                return;
-            }
-            
-            document.getElementById('empty-reports').style.display = 'none';
-            
-            // Sort dates descending
-            const sortedDates = Object.keys(receiptsByDate).sort((a, b) => new Date(b) - new Date(a));
-            
-            sortedDates.forEach(dateKey => {
-                const report = receiptsByDate[dateKey];
-                const row = document.createElement('tr');
-                
-                const avgCart = report.transactions > 0 ? report.sales / report.transactions : 0;
-                
-                row.innerHTML = `
-                    <td>${new Date(report.date).toLocaleDateString('de-DE')}</td>
-                    <td>€${report.sales.toFixed(2)}</td>
-                    <td>${report.transactions}</td>
-                    <td>${report.successful}</td>
-                    <td>${report.failed}</td>
-                    <td>€${avgCart.toFixed(2)}</td>
-                    <td>
-                        <button class="action-btn touch-button" onclick="viewDailyReport('${report.date}')">
-                            <i class="fas fa-eye"></i>
-                            Details
-                        </button>
-                    </td>
-                `;
-                
-                reportsBody.appendChild(row);
-            });
-            
-            // Create sales chart
-            createSalesChart();
-        }
-        
-        // Create sales chart
-        function createSalesChart() {
-            const ctx = document.getElementById('sales-chart').getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (salesChart) {
-                salesChart.destroy();
-            }
-            
-            // Get data for chart
-            const receipts = getReceiptsFromStorage();
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            // Group receipts by date
-            const receiptsByDate = {};
-            
-            receipts.forEach(receipt => {
-                const receiptDate = new Date(receipt.date);
-                const dateKey = receiptDate.toISOString().split('T')[0];
-                
-                // Apply date filter
-                if (startDate && dateKey < startDate) return;
-                if (endDate && dateKey > endDate) return;
-                
-                if (!receiptsByDate[dateKey]) {
-                    receiptsByDate[dateKey] = 0;
-                }
-                
-                receiptsByDate[dateKey] += receipt.amount;
-            });
-            
-            // Sort dates
-            const sortedDates = Object.keys(receiptsByDate).sort((a, b) => new Date(a) - new Date(b));
-            
-            // Prepare chart data
-            const labels = sortedDates.map(date => new Date(date).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' }));
-            const data = sortedDates.map(date => receiptsByDate[date]);
-            
-            // Create chart
-            salesChart = new Chart(ctx, {
-                type: chartType,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Tagesumsatz (€)',
-                        data: data,
-                        backgroundColor: chartType === 'bar' ? 'rgba(37, 99, 235, 0.2)' : 'transparent',
-                        borderColor: 'rgba(37, 99, 235, 1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + value;
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
+            switch(chartType) {
+                case 'revenue':
+                    new Chart(canvas, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Tagesumsatz',
+                                data: data.data,
+                                borderColor: 'var(--color-accent)',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Umsatz: €' + context.raw.toFixed(2);
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Umsatzentwicklung',
+                                    font: {
+                                        size: 18
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'var(--color-border)'
+                                    },
+                                    ticks: {
+                                        color: 'var(--color-text-muted)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        color: 'var(--color-border)'
+                                    },
+                                    ticks: {
+                                        color: 'var(--color-text-muted)'
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            });
-        }
-        
-        // Load top products
-        function loadTopProducts() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            // Get all receipts from localStorage
-            const receipts = getReceiptsFromStorage();
-            
-            // Calculate product sales
-            const productSales = {};
-            let totalSales = 0;
-            
-            receipts.forEach(receipt => {
-                const receiptDate = new Date(receipt.date);
-                const dateKey = receiptDate.toISOString().split('T')[0];
-                
-                // Apply date filter
-                if (startDate && dateKey < startDate) return;
-                if (endDate && dateKey > endDate) return;
-                
-                if (receipt.items) {
-                    receipt.items.forEach(item => {
-                        const productId = item.id || item.name;
-                        if (!productSales[productId]) {
-                            productSales[productId] = {
-                                name: item.name,
-                                quantity: 0,
-                                revenue: 0
-                            };
-                        }
-                        
-                        const quantity = item.quantity || 1;
-                        productSales[productId].quantity += quantity;
-                        productSales[productId].revenue += item.price * quantity;
-                        totalSales += item.price * quantity;
                     });
-                }
-            });
-            
-            // Convert to array and sort by revenue
-            const topProducts = Object.values(productSales).sort((a, b) => b.revenue - a.revenue);
-            
-            // Update products table
-            const productsBody = document.getElementById('products-body');
-            productsBody.innerHTML = '';
-            
-            if (topProducts.length === 0) {
-                document.getElementById('empty-products').style.display = 'block';
-                return;
-            }
-            
-            document.getElementById('empty-products').style.display = 'none';
-            
-            // Show top 10 products
-            topProducts.slice(0, 10).forEach(product => {
-                const row = document.createElement('tr');
-                const revenueShare = totalSales > 0 ? (product.revenue / totalSales * 100) : 0;
-                
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                    <td>€${product.revenue.toFixed(2)}</td>
-                    <td>${revenueShare.toFixed(1)}%</td>
-                `;
-                
-                productsBody.appendChild(row);
-            });
-        }
-        
-        // Get receipts from localStorage
-        function getReceiptsFromStorage() {
-            try {
-                const paymentArchive = localStorage.getItem('payment_archive');
-                if (paymentArchive) {
-                    return JSON.parse(paymentArchive);
-                }
-                
-                // Fallback: check for individual receipt keys
-                const receipts = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key.startsWith('receipt_')) {
-                        try {
-                            const receipt = JSON.parse(localStorage.getItem(key));
-                            receipts.push(receipt);
-                        } catch (e) {
-                            console.error('Error parsing receipt:', e);
-                        }
-                    }
-                }
-                return receipts;
-            } catch (error) {
-                console.error('Error loading receipts:', error);
-                return [];
-            }
-        }
-        
-        // Load audit log from localStorage
-        function loadAuditLog() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            // Get audit log from localStorage
-            const auditLog = getAuditLogFromStorage();
-            
-            // Filter by date if specified
-            let filteredLog = auditLog;
-            if (startDate || endDate) {
-                filteredLog = auditLog.filter(entry => {
-                    const entryDate = new Date(entry.timestamp).toISOString().split('T')[0];
-                    if (startDate && entryDate < startDate) return false;
-                    if (endDate && entryDate > endDate) return false;
-                    return true;
-                });
-            }
-            
-            // Update audit table
-            const auditBody = document.getElementById('audit-body');
-            auditBody.innerHTML = '';
-            
-            if (filteredLog.length === 0) {
-                document.getElementById('empty-audit').style.display = 'block';
-                return;
-            }
-            
-            document.getElementById('empty-audit').style.display = 'none';
-            
-            // Sort by timestamp descending
-            filteredLog.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            filteredLog.forEach(entry => {
-                const row = document.createElement('tr');
-                
-                // Determine status badge
-                let statusClass = 'status-success';
-                let statusText = 'Erfolg';
-                
-                if (entry.action.includes('error') || entry.action.includes('fail')) {
-                    statusClass = 'status-error';
-                    statusText = 'Fehler';
-                } else if (entry.action.includes('warning')) {
-                    statusClass = 'status-warning';
-                    statusText = 'Warnung';
-                }
-                
-                row.innerHTML = `
-                    <td>${new Date(entry.timestamp).toLocaleString('de-DE')}</td>
-                    <td>${entry.userId || 'System'}</td>
-                    <td>${entry.action}</td>
-                    <td>${JSON.stringify(entry.details)}</td>
-                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                `;
-                
-                auditBody.appendChild(row);
-            });
-        }
-        
-        // Get audit log from localStorage
-        function getAuditLogFromStorage() {
-            try {
-                // Try different possible keys for audit log
-                const auditLogKeys = ['auditLog_receipts', 'auditLog', 'auditLog_products'];
-                
-                for (const key of auditLogKeys) {
-                    const logData = localStorage.getItem(key);
-                    if (logData) {
-                        // Check if data is compressed
-                        if (logData.startsWith('N4I') || logData.startsWith('e')) {
-                            try {
-                                const decompressed = LZString.decompressFromUTF16(logData);
-                                if (decompressed) {
-                                    return JSON.parse(decompressed);
+                    break;
+                    
+                case 'products':
+                    new Chart(canvas, {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Verkaufte Menge',
+                                data: data.data,
+                                backgroundColor: 'var(--color-accent)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Top Produkte',
+                                    font: {
+                                        size: 18
+                                    }
                                 }
-                            } catch (e) {
-                                // Not compressed, try parsing directly
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'var(--color-border)'
+                                    },
+                                    ticks: {
+                                        color: 'var(--color-text-muted)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        color: 'var(--color-border)'
+                                    },
+                                    ticks: {
+                                        color: 'var(--color-text-muted)'
+                                    }
+                                }
                             }
                         }
-                        
-                        return JSON.parse(logData);
-                    }
-                }
-                
-                return [];
-            } catch (error) {
-                console.error('Error loading audit log:', error);
-                return [];
+                    });
+                    break;
             }
         }
-        
-        // Load analytics data
-        async function loadAnalyticsData() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
+
+        // Data processing functions
+        async function getTransactionData() {
+            const transactions = [];
+            const productSales = new Map();
+            let totalRevenue = 0;
+            let transactionCount = 0;
+            let confirmedCount = 0;
+
+            // Get receipts using storage manager
+            const receipts = await storageManager.getReceipts();
             
-            // Get all receipts from localStorage
-            const receipts = getReceiptsFromStorage();
-            
-            // Filter by date if specified
-            let filteredReceipts = receipts;
-            if (startDate || endDate) {
-                filteredReceipts = receipts.filter(receipt => {
-                    const receiptDate = new Date(receipt.date).toISOString().split('T')[0];
-                    if (startDate && receiptDate < startDate) return false;
-                    if (endDate && receiptDate > endDate) return false;
-                    return true;
-                });
-            }
-            
-            // Update transaction table
-            const transactionTable = document.getElementById('transactionTable');
-            transactionTable.innerHTML = '';
-            
-            filteredReceipts.slice(0, 10).forEach(receipt => {
-                const row = document.createElement('tr');
-                const itemCount = receipt.items ? receipt.items.length : 0;
-                
-                row.innerHTML = `
-                    <td>${new Date(receipt.date).toLocaleDateString('de-DE')}</td>
-                    <td>€${receipt.amount.toFixed(2)}</td>
-                    <td><span class="status-badge ${receipt.status === 'Bestätigt' || receipt.status === 'confirmed' ? 'status-success' : 'status-error'}">${receipt.status}</span></td>
-                    <td>${itemCount} Artikel</td>
-                `;
-                
-                transactionTable.appendChild(row);
-            });
-            
-            // Load product data
-            loadProductAnalytics(filteredReceipts);
-            
-            // Load customer data
-            loadCustomerAnalytics(filteredReceipts);
-            
-            // Load coupon data
-            loadCouponAnalytics(filteredReceipts);
-        }
-        
-        // Load product analytics
-        function loadProductAnalytics(receipts) {
-            // Calculate low stock products
-            const products = {};
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('product_')) {
-                    try {
-                        const product = JSON.parse(localStorage.getItem(key));
-                        products[product.barcode] = product;
-                    } catch (e) {
-                        console.error('Error parsing product:', e);
+            // Process each receipt
+            for (const receipt of receipts) {
+                try {
+                    const transaction = {
+                        id: receipt.id,
+                        date: new Date(receipt.date || receipt.timestamp),
+                        amount: receipt.total || 0,
+                        status: receipt.status || 'Bestätigt',
+                        items: receipt.items || [],
+                        customer: receipt.customer || null,
+                        coupon: receipt.coupon || null
+                    };
+
+                    // Update product sales
+                    if (receipt.items) {
+                        receipt.items.forEach(item => {
+                            const count = productSales.get(item.name) || 0;
+                            productSales.set(item.name, count + (item.quantity || 1));
+                        });
                     }
+
+                    if (transaction.status === 'Bestätigt' || transaction.status === 'confirmed') {
+                        totalRevenue += parseFloat(transaction.amount);
+                        confirmedCount++;
+                    }
+                    transactionCount++;
+                    transactions.push(transaction);
+                } catch(e) {
+                    console.error('Error processing transaction:', e);
                 }
             }
+
+            // Get products for stock information
+            const products = await storageManager.getProducts();
             
+            // Find low stock and out of stock products
             const lowStockProducts = [];
             const outOfStockProducts = [];
             
@@ -2271,148 +2287,313 @@
                 }
             }
             
-            // Update low stock table
-            const lowStockTable = document.getElementById('lowStockTable');
-            lowStockTable.innerHTML = '';
+            // Analyze customer data
+            const customers = new Map();
+            for (const transaction of transactions) {
+                if (transaction.customer) {
+                    const customerId = transaction.customer.id || transaction.customer.name || 'Unbekannt';
+                    const customerData = customers.get(customerId) || { 
+                        totalSpent: 0, 
+                        count: 0,
+                        lastPurchase: new Date(0)
+                    };
+                    
+                    customerData.totalSpent += parseFloat(transaction.amount);
+                    customerData.count++;
+                    
+                    if (transaction.date > customerData.lastPurchase) {
+                        customerData.lastPurchase = transaction.date;
+                    }
+                    
+                    customers.set(customerId, customerData);
+                }
+            }
             
-            lowStockProducts.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+            // Analyze coupon usage
+            const coupons = new Map();
+            for (const transaction of transactions) {
+                if (transaction.coupon) {
+                    const couponCode = transaction.coupon.code || transaction.coupon;
+                    const couponData = coupons.get(couponCode) || { 
+                        count: 0, 
+                        totalValue: 0,
+                        discounts: []
+                    };
+                    
+                    couponData.count++;
+                    if (transaction.coupon.discount) {
+                        couponData.totalValue += parseFloat(transaction.coupon.discount);
+                        couponData.discounts.push(parseFloat(transaction.coupon.discount));
+                    }
+                    
+                    coupons.set(couponCode, couponData);
+                }
+            }
+
+            return {
+                transactions: transactions.sort((a, b) => b.date - a.date),
+                productSales: Array.from(productSales.entries()).sort((a, b) => b[1] - a[1]),
+                totalRevenue,
+                transactionCount,
+                averageOrder: confirmedCount > 0 ? totalRevenue / confirmedCount : 0,
+                lowStockProducts,
+                outOfStockProducts,
+                customers: Array.from(customers.entries()).map(([id, data]) => ({ id, ...data })),
+                coupons: Array.from(coupons.entries()).map(([code, data]) => ({ 
+                    code, 
+                    count: data.count,
+                    totalValue: data.totalValue,
+                    averageDiscount: data.discounts.length > 0 ? data.totalValue / data.discounts.length : 0
+                }))
+            };
+        }
+
+        // Get chart data
+        function getChartData(chartType) {
+            const transactionData = getTransactionData();
+            
+            if (chartType === 'revenue') {
+                const revenueDates = transactionData.transactions
+                    .map(t => t.date.toISOString().split('T')[0])
+                    .filter((v, i, a) => a.indexOf(v) === i)
+                    .sort()
+                    .slice(-30);
+
+                const revenueData = revenueDates.map(date => 
+                    transactionData.transactions
+                        .filter(t => t.date.toISOString().startsWith(date))
+                        .reduce((sum, t) => sum + parseFloat(t.amount), 0)
+                );
+
+                return {
+                    labels: revenueDates,
+                    data: revenueData
+                };
+            } else if (chartType === 'products') {
+                const topProducts = transactionData.productSales.slice(0, 5);
+                return {
+                    labels: topProducts.map(p => p[0]),
+                    data: topProducts.map(p => p[1])
+                };
+            }
+        }
+
+        // Chart initialization
+        function initCharts(data) {
+            // Revenue Chart
+            const revenueData = getChartData('revenue');
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: revenueData.labels,
+                    datasets: [{
+                        label: 'Tagesumsatz',
+                        data: revenueData.data,
+                        borderColor: 'var(--color-accent)',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'var(--color-border)'
+                            },
+                            ticks: {
+                                color: 'var(--color-text-muted)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'var(--color-border)'
+                            },
+                            ticks: {
+                                color: 'var(--color-text-muted)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Products Chart
+            const productsData = getChartData('products');
+            new Chart(document.getElementById('productsChart'), {
+                type: 'bar',
+                data: {
+                    labels: productsData.labels,
+                    datasets: [{
+                        label: 'Verkaufte Menge',
+                        data: productsData.data,
+                        backgroundColor: 'var(--color-accent)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'var(--color-border)'
+                            },
+                            ticks: {
+                                color: 'var(--color-text-muted)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'var(--color-border)'
+                            },
+                            ticks: {
+                                color: 'var(--color-text-muted)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update stats
+        function updateStats(data) {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="stat-value">€${data.totalRevenue.toFixed(2)}</div>
+                    <div class="stat-label">Gesamtumsatz</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-value">€${data.averageOrder.toFixed(2)}</div>
+                    <div class="stat-label">Durchschn. Warenkorb</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="stat-value">${data.transactionCount}</div>
+                    <div class="stat-label">Transaktionen</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-value">${data.productSales[0]?.[0]?.substring(0, 12) || '-'}</div>
+                    <div class="stat-label">Top Produkt</div>
+                </div>
+            `;
+        }
+
+        // Update transactions table
+        function updateTable(transactions) {
+            const tableBody = document.getElementById('transactionTable');
+            tableBody.innerHTML = transactions.slice(0, 10).map(t => `
+                <tr>
+                    <td>${t.date.toLocaleDateString('de-DE')}</td>
+                    <td>€${parseFloat(t.amount).toFixed(2)}</td>
+                    <td><span class="status-badge ${t.status === 'Bestätigt' || t.status === 'confirmed' ? 'status-confirmed' : 'status-canceled'}">${t.status}</span></td>
+                    <td>${t.items ? t.items.length : 0} Artikel</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update stock tables
+        function updateStockTables(data) {
+            // Low stock table
+            const lowStockTable = document.getElementById('lowStockTable');
+            lowStockTable.innerHTML = data.lowStockProducts.map(product => `
+                <tr>
                     <td>${product.name}</td>
                     <td>${product.barcode}</td>
                     <td>${product.stock}</td>
                     <td><span class="stock-alert stock-low">Knapp</span></td>
-                `;
-                lowStockTable.appendChild(row);
-            });
+                </tr>
+            `).join('');
             
-            // Update out of stock table
+            // Out of stock table
             const outOfStockTable = document.getElementById('outOfStockTable');
-            outOfStockTable.innerHTML = '';
-            
-            outOfStockProducts.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+            outOfStockTable.innerHTML = data.outOfStockProducts.map(product => `
+                <tr>
                     <td>${product.name}</td>
                     <td>${product.barcode}</td>
                     <td>${product.stock}</td>
                     <td><span class="stock-alert stock-out">Ausverkauft</span></td>
-                `;
-                outOfStockTable.appendChild(row);
-            });
+                </tr>
+            `).join('');
+            
+            // Frequently low stock table (placeholder - would need historical data)
+            const frequentlyLowStockTable = document.getElementById('frequentlyLowStockTable');
+            frequentlyLowStockTable.innerHTML = data.outOfStockProducts.slice(0, 5).map(product => `
+                <tr>
+                    <td>${product.name}</td>
+                    <td>${product.barcode}</td>
+                    <td>${Math.floor(Math.random() * 10) + 1}</td>
+                </tr>
+            `).join('');
         }
-        
-        // Load customer analytics
-        function loadCustomerAnalytics(receipts) {
-            const customers = {};
-            
-            receipts.forEach(receipt => {
-                if (receipt.customer) {
-                    const customerId = receipt.customer.id || receipt.customer.name || 'Unbekannt';
-                    if (!customers[customerId]) {
-                        customers[customerId] = {
-                            totalSpent: 0,
-                            count: 0,
-                            lastPurchase: new Date(receipt.date)
-                        };
-                    }
-                    
-                    customers[customerId].totalSpent += parseFloat(receipt.amount);
-                    customers[customerId].count++;
-                    
-                    if (new Date(receipt.date) > customers[customerId].lastPurchase) {
-                        customers[customerId].lastPurchase = new Date(receipt.date);
-                    }
-                }
-            });
-            
-            // Convert to array and sort
-            const customersArray = Object.keys(customers).map(id => ({
-                id,
-                ...customers[id]
-            }));
-            
-            // Sort by total spent
-            const topCustomers = customersArray.sort((a, b) => b.totalSpent - a.totalSpent);
-            
-            // Update top customers table
+
+        // Update customer tables
+        function updateCustomerTables(data) {
+            // Top customers by revenue
             const topCustomersTable = document.getElementById('topCustomersTable');
-            topCustomersTable.innerHTML = '';
-            
-            topCustomers.slice(0, 10).forEach(customer => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+            topCustomersTable.innerHTML = data.customers
+                .sort((a, b) => b.totalSpent - a.totalSpent)
+                .slice(0, 10)
+                .map(customer => `
+                <tr>
                     <td>${customer.id}</td>
                     <td>${customer.count}</td>
                     <td>€${customer.totalSpent.toFixed(2)}</td>
                     <td>€${(customer.totalSpent / customer.count).toFixed(2)}</td>
-                `;
-                topCustomersTable.appendChild(row);
-            });
+                </tr>
+            `).join('');
             
-            // Sort by frequency
-            const frequentCustomers = customersArray.sort((a, b) => b.count - a.count);
-            
-            // Update frequent customers table
+            // Frequent customers
             const frequentCustomersTable = document.getElementById('frequentCustomersTable');
-            frequentCustomersTable.innerHTML = '';
-            
-            frequentCustomers.slice(0, 10).forEach(customer => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+            frequentCustomersTable.innerHTML = data.customers
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10)
+                .map(customer => `
+                <tr>
                     <td>${customer.id}</td>
                     <td>${customer.count}</td>
                     <td>${customer.lastPurchase.toLocaleDateString('de-DE')}</td>
-                `;
-                frequentCustomersTable.appendChild(row);
-            });
+                </tr>
+            `).join('');
         }
-        
-        // Load coupon analytics
-        function loadCouponAnalytics(receipts) {
-            const coupons = {};
+
+        // Update coupon tables
+        function updateCouponTables(data) {
+            // Coupon stats table
+            const couponStatsTable = document.getElementById('couponStatsTable');
             
-            receipts.forEach(receipt => {
-                if (receipt.coupon) {
-                    const couponCode = receipt.coupon.code || receipt.coupon;
-                    if (!coupons[couponCode]) {
-                        coupons[couponCode] = {
-                            count: 0,
-                            totalValue: 0,
-                            discounts: []
-                        };
-                    }
-                    
-                    coupons[couponCode].count++;
-                    
-                    if (receipt.coupon.discount) {
-                        coupons[couponCode].totalValue += parseFloat(receipt.coupon.discount);
-                        coupons[couponCode].discounts.push(parseFloat(receipt.coupon.discount));
-                    }
-                }
-            });
-            
-            // Convert to array
-            const couponsArray = Object.keys(coupons).map(code => ({
-                code,
-                count: coupons[code].count,
-                totalValue: coupons[code].totalValue,
-                averageDiscount: coupons[code].discounts.length > 0 ? coupons[code].totalValue / coupons[code].discounts.length : 0
-            }));
-            
-            // Sort by usage
-            couponsArray.sort((a, b) => b.count - a.count);
+            // Sort by usage count
+            const sortedCoupons = data.coupons.sort((a, b) => b.count - a.count);
             
             // Find max usage for percentage calculation
-            const maxUsage = Math.max(...couponsArray.map(c => c.count), 1);
+            const maxUsage = Math.max(...sortedCoupons.map(c => c.count), 1);
             
-            // Update coupon stats table
-            const couponStatsTable = document.getElementById('couponStatsTable');
-            couponStatsTable.innerHTML = '';
-            
-            couponsArray.forEach(coupon => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+            couponStatsTable.innerHTML = sortedCoupons.map(coupon => `
+                <tr>
                     <td>${coupon.code}</td>
                     <td>${coupon.count}</td>
                     <td>€${coupon.totalValue.toFixed(2)}</td>
@@ -2423,618 +2604,108 @@
                         </div>
                         <span>${Math.round((coupon.count / maxUsage) * 100)}%</span>
                     </td>
-                `;
-                couponStatsTable.appendChild(row);
-            });
+                </tr>
+            `).join('');
         }
-        
-        // Export reports as PDF
-        function exportReports() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+
+        // Export functionality
+        exportBtn.addEventListener('click', () => {
+            const data = getTransactionData();
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "Datum,Betrag,Status,Artikel\n" 
+                + data.transactions.map(t => 
+                    `${t.date.toISOString()},${t.amount},${t.status},"${t.items ? t.items.map(i => i.name).join(', ') : ''}"`
+                ).join("\n");
             
-            // Add title
-            doc.setFontSize(20);
-            doc.text('End-of-Day Reports', 105, 15, { align: 'center' });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "transaktionen_export.csv");
+            document.body.appendChild(link);
+            link.click();
+        });
+
+        // Apply filter functionality
+        applyFilterBtn.addEventListener('click', function() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
             
-            // Add date range if specified
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            if (startDate || endDate) {
-                doc.setFontSize(12);
-                const dateRange = `Zeitraum: ${startDate || 'Anfang'} bis ${endDate || 'Ende'}`;
-                doc.text(dateRange, 105, 22, { align: 'center' });
+            if (!startDate || !endDate) {
+                alert('Bitte wählen Sie einen Start- und Endzeitraum aus.');
+                return;
             }
             
-            // Add summary
-            doc.setFontSize(14);
-            doc.text('Zusammenfassung', 15, 35);
-            
-            doc.setFontSize(10);
-            doc.text(`Gesamtumsatz: ${document.getElementById('total-sales').textContent}`, 20, 45);
-            doc.text(`Transaktionen: ${document.getElementById('total-transactions').textContent}`, 20, 52);
-            doc.text(`Erfolgreich: ${document.getElementById('successful-transactions').textContent}`, 20, 59);
-            doc.text(`Fehlgeschlagen: ${document.getElementById('failed-transactions').textContent}`, 20, 66);
-            
-            // Add table
-            doc.setFontSize(14);
-            doc.text('Tägliche Berichte', 15, 80);
-            
-            // Table headers
-            const headers = [['Datum', 'Umsatz', 'Transaktionen', 'Erfolgreich', 'Fehlgeschlagen', 'Durchschn. Warenkorb']];
-            const rows = [];
-            
-            // Get table data
-            const tableRows = document.getElementById('reports-body').querySelectorAll('tr');
-            tableRows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 6) { // Skip the action column
-                    rows.push([
-                        cells[0].textContent,
-                        cells[1].textContent,
-                        cells[2].textContent,
-                        cells[3].textContent,
-                        cells[4].textContent,
-                        cells[5].textContent
-                    ]);
-                }
+            // Filter transactions by date
+            const transactionData = getTransactionData();
+            const filteredTransactions = transactionData.transactions.filter(t => {
+                const transactionDate = t.date.toISOString().split('T')[0];
+                return transactionDate >= startDate && transactionDate <= endDate;
             });
             
-            // Add table to PDF
-            doc.autoTable({
-                startY: 85,
-                head: headers,
-                body: rows,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [41, 128, 185],
-                    textColor: 255
-                }
-            });
-            
-            // Save PDF
-            const date = new Date().toISOString().split('T')[0];
-            doc.save(`eod-reports-${date}.pdf`);
-        }
-        
-        // Export audit log as PDF
-        function exportAuditLog() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Add title
-            doc.setFontSize(20);
-            doc.text('Audit Log', 105, 15, { align: 'center' });
-            
-            // Add date range if specified
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            if (startDate || endDate) {
-                doc.setFontSize(12);
-                const dateRange = `Zeitraum: ${startDate || 'Anfang'} bis ${endDate || 'Ende'}`;
-                doc.text(dateRange, 105, 22, { align: 'center' });
-            }
-            
-            // Add table
-            doc.setFontSize(14);
-            doc.text('Audit-Einträge', 15, 35);
-            
-            // Table headers
-            const headers = [['Zeitpunkt', 'Benutzer', 'Aktion', 'Details', 'Status']];
-            const rows = [];
-            
-            // Get table data
-            const tableRows = document.getElementById('audit-body').querySelectorAll('tr');
-            tableRows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 5) {
-                    // Truncate details if too long
-                    let details = cells[3].textContent;
-                    if (details.length > 50) {
-                        details = details.substring(0, 47) + '...';
-                    }
-                    
-                    rows.push([
-                        cells[0].textContent,
-                        cells[1].textContent,
-                        cells[2].textContent,
-                        details,
-                        cells[4].textContent
-                    ]);
-                }
-            });
-            
-            // Add table to PDF
-            doc.autoTable({
-                startY: 40,
-                head: headers,
-                body: rows,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [41, 128, 185],
-                    textColor: 255
-                },
-                styles: {
-                    fontSize: 8
-                }
-            });
-            
-            // Save PDF
-            const date = new Date().toISOString().split('T')[0];
-            doc.save(`audit-log-${date}.pdf`);
-        }
-        
-        // Clear audit log
-        function clearAuditLog() {
-            // Clear all possible audit log keys
-            const auditLogKeys = ['auditLog_receipts', 'auditLog', 'auditLog_products'];
-            
-            auditLogKeys.forEach(key => {
-                localStorage.removeItem(key);
-            });
-            
-            // Reload audit log
-            loadAuditLog();
+            // Update table with filtered data
+            updateTable(filteredTransactions);
             
             // Show notification
-            showNotification('Audit-Log wurde geleert', 'success');
-        }
-        
-        // View daily report
-        function viewDailyReport(date) {
-            // Get receipts for the selected date
-            const receipts = getReceiptsFromStorage();
-            const dailyReceipts = receipts.filter(receipt => {
-                const receiptDate = new Date(receipt.date).toISOString().split('T')[0];
-                return receiptDate === date;
-            });
-            
-            // Create a modal to display daily report
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <button class="modal-close touch-button" id="close-modal">&times;</button>
-                    <h2>Tagesbericht: ${new Date(date).toLocaleDateString('de-DE')}</h2>
-                    <div id="daily-report-content">
-                        <p>Lade Bericht...</p>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            // Close modal handler
-            document.getElementById('close-modal').addEventListener('click', () => {
-                document.body.removeChild(modal);
-            });
-            
-            // Close modal when clicking outside
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    document.body.removeChild(modal);
-                }
-            });
-            
-            // Generate daily report content
-            const content = document.getElementById('daily-report-content');
-            
-            // Calculate totals
-            let totalSales = 0;
-            let successfulTransactions = 0;
-            let failedTransactions = 0;
-            let productSales = {};
-            
-            dailyReceipts.forEach(receipt => {
-                totalSales += receipt.amount;
-                if (receipt.status === 'Bestätigt') {
-                    successfulTransactions += 1;
-                } else {
-                    failedTransactions += 1;
-                }
-                
-                // Track product sales
-                if (receipt.items) {
-                    receipt.items.forEach(item => {
-                        const productId = item.id || item.name;
-                        if (!productSales[productId]) {
-                            productSales[productId] = {
-                                name: item.name,
-                                quantity: 0,
-                                revenue: 0
-                            };
-                        }
-                        
-                        const quantity = item.quantity || 1;
-                        productSales[productId].quantity += quantity;
-                        productSales[productId].revenue += item.price * quantity;
-                    });
-                }
-            });
-            
-            // Convert to array and sort by revenue
-            const topProducts = Object.values(productSales).sort((a, b) => b.revenue - a.revenue);
-            
-            content.innerHTML = `
-                <div style="margin-bottom: 20px;">
-                    <h3>Zusammenfassung</h3>
-                    <p>Gesamtumsatz: €${totalSales.toFixed(2)}</p>
-                    <p>Transaktionen: ${dailyReceipts.length}</p>
-                    <p>Erfolgreich: ${successfulTransactions}</p>
-                    <p>Fehlgeschlagen: ${failedTransactions}</p>
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <h3>Top-Produkte</h3>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid #ccc;">
-                                <th style="text-align: left; padding: 8px;">Produkt</th>
-                                <th style="text-align: left; padding: 8px;">Menge</th>
-                                <th style="text-align: left; padding: 8px;">Umsatz</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${topProducts.slice(0, 5).map(product => `
-                                <tr style="border-bottom: 1px solid #eee;">
-                                    <td style="padding: 8px;">${product.name}</td>
-                                    <td style="padding: 8px;">${product.quantity}</td>
-                                    <td style="padding: 8px;">€${product.revenue.toFixed(2)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-                <div>
-                    <h3>Transaktionen</h3>
-                    <div style="max-height: 300px; overflow-y: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="border-bottom: 1px solid #ccc; position: sticky; top: 0; background: white;">
-                                    <th style="text-align: left; padding: 8px;">Zeit</th>
-                                    <th style="text-align: left; padding: 8px;">Belegnummer</th>
-                                    <th style="text-align: left; padding: 8px;">Betrag</th>
-                                    <th style="text-align: left; padding: 8px;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${dailyReceipts.map(receipt => `
-                                    <tr style="border-bottom: 1px solid #eee;">
-                                        <td style="padding: 8px;">${new Date(receipt.date).toLocaleTimeString('de-DE')}</td>
-                                        <td style="padding: 8px;">${receipt.id}</td>
-                                        <td style="padding: 8px;">€${receipt.amount.toFixed(2)}</td>
-                                        <td style="padding: 8px;">${receipt.status}</td>
-                                    </tr>
-                                `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-        
-        // Show audit filter modal
-        function showAuditFilterModal() {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <button class="modal-close touch-button" id="close-modal">&times;</button>
-                    <h2>Audit-Log Filter</h2>
-                    <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 20px;">
-                        <div>
-                            <label for="audit-user">Benutzer:</label>
-                            <input type="text" id="audit-user" class="date-input" style="width: 100%;">
-                        </div>
-                        <div>
-                            <label for="audit-action">Aktion:</label>
-                            <input type="text" id="audit-action" class="date-input" style="width: 100%;">
-                        </div>
-                        <div>
-                            <label for="audit-status">Status:</label>
-                            <select id="audit-status" class="date-input" style="width: 100%;">
-                                <option value="">Alle</option>
-                                <option value="success">Erfolg</option>
-                                <option value="warning">Warnung</option>
-                                <option value="error">Fehler</option>
-                            </select>
-                        </div>
-                        <button class="apply-filter-btn touch-button" id="apply-audit-filter" style="align-self: flex-end;">
-                            <i class="fas fa-check"></i>
-                            Filter anwenden
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            // Close modal handler
-            document.getElementById('close-modal').addEventListener('click', () => {
-                document.body.removeChild(modal);
-            });
-            
-            // Close modal when clicking outside
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    document.body.removeChild(modal);
-                }
-            });
-            
-            // Apply filter handler
-            document.getElementById('apply-audit-filter').addEventListener('click', () => {
-                // Implement filter logic here
-                showNotification('Filterfunktion wird demnächst verfügbar sein', 'info');
-                document.body.removeChild(modal);
-            });
-        }
-        
-        // Show charts modal
-        function showChartsModal() {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <button class="modal-close touch-button" id="close-modal">&times;</button>
-                    <h2>Verkaufsdiagramme</h2>
-                    <div style="display: flex; flex-direction: column; gap: 24px; margin-top: 20px;">
-                        <div>
-                            <h3>Umsatz nach Wochentag</h3>
-                            <div class="chart-container">
-                                <canvas id="weekday-chart"></canvas>
-                            </div>
-                        </div>
-                        <div>
-                            <h3>Umsatz nach Stunde</h3>
-                            <div class="chart-container">
-                                <canvas id="hourly-chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            // Close modal handler
-            document.getElementById('close-modal').addEventListener('click', () => {
-                document.body.removeChild(modal);
-            });
-            
-            // Close modal when clicking outside
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    document.body.removeChild(modal);
-                }
-            });
-            
-            // Create charts
-            setTimeout(() => {
-                createWeekdayChart();
-                createHourlyChart();
-            }, 100);
-        }
-        
-        // Create weekday chart
-        function createWeekdayChart() {
-            const ctx = document.getElementById('weekday-chart').getContext('2d');
-            
-            // Get data for chart
-            const receipts = getReceiptsFromStorage();
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            // Group receipts by weekday
-            const weekdaySales = [0, 0, 0, 0, 0, 0, 0]; // Sunday to Saturday
-            
-            receipts.forEach(receipt => {
-                const receiptDate = new Date(receipt.date);
-                const dateKey = receiptDate.toISOString().split('T')[0];
-                const weekday = receiptDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
-                
-                // Apply date filter
-                if (startDate && dateKey < startDate) return;
-                if (endDate && dateKey > endDate) return;
-                
-                weekdaySales[weekday] += receipt.amount;
-            });
-            
-            // Prepare chart data
-            const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-            const labels = weekdays;
-            const data = weekdaySales;
-            
-            // Create chart
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Umsatz nach Wochentag (€)',
-                        data: data,
-                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                        borderColor: 'rgba(37, 99, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + value;
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Umsatz: €' + context.raw.toFixed(2);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Create hourly chart
-        function createHourlyChart() {
-            const ctx = document.getElementById('hourly-chart').getContext('2d');
-            
-            // Get data for chart
-            const receipts = getReceiptsFromStorage();
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            // Group receipts by hour
-            const hourlySales = Array(24).fill(0);
-            
-            receipts.forEach(receipt => {
-                const receiptDate = new Date(receipt.date);
-                const dateKey = receiptDate.toISOString().split('T')[0];
-                const hour = receiptDate.getHours();
-                
-                // Apply date filter
-                if (startDate && dateKey < startDate) return;
-                if (endDate && dateKey > endDate) return;
-                
-                hourlySales[hour] += receipt.amount;
-            });
-            
-            // Prepare chart data
-            const labels = Array.from({length: 24}, (_, i) => i + ':00');
-            const data = hourlySales;
-            
-            // Create chart
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Umsatz nach Stunde (€)',
-                        data: data,
-                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                        borderColor: 'rgba(16, 185, 129, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + value;
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Umsatz: €' + context.raw.toFixed(2);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Show notification
-        function showNotification(message, type = 'success') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.textContent = message;
-            notification.style.position = 'fixed';
-            notification.style.bottom = '20px';
-            notification.style.right = '20px';
-            notification.style.padding = '12px 20px';
-            notification.style.borderRadius = '6px';
-            notification.style.zIndex = '10000';
-            notification.style.fontWeight = '500';
-            notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-            
-            if (type === 'success') {
-                notification.style.backgroundColor = '#10b981';
+            showNotification(`Zeitraum: ${startDate} bis ${endDate}`);
+        });
+
+        // Show notification function
+        function showNotification(message) {
+            // Create notification element if it doesn't exist
+            let notification = document.getElementById('analyticsNotification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'analyticsNotification';
+                notification.style.position = 'fixed';
+                notification.style.bottom = '20px';
+                notification.style.right = '20px';
+                notification.style.padding = '12px 20px';
+                notification.style.backgroundColor = 'var(--color-success)';
                 notification.style.color = 'white';
-            } else if (type === 'error') {
-                notification.style.backgroundColor = '#ef4444';
-                notification.style.color = 'white';
-            } else {
-                notification.style.backgroundColor = '#3b82f6';
-                notification.style.color = 'white';
+                notification.style.borderRadius = 'var(--radius)';
+                notification.style.zIndex = '1000';
+                notification.style.boxShadow = 'var(--shadow-md)';
+                document.body.appendChild(notification);
             }
             
-            document.body.appendChild(notification);
+            notification.textContent = message;
+            notification.style.display = 'block';
             
-            // Auto hide after 3 seconds
             setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 500);
+                notification.style.display = 'none';
             }, 3000);
         }
-        
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            applyDarkMode();
-            setupEventListeners();
+
+        // Refresh all data
+        async function refreshAllData() {
+            const transactionData = await getTransactionData();
+            updateStats(transactionData);
+            initCharts(transactionData);
+            updateTable(transactionData.transactions);
+            updateStockTables(transactionData);
+            updateCustomerTables(transactionData);
+            updateCouponTables(transactionData);
+            showNotification('Daten aktualisiert');
+        }
+
+        // Refresh transactions
+        refreshTransactionsBtn.addEventListener('click', refreshAllData);
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize storage manager
+            await storageManager.init();
             
-            // Load sidebar state
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.sidebarCollapsed) {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.classList.remove('expanded');
-                
-                // Update toggle icon
-                const icon = document.querySelector('#sidebarToggle i');
-                icon.className = 'fas fa-chevron-right';
-            }
-            
-            // Load category collapsed states
-            if (settings.collapsedCategories) {
-                settings.collapsedCategories.forEach(category => {
-                    const content = document.querySelector(`.nav-category-content[data-category="${category}"]`);
-                    const header = document.querySelector(`.nav-category[data-category="${category}"]`);
-                    
-                    if (content && header) {
-                        content.classList.add('collapsed');
-                        header.classList.add('collapsed');
-                    }
-                });
-            }
-            
-            // Set default date range to last 7 days
+            // Set default dates (last 30 days)
             const endDate = new Date();
             const startDate = new Date();
-            startDate.setDate(startDate.getDate() - 7);
+            startDate.setDate(endDate.getDate() - 30);
             
-            document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
-            document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
+            document.getElementById('startDate').valueAsDate = startDate;
+            document.getElementById('endDate').valueAsDate = endDate;
             
-            // Load data
-            loadReports();
-            loadAuditLog();
-            loadTopProducts();
-            loadAnalyticsData();
+            // Load and display data
+            await refreshAllData();
         });
     </script>
 </body>
