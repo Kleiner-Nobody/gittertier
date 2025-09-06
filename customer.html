@@ -405,7 +405,7 @@
 
     /* Payment Modal Specific Styles */
     #payment-modal .modal-content {
-        max-width: 60%;
+        max-width: 40%;
         max-height: 90vh;
         overflow-y: auto;
     }
@@ -916,7 +916,7 @@
                 </div>
                 
                 <div class="step-navigation">
-                    <button class="modal-btn secondary" onclick="window.location.href='index'">
+                    <button class="modal-btn secondary" id="step1-cancel-btn">
                         Abbrechen
                     </button>
                     <button class="modal-btn primary" onclick="showStep(2)">
@@ -959,7 +959,7 @@
                 <div class="coupon-section">
                     <div class="coupon-header" onclick="toggleCouponSection()">
                         <span class="coupon-title">Gutschein anwenden</span>
-                        <i class="" id="coupon-chevron"></i>
+                        <i class="fas fa-chevron-down" id="coupon-chevron"></i>
                     </div>
                     
                     <div class="coupon-content" id="coupon-content">
@@ -1065,6 +1065,17 @@
         </div>
     </div>
 
+    <!-- QR Generation Modal -->
+    <div id="qr-generation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" style="color: var(--color-accent);">
+                <i class="fas fa-qrcode fa-spin"></i>
+            </div>
+            <h2 class="modal-title">QR-Code wird erstellt</h2>
+            <p class="modal-message">Bitte warten Sie, während wir Ihren QR-Code für die Zahlung generieren.</p>
+        </div>
+    </div>
+
 <script>
     // Initialize jsPDF
     const { jsPDF } = window.jspdf;
@@ -1080,6 +1091,9 @@
     let coupons = [];
     let userPreferences = null;
     let currentStep = 1;
+    let infoModalOpenedManually = false;
+    let qrGenerationAttempts = 0;
+    const MAX_QR_ATTEMPTS = 10;
     
     // Initialize payment
     function initPayment() {
@@ -1109,13 +1123,16 @@
             // Display payment data immediately
             displayPaymentData();
             
-            // Generate QR code immediately with available data
-            generateQR();
-            startCountdown();
+            // Load coupons
+            loadCoupons();
+            
+            // Initialize PeerJS
             initializePeerJS();
             
-            // Show modal if we don't have saved preferences
+            // Check if we have saved preferences
             if (!userPreferences || !userPreferences.rememberChoice || !userPreferences.customerName || !userPreferences.paymentMethod) {
+                // Show modal automatically
+                infoModalOpenedManually = false;
                 showModal('payment-modal');
             } else {
                 // Use saved preferences
@@ -1270,8 +1287,8 @@
             itemsList.appendChild(discountDiv);
         }
         
-        // Regenerate QR code with updated data
-        generateQR();
+        // Start QR code generation with retry mechanism
+        startQRCodeGeneration();
     }
     
     // Update payment summary in the modal
@@ -1376,13 +1393,13 @@
             loadCoupons();
         }
         
-        /*if (content.classList.contains('expanded')) {
+        if (content.classList.contains('expanded')) {
             chevron.classList.remove('fa-chevron-down');
             chevron.classList.add('fa-chevron-up');
         } else {
             chevron.classList.remove('fa-chevron-up');
             chevron.classList.add('fa-chevron-down');
-        } */
+        }
     }
     
     // Apply coupon
@@ -1483,12 +1500,15 @@
             itemsList.appendChild(discountDiv);
         }
         
-        // Regenerate QR code with updated data
-        generateQR();
+        // Start QR code generation with retry mechanism
+        startQRCodeGeneration();
     }
     
     // Edit payment details
     function editPaymentDetails() {
+        // Set flag that modal was opened manually
+        infoModalOpenedManually = true;
+        
         // Show the payment modal again
         showModal('payment-modal');
         
@@ -1506,8 +1526,8 @@
                 document.getElementById('coupon-result').innerHTML = 
                     `<div class="coupon-success">Aktiver Gutschein: ${appliedCoupon.code}</div>`;
                 document.getElementById('coupon-content').classList.add('expanded');
-                /* document.getElementById('coupon-chevron').classList.remove('fa-chevron-down');
-                document.getElementById('coupon-chevron').classList.add('fa-chevron-up'); */
+                document.getElementById('coupon-chevron').classList.remove('fa-chevron-down');
+                document.getElementById('coupon-chevron').classList.add('fa-chevron-up');
             }
         }
         
@@ -1627,48 +1647,89 @@
         }, 1000);
     }
     
-    // Generate QR code
+    // Generate QR code with retry mechanism
     function generateQR() {
-        const qrContainer = document.getElementById('qrcode');
-        qrContainer.innerHTML = '';
-        
-        // Create optimized data structure for QR code
-        const qrData = {
-            p: paymentId,           // Payment ID
-            t: paymentData.finalTotal || paymentData.total,   // Total amount
-            i: paymentData.items.map(item => ({
-                n: item.name,       // Shortened property names
-                q: item.quantity,
-                p: item.price,
-                b: item.barcode
-            })),
-            c: paymentData.customerName || 'Kunde',
-            m: selectedPaymentMethod || 'unknown',
-            cp: paymentData.coupon || null
-        };
+        return new Promise((resolve, reject) => {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            
+            // Create optimized data structure for QR code
+            const qrData = {
+                p: paymentId,           // Payment ID
+                t: paymentData.finalTotal || paymentData.total,   // Total amount
+                i: paymentData.items.map(item => ({
+                    n: item.name,       // Shortened property names
+                    q: item.quantity,
+                    p: item.price,
+                    b: item.barcode
+                })),
+                c: paymentData.customerName || 'Kunde',
+                m: selectedPaymentMethod || 'unknown',
+                cp: paymentData.coupon || null
+            };
 
-        try {
-            // Convert to string and compress
-            const jsonStr = JSON.stringify(qrData);
-            const compressed = LZString.compressToBase64(jsonStr);
+            try {
+                // Convert to string and compress
+                const jsonStr = JSON.stringify(qrData);
+                const compressed = LZString.compressToBase64(jsonStr);
+                
+                // Calculate QR size based on viewport
+                const qrSize = Math.min(300, Math.min(window.innerWidth, window.innerHeight) * 0.7);
+                
+                // Generate QR code
+                new QRCode(qrContainer, {
+                    text: compressed,
+                    width: qrSize,
+                    height: qrSize,
+                    colorDark: "#2c3e50",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                // Check if QR code was generated successfully
+                setTimeout(() => {
+                    if (qrContainer.querySelector('canvas')) {
+                        resolve();
+                    } else {
+                        reject(new Error('QR code generation failed'));
+                    }
+                }, 100);
+                
+            } catch(error) {
+                console.error('QR Generation Error:', error);
+                reject(error);
+            }
+        });
+    }
+    
+    // Start QR code generation with retry mechanism
+    function startQRCodeGeneration() {
+        qrGenerationAttempts = 0;
+        showModal('qr-generation-modal');
+        attemptQRCodeGeneration();
+    }
+    
+    // Attempt to generate QR code with retries
+    function attemptQRCodeGeneration() {
+        qrGenerationAttempts++;
+        
+        generateQR().then(() => {
+            // QR code generated successfully
+            closeModal('qr-generation-modal');
+            startCountdown();
+        }).catch(error => {
+            console.error(`QR generation attempt ${qrGenerationAttempts} failed:`, error);
             
-            // Calculate QR size based on viewport
-            const qrSize = Math.min(300, Math.min(window.innerWidth, window.innerHeight) * 0.7);
-            
-            // Generate QR code
-            new QRCode(qrContainer, {
-                text: compressed,
-                width: qrSize,
-                height: qrSize,
-                colorDark: "#2c3e50",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-            
-        } catch(error) {
-            console.error('QR Generation Error:', error);
-            qrContainer.innerHTML = '<p>QR-Code konnte nicht generiert werden</p>';
-        }
+            if (qrGenerationAttempts < MAX_QR_ATTEMPTS) {
+                // Retry after a short delay
+                setTimeout(attemptQRCodeGeneration, 500);
+            } else {
+                // Max attempts reached, show error
+                closeModal('qr-generation-modal');
+                document.getElementById('error-message').textContent = 'QR-Code konnte nicht generiert werden. Bitte versuchen Sie es erneut.';
+                showModal('error-modal');
+            }
+        });
     }
     
     // Show modal
@@ -2147,8 +2208,14 @@
         // Set up edit details button
         document.getElementById('edit-details-btn').addEventListener('click', editPaymentDetails);
         
-        // Load coupons
-        loadCoupons();
+        // Set up cancel button behavior based on how modal was opened
+        document.getElementById('step1-cancel-btn').addEventListener('click', function() {
+            if (infoModalOpenedManually) {
+                closeModal('payment-modal');
+            } else {
+                window.location.href = 'index';
+            }
+        });
     });
 </script>
 </body>
