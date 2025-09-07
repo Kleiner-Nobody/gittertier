@@ -346,7 +346,7 @@
         border-color: var(--color-success);
     }
 
-    /* Modal Styles */
+    /* Modal Styles - Redesigned */
     .modal {
         display: none;
         position: fixed;
@@ -372,6 +372,7 @@
         text-align: center;
         max-height: 90vh;
         overflow-y: auto;
+        position: relative;
     }
 
     .modal-icon {
@@ -425,7 +426,7 @@
         color: var(--color-text);
     }
 
-    /* Payment Modal Specific Styles */
+    /* Payment Modal Specific Styles - Redesigned */
     #payment-modal .modal-content {
         max-width: 90%;
         max-height: 90vh;
@@ -549,9 +550,7 @@
     .coupon-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         margin-bottom: var(--spacing-sm);
-        cursor: pointer;
     }
 
     .coupon-title {
@@ -561,10 +560,6 @@
 
     .coupon-content {
         margin-top: var(--spacing-md);
-        display: none;
-    }
-
-    .coupon-content.expanded {
         display: block;
     }
 
@@ -659,7 +654,7 @@
         font-weight: 600;
     }
 
-    /* Step-by-step tutorial styles */
+    /* Step-by-step tutorial styles - Redesigned */
     .step {
         display: none;
     }
@@ -673,20 +668,32 @@
         display: flex;
         justify-content: center;
         margin-bottom: var(--spacing-lg);
-        gap: var(--spacing-sm);
+        gap: var(--spacing-xs);
     }
     
     .step-indicator {
-        width: 10px;
-        height: 10px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         background-color: var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        position: relative;
         transition: var(--transition);
     }
     
     .step-indicator.active {
         background-color: var(--color-accent);
-        transform: scale(1.2);
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .step-indicator::before {
+        content: attr(data-step);
     }
     
     .step-navigation {
@@ -820,7 +827,7 @@
         padding-top: var(--spacing-sm);
     }
 
-    /* LOYALTY PROGRAM STYLES */
+    /* LOYALTY PROGRAM STYLES - Updated */
     .loyalty-section {
         background-color: var(--color-loyalty-light);
         border-radius: var(--radius);
@@ -832,9 +839,7 @@
     .loyalty-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         margin-bottom: var(--spacing-sm);
-        cursor: pointer;
     }
 
     .loyalty-title {
@@ -847,10 +852,6 @@
 
     .loyalty-content {
         margin-top: var(--spacing-md);
-        display: none;
-    }
-
-    .loyalty-content.expanded {
         display: block;
     }
 
@@ -1252,6 +1253,17 @@
         .donation-options {
             grid-template-columns: repeat(2, 1fr);
         }
+        
+        .step-indicators {
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+        }
+        
+        .step-indicator {
+            width: 25px;
+            height: 25px;
+            font-size: var(--text-xs);
+        }
     }
 
     @media (max-width: 480px) {
@@ -1308,6 +1320,16 @@
 
         .donation-options {
             grid-template-columns: 1fr;
+        }
+        
+        .step-indicators {
+            gap: 4px;
+        }
+        
+        .step-indicator {
+            width: 22px;
+            height: 22px;
+            font-size: 10px;
         }
     }
 
@@ -1429,6 +1451,16 @@
             background-color: #1f2937;
             border-color: var(--color-frozen);
         }
+        
+        .step-indicator {
+            background-color: #374151;
+            color: var(--color-text-muted);
+        }
+        
+        .step-indicator.active {
+            background-color: var(--color-accent);
+            color: white;
+        }
     }
     </style>
 </head>
@@ -1522,7 +1554,7 @@
         </div>
     </main>
 
-    <!-- Payment Modal -->
+    <!-- Payment Modal - Redesigned -->
     <div id="payment-modal" class="modal">
         <div class="modal-content">
             <div class="payment-modal-header">
@@ -1532,7 +1564,7 @@
                 </button>
             </div>
             
-            <!-- Step indicators -->
+            <!-- Step indicators - Redesigned -->
             <div class="step-indicators">
                 <div class="step-indicator active" data-step="1"></div>
                 <div class="step-indicator" data-step="2"></div>
@@ -1591,12 +1623,11 @@
                 </div>
             </div>
             
-            <!-- Step 3: Coupon -->
+            <!-- Step 3: Coupon - Updated to always show content -->
             <div class="step" id="step-3">
                 <div class="coupon-section">
-                    <div class="coupon-header" onclick="toggleCouponSection()">
+                    <div class="coupon-header">
                         <span class="coupon-title">Gutschein anwenden</span>
-                        <i class="fas fa-chevron-down" id="coupon-chevron"></i>
                     </div>
                     
                     <div class="coupon-content" id="coupon-content">
@@ -1624,15 +1655,14 @@
                 </div>
             </div>
             
-            <!-- Step 4: Loyalty Program -->
+            <!-- Step 4: Loyalty Program - Updated to always show content -->
             <div class="step" id="step-4">
                 <div class="loyalty-section">
-                    <div class="loyalty-header" onclick="toggleLoyaltySection()">
+                    <div class="loyalty-header">
                         <span class="loyalty-title">
                             <i class="fas fa-crown"></i>
                             Treueprogramm
                         </span>
-                        <i class="fas fa-chevron-down" id="loyalty-chevron"></i>
                     </div>
                     
                     <div class="loyalty-content" id="loyalty-content">
@@ -2057,7 +2087,7 @@
             loadUserPreferences();
             
             // Display payment data immediately
-            displayPaymentData();
+            displayOriginalItems();
             
             // Load coupons
             loadCoupons();
@@ -2088,9 +2118,8 @@
         }
     }
     
-    // Display payment data
-    function displayPaymentData() {
-        document.getElementById('amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
+    // Display original items only
+    function displayOriginalItems() {
         const itemsList = document.getElementById('items-list');
         itemsList.innerHTML = '';
         
@@ -2104,6 +2133,68 @@
             `;
             itemsList.appendChild(div);
         });
+    }
+    
+    // Display additional items (coupons, delivery, etc.)
+    function displayAdditionalItems() {
+        const itemsList = document.getElementById('items-list');
+        
+        // Clear any previously added additional items
+        const additionalItems = itemsList.querySelectorAll('.additional-item');
+        additionalItems.forEach(item => item.remove());
+        
+        // Add coupon discount if applied
+        if (appliedCoupon) {
+            const discountDiv = document.createElement('div');
+            discountDiv.className = 'item-box additional-item';
+            let discountText = '';
+            
+            if (appliedCoupon.type === 'percent') {
+                discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
+            } else {
+                discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
+            }
+            
+            discountDiv.innerHTML = `<h3 class="discount">${discountText}</h3>`;
+            itemsList.appendChild(discountDiv);
+        }
+        
+        // Add loyalty discount if applied
+        if (loyaltyDiscount > 0) {
+            const loyaltyDiv = document.createElement('div');
+            loyaltyDiv.className = 'item-box additional-item';
+            loyaltyDiv.innerHTML = `<h3 class="discount">Treuepunkte-Rabatt: -€ ${loyaltyDiscount.toFixed(2)}</h3>`;
+            itemsList.appendChild(loyaltyDiv);
+        }
+        
+        // Add delivery cost if applicable
+        if (selectedDeliveryOption === 'home-delivery') {
+            const deliveryDiv = document.createElement('div');
+            deliveryDiv.className = 'item-box additional-item';
+            deliveryDiv.innerHTML = `<h3>Lieferung nach Hause: +€ 4,99</h3>`;
+            itemsList.appendChild(deliveryDiv);
+        }
+        
+        // Add bagging cost if applicable
+        if (selectedBaggingOption === 'standard') {
+            const baggingDiv = document.createElement('div');
+            baggingDiv.className = 'item-box additional-item';
+            baggingDiv.innerHTML = `<h3>Standard Tüten (2x): +€ 0,40</h3>`;
+            itemsList.appendChild(baggingDiv);
+        } else if (selectedBaggingOption === 'premium') {
+            const baggingDiv = document.createElement('div');
+            baggingDiv.className = 'item-box additional-item';
+            baggingDiv.innerHTML = `<h3>Premium Verpackung: +€ 1,50</h3>`;
+            itemsList.appendChild(baggingDiv);
+        }
+        
+        // Add donation if applicable
+        if (selectedDonationOption !== 'none') {
+            const donationDiv = document.createElement('div');
+            donationDiv.className = 'item-box additional-item';
+            donationDiv.innerHTML = `<h3>Spende: +€ ${parseFloat(selectedDonationOption).toFixed(2)}</h3>`;
+            itemsList.appendChild(donationDiv);
+        }
     }
     
     // Load user preferences from localStorage
@@ -2235,30 +2326,8 @@
         // Update displayed amount
         document.getElementById('amount').textContent = `€ ${finalTotal.toFixed(2)}`;
         
-        // Show discounts if applied
-        const itemsList = document.getElementById('items-list');
-        
-        if (appliedCoupon) {
-            const discountDiv = document.createElement('div');
-            discountDiv.className = 'item-box';
-            let discountText = '';
-            
-            if (appliedCoupon.type === 'percent') {
-                discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
-            } else {
-                discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
-            }
-            
-            discountDiv.innerHTML = `<h3 class="discount">${discountText}</h3>`;
-            itemsList.appendChild(discountDiv);
-        }
-        
-        if (loyaltyDiscount > 0) {
-            const loyaltyDiv = document.createElement('div');
-            loyaltyDiv.className = 'item-box';
-            loyaltyDiv.innerHTML = `<h3 class="discount">Treuepunkte-Rabatt: -€ ${loyaltyDiscount.toFixed(2)}</h3>`;
-            itemsList.appendChild(loyaltyDiv);
-        }
+        // Show discounts and additional costs
+        displayAdditionalItems();
         
         // Start QR code generation with retry mechanism
         startQRCodeGeneration();
@@ -2499,12 +2568,12 @@
         
         // Hide current step
         document.getElementById(`step-${currentStep}`).classList.remove('active');
-        document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelectorAll('.step-indicator')[currentStep - 1].classList.remove('active');
         
         // Show new step
         currentStep = stepNumber;
         document.getElementById(`step-${currentStep}`).classList.add('active');
-        document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.add('active');
+        document.querySelectorAll('.step-indicator')[currentStep - 1].classList.add('active');
         
         // Update summary if we're on the last step
         if (currentStep === 9) {
@@ -2607,43 +2676,6 @@
     function initDeliveryOptions() {
         // Set the current selection
         selectDeliveryOption(selectedDeliveryOption);
-    }
-    
-    // Toggle coupon section
-    function toggleCouponSection() {
-        const content = document.getElementById('coupon-content');
-        const chevron = document.getElementById('coupon-chevron');
-        
-        content.classList.toggle('expanded');
-        
-        if (content.classList.contains('expanded') && coupons.length === 0) {
-            // If coupons haven't loaded yet, try again
-            loadCoupons();
-        }
-        
-        if (content.classList.contains('expanded')) {
-            chevron.classList.remove('fa-chevron-down');
-            chevron.classList.add('fa-chevron-up');
-        } else {
-            chevron.classList.remove('fa-chevron-up');
-            chevron.classList.add('fa-chevron-down');
-        }
-    }
-    
-    // Toggle loyalty section
-    function toggleLoyaltySection() {
-        const content = document.getElementById('loyalty-content');
-        const chevron = document.getElementById('loyalty-chevron');
-        
-        content.classList.toggle('expanded');
-        
-        if (content.classList.contains('expanded')) {
-            chevron.classList.remove('fa-chevron-down');
-            chevron.classList.add('fa-chevron-up');
-        } else {
-            chevron.classList.remove('fa-chevron-up');
-            chevron.classList.add('fa-chevron-down');
-        }
     }
     
     // Apply coupon
@@ -2894,57 +2926,8 @@
         // Update displayed amount
         document.getElementById('amount').textContent = `€ ${finalTotal.toFixed(2)}`;
         
-        // Show discounts if applied
-        const itemsList = document.getElementById('items-list');
-        
-        if (appliedCoupon) {
-            const discountDiv = document.createElement('div');
-            discountDiv.className = 'item-box';
-            let discountText = '';
-            
-            if (appliedCoupon.type === 'percent') {
-                discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
-            } else {
-                discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
-            }
-            
-            discountDiv.innerHTML = `<h3 class="discount">${discountText}</h3>`;
-            itemsList.appendChild(discountDiv);
-        }
-        
-        if (loyaltyDiscount > 0) {
-            const loyaltyDiv = document.createElement('div');
-            loyaltyDiv.className = 'item-box';
-            loyaltyDiv.innerHTML = `<h3 class="discount">Treuepunkte-Rabatt: -€ ${loyaltyDiscount.toFixed(2)}</h3>`;
-            itemsList.appendChild(loyaltyDiv);
-        }
-        
-        // Show additional costs if applicable
-        if (selectedDeliveryOption === 'home-delivery') {
-            const deliveryDiv = document.createElement('div');
-            deliveryDiv.className = 'item-box';
-            deliveryDiv.innerHTML = `<h3>Lieferung nach Hause: +€ 4,99</h3>`;
-            itemsList.appendChild(deliveryDiv);
-        }
-        
-        if (selectedBaggingOption === 'standard') {
-            const baggingDiv = document.createElement('div');
-            baggingDiv.className = 'item-box';
-            baggingDiv.innerHTML = `<h3>Standard Tüten (2x): +€ 0,40</h3>`;
-            itemsList.appendChild(baggingDiv);
-        } else if (selectedBaggingOption === 'premium') {
-            const baggingDiv = document.createElement('div');
-            baggingDiv.className = 'item-box';
-            baggingDiv.innerHTML = `<h3>Premium Verpackung: +€ 1,50</h3>`;
-            itemsList.appendChild(baggingDiv);
-        }
-        
-        if (selectedDonationOption !== 'none') {
-            const donationDiv = document.createElement('div');
-            donationDiv.className = 'item-box';
-            donationDiv.innerHTML = `<h3>Spende: +€ ${parseFloat(selectedDonationOption).toFixed(2)}</h3>`;
-            itemsList.appendChild(donationDiv);
-        }
+        // Show discounts and additional costs
+        displayAdditionalItems();
         
         // Start QR code generation with retry mechanism
         startQRCodeGeneration();
@@ -2974,9 +2957,6 @@
                 document.getElementById('coupon-code').value = appliedCoupon.code;
                 document.getElementById('coupon-result').innerHTML = 
                     `<div class="coupon-success">Aktiver Gutschein: ${appliedCoupon.code}</div>`;
-                document.getElementById('coupon-content').classList.add('expanded');
-                document.getElementById('coupon-chevron').classList.remove('fa-chevron-down');
-                document.getElementById('coupon-chevron').classList.add('fa-chevron-up');
             }
         }
         
@@ -3817,304 +3797,288 @@
             
             doc.setFontSize(14);
             doc.setFont(undefined, 'bold');
-            doc.setTextColor(17, 17, 17);
-            doc.text("Gesamtsumme:", pageWidth - 80, yPos, null, 'right');
-            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
-            yPos += 15;
+            doc.text("Gesamtsumme:", pageWidth - 80, yPos + 8, null, 'right');
+            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 25, yPos + 8, null, 'right');
+            yPos += 20;
             
-            // Treuepunkte-Information
-            doc.setFontSize(11);
-            doc.setTextColor(126, 34, 206);
-            doc.text("TREUEPROGRAMM", 20, yPos);
-            yPos += 8;
-            
+            // Treuepunkte-Block
             doc.setFillColor(249, 250, 251);
-            doc.roundedRect(20, yPos, pageWidth - 40, 40, 3, 3, 'F');
+            doc.roundedRect(15, yPos, pageWidth - 30, 30, 3, 3, 'F');
             doc.setDrawColor(229, 231, 235);
-            doc.roundedRect(20, yPos, pageWidth - 40, 40, 3, 3, 'S');
+            doc.roundedRect(15, yPos, pageWidth - 30, 30, 3, 3, 'S');
             
-            doc.setTextColor(17, 17, 17);
-            doc.text(`Eingelöste Punkte: ${loyaltyPointsToRedeem}`, 25, yPos + 10);
-            doc.text(`Erworbene Punkte: +${loyaltyPointsEarned}`, 25, yPos + 18);
-            doc.text(`Neuer Punktestand: ${loyaltyPoints - loyaltyPointsToRedeem + loyaltyPointsEarned}`, 25, yPos + 26);
-            doc.text(`Aktuelles Level: ${capitalizeFirstLetter(loyaltyTier)}`, 25, yPos + 34);
-            
-            yPos += 50;
-            
-            // Zahlungsdetails
             doc.setFontSize(11);
             doc.setTextColor(55, 65, 81);
-            doc.text("ZAHLUNGSINFORMATIONEN", 20, yPos);
-            yPos += 8;
+            doc.text("TREUEPUNKTE", 25, yPos + 8);
             
-            doc.setFillColor(249, 250, 251);
-            doc.roundedRect(20, yPos, pageWidth - 40, 30, 3, 3, 'F');
-            doc.setDrawColor(229, 231, 235);
-            doc.roundedRect(20, yPos, pageWidth - 40, 30, 3, 3, 'S');
+            doc.setFontSize(10);
+            doc.text(`Eingelöste Punkte: ${loyaltyPointsToRedeem}`, 25, yPos + 16);
+            doc.text(`Erworbene Punkte: +${loyaltyPointsEarned}`, 25, yPos + 24);
             
-            doc.setTextColor(17, 17, 17);
-            doc.text(`Zahlungsmethode: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Kartenzahlung'}`, 25, yPos + 10);
-            doc.text(`Belegnummer: ${shortPaymentId}`, 25, yPos + 18);
-            doc.text(`Transaktionsstatus: ${document.getElementById('status').textContent.trim()}`, 25, yPos + 26);
+            const pointsX = pageWidth / 2 + 20;
+            doc.text(`Aktuelle Punkte: ${loyaltyPoints - loyaltyPointsToRedeem + loyaltyPointsEarned}`, pointsX, yPos + 16);
+            doc.text(`Aktuelles Level: ${capitalizeFirstLetter(loyaltyTier)}`, pointsX, yPos + 24);
             
             yPos += 40;
             
-            // Hinweise
-            doc.setTextColor(107, 114, 128);
-            doc.setFontSize(9);
-            doc.text("Hinweis: Bewahren Sie diesen Beleg als Kaufnachweis auf.", 20, yPos);
-            doc.text("Umtausch oder Rückgabe nur mit Vorlage des Originalbelegs möglich.", 20, yPos + 6);
+            // Status der Zahlung
+            const statusEl = document.getElementById('status');
+            const statusText = statusEl.textContent.trim();
+            const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
+            
+            doc.setTextColor(...statusColor);
+            doc.text(`Status: ${statusText}`, pageWidth / 2, yPos, null, 'center');
+            
+            drawFooter();
         }
 
-        // Premium Beleg (luxuriöses Design)
+        // Premium Beleg (hochwertiges Design)
         function generatePremiumReceipt() {
-            // Set background color
-            doc.setFillColor(244, 238, 230);
+            // Goldener Farbton für Premium-Beleg
+            const goldColor = [197, 164, 126];
+            const lightGoldColor = [244, 238, 230];
+            
+            // Hintergrund mit leichtem Goldton
+            doc.setFillColor(...lightGoldColor);
             doc.rect(0, 0, pageWidth, pageHeight, 'F');
             
-            // Goldener Header
-            doc.setFillColor(197, 164, 126);
+            // Header mit Goldverzierung
+            doc.setFillColor(...goldColor);
             doc.rect(0, 0, pageWidth, 40, 'F');
             
-            // Logo und Titel
+            // Logo/Name zentriert im Header
             doc.setFontSize(18);
             doc.setTextColor(255, 255, 255);
             doc.setFont(undefined, 'bold');
-            doc.text("GITTERTIER PRO", pageWidth / 2, 20, null, 'center');
+            doc.text("GITTERTIER PRO", pageWidth / 2, 25, null, 'center');
             
-            // Untertitel
-            doc.setFontSize(10);
-            doc.setTextColor(255, 255, 255);
-            doc.setFont(undefined, 'normal');
-            doc.text("PREMIUM BELEG", pageWidth / 2, 28, null, 'center');
+            yPos = 60;
             
-            // Hauptinhalt mit Abstand
-            yPos = 55;
+            // Belegtitel in Gold
+            doc.setFontSize(16);
+            doc.setTextColor(...goldColor);
+            doc.text("PREMIUM EINKAUFSBELEG", pageWidth / 2, yPos, null, 'center');
+            yPos += 20;
             
-            // Kundendaten
+            // Kundendaten in eleganter Box
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(20, yPos, pageWidth - 40, 50, 5, 5, 'F');
+            doc.setDrawColor(...goldColor);
+            doc.roundedRect(20, yPos, pageWidth - 40, 50, 5, 5, 'S');
+            
             doc.setFontSize(12);
-            doc.setTextColor(90, 74, 58);
-            doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
-            yPos += 8;
-            doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 20, yPos);
-            yPos += 8;
-            doc.text(`Datum: ${paymentDate} ${paymentTime}`, 20, yPos);
+            doc.setTextColor(...goldColor);
+            doc.text("KUNDENINFORMATIONEN", pageWidth / 2, yPos + 10, null, 'center');
+            
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81);
+            doc.text(`Name: ${paymentData.customerName}`, 30, yPos + 25);
+            doc.text(`Zahlungsart: ${selectedPaymentMethod === 'cash' ? 'Bar' : 'Karte'}`, 30, yPos + 35);
+            
+            doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 30, yPos + 25, null, 'right');
+            doc.text(`Beleg-Nr: ${shortPaymentId}`, pageWidth - 30, yPos + 35, null, 'right');
+            
+            yPos += 70;
+            
+            // Artikelübersicht mit Premium-Design
+            doc.setFontSize(12);
+            doc.setTextColor(...goldColor);
+            doc.text("GEKAUFTE ARTIKEL", pageWidth / 2, yPos, null, 'center');
             yPos += 15;
             
-            // Trennlinie mit Goldakzent
-            doc.setDrawColor(197, 164, 126);
-            doc.setLineWidth(1);
-            doc.line(20, yPos, pageWidth - 20, yPos);
-            yPos += 10;
-            
-            // Artikelüberschrift
-            doc.setFontSize(14);
-            doc.setTextColor(90, 74, 58);
-            doc.setFont(undefined, 'bold');
-            doc.text("EINKAUFSARTIKEL", pageWidth / 2, yPos, null, 'center');
-            yPos += 15;
-            
-            // Artikel mit Premium-Darstellung
-            doc.setFontSize(11);
-            doc.setFont(undefined, 'normal');
-            
+            // Artikel mit feinen Linien getrennt
             paymentData.items.forEach((item) => {
                 if (yPos > pageHeight - 60) {
                     doc.addPage();
-                    // Neue Seite mit gleichem Hintergrund
-                    doc.setFillColor(244, 238, 230);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
                     yPos = 20;
+                    
+                    // Neuer Seiten-Header
+                    doc.setFillColor(...goldColor);
+                    doc.rect(0, 0, pageWidth, 40, 'F');
+                    doc.setFontSize(18);
+                    doc.setTextColor(255, 255, 255);
+                    doc.text("GITTERTIER PRO", pageWidth / 2, 25, null, 'center');
+                    
+                    yPos = 60;
                 }
                 
-                // Artikelbox mit Goldrand
-                doc.setDrawColor(197, 164, 126);
-                doc.setLineWidth(0.5);
-                doc.roundedRect(15, yPos - 5, pageWidth - 30, 25, 2, 2, 'S');
-                doc.setFillColor(255, 255, 255, 70);
-                doc.roundedRect(15, yPos - 5, pageWidth - 30, 25, 2, 2, 'F');
+                doc.setFontSize(11);
+                doc.setTextColor(55, 65, 81);
                 
-                // Artikelinfo
-                doc.setTextColor(90, 74, 58);
-                doc.text(item.name, 25, yPos + 3);
-                doc.text(`${item.quantity} x € ${item.price.toFixed(2)}`, 25, yPos + 10);
-                doc.setTextColor(139, 107, 76);
+                // Artikelname und Menge
+                doc.text(`${item.quantity}x ${item.name}`, 30, yPos);
+                
+                // Einzelpreis und Gesamtpreis
+                doc.text(`€ ${item.price.toFixed(2)}`, pageWidth - 80, yPos);
                 doc.setFont(undefined, 'bold');
-                doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 25, yPos + 6, null, 'right');
+                doc.text(`€ ${(item.quantity * item.price).toFixed(2)}`, pageWidth - 30, yPos, null, 'right');
                 doc.setFont(undefined, 'normal');
                 
-                yPos += 30;
+                // Dünne Trennlinie
+                doc.setDrawColor(229, 231, 235);
+                doc.line(30, yPos + 5, pageWidth - 30, yPos + 5);
+                
+                yPos += 15;
             });
             
-            // Rabatt, falls vorhanden
+            // Rabatte und Zusatzkosten
+            yPos += 10;
+            
             if (appliedCoupon) {
-                if (yPos > pageHeight - 40) {
-                    doc.addPage();
-                    doc.setFillColor(244, 238, 230);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                    yPos = 20;
-                }
-                
-                yPos += 5;
+                doc.setFontSize(10);
                 doc.setTextColor(22, 163, 74);
-                let discountText = '';
                 
+                let discountText = '';
                 if (appliedCoupon.type === 'percent') {
                     discountText = `Rabatt (${appliedCoupon.code}): -${appliedCoupon.discount}%`;
                 } else {
                     discountText = `Rabatt (${appliedCoupon.code}): -€ ${appliedCoupon.discount.toFixed(2)}`;
                 }
                 
-                doc.text(discountText, pageWidth - 25, yPos, null, 'right');
-                doc.setTextColor(90, 74, 58);
+                doc.text(discountText, pageWidth - 30, yPos, null, 'right');
                 yPos += 10;
             }
             
-            // Treuepunkte-Rabatt, falls vorhanden
             if (loyaltyDiscount > 0) {
-                if (yPos > pageHeight - 40) {
-                    doc.addPage();
-                    doc.setFillColor(244, 238, 230);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                    yPos = 20;
-                }
-                
-                yPos += 5;
+                doc.setFontSize(10);
                 doc.setTextColor(126, 34, 206);
-                doc.text(`Treuepunkte-Rabatt: -€ ${loyaltyDiscount.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
-                doc.setTextColor(90, 74, 58);
+                doc.text(`Treuepunkte-Rabatt: -€ ${loyaltyDiscount.toFixed(2)}`, pageWidth - 30, yPos, null, 'right');
                 yPos += 10;
             }
             
-            // Lieferkosten, falls vorhanden
             if (selectedDeliveryOption === 'home-delivery') {
-                if (yPos > pageHeight - 40) {
-                    doc.addPage();
-                    doc.setFillColor(244, 238, 230);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                    yPos = 20;
-                }
-                
-                yPos += 5;
-                doc.text(`Lieferung: +€ 4,99`, pageWidth - 25, yPos, null, 'right');
+                doc.setFontSize(10);
+                doc.setTextColor(55, 65, 81);
+                doc.text(`Lieferung: +€ 4,99`, pageWidth - 30, yPos, null, 'right');
                 yPos += 10;
             }
             
-            // Verpackungskosten, falls vorhanden
             if (selectedBaggingOption === 'standard') {
-                if (yPos > pageHeight - 40) {
-                    doc.addPage();
-                    doc.setFillColor(244, 238, 230);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                    yPos = 20;
-                }
-                
-                yPos += 5;
-                doc.text(`Verpackung: +€ 0,40`, pageWidth - 25, yPos, null, 'right');
+                doc.setFontSize(10);
+                doc.setTextColor(55, 65, 81);
+                doc.text(`Verpackung: +€ 0,40`, pageWidth - 30, yPos, null, 'right');
                 yPos += 10;
             } else if (selectedBaggingOption === 'premium') {
-                if (yPos > pageHeight - 40) {
-                    doc.addPage();
-                    doc.setFillColor(244, 238, 230);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                    yPos = 20;
-                }
-                
-                yPos += 5;
-                doc.text(`Verpackung: +€ 1,50`, pageWidth - 25, yPos, null, 'right');
+                doc.setFontSize(10);
+                doc.setTextColor(55, 65, 81);
+                doc.text(`Verpackung: +€ 1,50`, pageWidth - 30, yPos, null, 'right');
                 yPos += 10;
             }
             
-            // Spende, falls vorhanden
             if (selectedDonationOption !== 'none') {
-                if (yPos > pageHeight - 40) {
-                    doc.addPage();
-                    doc.setFillColor(244, 238, 230);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                    yPos = 20;
-                }
-                
-                yPos += 5;
-                doc.text(`Spende: +€ ${parseFloat(selectedDonationOption).toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+                doc.setFontSize(10);
+                doc.setTextColor(55, 65, 81);
+                doc.text(`Spende: +€ ${parseFloat(selectedDonationOption).toFixed(2)}`, pageWidth - 30, yPos, null, 'right');
                 yPos += 10;
             }
             
-            // Gesamtsumme mit Goldakzent
-            yPos += 10;
-            doc.setDrawColor(197, 164, 126);
-            doc.setLineWidth(1);
-            doc.line(20, yPos, pageWidth - 20, yPos);
+            // Gesamtsumme
             yPos += 15;
+            doc.setDrawColor(...goldColor);
+            doc.line(pageWidth - 100, yPos, pageWidth - 30, yPos);
+            yPos += 20;
             
             doc.setFontSize(16);
             doc.setFont(undefined, 'bold');
-            doc.setTextColor(139, 107, 76);
-            doc.text("Gesamtsumme:", 20, yPos);
-            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 20, yPos, null, 'right');
+            doc.setTextColor(...goldColor);
+            doc.text("Gesamtsumme:", pageWidth - 100, yPos, null, 'right');
+            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 30, yPos, null, 'right');
             
             // Treuepunkte-Information
-            yPos += 15;
-            doc.setFontSize(11);
-            doc.setTextColor(126, 34, 206);
-            doc.text(`Eingelöste Punkte: ${loyaltyPointsToRedeem}`, 20, yPos);
-            doc.text(`Erworbene Punkte: +${loyaltyPointsEarned}`, pageWidth - 20, yPos, null, 'right');
-            yPos += 8;
-            doc.text(`Aktuelles Level: ${capitalizeFirstLetter(loyaltyTier)}`, 20, yPos);
-            
-            // Danksagung
-            yPos += 20;
+            yPos += 25;
             doc.setFontSize(10);
-            doc.setTextColor(139, 107, 76);
-            doc.setFont(undefined, 'italic');
-            doc.text("Vielen Dank für Ihren Einkauf bei Gittertier Pro!", pageWidth / 2, yPos, null, 'center');
+            doc.setTextColor(126, 34, 206);
+            doc.text(`Eingelöste Punkte: ${loyaltyPointsToRedeem}`, 30, yPos);
+            doc.text(`Erworbene Punkte: +${loyaltyPointsEarned}`, pageWidth - 30, yPos, null, 'right');
+            yPos += 8;
+            doc.text(`Aktuelles Level: ${capitalizeFirstLetter(loyaltyTier)}`, 30, yPos);
             
-            // Footer
-            yPos = pageHeight - 20;
-            doc.setFontSize(8);
-            doc.setTextColor(139, 107, 76);
-            doc.setFont(undefined, 'normal');
-            doc.text(`Belegnummer: ${shortPaymentId}`, pageWidth / 2, yPos, null, 'center');
+            // Status der Zahlung
+            const statusEl = document.getElementById('status');
+            const statusText = statusEl.textContent.trim();
+            yPos += 20;
+            
+            const statusColor = statusText.includes('bestätigt') ? [22, 163, 74] : [220, 38, 38];
+            doc.setTextColor(...statusColor);
+            doc.text(`Status: ${statusText}`, pageWidth / 2, yPos, null, 'center');
+            
+            // Footer mit Goldverzierung
+            doc.setFillColor(...goldColor);
+            doc.rect(0, pageHeight - 30, pageWidth, 30, 'F');
+            
+            doc.setFontSize(10);
+            doc.setTextColor(255, 255, 255);
+            doc.text("Vielen Dank für Ihren Einkauf bei Gittertier Pro!", pageWidth / 2, pageHeight - 18, null, 'center');
         }
 
-        // Gemeinsame Funktionen für alle Belegtypen
+        // Hilfsfunktion für Header
         function drawHeader() {
-            const yStart = 10;
+            const yStart = 20;
             
-            // Logo und Titel
+            // Laden-Logo und Name
             doc.setFontSize(16);
             doc.setTextColor(37, 99, 235);
             doc.setFont(undefined, 'bold');
             doc.text("Gittertier Pro", pageWidth / 2, yStart, null, 'center');
             
-            // Adresse und Kontakt
-            doc.setFontSize(8);
+            // Datum und Belegnummer
+            doc.setFontSize(10);
             doc.setTextColor(107, 114, 128);
             doc.setFont(undefined, 'normal');
-            doc.text("Musterstraße 123 • 12345 Musterstadt", pageWidth / 2, yStart + 5, null, 'center');
-            doc.text("Tel: (01234) 567890 • info@gittertier-pro.de", pageWidth / 2, yStart + 10, null, 'center');
+            doc.text(`${paymentDate} ${paymentTime}`, 20, yStart + 5);
+            doc.text(`Beleg-Nr: ${shortPaymentId}`, pageWidth - 20, yStart + 5, null, 'right');
             
             return yStart + 15;
         }
 
+        // Hilfsfunktion für Footer
         function drawFooter() {
-            const yPos = pageHeight - 20;
+            const footerY = pageHeight - 20;
             
-            // Datum und Belegnummer
-            const shortPaymentId = paymentId.split('-').pop().substr(0, 8);
-            
-            doc.setFontSize(8);
+            doc.setFontSize(9);
             doc.setTextColor(107, 114, 128);
-            doc.text(`Belegnummer: ${shortPaymentId}`, 20, yPos);
-            doc.text(`Datum: ${paymentDate} ${paymentTime}`, pageWidth - 20, yPos, null, 'right');
+            doc.text("Vielen Dank für Ihren Einkauf!", pageWidth / 2, footerY, null, 'center');
             
-            // Copyright
-            doc.text("© 2023 Gittertier Pro. Alle Rechte vorbehalten.", pageWidth / 2, yPos + 6, null, 'center');
+            // QR-Code mit Beleg-ID falls Platz
+            if (pageHeight > 500) {
+                try {
+                    const qrSize = 40;
+                    const qrX = pageWidth - qrSize - 15;
+                    const qrY = footerY - qrSize - 10;
+                    
+                    // Kleinen QR-Code mit Beleg-ID generieren
+                    const qrData = JSON.stringify({
+                        id: shortPaymentId,
+                        t: 'gittertier-receipt'
+                    });
+                    
+                    const qrCanvas = document.createElement('canvas');
+                    QRCode.toCanvas(qrCanvas, qrData, {
+                        width: qrSize,
+                        margin: 1,
+                        color: {
+                            dark: '#2c3e50',
+                            light: '#ffffff'
+                        }
+                    }, (error) => {
+                        if (!error) {
+                            const imgData = qrCanvas.toDataURL('image/png');
+                            doc.addImage(imgData, 'PNG', qrX, qrY, qrSize, qrSize);
+                        }
+                    });
+                } catch (e) {
+                    console.log('QR-Code im Beleg konnte nicht generiert werden');
+                }
+            }
         }
 
-        // Beleg basierend auf ausgewähltem Design generieren
+        // Je nach ausgewähltem Design den entsprechenden Beleg generieren
         switch(receiptFormat) {
             case 'simple':
                 generateSimpleReceipt();
+                break;
+            case 'compact':
+                generateCompactReceipt();
                 break;
             case 'detailed':
                 generateDetailedReceipt();
@@ -4122,25 +4086,25 @@
             case 'premium':
                 generatePremiumReceipt();
                 break;
-            case 'compact':
             default:
                 generateCompactReceipt();
-                break;
         }
 
-        // PDF speichern
-        doc.save(`Gittertier_Beleg_${shortPaymentId}.pdf`);
+        // PDF herunterladen
+        doc.save(`Beleg-GittertierPro-${shortPaymentId}.pdf`);
     }
     
     // Event listeners
     document.getElementById('edit-details-btn').addEventListener('click', editPaymentDetails);
     document.getElementById('step1-cancel-btn').addEventListener('click', () => {
         closeModal('payment-modal');
-        window.location.href = 'index';
+        if (!infoModalOpenedManually) {
+            window.location.href = 'index';
+        }
     });
     
     // Initialize payment when page loads
-    window.onload = initPayment;
+    window.addEventListener('load', initPayment);
 </script>
 </body>
 </html>
