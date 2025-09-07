@@ -412,6 +412,13 @@
         padding: var(--spacing-md);
         margin-bottom: var(--spacing-sm);
         border: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .item-info {
+        flex: 1;
     }
 
     .item-box h3 {
@@ -426,6 +433,11 @@
         margin-bottom: var(--spacing-xs);
     }
 
+    .item-price {
+        font-weight: 600;
+        color: var(--color-text);
+    }
+
     /* Total Amount */
     .total-amount {
         font-size: var(--text-xl);
@@ -437,6 +449,17 @@
         font-weight: bold;
         color: var(--color-success);
         border: 1px solid rgba(22, 163, 74, 0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .total-label {
+        font-size: var(--text-lg);
+    }
+
+    .total-value {
+        font-size: var(--text-2xl);
     }
 
     /* Button Styles */
@@ -448,7 +471,7 @@
 
     .btn {
         flex: 1;
-        padding: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
         border: none;
         border-radius: var(--radius);
         font-weight: 600;
@@ -522,6 +545,31 @@
         background-color: var(--color-error);
     }
 
+    /* New: Payment Info Card */
+    .payment-info-card {
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+        border: 1px solid var(--color-border);
+    }
+
+    .payment-info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-sm);
+        padding: var(--spacing-xs) 0;
+    }
+
+    .payment-info-label {
+        font-weight: 500;
+        color: var(--color-text-muted);
+    }
+
+    .payment-info-value {
+        font-weight: 600;
+    }
+
     /* Animation Keyframes */
     @keyframes fadeIn {
         from { opacity: 0; }
@@ -587,6 +635,11 @@
         .modal {
             padding: var(--spacing-lg);
         }
+        
+        .total-amount {
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
     }
 
     @media (max-width: 480px) {
@@ -622,6 +675,10 @@
             background-color: rgba(16, 185, 129, 0.1);
             color: var(--color-success);
             border-color: rgba(16, 185, 129, 0.2);
+        }
+        
+        .payment-info-card {
+            background-color: #1f2937;
         }
     }
     </style>
@@ -723,7 +780,7 @@
         </main>
     </div>
 
-    <!-- Confirmation Modal -->
+    <!-- Confirmation Modal - Redesigned -->
     <div class="modal-overlay" id="confirmation-modal">
         <div class="modal">
             <div class="modal-header">
@@ -731,14 +788,38 @@
                 <button class="close-modal" id="close-confirmation">&times;</button>
             </div>
             
-            <div class="total-amount">
-                Gesamtbetrag: <span id="payment-amount">€0.00</span>
+            <div class="payment-info-card">
+                <div class="payment-info-row">
+                    <span class="payment-info-label">Kunde:</span>
+                    <span class="payment-info-value" id="payment-customer">-</span>
+                </div>
+                <div class="payment-info-row">
+                    <span class="payment-info-label">Zahlungsart:</span>
+                    <span class="payment-info-value" id="payment-method">-</span>
+                </div>
+                <div class="payment-info-row">
+                    <span class="payment-info-label">Gutschein:</span>
+                    <span class="payment-info-value" id="payment-coupon">-</span>
+                </div>
+                <div class="payment-info-row">
+                    <span class="payment-info-label">Belegdesign:</span>
+                    <span class="payment-info-value" id="payment-receipt">-</span>
+                </div>
             </div>
             
-            <button id="details-btn" class="btn btn-outline">
-                <i class="fas fa-list"></i>
-                Details anzeigen
-            </button>
+            <div class="total-amount">
+                <span class="total-label">Gesamtbetrag:</span>
+                <span class="total-value" id="payment-amount">€0.00</span>
+            </div>
+            
+            <div id="items-list" class="items-list"></div>
+            
+            <div class="button-group">
+                <button id="details-btn" class="btn btn-outline">
+                    <i class="fas fa-list"></i>
+                    Details anzeigen
+                </button>
+            </div>
             
             <div class="button-group">
                 <button id="confirm-btn" class="btn btn-primary">
@@ -753,26 +834,7 @@
         </div>
     </div>
 
-    <!-- Details Modal -->
-    <div class="modal-overlay" id="details-modal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title">Warenkorb Details</h2>
-                <button class="close-modal" id="close-details">&times;</button>
-            </div>
-            
-            <div id="items-list" class="items-list"></div>
-            
-            <div class="button-group">
-                <button class="btn btn-outline" id="back-to-confirmation">
-                    <i class="fas fa-arrow-left"></i>
-                    Zurück zur Bestätigung
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Merchant Setup Modal -->
+    <!-- Merchant Setup Modal - Enhanced -->
     <div class="modal-overlay" id="merchant-setup-modal">
         <div class="modal">
             <div class="modal-header">
@@ -783,8 +845,41 @@
                 <p>Bitte geben Sie Ihre Händlerinformationen ein:</p>
                 
                 <div style="margin-top: var(--spacing-md);">
-                    <label for="merchant-name" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">Händlername</label>
-                    <input type="text" id="merchant-name" class="form-control" placeholder="Ihr Händlername" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <label for="merchant-name" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">Händlername*</label>
+                        <input type="text" id="merchant-name" class="form-control" placeholder="Ihr Händlername" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                    </div>
+                    
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <label for="merchant-address" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">Adresse</label>
+                        <input type="text" id="merchant-address" class="form-control" placeholder="Straße und Hausnummer" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                        <div>
+                            <label for="merchant-zip" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">PLZ</label>
+                            <input type="text" id="merchant-zip" class="form-control" placeholder="PLZ" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                        </div>
+                        <div>
+                            <label for="merchant-city" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">Stadt</label>
+                            <input type="text" id="merchant-city" class="form-control" placeholder="Stadt" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <label for="merchant-phone" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">Telefon</label>
+                        <input type="tel" id="merchant-phone" class="form-control" placeholder="Telefonnummer" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                    </div>
+                    
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <label for="merchant-email" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">E-Mail</label>
+                        <input type="email" id="merchant-email" class="form-control" placeholder="E-Mail Adresse" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                    </div>
+                    
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <label for="merchant-tax" style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500;">USt-IdNr.</label>
+                        <input type="text" id="merchant-tax" class="form-control" placeholder="Umsatzsteuer-Identifikationsnummer" style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                    </div>
                 </div>
             </div>
             
@@ -974,10 +1069,18 @@
                 return;
             }
             
-            const success = merchantStorage.saveMerchantInfo({
+            const merchantInfo = {
                 name: merchantName,
+                address: document.getElementById('merchant-address').value.trim(),
+                zip: document.getElementById('merchant-zip').value.trim(),
+                city: document.getElementById('merchant-city').value.trim(),
+                phone: document.getElementById('merchant-phone').value.trim(),
+                email: document.getElementById('merchant-email').value.trim(),
+                taxId: document.getElementById('merchant-tax').value.trim(),
                 setupDate: new Date().toISOString()
-            });
+            };
+            
+            const success = merchantStorage.saveMerchantInfo(merchantInfo);
             
             if (success) {
                 document.getElementById('merchant-setup-modal').classList.remove('active');
@@ -1033,85 +1136,126 @@
             }, 3000);
         }
 
-        // Improved QR data handling
-        function transformQRData(rawData) {
-            return {
-                peerId: rawData.p,
-                total: rawData.t,
-                items: rawData.i.map(item => ({
-                    name: item.n,
-                    quantity: item.q,
-                    price: item.p,
-                    barcode: item.b
-                })),
-                customer: rawData.c,
-                paymentMethod: rawData.m,
-                coupon: rawData.cp
-            };
+        // Handle new QR code format (only peer ID)
+        function handleQRScan(data) {
+            try {
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(data);
+                } catch {
+                    throw new Error('Ungültiges QR-Code Format');
+                }
+
+                // Validate the new format
+                if(!parsedData?.p || parsedData?.t !== 'gittertier-payment') {
+                    throw new Error('Ungültiger QR-Code');
+                }
+
+                const peerId = parsedData.p;
+                
+                // Stop camera
+                stopCamera();
+                
+                // Connect to customer
+                if (merchantPeer) {
+                    const conn = merchantPeer.connect(peerId);
+                    
+                    conn.on('open', () => {
+                        currentPayment = { peerId: peerId, connection: conn };
+                        showNotification('Verbinde mit Kunde...', 'success');
+                        
+                        // Request payment data from customer
+                        conn.send({ type: 'request-payment-data' });
+                    });
+
+                    conn.on('data', (data) => {
+                        if (data.type === 'payment-data') {
+                            // Merge received payment data with current payment
+                            currentPayment = { ...currentPayment, ...data.data };
+                            showConfirmationModal(currentPayment);
+                        }
+                    });
+
+                    conn.on('error', (err) => {
+                        console.error('Connection error:', err);
+                        showNotification('Verbindungsfehler: ' + err.message, 'error');
+                        initScanner();
+                    });
+                } else {
+                    showNotification('PeerJS nicht initialisiert', 'error');
+                    // Try to reinitialize PeerJS
+                    initializePeerJS();
+                }
+
+            } catch(e) {
+                console.error('Scan-Fehler:', e);
+                showNotification('Fehler: ' + e.message, 'error');
+                initScanner();
+            }
         }
 
-        // Event listeners for UI controls
-        document.getElementById('confirm-btn').addEventListener('click', () => {
-            if (currentPayment && currentPayment.connection && currentPayment.connection.open) {
-                saveToArchive('Bestätigt', currentPayment);
-                currentPayment.connection.send({ type: 'confirm' });
-                generateReceipt(currentPayment, 'Bestätigt');
-                document.getElementById('confirmation-modal').classList.remove('active');
-                initScanner();
-            } else {
-                showNotification('Verbindung zum Kunden fehlgeschlagen!', 'error');
-            }
-        });
-
-        document.getElementById('decline-btn').addEventListener('click', () => {
-            if (currentPayment && currentPayment.connection && currentPayment.connection.open) {
-                saveToArchive('Abgelehnt', currentPayment);
-                currentPayment.connection.send({ type: 'decline' });
-                generateReceipt(currentPayment, 'Abgelehnt');
-                document.getElementById('confirmation-modal').classList.remove('active');
-                initScanner();
-            } else {
-                showNotification('Verbindung zum Kunden fehlgeschlagen!', 'error');
-            }
-        });
-
-        document.getElementById('details-btn').addEventListener('click', () => {
-            if (currentPayment) {
-                const itemsList = document.getElementById('items-list');
-                itemsList.innerHTML = '';
-                
-                currentPayment.items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'item-box';
-                    div.innerHTML = `
+        // Show confirmation modal with payment details
+        function showConfirmationModal(paymentData) {
+            document.getElementById('payment-amount').textContent = `€ ${paymentData.finalTotal.toFixed(2)}`;
+            document.getElementById('payment-customer').textContent = paymentData.customerName || '-';
+            document.getElementById('payment-method').textContent = paymentData.paymentMethod === 'cash' ? 'Bar' : 'Karte';
+            document.getElementById('payment-coupon').textContent = paymentData.coupon || 'Keiner';
+            document.getElementById('payment-receipt').textContent = getReceiptDesignName(paymentData.receiptDesign);
+            
+            const itemsList = document.getElementById('items-list');
+            itemsList.innerHTML = '';
+            
+            paymentData.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item-box';
+                div.innerHTML = `
+                    <div class="item-info">
                         <h3>${item.name}</h3>
-                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                            <span>${item.quantity}x € ${item.price.toFixed(2)}</span>
-                            <strong>€ ${(item.quantity * item.price).toFixed(2)}</strong>
-                        </div>
-                    `;
-                    itemsList.appendChild(div);
-                });
-                
-                document.getElementById('confirmation-modal').classList.remove('active');
-                document.getElementById('details-modal').classList.add('active');
+                        <p>${item.quantity}x € ${item.price.toFixed(2)}</p>
+                    </div>
+                    <div class="item-price">€ ${(item.quantity * item.price).toFixed(2)}</div>
+                `;
+                itemsList.appendChild(div);
+            });
+            
+            // Show discounts if applied
+            if (paymentData.couponDiscount > 0) {
+                const discountDiv = document.createElement('div');
+                discountDiv.className = 'item-box';
+                discountDiv.innerHTML = `
+                    <div class="item-info">
+                        <h3 class="discount">Rabatt (${paymentData.coupon})</h3>
+                    </div>
+                    <div class="item-price discount">-€ ${paymentData.couponDiscount.toFixed(2)}</div>
+                `;
+                itemsList.appendChild(discountDiv);
             }
-        });
-
-        document.getElementById('back-to-confirmation').addEventListener('click', () => {
-            document.getElementById('details-modal').classList.remove('active');
+            
+            if (paymentData.loyaltyDiscount > 0) {
+                const loyaltyDiv = document.createElement('div');
+                loyaltyDiv.className = 'item-box';
+                loyaltyDiv.innerHTML = `
+                    <div class="item-info">
+                        <h3 class="discount">Treuepunkte-Rabatt</h3>
+                    </div>
+                    <div class="item-price discount">-€ ${paymentData.loyaltyDiscount.toFixed(2)}</div>
+                `;
+                itemsList.appendChild(loyaltyDiv);
+            }
+            
             document.getElementById('confirmation-modal').classList.add('active');
-        });
+        }
 
-        document.getElementById('close-confirmation').addEventListener('click', () => {
-            document.getElementById('confirmation-modal').classList.remove('active');
-            initScanner();
-        });
-
-        document.getElementById('close-details').addEventListener('click', () => {
-            document.getElementById('details-modal').classList.remove('active');
-            initScanner();
-        });
+        // Get receipt design name for display
+        function getReceiptDesignName(design) {
+            switch(design) {
+                case 'simple': return 'Einfach';
+                case 'compact': return 'Kompakt';
+                case 'detailed': return 'Detailliert';
+                case 'premium': return 'Premium';
+                default: return 'Kompakt';
+            }
+        }
 
         function stopCamera() {
             if (mediaStream) {
@@ -1125,13 +1269,13 @@
                 // Create a sanitized payment data object without circular references
                 const sanitizedPayment = {
                     peerId: payment.peerId,
-                    total: payment.total,
+                    total: payment.finalTotal,
                     items: payment.items.map(item => ({
                         name: item.name,
                         quantity: item.quantity,
                         price: item.price
                     })),
-                    customer: payment.customer,
+                    customer: payment.customerName,
                     paymentMethod: payment.paymentMethod,
                     coupon: payment.coupon,
                     date: new Date().toISOString(),
@@ -1186,60 +1330,6 @@
             }
         }
 
-        function handleQRScan(data) {
-            try {
-                let parsedData;
-                try {
-                    // Try decompression first
-                    const decompressed = LZString.decompressFromBase64(data);
-                    parsedData = JSON.parse(decompressed);
-                } catch {
-                    // Fallback to direct parse
-                    parsedData = JSON.parse(data);
-                }
-
-                // Validate and transform data
-                if(!parsedData?.p || !parsedData?.t || !parsedData?.i) {
-                    throw new Error('Ungültiges QR-Code Format');
-                }
-                
-                const paymentData = transformQRData(parsedData);
-                
-                if(!paymentData.items || paymentData.items.length === 0) {
-                    throw new Error('Leerer Warenkorb');
-                }
-
-                currentPayment = paymentData;
-                document.getElementById('payment-amount').textContent = `€ ${paymentData.total.toFixed(2)}`;
-                document.getElementById('confirmation-modal').classList.add('active');
-                document.getElementById('details-modal').classList.remove('active');
-
-                // Establish connection with customer
-                if (merchantPeer) {
-                    const conn = merchantPeer.connect(paymentData.peerId);
-                    
-                    conn.on('open', () => {
-                        currentPayment.connection = conn;
-                        showNotification('Verbindung zum Kunden hergestellt!', 'success');
-                    });
-
-                    conn.on('error', (err) => {
-                        console.error('Connection error:', err);
-                        showNotification('Verbindungsfehler: ' + err.message, 'error');
-                    });
-                } else {
-                    showNotification('PeerJS nicht initialisiert', 'error');
-                    // Try to reinitialize PeerJS
-                    initializePeerJS();
-                }
-
-            } catch(e) {
-                console.error('Scan-Fehler:', e);
-                showNotification('Fehler: ' + e.message, 'error');
-                initScanner();
-            }
-        }
-
         function generateReceipt(paymentData, status) {
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
@@ -1269,15 +1359,25 @@
             if (merchantInfo && merchantInfo.name) {
                 yPos += 10;
                 doc.text(`Händler: ${merchantInfo.name}`, pageWidth/2, yPos, null, 'center');
+                
+                if (merchantInfo.address) {
+                    yPos += 7;
+                    doc.text(`Adresse: ${merchantInfo.address}`, pageWidth/2, yPos, null, 'center');
+                }
+                
+                if (merchantInfo.zip && merchantInfo.city) {
+                    yPos += 7;
+                    doc.text(`${merchantInfo.zip} ${merchantInfo.city}`, pageWidth/2, yPos, null, 'center');
+                }
             }
             
             yPos += 20;
             
             // Customer info
-            if (paymentData.customer) {
+            if (paymentData.customerName) {
                 doc.setFontSize(12);
                 doc.setTextColor(17, 17, 17);
-                doc.text(`Kunde: ${paymentData.customer}`, 20, yPos);
+                doc.text(`Kunde: ${paymentData.customerName}`, 20, yPos);
                 yPos += 10;
             }
             
@@ -1328,6 +1428,25 @@
                 yPos += 8;
             });
             
+            // Discounts
+            if (paymentData.couponDiscount > 0) {
+                yPos += 5;
+                doc.setTextColor(22, 163, 74);
+                doc.text(`Rabatt (${paymentData.coupon})`, 25, yPos);
+                doc.text(`-€ ${paymentData.couponDiscount.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+                doc.setTextColor(17, 17, 17);
+                yPos += 8;
+            }
+            
+            if (paymentData.loyaltyDiscount > 0) {
+                yPos += 5;
+                doc.setTextColor(126, 34, 206);
+                doc.text(`Treuepunkte-Rabatt`, 25, yPos);
+                doc.text(`-€ ${paymentData.loyaltyDiscount.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+                doc.setTextColor(17, 17, 17);
+                yPos += 8;
+            }
+            
             yPos += 10;
             doc.setDrawColor(229, 231, 235);
             doc.line(20, yPos, pageWidth - 20, yPos);
@@ -1336,7 +1455,7 @@
             doc.setFontSize(14);
             doc.setFont(undefined, 'bold');
             doc.text("Gesamtsumme:", 25, yPos);
-            doc.text(`€ ${paymentData.total.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
+            doc.text(`€ ${paymentData.finalTotal.toFixed(2)}`, pageWidth - 25, yPos, null, 'right');
             
             yPos += 20;
             doc.setFontSize(12);
@@ -1357,6 +1476,36 @@
                 window.location.href = 'merchant';
             }, 1500);
         }
+
+        // Event listeners for UI controls
+        document.getElementById('confirm-btn').addEventListener('click', () => {
+            if (currentPayment && currentPayment.connection && currentPayment.connection.open) {
+                saveToArchive('Bestätigt', currentPayment);
+                currentPayment.connection.send({ type: 'confirm' });
+                generateReceipt(currentPayment, 'Bestätigt');
+                document.getElementById('confirmation-modal').classList.remove('active');
+                initScanner();
+            } else {
+                showNotification('Verbindung zum Kunden fehlgeschlagen!', 'error');
+            }
+        });
+
+        document.getElementById('decline-btn').addEventListener('click', () => {
+            if (currentPayment && currentPayment.connection && currentPayment.connection.open) {
+                saveToArchive('Abgelehnt', currentPayment);
+                currentPayment.connection.send({ type: 'decline' });
+                generateReceipt(currentPayment, 'Abgelehnt');
+                document.getElementById('confirmation-modal').classList.remove('active');
+                initScanner();
+            } else {
+                showNotification('Verbindung zum Kunden fehlgeschlagen!', 'error');
+            }
+        });
+
+        document.getElementById('close-confirmation').addEventListener('click', () => {
+            document.getElementById('confirmation-modal').classList.remove('active');
+            initScanner();
+        });
 
         // Initialize the page
         function initPage() {
