@@ -1,440 +1,790 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitterTier Repository AI Assistant</title>
+    <title>Gittertier Pro - Offline</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    :root {
+        --color-bg: #ffffff;
+        --color-text: #111111;
+        --color-text-muted: #6b7280;
+        --color-border: #e5e7eb;
+        --color-accent: #2563eb;
+        --color-accent-hover: #1d4ed8;
+        --color-success: #16a34a;
+        --color-error: #dc2626;
+        --color-overlay: rgba(0, 0, 0, 0.5);
+        --color-tutorial: #FF9900;
+        --color-tutorial-light: #FFF3CD;
+        
+        --radius: 12px;
+        --radius-sm: 6px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+        
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+        
+        --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --text-base: 1rem;
+        --text-lg: 1.125rem;
+        --text-xl: 1.25rem;
+        --text-2xl: 1.5rem;
+        --text-3xl: 1.875rem;
+        
+        --header-height: 64px;
+        --footer-height: 80px;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header Styles */
+    header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-xl);
+    }
+
+    .logo i {
+        font-size: var(--text-xl);
+        color: var(--color-accent);
+    }
+
+    /* Main Content */
+    main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-xl);
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .offline-icon {
+        font-size: 4rem;
+        color: var(--color-error);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .offline-title {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .offline-message {
+        color: var(--color-text-muted);
+        margin-bottom: var(--spacing-xl);
+        line-height: 1.6;
+    }
+
+    .troubleshooting-list {
+        text-align: left;
+        margin-bottom: var(--spacing-xl);
+        background-color: #f9fafb;
+        padding: var(--spacing-lg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+    }
+
+    .troubleshooting-list li {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .game-button {
+        background-color: var(--color-tutorial);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-lg);
+    }
+
+    .game-button:hover {
+        background-color: #e58900;
+        transform: translateY(-2px);
+    }
+
+    /* Game Modal */
+    .game-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--color-bg);
+        z-index: 1000;
+        overflow-y: auto;
+    }
+
+    .game-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .game-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .game-close {
+        background: none;
+        border: none;
+        font-size: var(--text-xl);
+        cursor: pointer;
+        color: var(--color-text-muted);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+
+    .game-close:hover {
+        background-color: #f3f4f6;
+    }
+
+    .game-content {
+        padding: var(--spacing-xl);
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .game-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: var(--spacing-xl);
+        background-color: #f9fafb;
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+    }
+
+    .stat {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: var(--text-xl);
+        font-weight: 700;
+        color: var(--color-accent);
+    }
+
+    .stat-label {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+    }
+
+    .product-card {
+        background: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+        box-shadow: var(--shadow);
+    }
+
+    .product-image {
+        width: 120px;
+        height: 120px;
+        background-color: #f3f4f6;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--spacing-md);
+    }
+
+    .product-image i {
+        font-size: 3rem;
+        color: var(--color-text-muted);
+    }
+
+    .product-name {
+        font-weight: 600;
+        font-size: var(--text-lg);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .product-price {
+        font-weight: 700;
+        font-size: var(--text-2xl);
+        color: var(--color-text);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .game-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-xl);
+    }
+
+    .game-btn {
+        padding: var(--spacing-md);
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        transition: var(--transition);
+        font-size: var(--text-lg);
+    }
+
+    .higher-btn {
+        background-color: var(--color-success);
+        color: white;
+    }
+
+    .higher-btn:hover {
+        background-color: #0f9c5a;
+    }
+
+    .lower-btn {
+        background-color: var(--color-error);
+        color: white;
+    }
+
+    .lower-btn:hover {
+        background-color: #b91c1c;
+    }
+
+    .game-feedback {
+        margin-top: var(--spacing-lg);
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        display: none;
+    }
+
+    .feedback-correct {
+        background-color: rgba(22, 163, 74, 0.1);
+        color: var(--color-success);
+        border: 1px solid rgba(22, 163, 74, 0.2);
+    }
+
+    .feedback-incorrect {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+        border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+    .progress-container {
+        width: 100%;
+        height: 8px;
+        background-color: #f3f4f6;
+        border-radius: 4px;
+        margin: var(--spacing-lg) 0;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background-color: var(--color-accent);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .game-completion {
+        display: none;
+        text-align: center;
+        padding: var(--spacing-xl);
+    }
+
+    .completion-icon {
+        font-size: 4rem;
+        color: var(--color-success);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .completion-title {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .completion-stats {
+        margin-bottom: var(--spacing-xl);
+        background-color: #f9fafb;
+        padding: var(--spacing-lg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+    }
+
+    .completion-buttons {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: center;
+    }
+
+    /* Dark mode support for system preference */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-bg: #111827;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --color-border: #374151;
+            --color-tutorial-light: #cc5c00;
         }
         
         body {
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-            color: #c9d1d9;
-            line-height: 1.6;
-            padding: 20px;
-            min-height: 100vh;
+            background-color: var(--color-bg);
         }
         
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: #0d1117;
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            overflow: hidden;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        .troubleshooting-list {
+            background-color: #1f2937;
+            border-color: var(--color-border);
         }
         
+        .product-card {
+            background-color: #1f2937;
+            border-color: var(--color-border);
+        }
+        
+        .product-image {
+            background-color: #374151;
+        }
+        
+        .game-stats {
+            background-color: #1f2937;
+            border-color: var(--color-border);
+        }
+        
+        .progress-container {
+            background-color: #374151;
+        }
+        
+        .completion-stats {
+            background-color: #1f2937;
+            border-color: var(--color-border);
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        :root {
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
+        }
+        
+        main {
+            padding: var(--spacing-lg);
+        }
+        
+        .game-buttons {
+            grid-template-columns: 1fr;
+        }
+        
+        .completion-buttons {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
         header {
-            background: linear-gradient(90deg, #238636 0%, #2ea043 100%);
-            padding: 25px;
-            text-align: center;
-            border-bottom: 1px solid #30363d;
+            padding: 0 var(--spacing-md);
         }
         
-        h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            color: white;
+        .logo {
+            font-size: var(--text-lg);
         }
         
-        .description {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
+        .game-content {
+            padding: var(--spacing-md);
         }
-        
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 500px;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .message {
-            max-width: 80%;
-            padding: 15px;
-            border-radius: 12px;
-            line-height: 1.5;
-        }
-        
-        .ai-message {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            align-self: flex-start;
-            border-top-left-radius: 5px;
-        }
-        
-        .user-message {
-            background: linear-gradient(90deg, #3a88ff 0%, #5fa3ff 100%);
-            color: white;
-            align-self: flex-end;
-            border-top-right-radius: 5px;
-        }
-        
-        .input-area {
-            display: flex;
-            padding: 20px;
-            border-top: 1px solid #30363d;
-            background-color: #161b22;
-        }
-        
-        input {
-            flex: 1;
-            padding: 15px;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            background-color: #0d1117;
-            color: #c9d1d9;
-            font-size: 1rem;
-        }
-        
-        button {
-            margin-left: 10px;
-            padding: 15px 25px;
-            background: linear-gradient(90deg, #238636 0%, #2ea043 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.1s ease;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .typing-indicator {
-            padding: 10px;
-            color: #8b949e;
-            font-style: italic;
-        }
-        
-        .repo-info {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 15px;
-            background-color: #161b22;
-            border-bottom: 1px solid #30363d;
-        }
-        
-        .repo-stat {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #8b949e;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #8b949e;
-        }
-        
-        .error {
-            color: #f85149;
-            padding: 10px;
-            text-align: center;
-        }
-        
-        .code-snippet {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 12px;
-            margin: 10px 0;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-        }
-        
-        @media (max-width: 600px) {
-            .message {
-                max-width: 90%;
-            }
-            
-            .input-area {
-                flex-direction: column;
-            }
-            
-            button {
-                margin: 10px 0 0 0;
-            }
-            
-            .repo-info {
-                flex-wrap: wrap;
-            }
-        }
+    }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>GitterTier Repository AI Assistant</h1>
-            <p class="description">Ask me anything about the GitterTier GitHub repository</p>
-        </header>
+    <header>
+        <div class="logo">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Gittertier Pro</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="offline-icon">
+            <i class="fas fa-wifi-slash"></i>
+        </div>
+        <h1 class="offline-title">Keine Internetverbindung</h1>
+        <p class="offline-message">
+            Es scheint, als wären Sie offline. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.
+        </p>
         
-        <div class="repo-info">
-            <div class="repo-stat">📂 <span id="file-count">Loading...</span> Files</div>
-            <div class="repo-stat">📝 <span id="readme-status">Loading...</span> README</div>
-            <div class="repo-stat">🔄 <span id="last-updated">Loading...</span> Updated</div>
+        <div class="troubleshooting-list">
+            <h3>Mögliche Lösungen:</h3>
+            <ul>
+                <li>Überprüfen Sie Ihr WLAN oder Mobilfunknetz</li>
+                <li>Stellen Sie sicher, dass der Flugmodus deaktiviert ist</li>
+                <li>Starten Sie Ihren Router oder Ihr Gerät neu</li>
+                <li>Überprüfen Sie Ihre Netzwerkeinstellungen</li>
+            </ul>
         </div>
         
-        <div class="chat-container">
-            <div class="chat-messages" id="chat-messages">
-                <div class="message ai-message">
-                    Hi there! I'm your GitterTier repository assistant. I'm currently loading the repository data from GitHub. Please wait a moment...
+        <p class="offline-message">
+            Während Sie auf die Wiederherstellung Ihrer Verbindung warten, können Sie ein kleines Spiel spielen:
+        </p>
+        
+        <button class="game-button" onclick="openGame()">
+            <i class="fas fa-gamepad"></i>
+            Höher/Niedriger spielen
+        </button>
+    </main>
+
+    <!-- Game Modal -->
+    <div class="game-modal" id="game-modal">
+        <div class="game-header">
+            <h2 class="game-title"><i class="fas fa-gamepad"></i> Höher/Niedriger</h2>
+            <button class="game-close" onclick="closeGame()">&times;</button>
+        </div>
+        
+        <div class="game-content">
+            <div class="game-stats">
+                <div class="stat">
+                    <div class="stat-value" id="round-count">1/420</div>
+                    <div class="stat-label">Runde</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="score">0</div>
+                    <div class="stat-label">Punkte</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="streak">0</div>
+                    <div class="stat-label">Serie</div>
                 </div>
             </div>
             
-            <div class="input-area">
-                <input type="text" id="user-input" placeholder="Ask a question about GitterTier..." autocomplete="off" disabled>
-                <button id="send-btn" disabled>Send</button>
+            <div class="progress-container">
+                <div class="progress-bar" id="game-progress" style="width: 0%"></div>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image">
+                    <i class="fas fa-cube" id="product-icon"></i>
+                </div>
+                <h3 class="product-name" id="current-product">Produktname</h3>
+                <div class="product-price" id="current-price">0,00€</div>
+            </div>
+            
+            <p>Wird der nächste Artikel teurer oder günstiger sein?</p>
+            
+            <div class="game-buttons">
+                <button class="game-btn higher-btn" onclick="makeGuess('higher')">
+                    <i class="fas fa-arrow-up"></i> Höher
+                </button>
+                <button class="game-btn lower-btn" onclick="makeGuess('lower')">
+                    <i class="fas fa-arrow-down"></i> Niedriger
+                </button>
+            </div>
+            
+            <div class="game-feedback" id="game-feedback"></div>
+            
+            <div class="game-completion" id="game-completion">
+                <div class="completion-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h2 class="completion-title">Spiel beendet!</h2>
+                <div class="completion-stats">
+                    <p>Ihre Punktzahl: <strong id="final-score">0</strong></p>
+                    <p>Richtig geraten: <strong id="correct-guesses">0</strong>/420</p>
+                    <p>Längste Serie: <strong id="longest-streak">0</strong></p>
+                </div>
+                <div class="completion-buttons">
+                    <button class="game-button" onclick="restartGame()">
+                        <i class="fas fa-redo"></i> Nochmal spielen
+                    </button>
+                    <button class="game-button" onclick="closeGame()">
+                        <i class="fas fa-times"></i> Schließen
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatMessages = document.getElementById('chat-messages');
-            const userInput = document.getElementById('user-input');
-            const sendBtn = document.getElementById('send-btn');
-            const fileCountElement = document.getElementById('file-count');
-            const readmeStatusElement = document.getElementById('readme-status');
-            const lastUpdatedElement = document.getElementById('last-updated');
+    // Game state
+    let gameState = {
+        currentRound: 1,
+        totalRounds: 420,
+        score: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        currentProduct: null,
+        nextProduct: null,
+        gameActive: false,
+        productIcons: [
+            'fa-apple-alt', 'fa-tshirt', 'fa-mobile-alt', 'fa-laptop', 
+            'fa-book', 'fa-wine-bottle', 'fa-shoe-prints', 'fa-headphones',
+            'fa-cookie', 'fa-car', 'fa-bicycle', 'fa-tv',
+            'fa-gamepad', 'fa-utensils', 'fa-gem', 'fa-tools'
+        ],
+        productCategories: {
+            'Lebensmittel': ['Apfel', 'Banane', 'Brokkoli', 'Käse', 'Joghurt', 'Eier', 'Milch', 'Brot', 'Nudeln', 'Reis'],
+            'Kleidung': ['T-Shirt', 'Jeans', 'Pullover', 'Jacke', 'Hut', 'Schuhe', 'Socken', 'Handschuhe', 'Schal', 'Krawatte'],
+            'Elektronik': ['Smartphone', 'Laptop', 'Tablet', 'Kopfhörer', 'Lautsprecher', 'Fernseher', 'Smartwatch', 'Kamera', 'Spielkonsole', 'Monitor'],
+            'Haushalt': ['Staubsauger', 'Mikrowelle', 'Kühlschrank', 'Toaster', 'Mixer', 'Waschmaschine', 'Bügeleisen', 'Kaffeemaschine', 'Geschirrspüler', 'Heizlüfter'],
+            'Bücher': ['Roman', 'Krimi', 'Science-Fiction', 'Fantasy', 'Biografie', 'Kochbuch', 'Reiseführer', 'Kinderbuch', 'Sachbuch', 'Lexikon'],
+            'Spielzeug': ['Lego-Set', 'Puppe', 'Puzzle', 'Brettspiel', 'Actionfigur', 'Modellauto', 'Stofftier', 'Bauklötze', 'Knete', 'Springseil']
+        }
+    };
+
+    // Initialize the game
+    function initGame() {
+        gameState.currentRound = 1;
+        gameState.score = 0;
+        gameState.currentStreak = 0;
+        gameState.longestStreak = 0;
+        gameState.gameActive = true;
+        
+        // Generate initial products
+        gameState.currentProduct = generateRandomProduct();
+        gameState.nextProduct = generateRandomProduct();
+        
+        // Update UI
+        updateGameUI();
+        
+        // Hide completion screen, show game UI
+        document.getElementById('game-completion').style.display = 'none';
+        document.querySelector('.product-card').style.display = 'block';
+        document.querySelector('.game-buttons').style.display = 'grid';
+        document.getElementById('game-feedback').style.display = 'none';
+    }
+
+    // Generate a random product with price
+    function generateRandomProduct() {
+        // Select random category
+        const categories = Object.keys(gameState.productCategories);
+        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+        
+        // Select random product from category
+        const products = gameState.productCategories[randomCategory];
+        const randomProduct = products[Math.floor(Math.random() * products.length)];
+        
+        // Generate random price based on category
+        let price;
+        switch(randomCategory) {
+            case 'Elektronik':
+                price = (Math.random() * 1000 + 50).toFixed(2);
+                break;
+            case 'Haushalt':
+                price = (Math.random() * 500 + 20).toFixed(2);
+                break;
+            case 'Kleidung':
+                price = (Math.random() * 200 + 10).toFixed(2);
+                break;
+            case 'Spielzeug':
+                price = (Math.random() * 100 + 5).toFixed(2);
+                break;
+            case 'Bücher':
+                price = (Math.random() * 30 + 5).toFixed(2);
+                break;
+            case 'Lebensmittel':
+            default:
+                price = (Math.random() * 15 + 0.5).toFixed(2);
+                break;
+        }
+        
+        // Select random icon
+        const randomIcon = gameState.productIcons[Math.floor(Math.random() * gameState.productIcons.length)];
+        
+        return {
+            name: randomProduct,
+            price: parseFloat(price),
+            category: randomCategory,
+            icon: randomIcon
+        };
+    }
+
+    // Update game UI with current state
+    function updateGameUI() {
+        document.getElementById('round-count').textContent = `${gameState.currentRound}/${gameState.totalRounds}`;
+        document.getElementById('score').textContent = gameState.score;
+        document.getElementById('streak').textContent = gameState.currentStreak;
+        
+        // Update progress bar
+        const progressPercent = (gameState.currentRound / gameState.totalRounds) * 100;
+        document.getElementById('game-progress').style.width = `${progressPercent}%`;
+        
+        // Update current product display
+        if (gameState.currentProduct) {
+            document.getElementById('current-product').textContent = gameState.currentProduct.name;
+            document.getElementById('current-price').textContent = `${gameState.currentProduct.price.toFixed(2)}€`;
+            document.getElementById('product-icon').className = `fas ${gameState.currentProduct.icon}`;
+        }
+    }
+
+    // Make a guess (higher or lower)
+    function makeGuess(guess) {
+        if (!gameState.gameActive) return;
+        
+        const currentPrice = gameState.currentProduct.price;
+        const nextPrice = gameState.nextProduct.price;
+        
+        let isCorrect = false;
+        
+        if (guess === 'higher' && nextPrice > currentPrice) {
+            isCorrect = true;
+        } else if (guess === 'lower' && nextPrice < currentPrice) {
+            isCorrect = true;
+        } else if (nextPrice === currentPrice) {
+            // If prices are equal, it's a draw - no points but round continues
+            isCorrect = true; // Treat as correct to continue the game
+        }
+        
+        // Handle feedback
+        const feedbackEl = document.getElementById('game-feedback');
+        feedbackEl.style.display = 'block';
+        
+        if (isCorrect) {
+            feedbackEl.className = 'game-feedback feedback-correct';
             
-            let repositoryData = {};
-            let fileContents = {};
-            
-            // Function to add a message to the chat
-            function addMessage(text, isUser = false) {
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('message');
-                messageDiv.classList.add(isUser ? 'user-message' : 'ai-message');
+            if (nextPrice !== currentPrice) { // Only award points if not a draw
+                gameState.score += 10;
+                gameState.currentStreak += 1;
                 
-                // Check if the text contains code snippets and format them
-                if (text.includes('```')) {
-                    const parts = text.split('```');
-                    for (let i = 0; i < parts.length; i++) {
-                        if (i % 2 === 0) {
-                            // Regular text
-                            const textPart = document.createTextNode(parts[i]);
-                            messageDiv.appendChild(textPart);
-                        } else {
-                            // Code snippet
-                            const codeSnippet = document.createElement('pre');
-                            codeSnippet.classList.add('code-snippet');
-                            codeSnippet.textContent = parts[i];
-                            messageDiv.appendChild(codeSnippet);
-                        }
-                    }
-                } else {
-                    messageDiv.textContent = text;
+                if (gameState.currentStreak > gameState.longestStreak) {
+                    gameState.longestStreak = gameState.currentStreak;
                 }
                 
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                feedbackEl.innerHTML = `<i class="fas fa-check-circle"></i> Richtig! Nächster Preis: ${nextPrice.toFixed(2)}€`;
+            } else {
+                feedbackEl.innerHTML = `<i class="fas fa-equals"></i> Unentschieden! Beide Produkte kosten ${nextPrice.toFixed(2)}€`;
             }
-            
-            // Function to simulate typing indicator
-            function showTypingIndicator() {
-                const typingDiv = document.createElement('div');
-                typingDiv.classList.add('typing-indicator');
-                typingDiv.id = 'typing-indicator';
-                typingDiv.textContent = 'AI is thinking...';
-                chatMessages.appendChild(typingDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+            feedbackEl.className = 'game-feedback feedback-incorrect';
+            feedbackEl.innerHTML = `<i class="fas fa-times-circle"></i> Falsch! Nächster Preis: ${nextPrice.toFixed(2)}€`;
+            gameState.currentStreak = 0;
+        }
+        
+        // Update UI
+        updateGameUI();
+        
+        // Move to next round after a brief delay
+        setTimeout(() => {
+            if (gameState.currentRound < gameState.totalRounds) {
+                gameState.currentRound += 1;
+                gameState.currentProduct = gameState.nextProduct;
+                gameState.nextProduct = generateRandomProduct();
+                updateGameUI();
                 
-                return typingDiv;
+                // Hide feedback for next round
+                feedbackEl.style.display = 'none';
+            } else {
+                // Game over
+                endGame();
             }
-            
-            // Function to fetch repository data from GitHub API
-            async function fetchRepositoryData() {
-                try {
-                    addMessage("Fetching repository information from GitHub...");
-                    
-                    // Fetch repository info
-                    const repoResponse = await fetch('https://api.github.com/repos/Kleiner-Nobody/gittertier');
-                    if (!repoResponse.ok) throw new Error('Failed to fetch repository info');
-                    const repoData = await repoResponse.json();
-                    
-                    repositoryData = repoData;
-                    
-                    // Update repo info stats
-                    fileCountElement.textContent = repoData.size || 'N/A';
-                    lastUpdatedElement.textContent = new Date(repoData.updated_at).toLocaleDateString();
-                    
-                    // Fetch repository contents
-                    const contentsResponse = await fetch('https://api.github.com/repos/Kleiner-Nobody/gittertier/contents');
-                    if (!contentsResponse.ok) throw new Error('Failed to fetch repository contents');
-                    const contentsData = await contentsResponse.json();
-                    
-                    // Check if README exists
-                    const readmeFile = contentsData.find(file => file.name.toLowerCase().includes('readme'));
-                    readmeStatusElement.textContent = readmeFile ? 'Available' : 'Not found';
-                    
-                    // Fetch README content if available
-                    if (readmeFile) {
-                        const readmeResponse = await fetch(readmeFile.download_url);
-                        if (readmeResponse.ok) {
-                            fileContents['README'] = await readmeResponse.text();
-                        }
-                    }
-                    
-                    // Fetch additional important files (package.json, LICENSE, etc.)
-                    const importantFiles = contentsData.filter(file => 
-                        file.name === 'package.json' || 
-                        file.name === 'LICENSE' || 
-                        file.name === 'index.html' ||
-                        file.name.endsWith('.md')
-                    );
-                    
-                    for (const file of importantFiles) {
-                        try {
-                            const fileResponse = await fetch(file.download_url);
-                            if (fileResponse.ok) {
-                                fileContents[file.name] = await fileResponse.text();
-                            }
-                        } catch (error) {
-                            console.error(`Error fetching ${file.name}:`, error);
-                        }
-                    }
-                    
-                    addMessage("Repository data loaded successfully! You can now ask questions about GitterTier.");
-                    userInput.disabled = false;
-                    sendBtn.disabled = false;
-                    userInput.placeholder = "Ask a question about GitterTier...";
-                    
-                } catch (error) {
-                    console.error('Error fetching repository data:', error);
-                    addMessage("Sorry, I encountered an error while fetching the repository data. Please try again later.", false);
-                    addMessage(`Error details: ${error.message}`, false);
-                }
-            }
-            
-            // Function to process user question and generate response
-            function processQuestion(question) {
-                question = question.toLowerCase();
-                
-                // Check for specific question patterns and provide answers based on repository data
-                if (question.includes('what is') || question.includes('gittertier')) {
-                    if (fileContents['README']) {
-                        // Extract the description from README
-                        const descriptionMatch = fileContents['README'].match(/#.*\n+([^#]*)/);
-                        if (descriptionMatch && descriptionMatch[1]) {
-                            return `GitterTier is: ${descriptionMatch[1].trim()}`;
-                        }
-                    }
-                    return "GitterTier appears to be a GitHub repository. I couldn't fetch a detailed description, but you can check the repository directly at https://github.com/Kleiner-Nobody/gittertier";
-                
-                } else if (question.includes('license') || question.includes('licence')) {
-                    if (fileContents['LICENSE']) {
-                        return `The repository is licensed under:\n\`\`\`\n${fileContents['LICENSE']}\n\`\`\``;
-                    }
-                    return "I couldn't find the license information. Please check the repository directly.";
-                
-                } else if (question.includes('package.json') || question.includes('dependencies')) {
-                    if (fileContents['package.json']) {
-                        try {
-                            const packageInfo = JSON.parse(fileContents['package.json']);
-                            let response = `Project: ${packageInfo.name || 'N/A'}\n`;
-                            response += `Description: ${packageInfo.description || 'N/A'}\n`;
-                            response += `Version: ${packageInfo.version || 'N/A'}\n`;
-                            
-                            if (packageInfo.dependencies) {
-                                response += `Dependencies: ${Object.keys(packageInfo.dependencies).join(', ')}`;
-                            }
-                            
-                            return response;
-                        } catch (e) {
-                            return "I found package.json but couldn't parse it correctly.";
-                        }
-                    }
-                    return "I couldn't find the package.json file.";
-                
-                } else if (question.includes('readme') || question.includes('documentation')) {
-                    if (fileContents['README']) {
-                        // Return first 500 characters of README
-                        return `Here's part of the README:\n\n${fileContents['README'].substring(0, 500)}...`;
-                    }
-                    return "I couldn't find the README file.";
-                
-                } else if (question.includes('how to run') || question.includes('how to use') || question.includes('install')) {
-                    if (fileContents['README']) {
-                        // Look for installation or usage instructions in README
-                        const usageMatch = fileContents['README'].match(/(##.*(Installation|Usage|How to).*?##)(.*?)(?:##|$)/si);
-                        if (usageMatch && usageMatch[3]) {
-                            return `Here are the instructions:\n\n${usageMatch[3].trim()}`;
-                        }
-                    }
-                    return "Check the README.md file for installation and usage instructions.";
-                
-                } else {
-                    // Generic response for other questions
-                    return "I've fetched the repository data, but I'm not sure how to answer that specific question. You can ask about what GitterTier is, its license, dependencies, or how to use it. The repository contains " + 
-                           Object.keys(fileContents).join(', ') + " among other files.";
-                }
-            }
-            
-            // Function to handle user input
-            function handleUserInput() {
-                const question = userInput.value.trim();
-                if (question === '') return;
-                
-                // Add user message to chat
-                addMessage(question, true);
-                
-                // Clear input
-                userInput.value = '';
-                
-                // Show typing indicator
-                const typingIndicator = showTypingIndicator();
-                
-                // Process question and generate response with a slight delay
-                setTimeout(() => {
-                    // Remove typing indicator
-                    typingIndicator.remove();
-                    
-                    // Process question and generate response
-                    const response = processQuestion(question);
-                    
-                    // Add AI response to chat
-                    addMessage(response);
-                }, 1500);
-            }
-            
-            // Event listeners
-            sendBtn.addEventListener('click', handleUserInput);
-            
-            userInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    handleUserInput();
-                }
-            });
-            
-            // Initialize by fetching repository data
-            fetchRepositoryData();
-        });
+        }, 1500);
+    }
+
+    // End the game and show results
+    function endGame() {
+        gameState.gameActive = false;
+        
+        // Update completion screen
+        document.getElementById('final-score').textContent = gameState.score;
+        document.getElementById('correct-guesses').textContent = Math.floor(gameState.score / 10);
+        document.getElementById('longest-streak').textContent = gameState.longestStreak;
+        
+        // Show completion screen, hide game UI
+        document.getElementById('game-completion').style.display = 'block';
+        document.querySelector('.product-card').style.display = 'none';
+        document.querySelector('.game-buttons').style.display = 'none';
+        document.getElementById('game-feedback').style.display = 'none';
+    }
+
+    // Restart the game
+    function restartGame() {
+        initGame();
+    }
+
+    // Open the game modal
+    function openGame() {
+        document.getElementById('game-modal').style.display = 'block';
+        initGame();
+    }
+
+    // Close the game modal
+    function closeGame() {
+        document.getElementById('game-modal').style.display = 'none';
+    }
+
+    // Check online status and redirect if online
+
+    // Add event listeners for online/offline status
+    window.addEventListener('online', checkOnlineStatus);
+    window.addEventListener('offline', checkOnlineStatus);
+
+    // Initial check
+    checkOnlineStatus();
     </script>
 </body>
 </html>
