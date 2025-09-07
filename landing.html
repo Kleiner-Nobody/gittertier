@@ -1,999 +1,1833 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>gittertier pro — Landing</title>
-<meta name="theme-color" content="#2563eb">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gittertier Pro - Modernes Kassensystem</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --color-primary: #2563eb;
+        --color-primary-dark: #1d4ed8;
+        --color-secondary: #16a34a;
+        --color-accent: #c5a47e;
+        --color-text: #111827;
+        --color-text-light: #6b7280;
+        --color-bg: #ffffff;
+        --color-bg-light: #f9fafb;
+        --color-bg-dark: #111827;
+        
+        --radius: 20px;
+        --radius-sm: 10px;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 6px 12px -4px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.15), 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+        
+        --spacing-xs: 12px;
+        --spacing-sm: 16px;
+        --spacing-md: 24px;
+        --spacing-lg: 36px;
+        --spacing-xl: 48px;
+        --spacing-xxl: 64px;
+        
+        --transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        --transition-slow: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+        
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        --text-xs: 0.85rem;
+        --text-sm: 1rem;
+        --text-base: 1.1rem;
+        --text-lg: 1.3rem;
+        --text-xl: 1.6rem;
+        --text-2xl: 2rem;
+        --text-3xl: 2.5rem;
+        --text-4xl: 3.2rem;
+        --text-5xl: 4rem;
+    }
 
-<!-- 
-  COMPLETE landing.html
-  - Self-contained: creates manifest and service-worker dynamically (so you can drop only this file on a static host and it'll register SW + manifest)
-  - Mobile-first install modal pages (Android / iOS / Desktop with browser cards)
-  - Startup splash animation: the cart (vector SVG included inline) rushes over the animated app-title text at enormous speed
-  - "Install" button triggers native beforeinstallprompt if available; also shows guidance cards per platform
-  - Uses an embedded SVG for crisp logo rendering
-  - Accessible attributes (role/aria) and keyboard handling
-  - This file intentionally includes a lot of comments and helpful debug/placeholder code so you can adapt it.
--->
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-<style>
-  /* ========================================================================
-     BASIC THEME & RESET
-     ======================================================================== */
-  :root{
-    --bg:#f4f8ff;
-    --card-bg: #ffffff;
-    --fg: #0b1220;
-    --muted: #475569;
-    --primary:#2563eb;
-    --accent:#16a34a;
-    --glass: rgba(255,255,255,0.65);
-    --shadow: 0 8px 24px rgba(2,6,23,0.08);
-    --radius:16px;
-    --card-radius:12px;
-    --safe-pad: env(safe-area-inset-bottom,16px);
-    --max-modal-vh: 72vh;
-    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
-  }
-  html,body{height:100%; margin:0; padding:0; background:var(--bg); color:var(--fg); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
-  *{box-sizing:border-box}
-  img,svg{max-width:100%;height:auto;display:block}
-  button{font-family:inherit}
-  a{color:inherit}
+    body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.6;
+        overflow-x: hidden;
+        padding-bottom: env(safe-area-inset-bottom);
+        font-size: var(--text-base);
+    }
 
-  /* ========================================================================
-     HEADER
-     ======================================================================== */
-  header{
-    position:fixed; top:0; left:0; right:0; height:72px; display:flex; align-items:center;
-    justify-content:space-between; padding:10px 16px; z-index:60;
-    background:linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
-    backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(2,6,23,0.04);
-  }
-  .brand{display:flex; gap:12px; align-items:center; font-weight:800; font-size:18px; color:var(--primary)}
-  .brand svg{width:36px;height:36px}
-  .header-actions{display:flex; gap:8px; align-items:center}
+    /* Header Styles */
+    header {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-md);
+        background-color: var(--color-bg);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+    }
 
-  .btn{
-    display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;
-    padding:10px 14px; border-radius:12px; font-weight:700; background:var(--primary); color:white;
-    box-shadow: 0 8px 20px rgba(37,99,235,0.12);
-  }
-  .btn.ghost{background:transparent;border:2px solid rgba(37,99,235,0.10); color:var(--primary); box-shadow:none}
-  .btn.small{padding:8px 10px;border-radius:10px;font-size:14px}
-  .close-small{background:transparent;border:none;font-size:18px;color:#94a3b8; padding:6px; border-radius:8px; cursor:pointer}
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-weight: 800;
+        font-size: var(--text-lg);
+        color: var(--color-primary);
+    }
 
-  main{padding-top:92px; max-width:1100px; margin:0 auto}
+    .logo i {
+        font-size: var(--text-xl);
+    }
 
-  /* ========================================================================
-     HERO AND STARTUP OVERLAY (SPLASH)
-     ======================================================================== */
-  .hero{
-    min-height:calc(100vh - 92px); display:flex; align-items:center; justify-content:center; padding:40px 18px;
-    position:relative; overflow:hidden;
-  }
-  .hero-inner{text-align:center; max-width:820px}
-  h1{font-size:34px; margin:0 0 12px; line-height:1.02; font-weight:900}
-  p.lead{margin:0 0 20px; color:var(--muted)}
+    .nav-toggle {
+        display: none;
+        background: none;
+        border: none;
+        font-size: var(--text-xl);
+        color: var(--color-text);
+        cursor: pointer;
+        padding: var(--spacing-sm);
+        z-index: 101;
+    }
 
-  /* STARTUP overlay that plays on first load */
-  #startup-overlay{
-    position:fixed; inset:0; background:linear-gradient(180deg,#071026 0%, rgba(7,16,38,0.85) 85%); z-index:120;
-    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:18px; color:white;
-    -webkit-font-smoothing:antialiased;
-  }
-  .startup-inner{width:100%; max-width:960px; padding:28px; text-align:center}
-  .startup-title{font-weight:900; font-size:44px; letter-spacing:0.6px; margin-bottom:6px}
-  .startup-sub{opacity:.92;color:rgba(255,255,255,0.95); font-weight:600}
+    .nav-links {
+        display: flex;
+        gap: var(--spacing-md);
+    }
 
-  /* Loading row with animated text and cart SVG */
-  .loading-row{position:relative; width:100%; height:120px; display:flex; align-items:center; justify-content:center; overflow:visible}
-  .loading-text{
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    font-weight:900; font-size:58px; line-height:1; letter-spacing:-1px;
-    color:transparent; background: linear-gradient(90deg,#60a5fa,#0ea5a0); -webkit-background-clip:text;
-    z-index:2; text-transform:lowercase;
-    text-shadow: 0 8px 18px rgba(2,6,23,0.12);
-  }
-  /* The cart will be an inline SVG positioned absolutely and animated via CSS keyframes */
-  .cart-wrapper{ position:absolute; top:50%; left:-40%; transform:translateY(-50%); z-index:3; pointer-events:none }
-  .cart-svg{ width:120px; height:84px; display:block; filter: drop-shadow(0 12px 18px rgba(2,6,23,0.35)); opacity:0.98 }
-  .cart-trail{ position:absolute; top:50%; left:-40%; transform:translateY(-50%); z-index:1; width:160px; height:48px; border-radius:10px; background:linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02)); filter: blur(8px); opacity:0 }
+    .nav-link {
+        color: var(--color-text);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius);
+    }
 
-  /* Keyframes for hyper-speed cart movement (very fast) */
-  @keyframes cart-zoom {
-    0%   { left:-40%; transform:translateY(-50%) scale(0.6) rotate(-8deg); opacity:0; filter:blur(1px) }
-    6%   { opacity:1; filter:drop-shadow(0 16px 24px rgba(2,6,23,0.30)) }
-    35%  { left:36%; transform:translateY(-50%) scale(1.06) rotate(0deg) }
-    66%  { left:82%; transform:translateY(-50%) scale(0.96) rotate(6deg) }
-    100% { left:130%; transform:translateY(-50%) scale(0.78) rotate(12deg); opacity:0; filter:blur(2px) }
-  }
-  @keyframes trail-fade {
-    0% { left:-40%; opacity:0; width:140px }
-    18%{ opacity:0.55; left:16%; width:420px }
-    55%{ opacity:0.22; left:64%; width:760px }
-    100%{ opacity:0 }
-  }
+    .nav-link:hover {
+        color: var(--color-primary);
+        background-color: rgba(37, 99, 235, 0.1);
+    }
 
-  /* small screens adjustments */
-  @media (max-width:420px){
-    .loading-text{font-size:28px}
-    .startup-title{font-size:26px}
-    .cart-svg{width:84px;height:60px}
-    .loading-row{height:88px}
-  }
+    .cta-button {
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        box-shadow: var(--shadow-md);
+    }
 
-  /* ========================================================================
-     INSTALL SHELL (modal pages)
-     - mobile-first: anchored bottom, scrollable, smaller vertical footprint
-     ======================================================================== */
-  .install-shell{
-    position:fixed; inset:0; z-index:100; display:flex; align-items:flex-end; justify-content:center; pointer-events:none;
-    transition:opacity .28s ease;
-  }
-  .install-backdrop{
-    position:absolute; inset:0; background:linear-gradient(180deg, rgba(2,6,23,0.45), rgba(2,6,23,0.55)); opacity:0; transition:opacity .28s; pointer-events:auto;
-  }
-  .install-shell.open .install-backdrop{ opacity:1 }
+    .cta-button:hover {
+        background-color: var(--color-primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
 
-  .install-card{
-    position:relative; width:100%; max-width:820px; border-radius:18px 18px 8px 8px;
-    background:linear-gradient(180deg,var(--card-bg), #fbfdff); margin:0 12px 12px 12px; box-shadow:var(--shadow);
-    transform:translateY(36px); transition:transform .32s, opacity .28s; pointer-events:auto;
-    max-height: var(--max-modal-vh); overflow:auto; padding:16px;
-  }
-  .install-shell.open .install-card{ transform:translateY(0) }
+    /* Hero Section */
+    .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: calc(80px + var(--spacing-xxl)) var(--spacing-md) var(--spacing-xxl);
+        background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+        position: relative;
+        overflow: hidden;
+    }
 
-  .card-head{ display:flex; align-items:center; gap:12px; justify-content:space-between }
-  .card-title{ font-weight:800; font-size:16px }
-  .card-sub{ color:var(--muted); font-size:13px }
+    .hero-content {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+        z-index: 10;
+        position: relative;
+    }
 
-  .install-page{ display:none; padding:12px 0 }
-  .install-page.active{ display:block }
+    .hero-title {
+        font-size: var(--text-4xl);
+        font-weight: 900;
+        margin-bottom: var(--spacing-lg);
+        line-height: 1.2;
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+        overflow: hidden;
+    }
 
-  .info-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
-  .info-card{ background:#f8fafc; border-radius:12px; padding:12px; font-size:13px; box-shadow:0 6px 14px rgba(2,6,23,0.04) }
-  .info-card h4{ margin:0 0 6px; font-size:14px }
-  .info-card p{ margin:0; color:#475569; font-size:13px; line-height:1.35 }
+    .hero-title span {
+        position: relative;
+        display: inline-block;
+    }
 
-  @media (max-width:520px){
-    .info-grid{ grid-template-columns:1fr }
-    .install-card{ border-radius:12px; padding-bottom: calc(var(--safe-pad) + 12px) }
-  }
+    .hero-cart-animation {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        font-size: 2rem;
+        color: var(--color-primary);
+        z-index: 5;
+        animation: raceAcrossText 3s infinite;
+        opacity: 0;
+    }
 
-  /* small helpers */
-  .muted{ font-size:13px; color:var(--muted) }
-  .row{ display:flex; gap:10px; align-items:center }
-  .space{ flex:1 }
+    @keyframes raceAcrossText {
+        0% {
+            left: 0;
+            opacity: 0;
+            transform: translateY(-50%) translateX(-100%);
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            left: 100%;
+            opacity: 0;
+            transform: translateY(-50%) translateX(0%);
+        }
+    }
 
-  .card-actions{ display:flex; gap:8px; margin-top:12px; justify-content:flex-end; flex-wrap:wrap }
+    .hero-subtitle {
+        font-size: var(--text-lg);
+        color: var(--color-text-light);
+        margin-bottom: var(--spacing-xl);
+        padding: 0 var(--spacing-sm);
+    }
 
-  .system-badge{ display:inline-flex; gap:8px; align-items:center; background:rgba(37,99,235,0.08); color:var(--primary); padding:6px 10px; border-radius:999px; font-weight:700; font-size:13px }
+    .hero-buttons {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 
-  /* desktop: center card */
-  @media (min-width:880px){
-    .install-shell{ align-items:center }
-    .install-card{ width:520px; border-radius:12px; max-height:80vh }
-  }
+    .primary-btn {
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        padding: var(--spacing-md) var(--spacing-xl);
+        font-weight: 700;
+        font-size: var(--text-lg);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: var(--shadow-md);
+    }
 
-  /* small subtle animations for card highlight when showing browser cards */
-  .info-card.highlight{ box-shadow: 0 18px 40px rgba(37,99,235,0.14); transform:translateY(-4px); transition: all 240ms cubic-bezier(.2,.9,.2,1) }
+    .primary-btn:hover {
+        background-color: var(--color-primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
 
-  /* ========================================================================
-     FOOTER
-     ======================================================================== */
-  footer{ padding:24px 16px; text-align:center; color:var(--muted); font-size:13px }
+    .secondary-btn {
+        background-color: transparent;
+        color: var(--color-primary);
+        border: 2px solid var(--color-primary);
+        border-radius: var(--radius);
+        padding: var(--spacing-md) var(--spacing-xl);
+        font-weight: 700;
+        font-size: var(--text-lg);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
 
-  /* ========================================================================
-     ACCESSIBILITY: focus outline (visible when using keyboard)
-     ======================================================================== */
-  :focus{ outline: 3px solid rgba(37,99,235,0.16); outline-offset:3px; border-radius:8px }
-</style>
+    .secondary-btn:hover {
+        background-color: rgba(37, 99, 235, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Install Card Section */
+    .install-section {
+        padding: var(--spacing-xxl) var(--spacing-md);
+        background: linear-gradient(135deg, #e6f0ff 0%, #f0f4ff 100%);
+        text-align: center;
+    }
+
+    .device-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-lg);
+        justify-content: center;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .device-card {
+        background: white;
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        box-shadow: var(--shadow-lg);
+        flex: 1;
+        min-width: 300px;
+        max-width: 380px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: var(--transition);
+    }
+
+    .device-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .device-icon {
+        font-size: 3rem;
+        color: var(--color-primary);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .device-title {
+        font-size: var(--text-xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .device-description {
+        color: var(--color-text-light);
+        margin-bottom: var(--spacing-lg);
+        flex-grow: 1;
+    }
+
+    .device-button {
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        width: 100%;
+        justify-content: center;
+    }
+
+    .device-button:hover {
+        background-color: var(--color-primary-dark);
+        transform: translateY(-2px);
+    }
+
+    /* Floating Carts Animation */
+    .floating-carts {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .floating-cart {
+        position: absolute;
+        font-size: 32px;
+        color: var(--color-primary);
+        opacity: 0.6;
+        animation: float 15s infinite linear;
+    }
+
+    .floating-cart:nth-child(1) {
+        top: 15%;
+        left: 5%;
+        animation-delay: 0s;
+        animation-duration: 25s;
+        font-size: 40px;
+    }
+
+    .floating-cart:nth-child(2) {
+        top: 65%;
+        left: 85%;
+        animation-delay: 2s;
+        animation-duration: 20s;
+        color: var(--color-secondary);
+    }
+
+    .floating-cart:nth-child(3) {
+        top: 35%;
+        left: 3%;
+        animation-delay: 4s;
+        animation-duration: 30s;
+        color: var(--color-accent);
+        font-size: 48px;
+    }
+
+    .floating-cart:nth-child(4) {
+        top: 75%;
+        left: 65%;
+        animation-delay: 1s;
+        animation-duration: 18s;
+        color: #f59e0b;
+    }
+
+    .floating-cart:nth-child(5) {
+        top: 25%;
+        left: 92%;
+        animation-delay: 3s;
+        animation-duration: 22s;
+        color: #ef4444;
+    }
+
+    @keyframes float {
+        0% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+        25% {
+            transform: translate(20px, 40px) rotate(5deg);
+        }
+        50% {
+            transform: translate(0, 80px) rotate(0deg);
+        }
+        75% {
+            transform: translate(-20px, 40px) rotate(-5deg);
+        }
+        100% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+    }
+
+    /* Features Section */
+    .features {
+        padding: var(--spacing-xxl) var(--spacing-md);
+        background-color: var(--color-bg);
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: var(--text-3xl);
+        font-weight: 800;
+        margin-bottom: var(--spacing-xxl);
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        background: var(--color-bg);
+        border-radius: var(--radius);
+        padding: var(--spacing-xl);
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+        text-align: center;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .feature-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .feature-icon {
+        width: 100px;
+        height: 100px;
+        background: rgba(37, 99, 235, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--spacing-lg);
+        transition: var(--transition);
+    }
+
+    .feature-card:hover .feature-icon {
+        background: rgba(37, 99, 235, 0.2);
+        transform: scale(1.1);
+    }
+
+    .feature-icon i {
+        font-size: var(--text-2xl);
+        color: var(--color-primary);
+    }
+
+    .feature-title {
+        font-size: var(--text-xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .feature-description {
+        color: var(--color-text-light);
+        font-size: var(--text-lg);
+    }
+
+    /* Demo Section */
+    .demo {
+        padding: var(--spacing-xxl) var(--spacing-md);
+        background: linear-gradient(135deg, #e6f0ff 0%, #f0f4ff 100%);
+        text-align: center;
+    }
+
+    .demo-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .demo-image {
+        width: 100%;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition-slow);
+        transform: perspective(1000px) rotateX(5deg) rotateY(5deg);
+    }
+
+    .demo-image:hover {
+        transform: perspective(1000px) rotateX(0) rotateY(0) scale(1.02);
+    }
+
+    /* CTA Section */
+    .cta-section {
+        padding: var(--spacing-xxl) var(--spacing-md);
+        background: var(--color-primary);
+        color: white;
+        text-align: center;
+    }
+
+    .cta-title {
+        font-size: var(--text-3xl);
+        font-weight: 800;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .cta-subtitle {
+        font-size: var(--text-lg);
+        margin-bottom: var(--spacing-xl);
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .white-btn {
+        background-color: white;
+        color: var(--color-primary);
+        border: none;
+        border-radius: var(--radius);
+        padding: var(--spacing-md) var(--spacing-xl);
+        font-weight: 700;
+        font-size: var(--text-lg);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .white-btn:hover {
+        background-color: #f0f0f0;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: var(--transition);
+        padding: var(--spacing-md);
+    }
+
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        width: 100%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        transform: translateY(20px);
+        transition: var(--transition);
+    }
+
+    .modal-overlay.active .modal {
+        transform: translateY(0);
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .modal-title {
+        font-size: var(--text-xl);
+        font-weight: 700;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text-light);
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+    }
+
+    .modal-close:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        color: var(--color-text);
+    }
+
+    .modal-content {
+        padding: var(--spacing-lg);
+    }
+
+    /* Compact Device Selection */
+    .compact-device-selection {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .compact-device-option {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--spacing-md);
+        border: 2px solid #e5e7eb;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
+        min-width: 0;
+    }
+
+    .compact-device-option:hover {
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+    }
+
+    .compact-device-option.active {
+        border-color: var(--color-primary);
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    .compact-device-icon {
+        font-size: 2rem;
+        color: var(--color-primary);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .compact-device-name {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        text-align: center;
+    }
+
+    .compact-device-desc {
+        font-size: var(--text-xs);
+        color: var(--color-text-light);
+        text-align: center;
+    }
+
+    /* Tutorial Steps */
+    .tutorial-steps {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .step {
+        display: flex;
+        align-items: flex-start;
+        text-align: left;
+        background: var(--color-bg-light);
+        border-radius: var(--radius-sm);
+        padding: var(--spacing-md);
+        box-shadow: var(--shadow);
+    }
+
+    .step-number {
+        background-color: var(--color-primary);
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-right: var(--spacing-md);
+        flex-shrink: 0;
+        font-size: var(--text-sm);
+    }
+
+    .step-content {
+        flex: 1;
+    }
+
+    .step-title {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        font-size: var(--text-base);
+    }
+
+    .step-description {
+        color: var(--color-text-light);
+        margin-bottom: var(--spacing-sm);
+        font-size: var(--text-sm);
+    }
+
+    .step-action {
+        margin-top: var(--spacing-sm);
+    }
+
+    .step-btn {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: var(--text-xs);
+        transition: var(--transition);
+    }
+
+    .step-btn:hover {
+        background-color: var(--color-primary-dark);
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-lg);
+        position: relative;
+        padding: 0 var(--spacing-xs);
+    }
+
+    .progress-bar::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: var(--spacing-xs);
+        right: var(--spacing-xs);
+        height: 3px;
+        background: #e5e7eb;
+        transform: translateY(-50%);
+        z-index: 1;
+        border-radius: 2px;
+    }
+
+    .progress-step {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        font-weight: 700;
+        transition: var(--transition);
+        font-size: var(--text-xs);
+    }
+
+    .progress-step.active {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    /* Navigation Arrows */
+    .step-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: var(--spacing-lg);
+    }
+
+    .nav-arrow {
+        background: var(--color-primary);
+        color: white;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: var(--text-base);
+    }
+
+    .nav-arrow:hover {
+        background: var(--color-primary-dark);
+    }
+
+    .nav-arrow:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    /* Security Note */
+    .security-note {
+        background-color: #FEF3C7;
+        border-left: 4px solid #F59E0B;
+        padding: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        text-align: left;
+        font-size: var(--text-xs);
+    }
+
+    .security-note h4 {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-xs);
+        color: #92400E;
+        font-size: var(--text-xs);
+    }
+
+    .security-note p {
+        color: #92400E;
+        font-size: var(--text-xs);
+    }
+
+    /* Browser Specific Cards */
+    .browser-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--spacing-sm);
+        margin: var(--spacing-md) 0;
+    }
+
+    .browser-card {
+        background: var(--color-bg-light);
+        border-radius: var(--radius-sm);
+        padding: var(--spacing-sm);
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .browser-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .browser-card.active {
+        background: rgba(37, 99, 235, 0.1);
+        border: 2px solid var(--color-primary);
+    }
+
+    .browser-icon {
+        font-size: 1.5rem;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .browser-name {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        font-size: var(--text-xs);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .floating-carts {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        :root {
+            --text-4xl: 2.5rem;
+            --text-3xl: 2rem;
+            --text-2xl: 1.7rem;
+            --text-xl: 1.4rem;
+            --text-lg: 1.2rem;
+            --text-base: 1.1rem;
+            --spacing-xl: 36px;
+            --spacing-xxl: 48px;
+        }
+
+        .nav-toggle {
+            display: block;
+        }
+
+        .nav-links {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            background: white;
+            flex-direction: column;
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-lg);
+            gap: 0;
+            transform: translateY(-100%);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-slow);
+            border-radius: 0 0 var(--radius) var(--radius;
+        }
+
+        .nav-links.active {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-link {
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            margin-bottom: var(--spacing-xs);
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: var(--text-3xl);
+        }
+
+        .hero-subtitle {
+            font-size: var(--text-base);
+        }
+
+        .primary-btn, .secondary-btn, .device-button, .white-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .hero-buttons, .cta-buttons {
+            flex-direction: column;
+        }
+
+        .step {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .step-number {
+            margin-right: 0;
+            margin-bottom: var(--spacing-sm);
+            align-self: center;
+        }
+
+        .compact-device-selection {
+            flex-direction: column;
+        }
+
+        .modal-content {
+            padding: var(--spacing-md);
+        }
+    }
+
+    @media (max-width: 480px) {
+        :root {
+            --spacing-md: 20px;
+            --spacing-lg: 28px;
+            --spacing-xl: 36px;
+            --spacing-xxl: 48px;
+        }
+
+        header {
+            padding: 0 var(--spacing-sm);
+        }
+
+        .hero {
+            padding: calc(80px + var(--spacing-xl)) var(--spacing-sm) var(--spacing-xl);
+        }
+
+        .features, .demo, .cta-section, .install-section {
+            padding: var(--spacing-xl) var(--spacing-sm);
+        }
+
+        .progress-step {
+            width: 20px;
+            height: 20px;
+            font-size: var(--text-xs);
+        }
+
+        .nav-arrow {
+            width: 40px;
+            height: 40px;
+        }
+
+        .step {
+            padding: var(--spacing-sm);
+        }
+
+        .modal-header {
+            padding: var(--spacing-md);
+        }
+    }
+
+    /* Animation Keyframes */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(-20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Utility Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .animate-slideIn {
+        animation: slideIn 0.6s ease-out forwards;
+    }
+
+    /* Hidden class for toggling */
+    .hidden {
+        display: none;
+    }
+    </style>
 </head>
 <body>
-
-<header>
-  <div class="brand" aria-hidden="false" aria-label="gittertier pro brand">
-    <!-- Inline SVG cart logo (stylistically matches the uploaded image) -->
-    <svg viewBox="0 0 120 84" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="gittertier pro logo">
-      <g fill="none" stroke="#0b1220" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-        <!-- basket -->
-        <path d="M18 18h60l12 36-6 18H36" />
-        <!-- handle -->
-        <path d="M78 18l12-20" />
-        <!-- base bar -->
-        <path d="M24 66h62" />
-        <!-- wheels -->
-        <circle cx="42" cy="72" r="6" fill="#0b1220" />
-        <circle cx="78" cy="72" r="6" fill="#0b1220" />
-      </g>
-    </svg>
-    <div style="display:flex;flex-direction:column;">
-      <span style="font-weight:900; font-size:18px; color:var(--primary); line-height:1;">gittertier pro</span>
-      <small style="color:var(--muted); margin-top:2px;">modernes kassensystem</small>
-    </div>
-  </div>
-
-  <div class="header-actions">
-    <button class="btn ghost" id="demo-btn"><svg width="16" height="16" viewBox="0 0 24 24" style="opacity:.9"><path d="M3 22V2l18 10z" fill="currentColor"/></svg> Demo</button>
-    <button class="btn" id="open-install"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2v12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 15v4H5v-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Installieren</button>
-  </div>
-</header>
-
-<main>
-  <section class="hero" role="main" aria-label="Landing hero">
-    <div class="hero-inner">
-      <h1>Modernes Kassensystem für den Einzelhandel</h1>
-      <p class="lead">Schnelle Kassen, sauberer Belegfluss und einfache Bedienung — mit Gittertier Pro verwandelst du jedes Gerät in eine Kasse.</p>
-
-      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:18px">
-        <button class="btn" id="start-app"><i style="font-style:normal">▶</i> App starten</button>
-        <button class="btn ghost" id="open-install-2"><i style="font-style:normal">⇩</i> Anleitung</button>
-      </div>
-
-      <div style="height:28px"></div>
-
-      <!-- Quick features area -->
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:12px">
-        <div style="background:white;border-radius:12px;padding:12px;box-shadow:var(--shadow)">
-          <strong>Scan & Pay</strong>
-          <div class="muted" style="margin-top:6px">Schnelle Barcodes, sofortiger Checkout</div>
+    <header>
+        <button class="nav-toggle" id="nav-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="logo">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Gittertier Pro</span>
         </div>
-        <div style="background:white;border-radius:12px;padding:12px;box-shadow:var(--shadow)">
-          <strong>Offline-ready</strong>
-          <div class="muted" style="margin-top:6px">Funktioniert auch ohne Internet dank PWA-Caching</div>
+        
+        <nav class="nav-links" id="nav-links">
+            <a href="#features" class="nav-link">Funktionen</a>
+            <a href="#demo" class="nav-link">Demo</a>
+            <a href="#install" class="nav-link">Installieren</a>
+            <a href="#contact" class="nav-link">Kontakt</a>
+        </nav>
+        
+        <button class="cta-button" id="install-btn">
+            <i class="fas fa-download"></i>
+            Installieren
+        </button>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span>Modernes Kassensystem für Ihren Einzelhandel</span>
+                <i class="fas fa-shopping-cart hero-cart-animation"></i>
+            </h1>
+            <p class="hero-subtitle">Scannen, bezahlen, fertig. Die intuitive Lösung für moderne Händler mit QR-Code-Scanner, Warenkorb und digitalem Beleg.</p>
+            <div class="hero-buttons">
+                <button class="primary-btn" id="start-app">
+                    <i class="fas fa-play"></i>
+                    App starten
+                </button>
+                <button class="secondary-btn" id="demo-btn">
+                    <i class="fas fa-eye"></i>
+                    Demo ansehen
+                </button>
+            </div>
         </div>
-        <div style="background:white;border-radius:12px;padding:12px;box-shadow:var(--shadow)">
-          <strong>Cross-platform</strong>
-          <div class="muted" style="margin-top:6px">Smartphone, Tablet oder Desktop — alles bereit</div>
+        
+        <!-- Floating carts animation -->
+        <div class="floating-carts">
+            <div class="floating-cart"><i class="fas fa-shopping-cart"></i></div>
+            <div class="floating-cart"><i class="fas fa-shopping-basket"></i></div>
+            <div class="floating-cart"><i class="fas fa-cart-arrow-down"></i></div>
+            <div class="floating-cart"><i class="fas fa-cart-plus"></i></div>
+            <div class="floating-cart"><i class="fas fa-cash-register"></i></div>
         </div>
-      </div>
+    </section>
 
-    </div>
-  </section>
-</main>
-
-<!-- STARTUP overlay (plays on first load, uses the custom SVG cart defined below) -->
-<div id="startup-overlay" aria-hidden="false" role="dialog" aria-label="Startup animation">
-  <div class="startup-inner" role="img" aria-label="gittertier pro start animation">
-    <div class="loading-row" aria-hidden="true">
-      <div class="cart-trail" id="cart-trail"></div>
-
-      <div class="cart-wrapper" id="cart-wrapper" aria-hidden="true">
-        <!-- Crisp inline cart SVG (matches style of the brand) -->
-        <svg class="cart-svg" viewBox="0 0 120 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 18h60l12 36-6 18H36" />
-            <path d="M78 18l12-20" />
-            <path d="M24 66h62" />
-            <circle cx="42" cy="72" r="6" fill="#ffffff" />
-            <circle cx="78" cy="72" r="6" fill="#ffffff" />
-          </g>
-        </svg>
-      </div>
-
-      <div class="loading-text">gittertier pro</div>
-    </div>
-
-    <div style="height:8px"></div>
-    <div class="startup-sub">Lädt …</div>
-  </div>
-</div>
-
-<!-- INSTALL SHELL: multiple pages inside a mobile-first bottom card -->
-<div class="install-shell" id="install-shell" aria-hidden="true">
-  <div class="install-backdrop" id="install-backdrop" tabindex="-1"></div>
-
-  <div class="install-card" role="dialog" aria-modal="true" aria-labelledby="install-title" aria-describedby="install-desc">
-    <div class="card-head">
-      <div style="display:flex; gap:10px; align-items:center;">
-        <div class="system-badge" id="sys-badge"><svg width="14" height="14" viewBox="0 0 24 24" style="opacity:.95"><path d="M12 2v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="sys-text">System</span></div>
-      </div>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button class="close-small" id="close-install" title="Schließen" aria-label="Schließen Modal">✕</button>
-      </div>
-    </div>
-
-    <!-- Android page -->
-    <div class="install-page" id="page-android" aria-hidden="true">
-      <div id="install-title" class="card-title">Android — native Installation</div>
-      <div class="card-sub" id="install-desc">Empfohlen für Android-Smartphones</div>
-
-      <div style="margin-top:12px" class="muted">Kurzanleitung</div>
-      <ol style="margin:8px 0 0 18px; color:#334155; font-size:14px; line-height:1.5">
-        <li>Datei herunterladen (APK) oder über Play Store bereitstellen.</li>
-        <li>Erlaube in den Einstellungen "Unbekannte Apps installieren" von dem jeweiligen Browser.</li>
-        <li>APK öffnen und installieren.</li>
-        <li>App starten, Berechtigungen bestätigen.</li>
-      </ol>
-
-      <div style="margin-top:12px" class="row">
-        <button class="btn small" id="android-download"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2v12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> APK herunterladen</button>
-        <div class="space"></div>
-        <button class="btn ghost small" id="android-more">Mehr</button>
-      </div>
-    </div>
-
-    <!-- iOS page -->
-    <div class="install-page" id="page-ios" aria-hidden="true">
-      <div class="card-title">iOS / iPadOS — Web-App (PWA)</div>
-      <div class="card-sub">Installieren über Safari → "Zum Home-Bildschirm"</div>
-
-      <div style="margin-top:12px" class="muted">Schritte</div>
-      <ol style="margin:8px 0 0 18px; color:#334155; font-size:14px; line-height:1.5">
-        <li>Öffnen Sie diese Seite in <strong>Safari</strong> (nicht Chrome).</li>
-        <li>Tippen Sie auf das Teilen-Symbol und wählen Sie "Zum Home-Bildschirm".</li>
-        <li>Namen bestätigen und hinzufügen. Die App startet nun als eigenständige Anwendung.</li>
-      </ol>
-
-      <div style="margin-top:12px" class="row">
-        <button class="btn small" id="ios-open-safari">Anleitung öffnen</button>
-        <div class="space"></div>
-        <button class="btn ghost small" id="ios-more">Tipps</button>
-      </div>
-    </div>
-
-    <!-- Desktop page with browser cards -->
-    <div class="install-page" id="page-desktop" aria-hidden="true">
-      <div class="card-title">Desktop / Browser</div>
-      <div class="card-sub">Wählen Sie die Anleitung für Ihren Browser</div>
-
-      <div style="margin-top:12px" class="muted">Browserspezifische Schritte</div>
-      <div class="info-grid" style="margin-top:10px">
-        <div class="info-card" id="card-chrome">
-          <h4>Chrome / Edge (Chromium)</h4>
-          <p>Menü → Weitere Tools → "Verknüpfung erstellen" → "Als Fenster öffnen" aktivieren → Erstellen. Alternativ: Drei Punkte → "Installieren" wenn PWA verfügbar.</p>
+    <!-- Install Section -->
+    <section class="install-section" id="install">
+        <h2 class="section-title">Installieren auf Ihrem Gerät</h2>
+        <div class="device-cards" id="device-cards">
+            <!-- Cards will be dynamically inserted here -->
         </div>
+    </section>
 
-        <div class="info-card" id="card-firefox">
-          <h4>Firefox</h4>
-          <p>Firefox unterstützt PWA nicht in allen Betriebssystemen. Legen Sie ein Lesezeichen an oder erstellen Sie eine Systemverknüpfung.</p>
+    <section class="features" id="features">
+        <h2 class="section-title">Leistungsstarke Funktionen</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-barcode"></i>
+                </div>
+                <h3 class="feature-title">Barcode-Scanner</h3>
+                <p class="feature-description">Scannen Sie Produkte blitzschnell mit Ihrer Kamera und fügen Sie sie automatisch zum Warenkorb hinzu.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h3 class="feature-title">QR-Code Zahlung</h3>
+                <p class="feature-description">Generieren Sie QR-Codes für sichere und kontaktlose Zahlungen Ihrer Kunden.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <h3 class="feature-title">Digitale Belege</h3>
+                <p class="feature-description">Erstellen Sie professionelle Belege in verschiedenen Designs und teilen Sie sie digital.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3 class="feature-title">Mobile Nutzung</h3>
+                <p class="feature-description">Nutzen Sie die App auf jedem Gerät – ob Smartphone, Tablet oder Desktop.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <h3 class="feature-title">Offline-Fähig</h3>
+                <p class="feature-description">Arbeiten Sie auch ohne Internetverbindung – Daten werden automatisch synchronisiert.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">Verkaufsstatistiken</h3>
+                <p class="feature-description">Behalten Sie Ihre Verkäufe im Blick mit übersichtlichen Statistiken und Auswertungen.</p>
+            </div>
         </div>
+    </section>
 
-        <div class="info-card" id="card-safari">
-          <h4>Safari (macOS)</h4>
-          <p>Safari bietet kein vollwertiges PWA-Install-UI wie Chrome. Verwenden Sie "Teilen" → "Zum Schreibtisch hinzufügen" oder erstellen Sie eine App-Shell über Werbe-/Developer-Tools.</p>
+    <section class="demo" id="demo">
+        <h2 class="section-title">So einfach funktioniert's</h2>
+        <div class="demo-container">
+            <img src="https://placehold.co/1000x600/2563eb/ffffff?text=Gittertier+Pro+Demo" alt="Gittertier Pro Demo" class="demo-image">
         </div>
+    </section>
 
-        <div class="info-card" id="card-other">
-          <h4>Andere</h4>
-          <p>Erstellen Sie ein Lesezeichen oder verwenden Sie das Browser-Menü → "Zum Desktop hinzufügen" / "Installieren", sofern verfügbar.</p>
+    <section class="cta-section">
+        <h2 class="cta-title">Starten Sie noch heute</h2>
+        <p class="cta-subtitle">Verbessern Sie Ihren Verkaufsprozess mit der modernen Kassensoftware, die sich an Ihre Bedürfnisse anpasst.</p>
+        <div class="cta-buttons">
+            <button class="primary-btn" id="cta-install-btn">
+                <i class="fas fa-download"></i>
+                Jetzt installieren
+            </button>
+            <button class="white-btn" id="cta-demo-btn">
+                <i class="fas fa-play-circle"></i>
+                Demo starten
+            </button>
         </div>
-      </div>
+    </section>
 
-      <div style="margin-top:12px" class="row">
-        <div class="space"></div>
-        <button class="btn small" id="desktop-more">Mehr</button>
-      </div>
+    <!-- Modal for Installation -->
+    <div class="modal-overlay" id="install-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Installationsmethode wählen</h2>
+                <button class="modal-close" id="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <!-- Device Selection -->
+                <div class="compact-device-selection" id="device-selection">
+                    <div class="compact-device-option" data-device="android">
+                        <i class="fab fa-android compact-device-icon"></i>
+                        <div class="compact-device-name">Android</div>
+                        <div class="compact-device-desc">APK herunterladen und installieren</div>
+                    </div>
+                    <div class="compact-device-option" data-device="ios">
+                        <i class="fab fa-apple compact-device-icon"></i>
+                        <div class="compact-device-name">iPhone & iPad</div>
+                        <div class="compact-device-desc">Als Web-App installieren</div>
+                    </div>
+                    <div class="compact-device-option" data-device="desktop">
+                        <i class="fas fa-desktop compact-device-icon"></i>
+                        <div class="compact-device-name">Desktop</div>
+                        <div class="compact-device-desc">Für Browser installieren</div>
+                    </div>
+                </div>
+
+                <!-- Tutorial Content (initially hidden) -->
+                <div id="tutorial-content" class="hidden">
+                    <!-- Android Tutorial -->
+                    <div id="android-tutorial" class="hidden">
+                        <div class="progress-bar">
+                            <div class="progress-step active">1</div>
+                            <div class="progress-step">2</div>
+                            <div class="progress-step">3</div>
+                            <div class="progress-step">4</div>
+                        </div>
+                        
+                        <div class="tutorial-steps">
+                            <div class="step active">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Unbekannte Quellen aktivieren</h3>
+                                    <p class="step-description">Gehen Sie zu Einstellungen → Sicherheit und aktivieren Sie "Unbekannte Quellen".</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Download vorbereiten</h3>
+                                    <p class="step-description">Stellen Sie sicher, dass Sie genug Speicherplatz haben (mindestens 10 MB).</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">APK herunterladen</h3>
+                                    <p class="step-description">Laden Sie die Installationsdatei auf Ihr Android-Gerät herunter.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Installation abschließen</h3>
+                                    <p class="step-description">Öffnen Sie die heruntergeladene Datei und folgen Sie den Anweisungen.</p>
+                                    <div class="step-action">
+                                        <button class="step-btn" id="android-download-final">
+                                            <i class="fas fa-download"></i>
+                                            Jetzt herunterladen (5,61 MB)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-navigation">
+                            <button class="nav-arrow" id="android-prev-btn" disabled>
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <button class="nav-arrow" id="android-next-btn">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="security-note">
+                            <h4><i class="fas fa-shield-alt"></i> Sicherheitshinweis</h4>
+                            <p>Unsere App wird regelmäßig auf Sicherheitslücken überprüft. Die Installation aus unbekannten Quellen ist nur für vertrauenswürdige Apps wie Gittertier Pro sicher.</p>
+                        </div>
+                    </div>
+
+                    <!-- iOS Tutorial -->
+                    <div id="ios-tutorial" class="hidden">
+                        <div class="tutorial-steps">
+                            <div class="step active">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Safari öffnen</h3>
+                                    <p class="step-description">Öffnen Sie diese Seite in Safari. Andere Browser unterstützen die Installation nicht.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Teilen-Menü öffnen</h3>
+                                    <p class="step-description">Tippen Sie auf das Teilen-Symbol (Quadrat mit Pfeil nach oben) am unteren Bildschirmrand.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Zum Home-Bildschirm hinzufügen</h3>
+                                    <p class="step-description">Scrollen Sie nach unten und wählen Sie "Zum Home-Bildschirm hinzufügen".</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Hinzufügen bestätigen</h3>
+                                    <p class="step-description">Bestätigen Sie den Namen und tippen Sie auf "Hinzufügen". Die App erscheint auf Ihrem Home-Bildschirm.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-navigation">
+                            <button class="nav-arrow" id="ios-prev-btn" disabled>
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <button class="nav-arrow" id="ios-next-btn">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="security-note">
+                            <h4><i class="fas fa-info-circle"></i> Hinweis</h4>
+                            <p>Die Web-App funktioniert auch offline und bietet ähnliche Funktionen wie eine native App.</p>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Tutorial -->
+                    <div id="desktop-tutorial" class="hidden">
+                        <h3 style="margin: var(--spacing-md) 0; text-align: center;">Wählen Sie Ihren Browser:</h3>
+                        
+                        <div class="browser-cards">
+                            <div class="browser-card active" data-browser="chrome">
+                                <div class="browser-icon">
+                                    <i class="fab fa-chrome"></i>
+                                </div>
+                                <div class="browser-name">Chrome</div>
+                            </div>
+                            <div class="browser-card" data-browser="edge">
+                                <div class="browser-icon">
+                                    <i class="fab fa-edge"></i>
+                                </div>
+                                <div class="browser-name">Edge</div>
+                            </div>
+                            <div class="browser-card" data-browser="firefox">
+                                <div class="browser-icon">
+                                    <i class="fab fa-firefox"></i>
+                                </div>
+                                <div class="browser-name">Firefox</div>
+                            </div>
+                            <div class="browser-card" data-browser="safari">
+                                <div class="browser-icon">
+                                    <i class="fab fa-safari"></i>
+                                </div>
+                                <div class="browser-name">Safari</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tutorial Steps (Chrome as default) -->
+                        <div class="tutorial-steps" id="chrome-steps">
+                            <div class="step active">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Menü öffnen</h3>
+                                    <p class="step-description">Klicken Sie auf das Drei-Punkte-Menü in der oberen rechten Ecke des Browsers.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Installieren auswählen</h3>
+                                    <p class="step-description">Wählen Sie die Option "Gittertier Pro installieren" aus dem Menü.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h3 class="step-title">Bestätigen</h3>
+                                    <p class="step-description">Bestätigen Sie die Installation im darauf erscheinenden Dialog.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step-navigation">
+                            <button class="nav-arrow" id="desktop-prev-btn" disabled>
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <button class="nav-arrow" id="desktop-next-btn">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="security-note">
+                            <h4><i class="fas fa-info-circle"></i> Hinweis</h4>
+                            <p>Die Desktop-Installation erstellt eine Verknüpfung auf Ihrem Computer, über die Sie die App direkt starten können.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Fallback / Choose -->
-    <div class="install-page" id="page-fallback" aria-hidden="true">
-      <div class="card-title">Allgemeine Hinweise</div>
-      <div class="card-sub">Wählen Sie Ihr Gerät für eine kurze Anleitung</div>
-
-      <div style="margin-top:12px">
-        <button class="btn small" id="goto-ios"><svg width="12" height="12" viewBox="0 0 24 24" style="opacity:.95"><path d="M12 2v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> iOS Anleitung</button>
-        <button class="btn small" id="goto-android"><svg width="12" height="12" viewBox="0 0 24 24" style="opacity:.95"><path d="M12 2v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Android Anleitung</button>
-        <button class="btn small" id="goto-desktop"><svg width="12" height="12" viewBox="0 0 24 24" style="opacity:.95"><path d="M3 7h18v10H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Desktop Anleitung</button>
-      </div>
-    </div>
-
-    <div class="card-actions" role="toolbar" aria-label="Modal actions">
-      <button class="btn ghost small" id="dismiss-install">Später</button>
-      <button class="btn small" id="help-open">Hilfe</button>
-    </div>
-
-  </div>
-</div>
-
-<footer>
-  © <span id="year"></span> gittertier pro — Alle Rechte vorbehalten.
-</footer>
-
-<!-- ========================================================================
-     Inline scripts: manifest & service-worker are created dynamically so
-     landing.html is self-contained. The manifest points start_url to /index.html
-     which ensures the installed PWA launches the app page (index.html), not the landing page.
-     ======================================================================== -->
-<script>
-/* =========================================================================
-   UTILS & BOOTSTRAP
-   ========================================================================= */
-(function(){
-  document.getElementById('year').textContent = new Date().getFullYear();
-})();
-
-/* =========================================================================
-   DYNAMIC MANIFEST CREATION
-   - Creates a blob URL for the manifest so we don't need a separate file.
-   - The manifest.start_url intentionally uses an absolute path to index.html
-     (so when user installs the PWA, the app opens index.html).
-   ========================================================================= */
-(function createManifest(){
-  try {
-    const manifest = {
-      name: "gittertier pro",
-      short_name: "gittertier",
-      start_url: "/index.html",
-      scope: "/",
-      display: "standalone",
-      background_color: "#ffffff",
-      theme_color: "#2563eb",
-      orientation: "portrait-primary",
-      icons: [
-        { src: "/assets/logo-192.png", type: "image/png", sizes: "192x192" },
-        { src: "/assets/logo-512.png", type: "image/png", sizes: "512x512" }
-      ]
-    };
-    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-    const manifestURL = URL.createObjectURL(manifestBlob);
-
-    // Attach to DOM
-    const link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = manifestURL;
-    document.head.appendChild(link);
-
-    // Expose for debugging
-    window._generatedManifestUrl = manifestURL;
-    console.log('Dynamic manifest created', manifest);
-  } catch (err) {
-    console.warn('Could not create dynamic manifest', err);
-  }
-})();
-
-/* =========================================================================
-   SERVICE WORKER CREATION & REGISTRATION (dynamic)
-   - Creates the service worker script as a blob and registers it.
-   - Caches index.html and a minimal app-shell; update strategy is basic.
-   ========================================================================= */
-(function registerDynamicServiceWorker(){
-  if (!('serviceWorker' in navigator)) {
-    console.log('Service Workers are not supported in this browser.');
-    return;
-  }
-
-  // Service worker content as string. You can expand the files cached as needed.
-  const swCode = `
-    const CACHE_NAME = 'gittertier-cache-v1';
-    const APP_SHELL = [
-      '/index.html',
-      '/',
-      // include common assets used by the app for quick load
-      '/assets/logo-192.png',
-      '/assets/logo-512.png'
-    ];
-
-    self.addEventListener('install', event => {
-      event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-          return cache.addAll(APP_SHELL).catch(err => {
-            console.warn('Some resources failed to cache at install:', err);
-          });
-        })
-      );
-      self.skipWaiting();
-    });
-
-    self.addEventListener('activate', event => {
-      event.waitUntil(
-        caches.keys().then(keys => Promise.all(
-          keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-        ))
-      );
-      self.clients.claim();
-    });
-
-    self.addEventListener('fetch', event => {
-      // Basic network-first for navigation, cache-first for others
-      const req = event.request;
-      if (req.mode === 'navigate' || (req.method === 'GET' && req.headers.get('accept') && req.headers.get('accept').includes('text/html'))) {
-        event.respondWith(
-          fetch(req).then(res => {
-            // put a copy in cache
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-            return res;
-          }).catch(() => caches.match('/index.html'))
-        );
-        return;
-      }
-
-      // Other resources: cache-first
-      event.respondWith(
-        caches.match(req).then(cached => cached || fetch(req))
-      );
-    });
-
-    // Simple message handler for skipWaiting
-    self.addEventListener('message', event => {
-      if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-      }
-    });
-  `;
-
-  try {
-    const swBlob = new Blob([swCode], { type: 'text/javascript' });
-    const swURL = URL.createObjectURL(swBlob);
-
-    navigator.serviceWorker.register(swURL).then(reg => {
-      console.log('Dynamic service worker registered with scope:', reg.scope);
-      // Optional: listen for updates
-      reg.onupdatefound = () => {
-        const newWorker = reg.installing;
-        newWorker.onstatechange = () => {
-          if (newWorker.state === 'installed') {
-            console.log('New service worker installed.');
-          }
-        };
-      };
-    }).catch(err => {
-      console.warn('SW registration failed', err);
-    });
-
-    // Expose for debugging
-    window._generatedServiceWorkerUrl = swURL;
-  } catch (err) {
-    console.warn('Failed to create and register dynamic service worker', err);
-  }
-})();
-
-/* =========================================================================
-   STARTUP ANIMATION CONTROL
-   - Cart animation is driven by applying CSS keyframes to #cart-wrapper and #cart-trail.
-   - We play it once on load, then hide overlay for good UX.
-   ========================================================================= */
-(function startupAnimation(){
-  const overlay = document.getElementById('startup-overlay');
-  const cartWrapper = document.getElementById('cart-wrapper');
-  const cartTrail = document.getElementById('cart-trail');
-
-  function playAnimation(){
-    // Set initial inline styles then trigger keyframes via adding animation properties
-    if (!cartWrapper) return;
-    cartWrapper.style.animation = 'cart-zoom 0.9s cubic-bezier(.12,.8,.25,1) forwards';
-    cartTrail.style.animation = 'trail-fade 0.9s linear forwards';
-    // hide overlay after animation finishes
-    setTimeout(() => {
-      overlay.style.transition = 'opacity .36s ease, transform .36s ease';
-      overlay.style.opacity = '0';
-      overlay.style.transform = 'translateY(-6px)';
-      setTimeout(() => {
-        overlay.setAttribute('aria-hidden','true');
-        overlay.style.display = 'none';
-      }, 420);
-    }, 980);
-  }
-
-  // Play on DOMContentLoaded to ensure elements are ready
-  window.addEventListener('load', () => {
-    // Slight delay for a nicer effect on slower phones
-    setTimeout(playAnimation, 80);
-  });
-
-  // Allow clicking overlay to skip animation
-  overlay.addEventListener('click', () => {
-    overlay.setAttribute('aria-hidden','true');
-    overlay.style.display = 'none';
-  });
-})();
-
-/* =========================================================================
-   INSTALL MODAL LOGIC & PLATFORM DETECTION
-   - Shows the appropriate modal page for Android, iOS or Desktop browsers.
-   - Detects browsers to highlight relevant instructions for Desktop.
-   ========================================================================= */
-(function installModal(){
-  const shell = document.getElementById('install-shell');
-  const backdrop = document.getElementById('install-backdrop');
-  const openButtons = Array.from(document.querySelectorAll('#open-install, #open-install-2'));
-  const closeBtn = document.getElementById('close-install');
-  const dismissBtn = document.getElementById('dismiss-install');
-  const pages = {
-    android: document.getElementById('page-android'),
-    ios: document.getElementById('page-ios'),
-    desktop: document.getElementById('page-desktop'),
-    fallback: document.getElementById('page-fallback')
-  };
-  const sysBadge = document.getElementById('sys-badge');
-  const sysText = document.getElementById('sys-text');
-
-  function isAndroid(){ return /android/i.test(navigator.userAgent); }
-  function isIOS(){
-    return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  }
-  function browserName(){
-    const ua = navigator.userAgent;
-    if (/Edg\\//.test(ua)) return 'edge';
-    if (/OPR\\//.test(ua) || /Opera\\//.test(ua)) return 'opera';
-    if (/Chrome\\//.test(ua) && !/Chromium/.test(ua) && !/OPR\\//.test(ua) && !/Edg\\//.test(ua)) return 'chrome';
-    if (/Firefox\\//.test(ua)) return 'firefox';
-    if (/Safari\\//.test(ua) && !/Chrome\\//.test(ua) && !/Chromium/.test(ua)) return 'safari';
-    return 'other';
-  }
-
-  function showPage(name){
-    Object.keys(pages).forEach(k => {
-      pages[k].classList.remove('active');
-      pages[k].setAttribute('aria-hidden','true');
-    });
-    const page = pages[name] || pages.fallback;
-    page.classList.add('active');
-    page.setAttribute('aria-hidden','false');
-  }
-
-  function openInstall(){
-    shell.classList.add('open');
-    shell.setAttribute('aria-hidden','false');
-
-    if (isAndroid()){
-      sysText.textContent = 'Android';
-      sysBadge.querySelector('svg').innerHTML = '<path d=\"M3 12h18\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" />';
-      showPage('android');
-    } else if (isIOS()){
-      sysText.textContent = 'iOS / iPadOS';
-      sysBadge.querySelector('svg').innerHTML = '<path d=\"M3 3h18v18H3z\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" />';
-      showPage('ios');
-    } else {
-      sysText.textContent = 'Desktop';
-      sysBadge.querySelector('svg').innerHTML = '<path d=\"M3 7h18v10H3z\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" />';
-      showPage('desktop');
-      // Highlight browser card
-      const b = browserName();
-      const map = { chrome: 'card-chrome', edge: 'card-chrome', opera: 'card-chrome', firefox:'card-firefox', safari:'card-safari', other:'card-other' };
-      const id = map[b] || 'card-other';
-      document.querySelectorAll('.info-card').forEach(c => c.classList.remove('highlight'));
-      const el = document.getElementById(id);
-      if (el) el.classList.add('highlight');
-    }
-
-    // Prevent background scroll
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeInstall(){
-    shell.classList.remove('open');
-    shell.setAttribute('aria-hidden','true');
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-    document.querySelectorAll('.info-card').forEach(c => c.classList.remove('highlight'));
-  }
-
-  openButtons.forEach(b => { if (b) b.addEventListener('click', openInstall); });
-  closeBtn && closeBtn.addEventListener('click', closeInstall);
-  dismissBtn && dismissBtn.addEventListener('click', closeInstall);
-  backdrop && backdrop.addEventListener('click', closeInstall);
-
-  document.getElementById('goto-ios').addEventListener('click', () => { showPage('ios'); sysText.textContent = 'iOS / iPadOS'; });
-  document.getElementById('goto-android').addEventListener('click', () => { showPage('android'); sysText.textContent = 'Android'; });
-  document.getElementById('goto-desktop').addEventListener('click', () => { showPage('desktop'); sysText.textContent = 'Desktop'; });
-
-  // Example stubs for action buttons
-  document.getElementById('android-download').addEventListener('click', () => {
-    // Replace with real link to your APK
-    window.location.href = '/Gittertier-Pro.apk';
-  });
-  document.getElementById('ios-open-safari').addEventListener('click', () => {
-    alert('Öffnen Sie diese Seite in Safari und tippen Sie auf „Teilen → Zum Home-Bildschirm“');
-  });
-  document.getElementById('android-more').addEventListener('click', () => alert('Mehr Infos zur Android-Installation…'));
-  document.getElementById('ios-more').addEventListener('click', () => alert('Mehr Tipps für iOS / PWA.'));
-  document.getElementById('desktop-more').addEventListener('click', () => alert('Ausführliche Desktop-Anleitungen…'));
-  document.getElementById('help-open').addEventListener('click', () => alert('Hilfe geöffnet (Platzhalter).'));
-
-  // Escape key closes modal
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInstall(); });
-})();
-
-/* =========================================================================
-   PWA INSTALL PROMPT HANDLING
-   - Captures beforeinstallprompt event for Chromium-based browsers.
-   - Shows "Install" button and prompts user on click.
-   ========================================================================= */
-(function pwaInstallPrompt(){
-  let deferredPrompt = null;
-  const installBtn = document.getElementById('open-install'); // primary install button in header
-  const installBtn2 = document.getElementById('open-install-2'); // secondary
-
-  // hide secondary controls until prompt available
-  function showInstallUI() {
-    // show install button in header by making it visible (we keep it enabled by default)
-    // optionally, you could reveal a dedicated "Install App" control
-    console.log('Install UI available');
-  }
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    showInstallUI();
-    // For better UX, show the install modal when PWA is installable (optional)
-    // document.getElementById('install-shell').classList.add('open');
-  });
-
-  // Trigger the saved prompt when user clicks the header install button
-  installBtn && installBtn.addEventListener('click', async (ev) => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      console.log('User choice', choice);
-      deferredPrompt = null;
-    } else {
-      // Fallback: open our install modal with manual instructions
-      document.getElementById('open-install-2').click();
-    }
-  });
-
-  // Second button is used to open our modal in case prompt not available
-  installBtn2 && installBtn2.addEventListener('click', () => {
-    document.querySelector('#install-shell .install-card') && document.getElementById('open-install').dispatchEvent(new Event('click'));
-  });
-
-  // Listen for appinstalled
-  window.addEventListener('appinstalled', event => {
-    console.log('App installed', event);
-    alert('Danke! Die App wurde installiert.');
-  });
-})();
-
-/* =========================================================================
-   OPTIONAL: Auto-open install modal for first-time visitors on mobile
-   Uncomment the block to enable
-   ========================================================================= */
-/*
-(function autoOpenInstallOnce(){
-  try {
-    if (!localStorage.getItem('seenInstallModal')) {
-      // show install modal only for mobile devices to be less intrusive
-      if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        document.getElementById('open-install').click();
-        localStorage.setItem('seenInstallModal', '1');
-      }
-    }
-  } catch (err) { console.warn('Auto-open failed', err) }
-})();
-*/
-
-/* =========================================================================
-   Debug helpers (expose some internal generated URLs to window)
-   ========================================================================= */
-(function debugExpose(){
-  window.__landing_debug = {
-    manifestUrl: window._generatedManifestUrl || null,
-    swUrl: window._generatedServiceWorkerUrl || null
-  };
-  console.log('Landing debug info:', window.__landing_debug);
-})();
-</script>
-
-<!-- ========================================================================
-     Long comment block with extra guidance and notes.
-     The user requested a VERY large single file including the old modal and
-     animation content. Below are many helpful notes, snippets, and fallback
-     implementations you can copy/paste from — kept here intentionally so
-     everything is contained in one file.
-     ======================================================================== -->
-
-<!-- ========================================================================
-   SERVICE-WORKER.JS (ALTERNATIVE - copy this into a file named service-worker.js
-   at the root of your server if you prefer an actual static SW file rather than
-   the dynamic blob registration this page does).
-   ======================================================================== -->
-<script type="text/plain" id="sw-file-template">
-/*
-  Example service-worker.js (if you prefer a static file)
-  ---------------------------------------
-  const CACHE_NAME = 'gittertier-cache-v1';
-  const APP_SHELL = [
-    '/index.html',
-    '/',
-    '/assets/logo-192.png',
-    '/assets/logo-512.png'
-  ];
-
-  self.addEventListener('install', event => {
-    event.waitUntil(
-      caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
-    );
-    self.skipWaiting();
-  });
-
-  self.addEventListener('activate', event => {
-    event.waitUntil(
-      caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
-    );
-    self.clients.claim();
-  });
-
-  self.addEventListener('fetch', event => {
-    const req = event.request;
-    if (req.mode === 'navigate' || (req.method === 'GET' && req.headers.get('accept') && req.headers.get('accept').includes('text/html'))) {
-      event.respondWith(fetch(req).catch(() => caches.match('/index.html')));
-      return;
-    }
-
-    event.respondWith(caches.match(req).then(cached => cached || fetch(req)));
-  });
-*/
-</script>
-
-<!-- ========================================================================
-   manifest.json TEMPLATE (copy to manifest.json at root if you prefer a static file)
-   ======================================================================== -->
-<script type="application/json" id="manifest-template">
-{
-  "name": "gittertier pro",
-  "short_name": "gittertier",
-  "start_url": "/index.html",
-  "scope": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "orientation": "portrait-primary",
-  "icons": [
-    { "src": "/assets/logo-192.png", "type": "image/png", "sizes": "192x192" },
-    { "src": "/assets/logo-512.png", "type": "image/png", "sizes": "512x512" }
-  ]
-}
-</script>
-
-<!-- ========================================================================
-   NOTES & TROUBLESHOOTING (huge block of helpful tips)
-   - Use these instructions if PWA install doesn't show up:
-     * Ensure your site is served over HTTPS (localhost is allowed for testing)
-     * Provide a valid manifest.json and include icons in sizes 192x192 and 512x512
-     * Register a service worker that responds to fetch events (even a simple one)
-     * Ensure start_url is reachable and within the manifest scope
-     * For iOS: Safari doesn't support beforeinstallprompt, the user must add manually via "Share → Add to Home Screen"
-   - Debugging tips:
-     * Use Chrome DevTools Application panel to inspect Service Worker, Cache storage and Manifest
-     * Check console for 'beforeinstallprompt' event being fired
-     * If your start_url returns a 302 or 301 to another origin the PWA install might not be valid
-   ======================================================================== -->
-<pre style="display:none" id="long-notes">
-  ============================================================================
-  GITTERTIER PRO - INSTALLATION NOTES & TROUBLESHOOTING
-  ============================================================================
-
-  1) Why the manifest.start_url must point to /index.html (the app)
-     - When users install via the browser's PWA installer, the start_url will be
-       the first document shown when launching the installed app. Pointing it
-       to /index.html ensures the actual app (not the landing page) opens.
-
-  2) iOS specifics:
-     - Safari requires the user to use the "Share" sheet → "Add to Home Screen".
-     - There's no programmatic event for this; you must guide the user with a modal.
-     - Icon sizes: iOS ignores manifest icons. Provide apple-touch-icon link tags on the app root.
-
-  3) Android & Chromium:
-     - The 'beforeinstallprompt' event is fired when the installability criteria
-       (manifest present, service worker registered, HTTPS, not already installed)
-       are met. Save the event to call prompt() later (see code above).
-
-  4) Service Worker considerations:
-     - If you cache navigation responses, ensure you fallback to /index.html for
-       navigation requests so SPA routing works offline.
-     - Update strategy: when you deploy a new SW, consider using skipWaiting + client claims or a prompt to reload.
-
-  5) assets/logo-192.png & logo-512.png
-     - Replace the placeholder asset paths with your real icons ideally created
-       from the SVG logo at different sizes.
-
-  6) Handling multiple entry pages
-     - If you want the PWA to open on a specific subpath, set start_url accordingly.
-       But keep it under the same scope as your manifest to avoid cross-origin/scope issues.
-
-  7) Testing tip:
-     - Use Lighthouse (in Chrome DevTools Audits) to validate PWA readiness and to see missing criteria.
-
-  8) Misc
-     - When testing on local file:// the service worker will not register.
-     - Use a simple static server for testing e.g. "npx serve" or "python -m http.server 8000"
-</pre>
-
-<!-- ========================================================================
-   END OF FILE - large filler comments to reach a substantial file length
-   The user specifically asked for a long, complete landing.html; below are
-   repeated instructive comments and example snippets that you can reuse.
-   ======================================================================== -->
-<!--
-  Additional snippets / examples you may find useful:
-
-  1) Apple touch icon and meta tags (paste into <head> of your static root)
-     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
-     <meta name="apple-mobile-web-app-title" content="gittertier pro">
-     <meta name="apple-mobile-web-app-capable" content="yes">
-     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-  2) Example of an index.html skeleton (the actual app)
-     Save this as /index.html — this is what the PWA will open when installed.
-
-     <!doctype html>
-     <html lang="de">
-     <head>
-       <meta charset="utf-8">
-       <meta name="viewport" content="width=device-width,initial-scale=1">
-       <title>gittertier pro — App</title>
-       <link rel="manifest" href="/manifest.json">
-       <meta name="theme-color" content="#2563eb">
-     </head>
-     <body>
-       <h1>gittertier pro — App (Index)</h1>
-       <p>Dies ist die App-Seite, die beim Start der installierten PWA geladen wird.</p>
-       <script>
-         // If you want, you can message the service worker or handle offline
-       </script>
-     </body>
-     </html>
-
-  3) How to generate app icons from SVG (CLI examples)
-     - Using ImageMagick:
-       convert -background none logo.svg -resize 192x192 assets/logo-192.png
-       convert -background none logo.svg -resize 512x512 assets/logo-512.png
-
-  4) Example of performing SW updates gracefully:
-     navigator.serviceWorker.addEventListener('controllerchange', () => {
-       // A new SW took control — you might reload the page or show a message
-       alert('A new version is available. Bitte die Seite neu laden.');
-     });
-
-  5) Example: Force reload on new service worker:
-     if (registration.waiting) {
-       registration.waiting.postMessage({type:'SKIP_WAITING'});
-     }
-
-  6) Example: Open the installed PWA from within the site
-     // window.matchMedia('(display-mode: standalone)').matches
-     // returns true if site is running as an installed PWA (standalone)
--->
-
-<!--
-  The following commented block repeats important steps and notes in more detail
-  for server admins, DevOps, and integrators. Keep this as an internal reference.
--->
-
-<!--
-  SERVER & DEPLOYMENT NOTES
-
-  1) Serve over HTTPS
-     - Modern browsers require secure contexts (HTTPS) for service workers and PWA installability.
-     - Use Let's Encrypt or host on a platform that provides HTTPS by default (Netlify, Vercel, GitHub Pages).
-
-  2) Correct MIME types
-     - Ensure your server serves manifest.json with application/manifest+json or application/json.
-     - Ensure SW file is served with text/javascript.
-
-  3) CORS & Scope
-     - The manifest MUST be served from the same origin and path that covers the start_url for proper scope.
-     - If your landing page is under /landing/ and your app under /app/, consider placing manifest under /app/ and point start_url to /app/index.html, or place both at the root.
-
-  4) Cache strategy
-     - For catalog or frequently updated content, use stale-while-revalidate.
-     - For critical app shell resources (index.html, main.js, css), use cache-first to ensure instant loads.
-
-  5) Clean deployment
-     - When deploying new assets, update CACHE_NAME in the SW to ensure clients get fresh copies.
-     - Optionally, show an update banner to users when a new SW becomes active.
--->
-
-<!--
-  END of abundant notes and code snippets.
-  You've reached the bottom of landing.html which intentionally includes:
-    - UI with startup animation (cart SVG racing over text)
-    - Mobile-optimized install modal with auto-detection
-    - Dynamic manifest and SW blob creation (so no external files required)
-    - Helpful templates for static manifest and SW if you prefer to create files
-    - Extensive comments & guidance for troubleshooting and production deployment
-
-  Next steps:
-   1) Replace /assets/logo-192.png and /assets/logo-512.png with your real icons (or update the dynamic manifest section to point to your hosted icons).
-   2) Deploy index.html and landing.html on the same domain. When users install the app, index.html will be the start_url for the PWA (the app).
-   3) Test PWA install flow on Chrome (Android) and Safari (iOS manual flow).
-   4) If you want Lottie JSON startup animation instead of DOM/CSS, I can export a Lottie file that reproduces this SVG cart movement and text animation — tell me and I will generate it.
--->
-
+    <script>
+        // Device detection
+        function isAndroid() {
+            return /Android/i.test(navigator.userAgent);
+        }
+
+        function isIOS() {
+            return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        }
+
+        function isMobile() {
+            return isAndroid() || isIOS();
+        }
+
+        function isChrome() {
+            return /Chrome/i.test(navigator.userAgent) && !/Edg/i.test(navigator.userAgent);
+        }
+
+        function isFirefox() {
+            return /Firefox/i.test(navigator.userAgent);
+        }
+
+        function isSafari() {
+            return /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+        }
+
+        function isEdge() {
+            return /Edg/i.test(navigator.userAgent);
+        }
+
+        // Detect user's device and browser
+        function detectDevice() {
+            if (isAndroid()) return 'android';
+            if (isIOS()) return 'ios';
+            return 'desktop';
+        }
+
+        // Create device-specific cards
+        function createDeviceCards() {
+            const deviceCards = document.getElementById('device-cards');
+            const deviceType = detectDevice();
+            
+            const cards = [
+                {
+                    icon: 'fab fa-android',
+                    title: 'Android',
+                    description: 'Installieren Sie die native App auf Ihrem Android-Gerät für das beste Erlebnis.',
+                    buttonText: 'Für Android installieren',
+                    device: 'android'
+                },
+                {
+                    icon: 'fab fa-apple',
+                    title: 'iPhone & iPad',
+                    description: 'Installieren Sie Gittertier Pro als Web-App auf Ihrem iOS-Gerät.',
+                    buttonText: 'Für iOS installieren',
+                    device: 'ios'
+                },
+                {
+                    icon: 'fas fa-desktop',
+                    title: 'Desktop',
+                    description: 'Nutzen Sie Gittertier Pro auf Ihrem Computer mit jedem modernen Browser.',
+                    buttonText: 'Für Desktop installieren',
+                    device: 'desktop'
+                }
+            ];
+            
+            // Clear existing cards
+            deviceCards.innerHTML = '';
+            
+            // Add cards to the section
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'device-card';
+                if (card.device === deviceType) {
+                    cardElement.classList.add('highlighted');
+                }
+                
+                cardElement.innerHTML = `
+                    <i class="${card.icon} device-icon"></i>
+                    <h3 class="device-title">${card.title}</h3>
+                    <p class="device-description">${card.description}</p>
+                    <button class="device-button" data-device="${card.device}">
+                        <i class="fas fa-download"></i>
+                        ${card.buttonText}
+                    </button>
+                `;
+                
+                deviceCards.appendChild(cardElement);
+            });
+            
+            // Add event listeners to buttons
+            document.querySelectorAll('.device-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const device = this.getAttribute('data-device');
+                    showInstallModal(device);
+                });
+            });
+        }
+
+        // Mobile navigation toggle
+        const navToggle = document.getElementById('nav-toggle');
+        const navLinks = document.getElementById('nav-links');
+        
+        if (navToggle && navLinks) {
+            navToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                const icon = navToggle.querySelector('i');
+                
+                if (navLinks.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
+        
+        // Close mobile nav when clicking on a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                const icon = navToggle.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
+        });
+        
+        // Download APK function
+        function downloadApk() {
+            window.location.href = 'Gittertier Pro.apk';
+        }
+
+        // Show install modal
+        function showInstallModal(device = null) {
+            const modal = document.getElementById('install-modal');
+            const deviceSelection = document.getElementById('device-selection');
+            const tutorialContent = document.getElementById('tutorial-content');
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // If a device is specified, show its tutorial
+            if (device) {
+                deviceSelection.classList.add('hidden');
+                tutorialContent.classList.remove('hidden');
+                
+                // Hide all tutorials
+                document.querySelectorAll('#tutorial-content > div').forEach(tutorial => {
+                    tutorial.classList.add('hidden');
+                });
+                
+                // Show the selected tutorial
+                document.getElementById(`${device}-tutorial`).classList.remove('hidden');
+                
+                // Highlight the selected device option
+                document.querySelectorAll('.compact-device-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                document.querySelector(`.compact-device-option[data-device="${device}"]`).classList.add('active');
+                
+                // Reset tutorial to first step
+                resetTutorial(device);
+            } else {
+                // Show device selection
+                deviceSelection.classList.remove('hidden');
+                tutorialContent.classList.add('hidden');
+                
+                // Auto-select based on detected device
+                const detectedDevice = detectDevice();
+                document.querySelectorAll('.compact-device-option').forEach(option => {
+                    option.classList.remove('active');
+                    if (option.getAttribute('data-device') === detectedDevice) {
+                        option.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // Hide install modal
+        function hideInstallModal() {
+            const modal = document.getElementById('install-modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Reset tutorial to first step
+        function resetTutorial(device) {
+            const steps = document.querySelectorAll(`#${device}-tutorial .step`);
+            const progressSteps = document.querySelectorAll(`#${device}-tutorial .progress-step`);
+            const prevBtn = document.getElementById(`${device}-prev-btn`);
+            const nextBtn = document.getElementById(`${device}-next-btn`);
+            
+            if (steps.length > 0) {
+                steps.forEach((step, index) => {
+                    if (index === 0) {
+                        step.classList.add('active');
+                    } else {
+                        step.classList.remove('active');
+                    }
+                });
+            }
+            
+            if (progressSteps.length > 0) {
+                progressSteps.forEach((step, index) => {
+                    if (index === 0) {
+                        step.classList.add('active');
+                    } else {
+                        step.classList.remove('active');
+                    }
+                });
+            }
+            
+            if (prevBtn) prevBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = steps.length <= 1;
+        }
+
+        // Tutorial navigation
+        function setupTutorialNavigation(device) {
+            const steps = document.querySelectorAll(`#${device}-tutorial .step`);
+            const progressSteps = document.querySelectorAll(`#${device}-tutorial .progress-step`);
+            const prevBtn = document.getElementById(`${device}-prev-btn`);
+            const nextBtn = document.getElementById(`${device}-next-btn`);
+            
+            if (!prevBtn || !nextBtn || steps.length === 0) return;
+            
+            let currentStep = 0;
+            
+            function updateSteps() {
+                steps.forEach((step, index) => {
+                    if (index === currentStep) {
+                        step.classList.add('active');
+                    } else {
+                        step.classList.remove('active');
+                    }
+                });
+                
+                if (progressSteps.length > 0) {
+                    progressSteps.forEach((step, index) => {
+                        if (index <= currentStep) {
+                            step.classList.add('active');
+                        } else {
+                            step.classList.remove('active');
+                        }
+                    });
+                }
+                
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === steps.length - 1;
+            }
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    updateSteps();
+                }
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateSteps();
+                }
+            });
+            
+            // Initialize
+            updateSteps();
+        }
+
+        // Browser selection for desktop installation
+        function setupBrowserSelection() {
+            const browserCards = document.querySelectorAll('.browser-card');
+            const tutorialContainers = document.querySelectorAll('.tutorial-steps');
+            
+            // Hide all tutorial containers initially
+            tutorialContainers.forEach(container => {
+                container.style.display = 'none';
+            });
+            
+            // Show Chrome steps by default
+            document.getElementById('chrome-steps').style.display = 'flex';
+            
+            browserCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove active class from all cards
+                    browserCards.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked card
+                    this.classList.add('active');
+                    
+                    // Hide all tutorial containers
+                    tutorialContainers.forEach(container => {
+                        container.style.display = 'none';
+                    });
+                    
+                    // Show the selected browser's tutorial
+                    const browser = this.getAttribute('data-browser');
+                    const steps = document.getElementById(`${browser}-steps`);
+                    
+                    if (steps) {
+                        steps.style.display = 'flex';
+                    } else {
+                        // Default to Chrome if no specific tutorial exists
+                        document.getElementById('chrome-steps').style.display = 'flex';
+                    }
+                    
+                    // Reset tutorial to first step
+                    resetTutorial('desktop');
+                });
+            });
+        }
+
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create device-specific cards
+            createDeviceCards();
+            
+            // Modal close button
+            document.getElementById('modal-close').addEventListener('click', hideInstallModal);
+            
+            // Device selection in modal
+            document.querySelectorAll('.compact-device-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const device = this.getAttribute('data-device');
+                    
+                    // Show tutorial for selected device
+                    document.getElementById('device-selection').classList.add('hidden');
+                    document.getElementById('tutorial-content').classList.remove('hidden');
+                    
+                    // Hide all tutorials
+                    document.querySelectorAll('#tutorial-content > div').forEach(tutorial => {
+                        tutorial.classList.add('hidden');
+                    });
+                    
+                    // Show the selected tutorial
+                    document.getElementById(`${device}-tutorial`).classList.remove('hidden');
+                    
+                    // Reset tutorial to first step
+                    resetTutorial(device);
+                });
+            });
+            
+            // Android final download button
+            const androidDownloadFinal = document.getElementById('android-download-final');
+            if (androidDownloadFinal) {
+                androidDownloadFinal.addEventListener('click', downloadApk);
+            }
+            
+            // Install buttons
+            const installButtons = [
+                document.getElementById('install-btn'),
+                document.getElementById('cta-install-btn')
+            ];
+            
+            installButtons.forEach(button => {
+                if (button) {
+                    button.addEventListener('click', function() {
+                        showInstallModal();
+                    });
+                }
+            });
+            
+            // Demo and app start buttons
+            document.getElementById('start-app').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            document.getElementById('demo-btn').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            document.getElementById('cta-demo-btn').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            
+            // Set up tutorial navigation
+            setupTutorialNavigation('android');
+            setupTutorialNavigation('ios');
+            setupTutorialNavigation('desktop');
+            
+            // Set up browser selection
+            setupBrowserSelection();
+            
+            // Close modal when clicking outside
+            document.getElementById('install-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideInstallModal();
+                }
+            });
+            
+            // Animate feature cards on scroll
+            const featureCards = document.querySelectorAll('.feature-card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            
+            featureCards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+
+        // Add touch-friendly class to body for iOS
+        document.body.classList.add('touch-friendly');
+    </script>
 </body>
 </html>
