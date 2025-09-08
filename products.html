@@ -992,6 +992,7 @@
             const PREFIX_CUSTOMER = 'customer_';
             const KEY_OFFLINE_QUEUE = 'offlineQueue';
             const KEY_AUDIT_LOG = 'auditLog';
+            const KEY_PURCHASE_HISTORY = 'purchaseHistory';
             
             // Current version of the data schema
             const CURRENT_VERSION = 1;
@@ -1595,6 +1596,143 @@
                     }
                 },
                 
+                // NEW FUNCTION: Update product stock after purchase
+                async updateProductStock(barcode, quantityChange) {
+                    try {
+                        const product = await this.getProduct(barcode);
+                        if (!product) {
+                            throw new Error(`Product with barcode ${barcode} not found`);
+                        }
+                        
+                        // Update stock
+                        if (typeof product.stock === 'number') {
+                            product.stock = Math.max(0, product.stock - quantityChange);
+                            product.updatedAt = new Date().toISOString();
+                            
+                            // Save the updated product
+                            await this.saveProduct(product, true);
+                            
+                            // Log the stock update
+                            logAudit('updateStock', { 
+                                barcode, 
+                                quantityChange, 
+                                newStock: product.stock 
+                            });
+                            
+                            return true;
+                        }
+                        
+                        return false;
+                    } catch (error) {
+                        console.error('Failed to update product stock:', error);
+                        return false;
+                    }
+                },
+                
+                // NEW FUNCTION: Get a single product by barcode
+                async getProduct(barcode) {
+                    try {
+                        return await retrieveItem(`${PREFIX_PRODUCT}${barcode}`);
+                    } catch (error) {
+                        console.error('Failed to get product:', error);
+                        return null;
+                    }
+                },
+                
+                // NEW FUNCTION: Process a purchase and update stock
+                async processPurchase(purchaseData) {
+                    try {
+                        const { items, customerName, total, paymentMethod } = purchaseData;
+                        let successCount = 0;
+                        let errorCount = 0;
+                        
+                        // Update stock for each item
+                        for (const item of items) {
+                            if (item.barcode && item.quantity) {
+                                const success = await this.updateProductStock(item.barcode, item.quantity);
+                                if (success) {
+                                    successCount++;
+                                } else {
+                                    errorCount++;
+                                }
+                            }
+                        }
+                        
+                        // Record the purchase in history
+                        const purchaseRecord = {
+                            id: 'PUR-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+                            timestamp: new Date().toISOString(),
+                            items,
+                            customerName,
+                            total,
+                            paymentMethod,
+                            stockUpdates: { successCount, errorCount }
+                        };
+                        
+                        this.recordPurchase(purchaseRecord);
+                        
+                        // Log to audit trail
+                        logAudit('processPurchase', { 
+                            customerName, 
+                            total, 
+                            paymentMethod, 
+                            itemsCount: items.length,
+                            stockUpdates: { successCount, errorCount }
+                        });
+                        
+                        return { successCount, errorCount };
+                    } catch (error) {
+                        console.error('Failed to process purchase:', error);
+                        logAudit('processPurchaseError', { error: error.message });
+                        return { successCount: 0, errorCount: items.length };
+                    }
+                },
+                
+                // NEW FUNCTION: Record purchase in history
+                recordPurchase(purchaseData) {
+                    try {
+                        // Get current purchase history
+                        let purchaseHistory = [];
+                        const historyData = localStorage.getItem(KEY_PURCHASE_HISTORY);
+                        
+                        if (historyData) {
+                            purchaseHistory = JSON.parse(LZString.decompressFromUTF16(historyData) || []);
+                        }
+                        
+                        // Add new purchase
+                        purchaseHistory.push(purchaseData);
+                        
+                        // Keep only the last 1000 purchases
+                        if (purchaseHistory.length > 1000) {
+                            purchaseHistory = purchaseHistory.slice(-1000);
+                        }
+                        
+                        // Save back to storage
+                        localStorage.setItem(
+                            KEY_PURCHASE_HISTORY, 
+                            LZString.compressToUTF16(JSON.stringify(purchaseHistory))
+                        );
+                        
+                        return true;
+                    } catch (error) {
+                        console.error('Failed to record purchase:', error);
+                        return false;
+                    }
+                },
+                
+                // NEW FUNCTION: Get purchase history
+                async getPurchaseHistory() {
+                    try {
+                        const historyData = localStorage.getItem(KEY_PURCHASE_HISTORY);
+                        if (!historyData) return [];
+                        
+                        return JSON.parse(LZString.decompressFromUTF16(historyData) || []);
+                    } catch (error) {
+                        console.error('Failed to get purchase history:', error);
+                        return [];
+                    }
+                },
+                
                 async importProducts(file) {
                     return new Promise((resolve, reject) => {
                         const reader = new FileReader();
@@ -1841,6 +1979,10 @@
         let currentEditBarcode = null;
         const cloudUrl = "https://raw.githubusercontent.com/Kleiner-Nobody/gittertier/main/products.json";
         
+        // NEW: PeerJS for real-time communication with customer page
+        let peer = null;
+        let connections = {};
+        
         // Initialize the application
         async function initialize() {
             // Initialize storage manager
@@ -1851,9 +1993,127 @@
             renderActivityLog();
             setupEventListeners();
             
+            // Initialize PeerJS for real-time communication
+            initializePeerJS();
+            
             // Add initial activity if empty
             if(activityLog.length === 0) {
                 addActivity('Produktmanager gestartet', 'success');
+            }
+            
+            // NEW: Check for purchase data in URL parameters
+            checkForPurchaseData();
+        }
+        
+        // NEW: Initialize PeerJS for real-time communication
+        function initializePeerJS() {
+            // Create a unique ID for this admin instance
+            const adminId = 'gittertier-admin-' + Math.random().toString(36).substr(2, 8);
+            
+            peer = new Peer(adminId, {
+                debug: 2,
+                config: {
+                    'iceServers': [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                }
+            });
+            
+            peer.on('open', (id) => {
+                console.log('Admin PeerJS ID:', id);
+                // Store the ID for customer page to connect
+                localStorage.setItem('adminPeerId', id);
+            });
+            
+            peer.on('connection', (conn) => {
+                console.log('Customer connected:', conn.peer);
+                connections[conn.peer] = conn;
+                
+                conn.on('data', (data) => {
+                    console.log('Received data from customer:', data);
+                    
+                    if (data.type === 'purchase') {
+                        // Process the purchase and update stock
+                        processPurchaseFromCustomer(data.purchaseData);
+                    }
+                });
+                
+                conn.on('close', () => {
+                    console.log('Connection closed:', conn.peer);
+                    delete connections[conn.peer];
+                });
+                
+                conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                    delete connections[conn.peer];
+                });
+            });
+            
+            peer.on('error', (err) => {
+                console.error('PeerJS error:', err);
+            });
+        }
+        
+        // NEW: Process purchase data from customer page
+        async function processPurchaseFromCustomer(purchaseData) {
+            try {
+                addActivity(`Einkauf erhalten von ${purchaseData.customerName}`, 'info');
+                
+                // Process the purchase and update stock
+                const result = await storageManager.processPurchase(purchaseData);
+                
+                // Reload products to reflect stock changes
+                await loadProducts();
+                
+                // Notify customer of success
+                if (connections[purchaseData.customerId]) {
+                    connections[purchaseData.customerId].send({
+                        type: 'purchaseResult',
+                        success: result.successCount > 0,
+                        message: result.errorCount > 0 
+                            ? `Einkauf verarbeitet, aber ${result.errorCount} Produkte konnten nicht aktualisiert werden` 
+                            : 'Einkauf erfolgreich verarbeitet und Lagerbestand aktualisiert'
+                    });
+                }
+                
+                addActivity(
+                    `Einkauf von ${purchaseData.customerName} verarbeitet: ${result.successCount} Produkte aktualisiert, ${result.errorCount} Fehler`,
+                    result.errorCount === 0 ? 'success' : 'warning'
+                );
+                
+            } catch (error) {
+                console.error('Failed to process purchase from customer:', error);
+                addActivity(`Fehler bei der Verarbeitung des Einkaufs: ${error.message}`, 'error');
+                
+                // Notify customer of failure
+                if (connections[purchaseData.customerId]) {
+                    connections[purchaseData.customerId].send({
+                        type: 'purchaseResult',
+                        success: false,
+                        message: 'Fehler bei der Verarbeitung des Einkaufs'
+                    });
+                }
+            }
+        }
+        
+        // NEW: Check for purchase data in URL parameters (for direct linking)
+        function checkForPurchaseData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const purchaseDataParam = urlParams.get('purchaseData');
+            
+            if (purchaseDataParam) {
+                try {
+                    const purchaseData = JSON.parse(decodeURIComponent(purchaseDataParam));
+                    processPurchaseFromCustomer(purchaseData);
+                    
+                    // Clean URL
+                    const url = new URL(window.location);
+                    url.searchParams.delete('purchaseData');
+                    window.history.replaceState({}, document.title, url.toString());
+                } catch (error) {
+                    console.error('Failed to parse purchase data from URL:', error);
+                }
             }
         }
         
