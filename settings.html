@@ -1501,6 +1501,84 @@
                                     </select>
                                 </div>
                             </div>
+
+                                                            <!-- Cloud Sync Settings -->
+                                    <div class="settings-grid">
+                                        <div class="setting-card">
+                                            <div class="setting-title">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                <h3>Cloud-Synchronisation</h3>
+                                            </div>
+                                            <div class="setting-description">
+                                                Aktivieren Sie die automatische Synchronisation Ihrer Produkte mit der Cloud.
+                                                Ihre Daten werden sicher auf JSONBin.io gespeichert.
+                                            </div>
+                                            <div class="setting-control">
+                                                <span>Cloud-Sync aktivieren</span>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="cloudSyncSetting">
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="setting-card">
+                                            <div class="setting-title">
+                                                <i class="fas fa-sync-alt"></i>
+                                                <h3>Automatische Synchronisation</h3>
+                                            </div>
+                                            <div class="setting-description">
+                                                Produkte automatisch mit der Cloud synchronisieren, wenn Änderungen vorgenommen werden.
+                                            </div>
+                                            <div class="setting-control">
+                                                <span>Automatische Sync</span>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="autoCloudSyncSetting">
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="setting-card">
+                                            <div class="setting-title">
+                                                <i class="fas fa-key"></i>
+                                                <h3>Cloud-Verbindung</h3>
+                                            </div>
+                                            <div class="setting-description">
+                                                Status der Cloud-Verbindung und gespeicherte Bin-ID.
+                                            </div>
+                                            <div class="setting-control vertical">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="cloudBinId">Bin-ID:</label>
+                                                    <input type="text" class="form-input" id="cloudBinId" readonly>
+                                                </div>
+                                                <button class="btn btn-primary" id="testCloudConnectionBtn">
+                                                    <i class="fas fa-plug"></i> Verbindung testen
+                                                </button>
+                                                <button class="btn btn-danger" id="resetCloudConnectionBtn">
+                                                    <i class="fas fa-trash"></i> Cloud-Verbindung zurücksetzen
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="setting-card">
+                                            <div class="setting-title">
+                                                <i class="fas fa-search"></i>
+                                                <h3>Automatische Bildsuche</h3>
+                                            </div>
+                                            <div class="setting-description">
+                                                Beim Hinzufügen von Produkten automatisch nach Bildern im Internet suchen.
+                                            </div>
+                                            <div class="setting-control">
+                                                <span>Automatische Bildsuche</span>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="autoImageSearchSetting">
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             
                             <div class="setting-card">
                                 <div class="setting-title">
@@ -1533,7 +1611,7 @@
                                         </label>
                                     </div>
                                 </div>
-                            </div>
+
                             
                             <div class="setting-card">
                                 <div class="setting-title">
@@ -1578,6 +1656,7 @@
                                     </div>
                                 </div>
                             </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -2445,6 +2524,83 @@
             });
             timeDisplay.textContent = `${dateString}, ${timeString}`;
         }
+
+        // Cloud Sync settings
+const cloudSyncSetting = document.getElementById('cloudSyncSetting');
+const autoCloudSyncSetting = document.getElementById('autoCloudSyncSetting');
+const cloudBinId = document.getElementById('cloudBinId');
+const testCloudConnectionBtn = document.getElementById('testCloudConnectionBtn');
+const resetCloudConnectionBtn = document.getElementById('resetCloudConnectionBtn');
+const autoImageSearchSetting = document.getElementById('autoImageSearchSetting');
+
+// Load cloud settings
+function loadCloudSettings() {
+    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+    cloudSyncSetting.checked = settings.cloudSyncEnabled || false;
+    autoCloudSyncSetting.checked = settings.autoCloudSync || false;
+    autoImageSearchSetting.checked = settings.autoImageSearch || false;
+    
+    // Load bin ID
+    const binId = localStorage.getItem('jsonBinId') || '';
+    cloudBinId.value = binId;
+}
+
+// Save cloud settings
+function saveCloudSettings() {
+    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+    settings.cloudSyncEnabled = cloudSyncSetting.checked;
+    settings.autoCloudSync = autoCloudSyncSetting.checked;
+    settings.autoImageSearch = autoImageSearchSetting.checked;
+    
+    localStorage.setItem('appSettings', JSON.stringify(settings));
+    showStatus('Cloud-Einstellungen gespeichert', 'success');
+}
+
+// Test cloud connection
+async function testCloudConnection() {
+    const binId = localStorage.getItem('jsonBinId');
+    if (!binId) {
+        showStatus('Keine Bin-ID konfiguriert', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+            headers: {
+                'X-Master-Key': '$2a$10$3Z5YZLk5k1Q4nQ6o8q7Z1uJwKk5lM7nN8qB2cV3xXyZzA1bC4dE6fG7h'
+            }
+        });
+        
+        if (response.ok) {
+            showStatus('Cloud-Verbindung erfolgreich', 'success');
+        } else {
+            showStatus('Cloud-Verbindung fehlgeschlagen', 'error');
+        }
+    } catch (error) {
+        showStatus('Fehler bei der Cloud-Verbindung', 'error');
+    }
+}
+
+// Reset cloud connection
+function resetCloudConnection() {
+    if (confirm('Möchten Sie die Cloud-Verbindung wirklich zurücksetzen? Dies löscht die gespeicherte Bin-ID.')) {
+        localStorage.removeItem('jsonBinId');
+        cloudBinId.value = '';
+        showStatus('Cloud-Verbindung zurückgesetzt', 'success');
+    }
+}
+
+// Event listeners for cloud settings
+cloudSyncSetting.addEventListener('change', saveCloudSettings);
+autoCloudSyncSetting.addEventListener('change', saveCloudSettings);
+autoImageSearchSetting.addEventListener('change', saveCloudSettings);
+testCloudConnectionBtn.addEventListener('click', testCloudConnection);
+resetCloudConnectionBtn.addEventListener('click', resetCloudConnection);
+
+// Load cloud settings on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadCloudSettings();
+});
         
         // Update time every second
         updateTime();

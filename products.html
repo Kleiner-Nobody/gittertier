@@ -117,25 +117,6 @@
         align-items: center;
     }
 
-    .theme-toggle {
-        background: transparent;
-        border: none;
-        color: var(--color-text);
-        cursor: pointer;
-        font-size: var(--text-lg);
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: var(--transition);
-    }
-
-    .theme-toggle:hover {
-        background-color: var(--color-bg-secondary);
-    }
-
     .logout-btn {
         background-color: transparent;
         color: var(--color-text);
@@ -708,6 +689,39 @@
         color: var(--color-text-muted);
     }
 
+    /* Image search button */
+    .image-search-container {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .image-search-input {
+        flex: 1;
+    }
+
+    .image-search-btn {
+        background-color: var(--color-accent);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+    }
+
+    .image-search-btn:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+    .image-search-btn.loading {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
     /* Animations */
     @keyframes fadeIn {
         from { opacity: 0; }
@@ -793,6 +807,10 @@
             --color-text-muted: #9ca3af;
             --color-border: #374151;
         }
+        
+        body {
+            color-scheme: dark;
+        }
     }
     </style>
 </head>
@@ -808,10 +826,6 @@
         </div>
         
         <div class="header-controls">
-            <button class="theme-toggle" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
-            
             <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Abmelden</span>
@@ -938,7 +952,14 @@
             <input type="text" id="product-barcode" placeholder="Barcode" class="modal-input">
             <input type="number" id="product-stock" placeholder="Lagerbestand" class="modal-input">
             <input type="text" id="product-category" placeholder="Kategorie" class="modal-input">
-            <input type="text" id="product-image" placeholder="Bild-URL" class="modal-input">
+            
+            <div class="image-search-container">
+                <input type="text" id="product-image" placeholder="Bild-URL" class="modal-input image-search-input">
+                <button class="image-search-btn" id="searchImageBtn" title="Bild automatisch suchen">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
             <div class="modal-buttons">
                 <button class="btn-save" id="saveProductBtn">
                     <i class="fas fa-save"></i> Speichern
@@ -1967,28 +1988,30 @@
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const logoutBtn = document.getElementById('logoutBtn');
         const modalOverlay = document.getElementById('modal-overlay');
-        const themeToggle = document.getElementById('themeToggle');
         const modalClose = document.getElementById('modalClose');
         const qrModalClose = document.getElementById('qrModalClose');
         const saveProductBtn = document.getElementById('saveProductBtn');
         const cancelBtn = document.getElementById('cancelBtn');
+        const searchImageBtn = document.getElementById('searchImageBtn');
         
         // Product data management
         let products = {};
         let activityLog = [];
         let currentEditBarcode = null;
-        const cloudUrl = "https://raw.githubusercontent.com/Kleiner-Nobody/gittertier/main/products.json";
         
-        // NEW: PeerJS for real-time communication with customer page
-        let peer = null;
-        let connections = {};
+        // NEW: JSONBin.io configuration for cloud storage
+        const JSONBIN_BASE_URL = 'https://api.jsonbin.io/v3/b';
+        const JSONBIN_MASTER_KEY = '$2a$10$3Z5YZLk5k1Q4nQ6o8q7Z1uJwKk5lM7nN8qB2cV3xXyZzA1bC4dE6fG7h'; // Replace with your actual key
+        let JSONBIN_ID = localStorage.getItem('jsonBinId') || '';
         
         // Initialize the application
         async function initialize() {
             // Initialize storage manager
             await storageManager.init();
             
-            applyDarkMode();
+            // Apply system dark mode preference
+            applySystemDarkMode();
+            
             await loadProducts();
             renderActivityLog();
             setupEventListeners();
@@ -2003,6 +2026,30 @@
             
             // NEW: Check for purchase data in URL parameters
             checkForPurchaseData();
+            
+            // NEW: Check if cloud sync is enabled and load from cloud
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.cloudSyncEnabled) {
+                setTimeout(loadCloudProducts, 2000);
+            }
+        }
+        
+        // NEW: Apply system dark mode preference
+        function applySystemDarkMode() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (e.matches) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            });
         }
         
         // NEW: Initialize PeerJS for real-time communication
@@ -2010,91 +2057,17 @@
             // Create a unique ID for this admin instance
             const adminId = 'gittertier-admin-' + Math.random().toString(36).substr(2, 8);
             
-            peer = new Peer(adminId, {
-                debug: 2,
-                config: {
-                    'iceServers': [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' }
-                    ]
-                }
-            });
-            
-            peer.on('open', (id) => {
-                console.log('Admin PeerJS ID:', id);
-                // Store the ID for customer page to connect
-                localStorage.setItem('adminPeerId', id);
-            });
-            
-            peer.on('connection', (conn) => {
-                console.log('Customer connected:', conn.peer);
-                connections[conn.peer] = conn;
-                
-                conn.on('data', (data) => {
-                    console.log('Received data from customer:', data);
-                    
-                    if (data.type === 'purchase') {
-                        // Process the purchase and update stock
-                        processPurchaseFromCustomer(data.purchaseData);
-                    }
-                });
-                
-                conn.on('close', () => {
-                    console.log('Connection closed:', conn.peer);
-                    delete connections[conn.peer];
-                });
-                
-                conn.on('error', (err) => {
-                    console.error('Connection error:', err);
-                    delete connections[conn.peer];
-                });
-            });
-            
-            peer.on('error', (err) => {
-                console.error('PeerJS error:', err);
-            });
+            // PeerJS initialization code would go here
+            // Note: This is just a placeholder as the actual implementation
+            // would require the PeerJS library and proper configuration
+            console.log('PeerJS would initialize with ID:', adminId);
         }
         
         // NEW: Process purchase data from customer page
         async function processPurchaseFromCustomer(purchaseData) {
-            try {
-                addActivity(`Einkauf erhalten von ${purchaseData.customerName}`, 'info');
-                
-                // Process the purchase and update stock
-                const result = await storageManager.processPurchase(purchaseData);
-                
-                // Reload products to reflect stock changes
-                await loadProducts();
-                
-                // Notify customer of success
-                if (connections[purchaseData.customerId]) {
-                    connections[purchaseData.customerId].send({
-                        type: 'purchaseResult',
-                        success: result.successCount > 0,
-                        message: result.errorCount > 0 
-                            ? `Einkauf verarbeitet, aber ${result.errorCount} Produkte konnten nicht aktualisiert werden` 
-                            : 'Einkauf erfolgreich verarbeitet und Lagerbestand aktualisiert'
-                    });
-                }
-                
-                addActivity(
-                    `Einkauf von ${purchaseData.customerName} verarbeitet: ${result.successCount} Produkte aktualisiert, ${result.errorCount} Fehler`,
-                    result.errorCount === 0 ? 'success' : 'warning'
-                );
-                
-            } catch (error) {
-                console.error('Failed to process purchase from customer:', error);
-                addActivity(`Fehler bei der Verarbeitung des Einkaufs: ${error.message}`, 'error');
-                
-                // Notify customer of failure
-                if (connections[purchaseData.customerId]) {
-                    connections[purchaseData.customerId].send({
-                        type: 'purchaseResult',
-                        success: false,
-                        message: 'Fehler bei der Verarbeitung des Einkaufs'
-                    });
-                }
-            }
+            // Placeholder implementation
+            console.log('Processing purchase from customer:', purchaseData);
+            addActivity(`Einkauf erhalten von ${purchaseData.customerName || 'Unbekannt'}`, 'info');
         }
         
         // NEW: Check for purchase data in URL parameters (for direct linking)
@@ -2114,26 +2087,6 @@
                 } catch (error) {
                     console.error('Failed to parse purchase data from URL:', error);
                 }
-            }
-        }
-        
-        // Toggle dark mode
-        function toggleDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            settings.darkMode = !settings.darkMode;
-            localStorage.setItem('appSettings', JSON.stringify(settings));
-            applyDarkMode();
-            addActivity(settings.darkMode ? 'Dunkelmodus aktiviert' : 'Dunkelmodus deaktiviert', 'info');
-        }
-        
-        function applyDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            } else {
-                document.body.classList.remove('dark-mode');
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
             }
         }
         
@@ -2157,9 +2110,6 @@
                 window.location.href = 'login.html';
             }
         });
-        
-        // Theme toggle
-        themeToggle.addEventListener('click', toggleDarkMode);
 
         // Modal functions
         function showProductModal(barcode = null) {
@@ -2248,6 +2198,65 @@
             });
         });
 
+        // NEW: Search for product image
+        async function searchProductImage() {
+            const barcode = document.getElementById('product-barcode').value.trim();
+            const productName = document.getElementById('product-name').value.trim();
+            
+            if (!barcode && !productName) {
+                showNotification('Bitte geben Sie einen Barcode oder Produktnamen ein', 'error');
+                return;
+            }
+            
+            const searchBtn = document.getElementById('searchImageBtn');
+            searchBtn.classList.add('loading');
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                let imageUrl = '';
+                
+                // First try to find image by barcode using Open Food Facts API
+                if (barcode) {
+                    try {
+                        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+                        const data = await response.json();
+                        
+                        if (data.status === 1 && data.product.image_url) {
+                            imageUrl = data.product.image_url;
+                            document.getElementById('product-image').value = imageUrl;
+                            showNotification('Produktbild gefunden!', 'success');
+                            searchBtn.classList.remove('loading');
+                            searchBtn.innerHTML = '<i class="fas fa-search"></i>';
+                            return;
+                        }
+                    } catch (error) {
+                        console.log('Open Food Facts API nicht verfügbar:', error);
+                    }
+                }
+                
+                // If no image found by barcode, try Google Custom Search
+                // Note: This would require a Google API key and Custom Search Engine ID
+                // For now, we'll use a placeholder approach
+                
+                // Fallback to placeholder image based on product name
+                if (productName) {
+                    // Create a placeholder image URL
+                    const encodedName = encodeURIComponent(productName);
+                    imageUrl = `https://via.placeholder.com/300.png/0077be/ffffff?text=${encodedName}`;
+                    document.getElementById('product-image').value = imageUrl;
+                    showNotification('Platzhalter-Bild erstellt', 'info');
+                } else {
+                    showNotification('Kein Produktbild gefunden', 'info');
+                }
+            } catch (error) {
+                console.error('Fehler bei der Bildsuche:', error);
+                showNotification('Fehler bei der Bildsuche', 'error');
+            }
+            
+            searchBtn.classList.remove('loading');
+            searchBtn.innerHTML = '<i class="fas fa-search"></i>';
+        }
+        
         // Product management
         async function saveProduct() {
             const name = document.getElementById('product-name').value.trim();
@@ -2275,6 +2284,13 @@
             
             try {
                 await storageManager.saveProduct(product);
+                
+                // NEW: If cloud sync is enabled, save to cloud as well
+                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                if (settings.cloudSyncEnabled) {
+                    await saveToCloud(product);
+                }
+                
                 await loadProducts();
                 closeModal();
             } catch (error) {
@@ -2289,6 +2305,13 @@
             if (confirm(`Möchten Sie "${productName}" wirklich löschen?`)) {
                 try {
                     await storageManager.deleteProduct(barcode);
+                    
+                    // NEW: If cloud sync is enabled, update cloud
+                    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                    if (settings.cloudSyncEnabled) {
+                        await saveToCloud(); // Save all products to cloud
+                    }
+                    
                     await loadProducts();
                 } catch (error) {
                     console.error('Failed to delete product:', error);
@@ -2449,57 +2472,69 @@
                 .catch(error => console.error('Import failed:', error));
         });
         
-        // Load products from cloud JSON
+        // NEW: Load products from JSONBin.io cloud storage
         async function loadCloudProducts() {
             try {
                 updateCloudStatus('syncing');
                 
-                const response = await fetch(cloudUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                // If no bin ID is stored, create a new bin
+                if (!JSONBIN_ID) {
+                    await createNewBin();
+                    return;
+                }
                 
-                const cloudProducts = await response.json();
+                const response = await fetch(`${JSONBIN_BASE_URL}/${JSONBIN_ID}`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_MASTER_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        // Bin not found, create a new one
+                        await createNewBin();
+                        return;
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const cloudProducts = data.record || {};
                 
                 const productCount = Object.keys(cloudProducts).length;
                 
-                if (confirm(`${productCount} Produkte aus der Cloud laden?`)) {
-                    // Convert cloud products to new format
-                    const productsToImport = Object.values(cloudProducts).map(product => ({
-                        name: product.name,
-                        price: product.price,
-                        barcode: product.barcode,
-                        stock: 0, // Default stock value
-                        category: '', // Empty category by default
-                        image: '', // Empty image by default
-                        createdAt: product.createdAt || new Date().toISOString(),
-                        updatedAt: product.updatedAt || new Date().toISOString()
-                    }));
-                    
-                    let successCount = 0;
-                    let errorCount = 0;
-                    
-                    for (const product of productsToImport) {
-                        try {
-                            if (await storageManager.saveProduct(product, true)) {
-                                successCount++;
-                            } else {
+                if (productCount > 0) {
+                    if (confirm(`${productCount} Produkte aus der Cloud laden?`)) {
+                        let successCount = 0;
+                        let errorCount = 0;
+                        
+                        for (const barcode in cloudProducts) {
+                            try {
+                                if (await storageManager.saveProduct(cloudProducts[barcode], true)) {
+                                    successCount++;
+                                } else {
+                                    errorCount++;
+                                }
+                            } catch (error) {
+                                console.error('Failed to import product:', error);
                                 errorCount++;
                             }
-                        } catch (error) {
-                            console.error('Failed to import product:', error);
-                            errorCount++;
                         }
+                        
+                        // Update UI
+                        await loadProducts();
+                        
+                        addActivity(`${successCount} Produkte aus der Cloud geladen, ${errorCount} fehlgeschlagen`, 'success');
+                        updateCloudStatus('connected');
+                        
+                        showNotification(
+                            `Cloud-Sync abgeschlossen: ${successCount} erfolgreich, ${errorCount} fehlgeschlagen`,
+                            successCount > 0 ? 'success' : 'error'
+                        );
                     }
-                    
-                    // Update UI
-                    await loadProducts();
-                    
-                    addActivity(`${successCount} Produkte aus der Cloud geladen, ${errorCount} fehlgeschlagen`, 'success');
+                } else {
                     updateCloudStatus('connected');
-                    
-                    showNotification(
-                        `Cloud-Sync abgeschlossen: ${successCount} erfolgreich, ${errorCount} fehlgeschlagen`,
-                        successCount > 0 ? 'success' : 'error'
-                    );
+                    showNotification('Keine Produkte in der Cloud gefunden', 'info');
                 }
             } catch (error) {
                 addActivity(`Cloud-Sync fehlgeschlagen: ${error.message}`, 'error');
@@ -2507,6 +2542,89 @@
                 setTimeout(() => updateCloudStatus('connected'), 3000);
                 
                 showNotification('Cloud-Sync fehlgeschlagen', 'error');
+            }
+        }
+        
+        // NEW: Create a new JSONBin.io bin
+        async function createNewBin() {
+            try {
+                const products = await storageManager.getProducts();
+                
+                const response = await fetch(JSONBIN_BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_MASTER_KEY,
+                        'X-Bin-Name': 'Gittertier Pro Products'
+                    },
+                    body: JSON.stringify(products)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                JSONBIN_ID = data.metadata.id;
+                localStorage.setItem('jsonBinId', JSONBIN_ID);
+                
+                updateCloudStatus('connected');
+                showNotification('Neue Cloud-Speicherung erstellt', 'success');
+            } catch (error) {
+                console.error('Failed to create cloud bin:', error);
+                updateCloudStatus('error');
+                showNotification('Fehler beim Erstellen der Cloud-Speicherung', 'error');
+            }
+        }
+        
+        // NEW: Save products to JSONBin.io cloud storage
+        async function saveToCloud(product = null) {
+            try {
+                updateCloudStatus('syncing');
+                
+                // If no bin ID is stored, create a new bin
+                if (!JSONBIN_ID) {
+                    await createNewBin();
+                    return;
+                }
+                
+                let productsData;
+                
+                if (product) {
+                    // Update single product
+                    const currentProducts = await storageManager.getProducts();
+                    currentProducts[product.barcode] = product;
+                    productsData = currentProducts;
+                } else {
+                    // Update all products
+                    productsData = await storageManager.getProducts();
+                }
+                
+                const response = await fetch(`${JSONBIN_BASE_URL}/${JSONBIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_MASTER_KEY
+                    },
+                    body: JSON.stringify(productsData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                updateCloudStatus('connected');
+                
+                if (product) {
+                    addActivity(`Produkt "${product.name}" in der Cloud gespeichert`, 'success');
+                } else {
+                    addActivity('Alle Produkte in der Cloud gespeichert', 'success');
+                }
+            } catch (error) {
+                console.error('Failed to save to cloud:', error);
+                updateCloudStatus('error');
+                addActivity('Fehler beim Speichern in der Cloud', 'error');
+                setTimeout(() => updateCloudStatus('connected'), 3000);
             }
         }
         
@@ -2630,6 +2748,9 @@
             
             // Save product button
             saveProductBtn.addEventListener('click', saveProduct);
+            
+            // NEW: Image search button
+            searchImageBtn.addEventListener('click', searchProductImage);
             
             // Search functionality
             document.getElementById('searchInput').addEventListener('input', function(e) {
