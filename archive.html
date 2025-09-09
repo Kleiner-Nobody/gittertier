@@ -660,6 +660,7 @@
         margin-bottom: var(--spacing-lg);
         padding-bottom: var(--spacing-md);
         border-bottom: 1px solid var(--color-border);
+        position: relative;
     }
 
     .modal-title {
@@ -710,6 +711,8 @@
         background-color: var(--color-bg-secondary);
         padding: var(--spacing-md);
         border-radius: var(--radius);
+        border-left: 4px solid var(--color-accent);
+        box-shadow: var(--shadow);
     }
 
     .detail-section-title {
@@ -719,11 +722,18 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+        font-size: var(--text-lg);
     }
 
     .detail-row {
         display: flex;
         margin-bottom: var(--spacing-sm);
+        padding: var(--spacing-xs) 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
     }
 
     .detail-label {
@@ -736,11 +746,15 @@
     .detail-value {
         flex: 1;
         min-width: 0;
+        font-weight: 500;
     }
 
     .items-table-container {
         overflow-x: auto;
         margin: var(--spacing-lg) 0;
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow);
     }
 
     .items-table {
@@ -765,8 +779,20 @@
         border-bottom: none;
     }
 
+    .items-table tr:nth-child(even) {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .items-table tr:hover {
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
     .note-section {
         margin-top: var(--spacing-lg);
+        background-color: var(--color-bg-secondary);
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        border-left: 4px solid var(--color-warning);
     }
 
     .note-input {
@@ -780,6 +806,7 @@
         resize: vertical;
         background-color: var(--color-bg);
         color: var(--color-text);
+        transition: var(--transition);
     }
 
     .note-input:focus {
@@ -920,6 +947,39 @@
         gap: 4px;
     }
 
+    /* Receipt header with gradient */
+    .receipt-header {
+        background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+        color: white;
+        padding: var(--spacing-lg);
+        border-radius: var(--radius);
+        margin-bottom: var(--spacing-lg);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .receipt-header-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .receipt-header-id {
+        font-size: var(--text-xl);
+        font-weight: 700;
+    }
+
+    .receipt-header-date {
+        font-size: var(--text-sm);
+        opacity: 0.9;
+    }
+
+    .receipt-header-amount {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+    }
+
     /* Animations */
     @keyframes fadeIn {
         from { opacity: 0; }
@@ -945,8 +1005,7 @@
     /* Responsive Design */
     @media (max-width: 1024px) {
         .admin-sidebar {
-            transform: translateX(-100%);
-        }
+            transform: translateX(-100%);}
         
         .admin-sidebar.active {
             transform: translateX(0);
@@ -1034,6 +1093,12 @@
         
         .detail-label {
             width: 100%;
+        }
+
+        .receipt-header {
+            flex-direction: column;
+            gap: var(--spacing-md);
+            text-align: center;
         }
     }
 
@@ -1242,19 +1307,20 @@
                 <button class="close-modal" id="close-modal">&times;</button>
             </div>
             <div class="modal-body">
+                <!-- New Receipt Header -->
+                <div class="receipt-header">
+                    <div class="receipt-header-info">
+                        <div class="receipt-header-id" id="detail-id"></div>
+                        <div class="receipt-header-date" id="detail-date"></div>
+                    </div>
+                    <div class="receipt-header-amount" id="detail-total"></div>
+                </div>
+
                 <div class="detail-grid">
                     <div class="detail-section">
                         <div class="detail-section-title">
                             <i class="fas fa-info-circle"></i>
                             Beleginformationen
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Belegnummer:</div>
-                            <div class="detail-value" id="detail-id"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Datum:</div>
-                            <div class="detail-value" id="detail-date"></div>
                         </div>
                         <div class="detail-row">
                             <div class="detail-label">Status:</div>
@@ -1263,8 +1329,12 @@
                             </div>
                         </div>
                         <div class="detail-row">
-                            <div class="detail-label">Gesamtbetrag:</div>
-                            <div class="detail-value" id="detail-total"></div>
+                            <div class="detail-label">Quelle:</div>
+                            <div class="detail-value" id="detail-source"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Letzte Aktualisierung:</div>
+                            <div class="detail-value" id="detail-updated"></div>
                         </div>
                     </div>
                     
@@ -1396,6 +1466,210 @@
         let allReceipts = [];
         let cloudReceipts = [];
         let isCloudConnected = false;
+        
+        // JSONBin.io configuration
+        const JSONBIN_BASE_URL = 'https://api.jsonbin.io/v3/b';
+        const JSONBIN_API_KEY = '$2a$10$mUUdR/aOTvtnvhUEOqMRPOJ3jmOeZsKFTW4AnW9mI6DDNqf3wOdTq';
+        let JSONBIN_ID = '68c09015ae596e708fe8ad81';
+        
+        // ==================== CLOUD SYNC MANAGER ====================
+        const cloudSyncManager = (function() {
+            // Check if cloud sync is configured
+            function isConfigured() {
+                return JSONBIN_API_KEY !== 'YOUR_API_KEY_HERE' && JSONBIN_API_KEY.length > 0;
+            }
+            
+            // Create a new bin on JSONBin.io
+            async function createBin(receipts) {
+                if (!isConfigured()) {
+                    showNotification('Cloud-Sync nicht konfiguriert. Bitte API-Schlüssel eingeben.', 'error');
+                    return null;
+                }
+                
+                try {
+                    const response = await fetch(JSONBIN_BASE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Access-Key': JSONBIN_API_KEY,
+                            'X-Bin-Name': 'Gittertier Pro Receipts Archive'
+                        },
+                        body: JSON.stringify(receipts)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const binId = data.metadata.id;
+                    
+                    // Store the bin ID in localStorage
+                    localStorage.setItem('jsonBinId', binId);
+                    JSONBIN_ID = binId;
+                    
+                    showNotification('Cloud-Speicher erfolgreich erstellt', 'success');
+                    return binId;
+                } catch (error) {
+                    console.error('Error creating bin:', error);
+                    showNotification('Fehler beim Erstellen des Cloud-Speichers', 'error');
+                    return null;
+                }
+            }
+            
+            // Update the bin on JSONBin.io
+            async function updateBin(receipts) {
+                if (!isConfigured() || !JSONBIN_ID) {
+                    // Try to create a new bin if none exists
+                    const binId = await createBin(receipts);
+                    return binId !== null;
+                }
+                
+                try {
+                    const response = await fetch(`${JSONBIN_BASE_URL}/${JSONBIN_ID}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Access-Key': JSONBIN_API_KEY
+                        },
+                        body: JSON.stringify(receipts)
+                    });
+                    
+                    if (!response.ok) {
+                        // If the bin doesn't exist, create a new one
+                        if (response.status === 404) {
+                            localStorage.removeItem('jsonBinId');
+                            JSONBIN_ID = null;
+                            return await updateBin(receipts);
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    showNotification('Daten erfolgreich in der Cloud gespeichert', 'success');
+                    return true;
+                } catch (error) {
+                    console.error('Error updating bin:', error);
+                    showNotification('Fehler beim Speichern in der Cloud', 'error');
+                    return false;
+                }
+            }
+            
+            // Fetch receipts from JSONBin.io
+            async function fetchFromCloud() {
+                if (!isConfigured() || !JSONBIN_ID) {
+                    return [];
+                }
+                
+                try {
+                    const response = await fetch(`${JSONBIN_BASE_URL}/${JSONBIN_ID}/latest`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Access-Key': JSONBIN_API_KEY
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            // Bin doesn't exist, remove the ID
+                            localStorage.removeItem('jsonBinId');
+                            JSONBIN_ID = null;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const receipts = data.record || [];
+                    
+                    // Mark receipts as from cloud
+                    receipts.forEach(receipt => {
+                        receipt.source = 'cloud';
+                        receipt.synced = true;
+                    });
+                    
+                    showNotification(`${receipts.length} Belege aus der Cloud geladen`, 'success');
+                    return receipts;
+                } catch (error) {
+                    console.error('Error fetching from cloud:', error);
+                    showNotification('Fehler beim Laden aus der Cloud', 'error');
+                    return [];
+                }
+            }
+            
+            // Sync local and cloud data
+            async function syncData() {
+                if (!isConfigured()) {
+                    showNotification('Cloud-Sync nicht konfiguriert', 'error');
+                    return false;
+                }
+                
+                try {
+                    // Show syncing state
+                    const syncBtn = document.getElementById('sync-btn');
+                    syncBtn.classList.add('syncing');
+                    
+                    // Get local receipts
+                    const localReceipts = await storageManager.getReceipts();
+                    
+                    // Get cloud receipts
+                    const cloudReceipts = await fetchFromCloud();
+                    
+                    // Create a map for quick lookup
+                    const localMap = new Map(localReceipts.map(r => [r.id, r]));
+                    const cloudMap = new Map(cloudReceipts.map(r => [r.id, r]));
+                    
+                    // Merge strategy: local wins for conflicts
+                    const mergedReceipts = [...cloudReceipts];
+                    
+                    // Add local receipts that don't exist in cloud or are newer
+                    for (const localReceipt of localReceipts) {
+                        const cloudReceipt = cloudMap.get(localReceipt.id);
+                        
+                        if (!cloudReceipt) {
+                            // Local receipt doesn't exist in cloud, add it
+                            mergedReceipts.push({...localReceipt, source: 'local', synced: true});
+                        } else if (new Date(localReceipt.lastUpdated) > new Date(cloudReceipt.lastUpdated || 0)) {
+                            // Local receipt is newer, replace cloud version
+                            const index = mergedReceipts.findIndex(r => r.id === localReceipt.id);
+                            if (index !== -1) {
+                                mergedReceipts[index] = {...localReceipt, source: 'local', synced: true};
+                            }
+                        }
+                    }
+                    
+                    // Update cloud with merged data
+                    const success = await updateBin(mergedReceipts);
+                    
+                    if (success) {
+                        // Update local storage with cloud data (for read-only access)
+                        cloudReceipts = mergedReceipts.filter(r => r.source === 'cloud');
+                        
+                        // Update UI
+                        generateReceiptList([...localReceipts.map(r => ({...r, source: 'local'})), ...cloudReceipts]);
+                        
+                        showNotification('Synchronisation erfolgreich abgeschlossen', 'success');
+                        return true;
+                    }
+                    
+                    return false;
+                } catch (error) {
+                    console.error('Error during sync:', error);
+                    showNotification('Fehler während der Synchronisation', 'error');
+                    return false;
+                } finally {
+                    const syncBtn = document.getElementById('sync-btn');
+                    syncBtn.classList.remove('syncing');
+                }
+            }
+            
+            // Public API
+            return {
+                isConfigured,
+                createBin,
+                updateBin,
+                fetchFromCloud,
+                syncData
+            };
+        })();
         
         // ==================== STORAGE MANAGER IMPLEMENTATION ====================
         const storageManager = (function() {
@@ -1542,6 +1816,9 @@
                 try {
                     validateReceipt(receipt);
                     
+                    // Add last updated timestamp
+                    receipt.lastUpdated = new Date().toISOString();
+                    
                     const archive = getPaymentArchive();
                     
                     // Check if receipt already exists
@@ -1622,6 +1899,11 @@
                     // Clear the queue
                     localStorage.removeItem(KEY_OFFLINE_QUEUE);
                     
+                    // Sync with cloud
+                    if (cloudSyncManager.isConfigured()) {
+                        await cloudSyncManager.syncData();
+                    }
+                    
                     showNotification('Offline-Änderungen erfolgreich synchronisiert', 'success');
                     
                 } catch (error) {
@@ -1694,6 +1976,11 @@
                         if (success && !skipAudit) {
                             showNotification('Beleg erfolgreich gespeichert', 'success');
                             logAudit('saveReceipt', { id: receipt.id });
+                            
+                            // Sync with cloud if configured
+                            if (cloudSyncManager.isConfigured() && navigator.onLine) {
+                                await cloudSyncManager.syncData();
+                            }
                         }
                         
                         return success;
@@ -1714,6 +2001,11 @@
                         
                         if (success) {
                             showNotification('Beleg erfolgreich gelöscht', 'success');
+                            
+                            // Sync with cloud if configured
+                            if (cloudSyncManager.isConfigured() && navigator.onLine) {
+                                await cloudSyncManager.syncData();
+                            }
                         }
                         
                         return success;
@@ -1853,8 +2145,12 @@
             // Load receipts from localStorage
             loadAndDisplayReceipts();
             
-            // Load receipts from cloud
-            loadReceiptsFromCloud();
+            // Load receipts from cloud if configured
+            if (cloudSyncManager.isConfigured()) {
+                loadReceiptsFromCloud();
+            } else {
+                showNotification('Cloud-Sync nicht konfiguriert. Bitte API-Schlüssel in den Einstellungen eingeben.', 'warning');
+            }
             
             // Apply dark mode if enabled in localStorage
             applyDarkMode();
@@ -2191,7 +2487,7 @@
 
             // Sync functionality
             document.getElementById('sync-btn').addEventListener('click', function() {
-                loadReceiptsFromCloud();
+                cloudSyncManager.syncData();
             });
 
             // Filter functionality
@@ -2325,33 +2621,10 @@
                 const syncBtn = document.getElementById('sync-btn');
                 syncBtn.classList.add('syncing');
                 
-                // Simulate cloud loading (replace with actual API call)
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Mock data for demonstration
-                cloudReceipts = [
-                    {
-                        id: "CLOUD-001",
-                        date: new Date().toISOString(),
-                        amount: 49.99,
-                        status: "Bestätigt",
-                        customer: "Cloud-Kunde",
-                        note: "Dies ist ein Cloud-Beleg",
-                        source: "cloud"
-                    },
-                    {
-                        id: "CLOUD-002",
-                        date: new Date(Date.now() - 86400000).toISOString(),
-                        amount: 29.95,
-                        status: "Abgelehnt",
-                        customer: "Test-Kunde",
-                        note: "Abgelehnter Cloud-Beleg",
-                        source: "cloud"
-                    }
-                ];
+                // Fetch from cloud
+                cloudReceipts = await cloudSyncManager.fetchFromCloud();
                 
                 updateCloudStatus(true);
-                showNotification(`${cloudReceipts.length} Belege aus der Cloud geladen`, 'success');
                 
                 // Update the receipt list with cloud data
                 const localReceipts = await loadReceipts();
@@ -2360,7 +2633,6 @@
             } catch (error) {
                 console.error('Error loading cloud receipts:', error);
                 updateCloudStatus(false);
-                showNotification('Cloud-Sync fehlgeschlagen', 'error');
             } finally {
                 const syncBtn = document.getElementById('sync-btn');
                 syncBtn.classList.remove('syncing');
@@ -2458,6 +2730,18 @@
                 `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
             
             document.getElementById('detail-total').textContent = `€ ${receipt.amount.toFixed(2)}`;
+            
+            // Source info
+            document.getElementById('detail-source').textContent = receipt.source === 'cloud' ? 'Cloud' : 'Lokal';
+            
+            // Last updated info
+            if (receipt.lastUpdated) {
+                const updatedDate = new Date(receipt.lastUpdated);
+                document.getElementById('detail-updated').textContent = 
+                    `${updatedDate.toLocaleDateString('de-DE')} ${updatedDate.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
+            } else {
+                document.getElementById('detail-updated').textContent = 'Unbekannt';
+            }
             
             // Customer info
             document.getElementById('detail-customer').textContent = receipt.customer || 'Nicht angegeben';
