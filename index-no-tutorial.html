@@ -1327,19 +1327,37 @@
         }
     }
 
-    /* NEW: Search Modal Styles */
-    .search-modal {
+    /* NEW: Product Search Modal Styles */
+    .product-search-modal {
         max-width: 600px;
     }
 
-    .search-header {
-        display: flex;
-        gap: var(--spacing-sm);
+    .search-container {
+        position: relative;
         margin-bottom: var(--spacing-md);
     }
 
     .search-input {
-        flex: 1;
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-xl) var(--spacing-md) var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        transition: var(--transition);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .search-icon {
+        position: absolute;
+        right: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--color-text-muted);
     }
 
     .search-results {
@@ -1383,85 +1401,36 @@
         color: var(--color-text-muted);
     }
 
-    .cloud-search-btn {
-        background-color: var(--color-accent);
-        color: white;
-        border: none;
-        border-radius: var(--radius);
-        padding: var(--spacing-sm) var(--spacing-md);
-        font-weight: 500;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .cloud-search-btn:hover {
-        background-color: var(--color-accent-hover);
-    }
-
-    .cloud-search-btn.loading {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-
-    /* NEW: Confirmation Modal Styles */
-    .confirmation-modal {
-        max-width: 400px;
-    }
-
-    .confirmation-icon {
+    /* NEW: Clear Cart Confirmation Modal */
+    .confirm-modal {
         text-align: center;
+    }
+
+    .confirm-icon {
         font-size: 3rem;
         color: var(--color-error);
         margin-bottom: var(--spacing-md);
     }
 
-    .confirmation-message {
-        text-align: center;
+    .confirm-message {
         margin-bottom: var(--spacing-lg);
+        line-height: 1.5;
     }
 
-    /* NEW: Restore Cart Modal Styles */
+    /* NEW: Restore Cart Modal */
     .restore-modal {
-        max-width: 450px;
+        text-align: center;
     }
 
     .restore-icon {
-        text-align: center;
         font-size: 3rem;
         color: var(--color-accent);
         margin-bottom: var(--spacing-md);
     }
 
     .restore-message {
-        text-align: center;
         margin-bottom: var(--spacing-lg);
-    }
-
-    .restore-details {
-        background-color: #f9fafb;
-        border-radius: var(--radius);
-        padding: var(--spacing-md);
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .restore-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .restore-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .restore-total {
-        font-weight: 600;
-        border-top: 1px solid var(--color-border);
-        padding-top: var(--spacing-sm);
-        margin-top: var(--spacing-xs);
+        line-height: 1.5;
     }
     </style>
 </head>
@@ -1582,12 +1551,11 @@
         </div>
         <div class="modal-content">
             <p class="text-muted">Bitte geben Sie die Produktdetails ein</p>
-            <div class="search-header">
-                <input type="text" id="product-search-input" class="modal-input search-input" placeholder="Produktname oder Barcode suchen">
-                <button class="cloud-search-btn" id="search-products-btn">
-                    <i class="fas fa-search"></i>
-                </button>
+            <div class="search-container">
+                <input type="text" id="product-search-input" class="search-input" placeholder="Produkte suchen...">
+                <i class="fas fa-search search-icon"></i>
             </div>
+            <div id="search-results" class="search-results" style="display: none;"></div>
             <input type="text" id="product-name-input" class="modal-input" placeholder="Produktname">
             <input type="number" id="product-price-input" class="modal-input" placeholder="Preis (€)" step="0.01">
             <input type="text" id="product-barcode-input" class="modal-input" placeholder="Barcode" readonly>
@@ -1622,49 +1590,22 @@
         </div>
     </div>
 
-    <!-- NEW: Search Products Modal -->
-    <div id="search-modal" class="modal search-modal">
-        <div class="modal-header">
-            <h2><i class="fas fa-search"></i> Produkte suchen</h2>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
-        </div>
-        <div class="modal-content">
-            <div class="search-header">
-                <input type="text" id="search-modal-input" class="modal-input search-input" placeholder="Produktname oder Barcode">
-                <button class="cloud-search-btn" id="cloud-search-btn">
-                    <i class="fas fa-cloud"></i> Cloud-Suche
-                </button>
-            </div>
-            <div class="search-results" id="search-results">
-                <div class="no-results">Geben Sie einen Suchbegriff ein</div>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn btn-cancel" onclick="closeModal()">
-                    <i class="fas fa-times"></i> Schließen
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- NEW: Clear Cart Confirmation Modal -->
-    <div id="clear-cart-modal" class="modal confirmation-modal">
+    <div id="clear-cart-modal" class="modal confirm-modal">
         <div class="modal-header">
             <h2><i class="fas fa-trash-alt"></i> Warenkorb leeren</h2>
             <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
         <div class="modal-content">
-            <div class="confirmation-icon">
+            <div class="confirm-icon">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <div class="confirmation-message">
-                <p>Möchten Sie den Warenkorb wirklich leeren?</p>
-                <p>Diese Aktion kann nicht rückgängig gemacht werden.</p>
-            </div>
+            <p class="confirm-message">Möchten Sie wirklich den gesamten Warenkorb leeren? Dieser Vorgang kann nicht rückgängig gemacht werden.</p>
             <div class="modal-buttons">
                 <button class="modal-btn btn-cancel" onclick="closeModal()">
                     <i class="fas fa-times"></i> Abbrechen
                 </button>
-                <button class="modal-btn" style="background: var(--color-error); color: white;" onclick="confirmClearCart()">
+                <button class="modal-btn btn-save" onclick="confirmClearCart()" style="background-color: var(--color-error);">
                     <i class="fas fa-trash"></i> Leeren
                 </button>
             </div>
@@ -1679,21 +1620,35 @@
         </div>
         <div class="modal-content">
             <div class="restore-icon">
-                <i class="fas fa-cart-arrow-down"></i>
+                <i class="fas fa-shopping-cart"></i>
             </div>
-            <div class="restore-message">
-                <p>Ein gespeicherter Warenkorb wurde gefunden.</p>
-                <p>Möchten Sie diesen wiederherstellen?</p>
-            </div>
-            <div class="restore-details" id="restore-details">
-                <!-- Will be populated by JavaScript -->
-            </div>
+            <p class="restore-message">Es gibt gespeicherte Warenkorbdaten von einer vorherigen Sitzung. Möchten Sie diese wiederherstellen?</p>
             <div class="modal-buttons">
                 <button class="modal-btn btn-cancel" onclick="discardSavedCart()">
                     <i class="fas fa-times"></i> Verwerfen
                 </button>
-                <button class="modal-btn btn-save" onclick="restoreSavedCart()">
-                    <i class="fas fa-history"></i> Wiederherstellen
+                <button class="modal-btn btn-save" onclick="restoreCart()">
+                    <i class="fas fa-redo"></i> Wiederherstellen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Product Search Modal -->
+    <div id="product-search-modal" class="modal product-search-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-search"></i> Produkte suchen</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div class="search-container">
+                <input type="text" id="global-search-input" class="search-input" placeholder="Produktname oder Barcode eingeben...">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+            <div id="global-search-results" class="search-results"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">
+                    <i class="fas fa-times"></i> Schließen
                 </button>
             </div>
         </div>
@@ -1775,10 +1730,6 @@
     <div class="tutorial-error-banner" id="tutorial-error-banner"></div>
 
     <script>
-    document.getElementById('tutorial-cutout').style.display = 'none';
-            document.getElementById('tutorial-bubble').style.display = 'none';
-            document.getElementById('tutorial-continue-btn').addEventListener('click', nextTutorialStep);
-            checkTutorialStatus();
         // ==================== STORAGE MANAGER IMPLEMENTATION ====================
         const storageManager = (function() {
             // Constants for localStorage keys
@@ -2582,7 +2533,7 @@
                 
                 async exportAuditLog() {
                     try {
-                        const logData = localStorage.getItem(KEY_AUDIT_LOG);
+                        const logData = localStorage.getItem('KEY_AUDIT_LOG');
                         
                         if (!logData) {
                             showNotification('Audit-Log ist leer', 'info');
@@ -2694,32 +2645,11 @@
                 if (e.key === 'Escape') closeModal();
             });
             
-            // NEW: Check for saved cart in sessionStorage
-            checkForSavedCart();
+            // NEW: Load cart from sessionStorage if available
+            loadCartFromSession();
             
-            // NEW: Set up search functionality
-            document.getElementById('search-products-btn').addEventListener('click', function() {
-                const searchTerm = document.getElementById('product-search-input').value.trim();
-                if (searchTerm) {
-                    searchProducts(searchTerm, false);
-                }
-            });
-            
-            document.getElementById('cloud-search-btn').addEventListener('click', function() {
-                const searchTerm = document.getElementById('search-modal-input').value.trim();
-                if (searchTerm) {
-                    searchProducts(searchTerm, true);
-                }
-            });
-            
-            // NEW: Set up clear cart confirmation
-            document.getElementById('clear-cart').addEventListener('click', function() {
-                if (cart.length > 0) {
-                    showClearCartConfirmation();
-                } else {
-                    showNotification('Warenkorb ist bereits leer', 'info');
-                }
-            });
+            // NEW: Set up product search functionality
+            setupProductSearch();
             
             // Check if we need to resume a tutorial in progress
             try {
@@ -2742,98 +2672,145 @@
             }
         });
 
-        // NEW: Check for saved cart in sessionStorage
-        function checkForSavedCart() {
+        // NEW: Load cart from sessionStorage
+        function loadCartFromSession() {
             try {
                 const savedCart = sessionStorage.getItem('gittertier_cart');
                 if (savedCart) {
-                    const cartData = JSON.parse(savedCart);
-                    if (cartData.items && cartData.items.length > 0) {
-                        showRestoreCartModal(cartData);
+                    cart = JSON.parse(savedCart);
+                    updateCartDisplay();
+                    
+                    // Check if we should show the restore modal
+                    const paymentDeclined = sessionStorage.getItem('gittertier_payment_declined');
+                    if (paymentDeclined === 'true') {
+                        setTimeout(() => {
+                            showRestoreCartModal();
+                            sessionStorage.removeItem('gittertier_payment_declined');
+                        }, 1000);
                     }
                 }
             } catch (e) {
-                console.error('Failed to check for saved cart:', e);
+                console.error('Failed to load cart from sessionStorage:', e);
             }
-        }
-
-        // NEW: Show restore cart modal
-        function showRestoreCartModal(cartData) {
-            const modal = document.getElementById('restore-cart-modal');
-            const details = document.getElementById('restore-details');
-            
-            // Calculate total
-            const total = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            // Create details HTML
-            let detailsHTML = '';
-            cartData.items.forEach(item => {
-                detailsHTML += `
-                    <div class="restore-item">
-                        <span>${item.quantity}x ${item.name}</span>
-                        <span>${(item.price * item.quantity).toFixed(2)}${currencySymbol}</span>
-                    </div>
-                `;
-            });
-            
-            detailsHTML += `
-                <div class="restore-item restore-total">
-                    <span>Gesamtsumme</span>
-                    <span>${total.toFixed(2)}${currencySymbol}</span>
-                </div>
-            `;
-            
-            details.innerHTML = detailsHTML;
-            
-            // Show modal
-            modal.classList.add('active');
-            document.getElementById('modal-overlay').classList.add('active');
-        }
-
-        // NEW: Restore saved cart
-        function restoreSavedCart() {
-            try {
-                const savedCart = sessionStorage.getItem('gittertier_cart');
-                if (savedCart) {
-                    const cartData = JSON.parse(savedCart);
-                    cart = cartData.items;
-                    updateCartDisplay();
-                    showNotification('Warenkorb wiederhergestellt', 'success');
-                }
-                closeModal();
-                
-                // Clear the saved cart
-                sessionStorage.removeItem('gittertier_cart');
-            } catch (e) {
-                console.error('Failed to restore cart:', e);
-                showNotification('Fehler beim Wiederherstellen des Warenkorbs', 'error');
-            }
-        }
-
-        // NEW: Discard saved cart
-        function discardSavedCart() {
-            sessionStorage.removeItem('gittertier_cart');
-            closeModal();
-            showNotification('Warenkorb verworfen', 'info');
         }
 
         // NEW: Save cart to sessionStorage
-        function saveCartToSessionStorage() {
+        function saveCartToSession() {
             try {
-                const cartData = {
-                    items: cart,
-                    timestamp: new Date().toISOString()
-                };
-                sessionStorage.setItem('gittertier_cart', JSON.stringify(cartData));
+                sessionStorage.setItem('gittertier_cart', JSON.stringify(cart));
             } catch (e) {
                 console.error('Failed to save cart to sessionStorage:', e);
             }
         }
 
-        // NEW: Show clear cart confirmation
+        // NEW: Setup product search functionality
+        function setupProductSearch() {
+            const searchInput = document.getElementById('product-search-input');
+            const globalSearchInput = document.getElementById('global-search-input');
+            const searchResults = document.getElementById('search-results');
+            const globalSearchResults = document.getElementById('global-search-results');
+            
+            // Local search in product modal
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(function() {
+                    const query = searchInput.value.trim();
+                    if (query.length > 2) {
+                        searchProducts(query, searchResults);
+                    } else {
+                        searchResults.style.display = 'none';
+                    }
+                }, 300));
+            }
+            
+            // Global search in search modal
+            if (globalSearchInput) {
+                globalSearchInput.addEventListener('input', debounce(function() {
+                    const query = globalSearchInput.value.trim();
+                    if (query.length > 2) {
+                        searchProducts(query, globalSearchResults);
+                    } else {
+                        globalSearchResults.innerHTML = '';
+                    }
+                }, 300));
+            }
+        }
+
+        // NEW: Debounce function for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // NEW: Search products
+        function searchProducts(query, resultsContainer) {
+            const results = [];
+            const queryLower = query.toLowerCase();
+            
+            // Search in local products
+            for (const barcode in products) {
+                const product = products[barcode];
+                if (product.name.toLowerCase().includes(queryLower) || 
+                    barcode.toLowerCase().includes(queryLower)) {
+                    results.push(product);
+                }
+            }
+            
+            // Display results
+            if (results.length > 0) {
+                resultsContainer.innerHTML = results.map(product => `
+                    <div class="search-result-item" data-barcode="${product.barcode}">
+                        <div class="search-result-name">${product.name}</div>
+                        <div class="search-result-details">
+                            <span>Barcode: ${product.barcode}</span>
+                            <span>Preis: ${product.price.toFixed(2)}${currencySymbol}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                resultsContainer.style.display = 'block';
+                
+                // Add click handlers to result items
+                const resultItems = resultsContainer.querySelectorAll('.search-result-item');
+                resultItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const barcode = this.getAttribute('data-barcode');
+                        const product = products[barcode];
+                        if (product) {
+                            fillProductForm(product);
+                            resultsContainer.style.display = 'none';
+                        }
+                    });
+                });
+            } else {
+                resultsContainer.innerHTML = '<div class="no-results">Keine Produkte gefunden</div>';
+                resultsContainer.style.display = 'block';
+            }
+        }
+
+        // NEW: Fill product form with selected product
+        function fillProductForm(product) {
+            document.getElementById('product-name-input').value = product.name;
+            document.getElementById('product-price-input').value = product.price;
+            document.getElementById('product-barcode-input').value = product.barcode;
+        }
+
+        // NEW: Show product search modal
+        function showProductSearchModal() {
+            document.getElementById('product-search-modal').classList.add('active');
+            document.getElementById('modal-overlay').classList.add('active');
+            document.getElementById('global-search-input').focus();
+        }
+
+        // NEW: Show clear cart confirmation modal
         function showClearCartConfirmation() {
-            const modal = document.getElementById('clear-cart-modal');
-            modal.classList.add('active');
+            document.getElementById('clear-cart-modal').classList.add('active');
             document.getElementById('modal-overlay').classList.add('active');
         }
 
@@ -2841,11 +2818,29 @@
         function confirmClearCart() {
             cart = [];
             updateCartDisplay();
-            showNotification('Warenkorb geleert', 'success');
+            saveCartToSession();
             closeModal();
-            
-            // Also clear from sessionStorage
+            showNotification('Warenkorb geleert');
+        }
+
+        // NEW: Show restore cart modal
+        function showRestoreCartModal() {
+            document.getElementById('restore-cart-modal').classList.add('active');
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        // NEW: Restore cart from sessionStorage
+        function restoreCart() {
+            // Cart is already loaded from sessionStorage, just update display
+            updateCartDisplay();
+            closeModal();
+            showNotification('Warenkorb wiederhergestellt');
+        }
+
+        // NEW: Discard saved cart
+        function discardSavedCart() {
             sessionStorage.removeItem('gittertier_cart');
+            closeModal();
         }
 
         // Scanner Initialization
@@ -3071,9 +3066,6 @@
             
             updateCartDisplay();
             showNotification(`${currentProduct.name} hinzugefügt`);
-            
-            // NEW: Save cart to sessionStorage
-            saveCartToSessionStorage();
         }
 
         function resetScanner() {
@@ -3090,9 +3082,6 @@
                 cart.push({...product, quantity: 1});
             }
             updateCartDisplay();
-            
-            // NEW: Save cart to sessionStorage
-            saveCartToSessionStorage();
         }
 
         function updateCartDisplay() {
@@ -3113,7 +3102,7 @@
                     </div>
                     <div class="cart-item-quantity">
                         <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', -1)">−</button>
-                        <span class="quantity-value">${item.quantity}</span>
+                        <span class="quantity-value">${item.quantity</span>
                         <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', 1)">+</button>
                     </div>
                     <button class="cart-item-remove" onclick="removeCartItem('${item.barcode}')">
@@ -3125,6 +3114,9 @@
             cartTotal.textContent = total.toFixed(2) + currencySymbol;
             paymentTotal.textContent = total.toFixed(2) + currencySymbol;
             cartCount.textContent = `${cart.reduce((sum, item) => sum + item.quantity, 0)} Artikel`;
+            
+            // NEW: Save cart to sessionStorage
+            saveCartToSession();
         }
         
         function adjustCartItemQuantity(barcode, delta) {
@@ -3135,9 +3127,6 @@
                     cart = cart.filter(i => i.barcode !== barcode);
                 }
                 updateCartDisplay();
-                
-                // NEW: Save cart to sessionStorage
-                saveCartToSessionStorage();
             }
         }
         
@@ -3145,9 +3134,6 @@
             cart = cart.filter(item => item.barcode !== barcode);
             updateCartDisplay();
             showNotification('Artikel entfernt');
-            
-            // NEW: Save cart to sessionStorage
-            saveCartToSessionStorage();
         }
 
         // Product Management
@@ -3155,9 +3141,6 @@
             document.getElementById('product-barcode-input').value = barcode;
             document.getElementById('product-modal').classList.add('active');
             document.getElementById('modal-overlay').classList.add('active');
-            
-            // NEW: Clear search input
-            document.getElementById('product-search-input').value = '';
         }
 
         async function saveProduct() {
@@ -3220,8 +3203,9 @@
             try {
                 const compressedData = LZString.compressToBase64(JSON.stringify(paymentData));
                 
-                // NEW: Clear cart from sessionStorage after payment
+                // NEW: Clear sessionStorage for fresh payment
                 sessionStorage.removeItem('gittertier_cart');
+                sessionStorage.removeItem('gittertier_payment_declined');
                 
                 window.location.href = `customer?id=${encodeURIComponent(compressedData)}`;
             } catch(e) {
@@ -3334,6 +3318,7 @@
             document.getElementById('modal-overlay').classList.remove('active');
             document.getElementById('product-name-input').value = '';
             document.getElementById('product-price-input').value = '';
+            document.getElementById('search-results').style.display = 'none';
         }
 
         // Event Listeners
@@ -3348,70 +3333,8 @@
             showProductModal();
         });
         
-        // NEW: Search products function
-        function searchProducts(query, searchCloud = false) {
-            const resultsContainer = document.getElementById('search-results');
-            
-            if (!query) {
-                resultsContainer.innerHTML = '<div class="no-results">Geben Sie einen Suchbegriff ein</div>';
-                return;
-            }
-            
-            // Local search
-            const localResults = Object.values(products).filter(product => 
-                product.name.toLowerCase().includes(query.toLowerCase()) || 
-                product.barcode.includes(query)
-            );
-            
-            if (localResults.length > 0) {
-                let resultsHTML = '';
-                localResults.forEach(product => {
-                    resultsHTML += `
-                        <div class="search-result-item" data-barcode="${product.barcode}" data-name="${product.name}" data-price="${product.price}">
-                            <div class="search-result-name">${product.name}</div>
-                            <div class="search-result-details">
-                                <span>Barcode: ${product.barcode}</span>
-                                <span>Preis: ${product.price.toFixed(2)}${currencySymbol}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                resultsContainer.innerHTML = resultsHTML;
-                
-                // Add click event listeners to search results
-                document.querySelectorAll('.search-result-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const barcode = this.getAttribute('data-barcode');
-                        const name = this.getAttribute('data-name');
-                        const price = this.getAttribute('data-price');
-                        
-                        // Fill the product form
-                        document.getElementById('product-name-input').value = name;
-                        document.getElementById('product-price-input').value = price;
-                        document.getElementById('product-barcode-input').value = barcode;
-                        
-                        // Close search modal and show product modal
-                        closeModal();
-                        document.getElementById('product-modal').classList.add('active');
-                        document.getElementById('modal-overlay').classList.add('active');
-                    });
-                });
-            } else if (searchCloud) {
-                // Simulate cloud search (in a real app, this would be an API call)
-                resultsContainer.innerHTML = '<div class="no-results">Keine Produkte in der Cloud gefunden</div>';
-                
-                // Simulate delay for cloud search
-                setTimeout(() => {
-                    // In a real implementation, this would process actual API results
-                    resultsContainer.innerHTML = `
-                        <div class="no-results">Keine Produkte gefunden für "${query}"</div>
-                        <div class="no-results">Möchten Sie ein neues Produkt erstellen?</div>
-                    `;
-                }, 1500);
-            } else {
-                resultsContainer.innerHTML = '<div class="no-results">Keine Produkte gefunden</div>';
-            }
-        }
+        // NEW: Update clear cart to show confirmation modal
+        document.getElementById('clear-cart').addEventListener('click', showClearCartConfirmation);
 
         function playSound(type) {
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
