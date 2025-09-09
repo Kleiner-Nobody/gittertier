@@ -337,7 +337,7 @@
         object-fit: cover;
     }
 
-    /* Modal Styles */
+    /* Modal Styles - Redesigned */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -351,11 +351,11 @@
         z-index: 1000;
         display: none;
         padding: var(--spacing-md);
+        animation: fadeIn 0.3s ease;
     }
 
     .modal-overlay.active {
         display: flex;
-        animation: fadeIn 0.3s ease;
     }
 
     .modal {
@@ -375,18 +375,21 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border);
     }
 
     .modal-title {
         font-size: var(--text-xl);
         font-weight: 600;
+        color: var(--color-accent);
     }
 
     .close-modal {
         background: transparent;
         border: none;
         font-size: var(--text-xl);
-        color: var(--color-text);
+        color: var(--color-text-muted);
         cursor: pointer;
         width: 32px;
         height: 32px;
@@ -399,6 +402,7 @@
 
     .close-modal:hover {
         background-color: var(--color-bg-secondary);
+        color: var(--color-text);
     }
 
     /* Item Styles */
@@ -415,6 +419,12 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        transition: var(--transition);
+    }
+
+    .item-box:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
     }
 
     .item-info {
@@ -438,7 +448,7 @@
         color: var(--color-text);
     }
 
-    /* Total Amount */
+    /* Total Amount - Redesigned */
     .total-amount {
         font-size: var(--text-xl);
         text-align: center;
@@ -452,6 +462,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        animation: pulse 2s infinite;
     }
 
     .total-label {
@@ -462,7 +473,7 @@
         font-size: var(--text-2xl);
     }
 
-    /* Button Styles */
+    /* Button Styles - Redesigned */
     .button-group {
         display: flex;
         gap: var(--spacing-md);
@@ -519,6 +530,7 @@
     .btn-outline:hover {
         background-color: var(--color-bg-secondary);
         border-color: var(--color-accent);
+        color: var(--color-accent);
     }
 
     /* Status Message */
@@ -545,13 +557,14 @@
         background-color: var(--color-error);
     }
 
-    /* New: Payment Info Card */
+    /* Payment Info Card - Redesigned */
     .payment-info-card {
         background-color: var(--color-bg-secondary);
         border-radius: var(--radius);
         padding: var(--spacing-lg);
         margin-bottom: var(--spacing-lg);
         border: 1px solid var(--color-border);
+        box-shadow: var(--shadow);
     }
 
     .payment-info-row {
@@ -559,6 +572,12 @@
         justify-content: space-between;
         margin-bottom: var(--spacing-sm);
         padding: var(--spacing-xs) 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .payment-info-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
     }
 
     .payment-info-label {
@@ -568,6 +587,7 @@
 
     .payment-info-value {
         font-weight: 600;
+        text-align: right;
     }
 
     /* Animation Keyframes */
@@ -584,6 +604,12 @@
     @keyframes slideUp {
         from { transform: translateY(20px) translateX(-50%); opacity: 0; }
         to { transform: translateY(0) translateX(-50%); opacity: 1; }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
     }
 
     /* Responsive Design */
@@ -802,8 +828,24 @@
                     <span class="payment-info-value" id="payment-coupon">-</span>
                 </div>
                 <div class="payment-info-row">
+                    <span class="payment-info-label">Treuepunkte:</span>
+                    <span class="payment-info-value" id="payment-loyalty">-</span>
+                </div>
+                <div class="payment-info-row">
                     <span class="payment-info-label">Belegdesign:</span>
                     <span class="payment-info-value" id="payment-receipt">-</span>
+                </div>
+                <div class="payment-info-row">
+                    <span class="payment-info-label">Lieferoption:</span>
+                    <span class="payment-info-value" id="payment-delivery">-</span>
+                </div>
+                <div class="payment-info-row">
+                    <span class="payment-info-label">Verpackung:</span>
+                    <span class="payment-info-value" id="payment-bagging">-</span>
+                </div>
+                <div class="payment-info-row">
+                    <span class="payment-info-label">Spende:</span>
+                    <span class="payment-info-value" id="payment-donation">-</span>
                 </div>
             </div>
             
@@ -813,13 +855,6 @@
             </div>
             
             <div id="items-list" class="items-list"></div>
-            
-            <div class="button-group">
-                <button id="details-btn" class="btn btn-outline">
-                    <i class="fas fa-list"></i>
-                    Details anzeigen
-                </button>
-            </div>
             
             <div class="button-group">
                 <button id="confirm-btn" class="btn btn-primary">
@@ -1200,7 +1235,11 @@
             document.getElementById('payment-customer').textContent = paymentData.customerName || '-';
             document.getElementById('payment-method').textContent = paymentData.paymentMethod === 'cash' ? 'Bar' : 'Karte';
             document.getElementById('payment-coupon').textContent = paymentData.coupon || 'Keiner';
+            document.getElementById('payment-loyalty').textContent = paymentData.loyaltyPointsRedeemed > 0 ? `${paymentData.loyaltyPointsRedeemed} Punkte eingelöst` : 'Keine';
             document.getElementById('payment-receipt').textContent = getReceiptDesignName(paymentData.receiptDesign);
+            document.getElementById('payment-delivery').textContent = getDeliveryOptionName(paymentData.deliveryOption);
+            document.getElementById('payment-bagging').textContent = getBaggingOptionName(paymentData.baggingOption);
+            document.getElementById('payment-donation').textContent = getDonationOptionName(paymentData.donationOption);
             
             const itemsList = document.getElementById('items-list');
             itemsList.innerHTML = '';
@@ -1243,6 +1282,55 @@
                 itemsList.appendChild(loyaltyDiv);
             }
             
+            // Show delivery cost if applicable
+            if (paymentData.deliveryOption === 'home-delivery') {
+                const deliveryDiv = document.createElement('div');
+                deliveryDiv.className = 'item-box';
+                deliveryDiv.innerHTML = `
+                    <div class="item-info">
+                        <h3>Lieferung nach Hause</h3>
+                    </div>
+                    <div class="item-price">+€ 4,99</div>
+                `;
+                itemsList.appendChild(deliveryDiv);
+            }
+            
+            // Show bagging cost if applicable
+            if (paymentData.baggingOption === 'standard') {
+                const baggingDiv = document.createElement('div');
+                baggingDiv.className = 'item-box';
+                baggingDiv.innerHTML = `
+                    <div class="item-info">
+                        <h3>Standard Tüten (2x)</h3>
+                    </div>
+                    <div class="item-price">+€ 0,40</div>
+                `;
+                itemsList.appendChild(baggingDiv);
+            } else if (paymentData.baggingOption === 'premium') {
+                const baggingDiv = document.createElement('div');
+                baggingDiv.className = 'item-box';
+                baggingDiv.innerHTML = `
+                    <div class="item-info">
+                        <h3>Premium Verpackung</h3>
+                    </div>
+                    <div class="item-price">+€ 1,50</div>
+                `;
+                itemsList.appendChild(baggingDiv);
+            }
+            
+            // Show donation if applicable
+            if (paymentData.donationOption !== 'none') {
+                const donationDiv = document.createElement('div');
+                donationDiv.className = 'item-box';
+                donationDiv.innerHTML = `
+                    <div class="item-info">
+                        <h3>Spende</h3>
+                    </div>
+                    <div class="item-price">+€ ${parseFloat(paymentData.donationOption).toFixed(2)}</div>
+                `;
+                itemsList.appendChild(donationDiv);
+            }
+            
             document.getElementById('confirmation-modal').classList.add('active');
         }
 
@@ -1253,7 +1341,38 @@
                 case 'compact': return 'Kompakt';
                 case 'detailed': return 'Detailliert';
                 case 'premium': return 'Premium';
+                case 'gold': return 'Gold';
+                case 'platinum': return 'Platinum';
                 default: return 'Kompakt';
+            }
+        }
+        
+        // Get delivery option name for display
+        function getDeliveryOptionName(option) {
+            switch(option) {
+                case 'store-pickup': return 'Abholung im Geschäft';
+                case 'home-delivery': return 'Lieferung nach Hause';
+                default: return 'Abholung im Geschäft';
+            }
+        }
+        
+        // Get bagging option name for display
+        function getBaggingOptionName(option) {
+            switch(option) {
+                case 'standard': return 'Standard Tüten';
+                case 'premium': return 'Premium Verpackung';
+                case 'own': return 'Eigene Tasche';
+                default: return 'Standard Tüten';
+            }
+        }
+        
+        // Get donation option name for display
+        function getDonationOptionName(option) {
+            switch(option) {
+                case 'none': return 'Keine Spende';
+                case '1': return '€ 1,00 an Lebensmittelbank';
+                case '2': return '€ 2,00 an Tafel';
+                default: return 'Keine Spende';
             }
         }
 
@@ -1415,7 +1534,7 @@
             doc.setTextColor(17, 17, 17);
             doc.setFont(undefined, 'normal');
 
-            paymentData.items.forEach((item, index) => {
+            paymentData.items.forEach((item, index) {
                 if (yPos > pageHeight - 60) {
                     doc.addPage();
                     yPos = 20;
