@@ -2538,11 +2538,18 @@
     }
     
     // Initialize payment
-    function initPayment() {
-        try {
-            // Check if we have payment data in localStorage first
-            const storedPaymentData = getStoredPaymentData();
-            
+// Initialize payment
+function initPayment() {
+    try {
+        // Check if we have payment data in localStorage first
+        const storedPaymentData = getStoredPaymentData();
+        
+        // Try to get payment data from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const compressedData = urlParams.get('id');
+        
+        if (!compressedData) {
+            // No new data in URL, check if we have stored data
             if (storedPaymentData) {
                 // Check if payment was already processed
                 if (storedPaymentData.status === 'confirmed' || storedPaymentData.status === 'declined') {
@@ -2561,16 +2568,11 @@
                     processPaymentWithStoredData();
                     return;
                 }
-            }
-            
-            // Try to get payment data from URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const compressedData = urlParams.get('id');
-            
-            if (!compressedData) {
+            } else {
                 throw new Error('Keine Zahlungsdaten gefunden');
             }
-            
+        } else {
+            // We have new data in URL, process it regardless of stored data
             const jsonString = LZString.decompressFromBase64(compressedData);
             
             if (!jsonString) {
@@ -2581,6 +2583,18 @@
             
             if (!paymentData?.items || !paymentData?.total) {
                 throw new Error('Ungültige Datenstruktur');
+            }
+            
+            // Check if this is the same as stored data
+            if (storedPaymentData && arePaymentsEqual(storedPaymentData.data, paymentData)) {
+                // Same payment, check status
+                if (storedPaymentData.status === 'confirmed' || storedPaymentData.status === 'declined') {
+                    const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+                    if (storedPaymentData.timestamp > tenMinutesAgo) {
+                        showAlreadyProcessedModal(storedPaymentData.status);
+                        return;
+                    }
+                }
             }
             
             // Store payment data in localStorage and clear URL
@@ -2615,13 +2629,33 @@
                 isLoyaltyMember = userPreferences.isLoyaltyMember || false;
                 processPaymentWithSavedPreferences();
             }
-            
-        } catch(error) {
-            console.error('Payment initialization error:', error);
-            document.getElementById('error-message').textContent = error.message;
-            showModal('error-modal');
+        }
+        
+    } catch(error) {
+        console.error('Payment initialization error:', error);
+        document.getElementById('error-message').textContent = error.message;
+        showModal('error-modal');
+    }
+}
+
+// Check if two payment objects are equal
+function arePaymentsEqual(payment1, payment2) {
+    if (payment1.total !== payment2.total) return false;
+    if (payment1.items.length !== payment2.items.length) return false;
+    
+    for (let i = 0; i < payment1.items.length; i++) {
+        const item1 = payment1.items[i];
+        const item2 = payment2.items[i];
+        
+        if (item1.name !== item2.name || 
+            item1.price !== item2.price || 
+            item1.quantity !== item2.quantity) {
+            return false;
         }
     }
+    
+    return true;
+}
     
     // Store payment data in localStorage
     function storePaymentData(data, status) {
@@ -2657,26 +2691,43 @@
     }
     
     // Show already processed modal
-    function showAlreadyProcessedModal(status) {
-        const modal = document.getElementById('already-processed-modal');
-        const icon = document.getElementById('processed-modal-icon');
-        const title = document.getElementById('processed-modal-title');
-        const message = document.getElementById('processed-modal-message');
+// Show already processed modal
+function showAlreadyProcessedModal(status) {
+    // Load the stored payment data to ensure we have all details for receipt generation
+    const storedPaymentData = getStoredPaymentData();
+    if (storedPaymentData) {
+        paymentData = storedPaymentData.data;
         
-        if (status === 'confirmed') {
-            icon.style.color = 'var(--color-success)';
-            icon.innerHTML = '<i class="fas fa-check-circle"></i>';
-            title.textContent = 'Bezahlung bereits durchgeführt';
-            message.textContent = 'Diese Zahlung wurde bereits erfolgreich verarbeitet.';
-        } else {
-            icon.style.color = 'var(--color-error)';
-            icon.innerHTML = '<i class="fas fa-times-circle"></i>';
-            title.textContent = 'Zahlung abgelehnt';
-            message.textContent = 'Diese Zahlung wurde bereits abgelehnt.';
-        }
-        
-        showModal('already-processed-modal');
+        // Set the necessary global variables for receipt generation
+        if (paymentData.receiptDesign) selectedReceiptDesign = paymentData.receiptDesign;
+        if (paymentData.deliveryOption) selectedDeliveryOption = paymentData.deliveryOption;
+        if (paymentData.baggingOption) selectedBaggingOption = paymentData.baggingOption;
+        if (paymentData.donationOption) selectedDonationOption = paymentData.donationOption;
+        if (paymentData.loyaltyPointsEarned) loyaltyPointsEarned = paymentData.loyaltyPointsEarned;
+        if (paymentData.loyaltyPointsRedeemed) loyaltyPointsToRedeem = paymentData.loyaltyPointsRedeemed;
+        if (paymentData.loyaltyDiscount) loyaltyDiscount = paymentData.loyaltyDiscount;
+        if (paymentData.coupon) appliedCoupon = { code: paymentData.coupon };
     }
+    
+    const modal = document.getElementById('already-processed-modal');
+    const icon = document.getElementById('processed-modal-icon');
+    const title = document.getElementById('processed-modal-title');
+    const message = document.getElementById('processed-modal-message');
+    
+    if (status === 'confirmed') {
+        icon.style.color = 'var(--color-success)';
+        icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+        title.textContent = 'Bezahlung bereits durchgeführt';
+        message.textContent = 'Diese Zahlung wurde bereits erfolgreich verarbeitet.';
+    } else {
+        icon.style.color = 'var(--color-error)';
+        icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+        title.textContent = 'Zahlung abgelehnt';
+        message.textContent = 'Diese Zahlung wurde bereits abgelehnt.';
+    }
+    
+    showModal('already-processed-modal');
+} 
     
     // Process payment with stored data
     function processPaymentWithStoredData() {
@@ -3959,8 +4010,17 @@
     
     // Generate receipt
     function generateReceipt() {
-        const receiptFormat = selectedReceiptDesign || 'compact';
+
+        if (!paymentData) {
+            alert('Keine Zahlungsdaten für den Beleg verfügbar.');
+            return;
+        }
+        // Set default values if not present
+        if (!paymentData.finalTotal) {
+            paymentData.finalTotal = calculateFinalTotal();
+        }
         
+        const receiptFormat = selectedReceiptDesign || 'compact';
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
