@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit-Log - Gittertier Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <style>
+    :root {
+        --color-bg: #ffffff;
+        --color-bg-secondary: #f9fafb;
+        --color-text: #111111;
+        --color-text-muted: #6b7280;
+        --color-border: #e5e7eb;
+        --color-accent: #2563eb;
+        --color-accent-hover: #1d4ed8;
+        --color-success: #16a34a;
+        --color-error: #dc2626;
+        --color-warning: #d97706;
+        --color-info: #2563eb;
+        --color-overlay: rgba(0, 0, 0, 0.5);
+        
+        --radius: 12px;
+        --radius-sm: 6px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+        
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+        
+        --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        --transition-slow: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --text-base: 1rem;
+        --text-lg: 1.125rem;
+        --text-xl: 1.25rem;
+        --text-2xl: 1.5rem;
+        --text-3xl: 1.875rem;
+        
+        --header-height: 64px;
+        --sidebar-width: 280px;
+    }
+
+    .dark-mode {
+        --color-bg: #111827;
+        --color-bg-secondary: #1f2937;
+        --color-text: #f3f4f6;
+        --color-text-muted: #9ca3af;
+        --color-border: #374151;
+        --color-accent: #3b82f6;
+        --color-accent-hover: #2563eb;
+        --color-success: #10b981;
+        --color-error: #ef4444;
+        --color-warning: #f59e0b;
+        --color-info: #3b82f6;
+        --color-overlay: rgba(0, 0, 0, 0.7);
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header Styles */
+    .admin-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        background-color: var(--color-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-weight: 700;
+        font-size: var(--text-xl);
+    }
+
+    .logo i {
+        font-size: var(--text-xl);
+        color: var(--color-accent);
+    }
+
+    .header-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        align-items: center;
+    }
+
+    .logout-btn {
+        background-color: transparent;
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .logout-btn:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .hamburger {
+        display: block;
+        background: transparent;
+        border: none;
+        font-size: var(--text-lg);
+        color: var(--color-text);
+        cursor: pointer;
+        transition: var(--transition);
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hamburger:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    /* Main layout */
+    .admin-container {
+        display: flex;
+        flex: 1;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--color-bg);
+        border-right: 1px solid var(--color-border);
+        height: calc(100vh - var(--header-height));
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+        z-index: 40;
+        padding: var(--spacing-lg) 0;
+    }
+
+    .nav-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        padding: 0 var(--spacing-md);
+    }
+
+    .nav-link {
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        text-decoration: none;
+        color: var(--color-text);
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .nav-link:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .nav-link.active {
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--color-accent);
+    }
+
+    .nav-link i {
+        width: 24px;
+        text-align: center;
+    }
+
+    .nav-link.active i {
+        color: var(--color-accent);
+    }
+
+    .new-feature {
+        background-color: var(--color-success);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 35;
+        display: none;
+    }
+
+    /* Main content */
+    .admin-content {
+        flex: 1;
+        padding: var(--spacing-lg);
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.3s ease;
+    }
+
+    .dashboard-header {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .dashboard-title {
+        font-size: var(--text-2xl);
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .dashboard-subtitle {
+        color: var(--color-text-muted);
+        font-size: var(--text-lg);
+    }
+
+    /* Cards */
+    .dashboard-card {
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .card-title i {
+        color: var(--color-accent);
+    }
+
+    .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .toolbar-btn {
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .toolbar-btn:hover {
+        border-color: var(--color-accent);
+    }
+
+    .toolbar-btn.primary {
+        background-color: var(--color-accent);
+        color: white;
+        border-color: var(--color-accent);
+    }
+
+    .toolbar-btn.primary:hover {
+        background-color: var(--color-accent-hover);
+        border-color: var(--color-accent-hover);
+    }
+
+    .toolbar-btn.success {
+        background-color: var(--color-success);
+        color: white;
+        border-color: var(--color-success);
+    }
+
+    .toolbar-btn.success:hover {
+        background-color: #0f9c5a;
+        border-color: #0f9c5a;
+    }
+
+    /* Table Styles */
+    .data-table-container {
+        overflow-x: auto;
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow);
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .data-table th {
+        background-color: var(--color-bg-secondary);
+        font-weight: 600;
+        color: var(--color-text-muted);
+        position: sticky;
+        top: 0;
+    }
+
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .data-table tr:nth-child(even) {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .data-table tr:hover {
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: var(--spacing-xl);
+        color: var(--color-text-muted);
+    }
+
+    .empty-state i {
+        font-size: var(--text-3xl);
+        margin-bottom: var(--spacing-md);
+        display: block;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    /* JSON Viewer */
+    .json-viewer {
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        padding: var(--spacing-md);
+        font-family: monospace;
+        font-size: var(--text-sm);
+        max-height: 300px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        margin-top: var(--spacing-md);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-overlay);
+        z-index: 1000;
+        display: none;
+    }
+
+    .modal-overlay.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: var(--color-bg);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        z-index: 1001;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        display: none;
+    }
+
+    .modal.active {
+        display: block;
+        animation: scaleIn 0.3s ease;
+    }
+
+    .modal-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        font-size: var(--text-xl);
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: var(--text-xl);
+        cursor: pointer;
+        color: var(--color-text-muted);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+
+    .modal-close:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .modal-content {
+        padding: var(--spacing-lg);
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+
+    .modal-btn {
+        flex: 1;
+        padding: var(--spacing-md);
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+    }
+
+    .btn-save {
+        background: var(--color-success);
+        color: white;
+    }
+
+    .btn-save:hover {
+        background: #0f9c5a;
+    }
+
+    .btn-cancel {
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        color: var(--color-text);
+    }
+
+    .btn-cancel:hover {
+        background: var(--color-bg-secondary);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+        from { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+        to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .admin-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .admin-sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .admin-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .logout-btn span {
+            display: inline;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .toolbar {
+            flex-direction: column;
+        }
+        
+        .toolbar-btn {
+            width: 100%;
+        }
+        
+        .modal-buttons {
+            flex-direction: column;
+        }
+        
+        .data-table {
+            font-size: var(--text-sm);
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: var(--spacing-sm);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .admin-header {
+            padding: 0 var(--spacing-md);
+        }
+        
+        .admin-content {
+            padding: var(--spacing-md);
+        }
+    }
+
+    /* Dark mode support for system preference */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-bg: #111827;
+            --color-bg-secondary: #1f2937;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --color-border: #374151;
+        }
+        
+        body {
+            color-scheme: dark;
+        }
+    }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="logo">
+            <button class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </button>
+            <i class="fas fa-shopping-cart"></i>
+            <span>Audit-Log</span>
+        </div>
+        
+        <div class="header-controls">
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Abmelden</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="nav-container">
+                <a href="control" class="nav-link">
+                    <i class="fas fa-cogs"></i>
+                    Steuerung
+                    <span class="new-feature">NEU</span>
+                </a>
+                
+                <a href="navi" class="nav-link">
+                    <i class="fas fa-map-marked-alt"></i>
+                    Navigation
+                </a>
+                
+                <a href="admin" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                
+                <a href="products" class="nav-link">
+                    <i class="fas fa-box"></i>
+                    Produktverwaltung
+                </a>
+                
+                <a href="index" class="nav-link">
+                    <i class="fas fa-cash-register"></i>
+                    Kassenansicht
+                </a>
+                
+                <a href="archive" class="nav-link">
+                    <i class="fas fa-archive"></i>
+                    Archiv
+                </a>
+                
+                <a href="merchant" class="nav-link">
+                    <i class="fas fa-store"></i>
+                    Händleransicht
+                </a>
+                
+                <a href="analytics" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Analysen
+                </a>
+                
+                <a href="settings" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    Einstellungen
+                </a>
+                
+                <a href="audit" class="nav-link active">
+                    <i class="fas fa-clipboard-list"></i>
+                    Audit-Log
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Audit-Log</h1>
+                <p class="dashboard-subtitle">Überwachung und Analyse der Systemaktivitäten</p>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-history"></i>
+                        Systemaktivitäten
+                    </h2>
+                    <div class="toolbar">
+                        <button class="toolbar-btn" onclick="refreshAuditLog()">
+                            <i class="fas fa-sync-alt"></i> Aktualisieren
+                        </button>
+                        <button class="toolbar-btn primary" onclick="exportAuditLog()">
+                            <i class="fas fa-file-export"></i> Exportieren
+                        </button>
+                        <button class="toolbar-btn success" onclick="clearAuditLog()">
+                            <i class="fas fa-trash"></i> Löschen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table" id="audit-table">
+                        <thead>
+                            <tr>
+                                <th>Zeitpunkt</th>
+                                <th>Aktion</th>
+                                <th>Benutzer</th>
+                                <th>Details</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-log-body">
+                            <!-- Audit logs will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-database"></i>
+                        Verschlüsselte Daten
+                    </h2>
+                </div>
+
+                <div class="toolbar">
+                    <button class="toolbar-btn" onclick="showAllEncryptedData()">
+                        <i class="fas fa-eye"></i> Alle Daten anzeigen
+                    </button>
+                    <button class="toolbar-btn primary" onclick="decryptAllData()">
+                        <i class="fas fa-unlock"></i> Alle Daten entschlüsseln
+                    </button>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table" id="encrypted-data-table">
+                        <thead>
+                            <tr>
+                                <th>Schlüssel</th>
+                                <th>Typ</th>
+                                <th>Größe</th>
+                                <th>Zuletzt geändert</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="encrypted-data-body">
+                            <!-- Encrypted data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Audit Detail Modal -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+    
+    <div id="audit-detail-modal" class="modal">
+        <div class="modal-header">
+            <h2>Audit-Eintrag Details</h2>
+            <button class="modal-close" id="modalClose">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div id="audit-detail-content">
+                <!-- Audit details will be loaded here -->
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn btn-cancel" onclick="closeModal()">
+                <i class="fas fa-times"></i> Schließen
+            </button>
+        </div>
+    </div>
+
+    <!-- Encrypted Data Modal -->
+    <div id="encrypted-data-modal" class="modal">
+        <div class="modal-header">
+            <h2>Verschlüsselte Daten</h2>
+            <button class="modal-close" id="encryptedModalClose">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div id="encrypted-data-content">
+                <!-- Encrypted data details will be loaded here -->
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn btn-cancel" onclick="closeModal()">
+                <i class="fas fa-times"></i> Schließen
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== STORAGE MANAGER IMPLEMENTATION ====================
+        const storageManager = (function() {
+            // Constants for localStorage keys
+            const KEY_AUDIT_LOG = 'auditLog';
+            const PREFIX_PRODUCT = 'product_';
+            const PREFIX_CUSTOMER = 'customer_';
+            
+            // Current version of the data schema
+            const CURRENT_VERSION = 1;
+            
+            // Encryption key (generated per session)
+            let encryptionKey = null;
+            
+            // Initialize the storage manager
+            async function init() {
+                await generateEncryptionKey();
+                migrateLegacyData();
+            }
+            
+            // Generate encryption key for the session
+            async function generateEncryptionKey() {
+                try {
+                    // Check if key already exists in sessionStorage
+                    const keyData = sessionStorage.getItem('encryptionKey');
+                    
+                    if (keyData) {
+                        // Import existing key
+                        const keyBytes = Uint8Array.from(atob(keyData), c => c.charCodeAt(0));
+                        encryptionKey = await crypto.subtle.importKey(
+                            'raw',
+                            keyBytes,
+                            { name: 'AES-GCM' },
+                            false,
+                            ['encrypt', 'decrypt']
+                        );
+                    } else {
+                        // Generate new key
+                        const key = await crypto.subtle.generateKey(
+                            { name: 'AES-GCM', length: 256 },
+                            true,
+                            ['encrypt', 'decrypt']
+                        );
+                        
+                        // Export and store in sessionStorage
+                        const exportedKey = await crypto.subtle.exportKey('raw', key);
+                        const keyBytes = new Uint8Array(exportedKey);
+                        sessionStorage.setItem('encryptionKey', btoa(String.fromCharCode(...keyBytes)));
+                        
+                        encryptionKey = key;
+                    }
+                } catch (error) {
+                    console.error('Failed to generate encryption key:', error);
+                    // Continue without encryption
+                }
+            }
+            
+            // Migrate legacy data to the new format
+            function migrateLegacyData() {
+                // Check for legacy audit log
+                const legacyAuditLog = localStorage.getItem('auditLog_receipts');
+                if (legacyAuditLog) {
+                    try {
+                        const auditLog = JSON.parse(legacyAuditLog);
+                        localStorage.setItem(KEY_AUDIT_LOG, JSON.stringify(auditLog));
+                        localStorage.removeItem('auditLog_receipts');
+                        console.log('Migrated legacy audit log');
+                    } catch (e) {
+                        console.error('Failed to migrate legacy audit log:', e);
+                    }
+                }
+            }
+            
+            // Retrieve an item with decompression and decryption
+            async function retrieveItem(key) {
+                try {
+                    const item = localStorage.getItem(key);
+                    
+                    if (!item) return null;
+                    
+                    // Check if it's compressed (starts with base64-like pattern)
+                    if (item.startsWith('N') || item.startsWith('e') || item.startsWith('H')) {
+                        // Decompress
+                        const decompressed = LZString.decompressFromBase64(item);
+                        
+                        if (!decompressed) {
+                            // Might be legacy format, try parsing as JSON directly
+                            try {
+                                const legacyData = JSON.parse(item);
+                                return legacyData;
+                            } catch (e) {
+                                console.error('Failed to parse legacy data:', e);
+                                return null;
+                            }
+                        }
+                        
+                        // Parse the JSON
+                        const parsed = JSON.parse(decompressed);
+                        
+                        // Handle versioning if needed in the future
+                        if (parsed.version !== CURRENT_VERSION) {
+                            console.warn(`Data version ${parsed.version} differs from current ${CURRENT_VERSION}`);
+                            // Future: implement migration logic here
+                        }
+                        
+                        return parsed.data;
+                    } else {
+                        // Legacy format, parse directly
+                        try {
+                            const legacyData = JSON.parse(item);
+                            return legacyData;
+                        } catch (e) {
+                            console.error('Failed to parse legacy data:', e);
+                            return null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to retrieve item:', error);
+                    return null;
+                }
+            }
+            
+            // Decrypt sensitive fields in an object
+            async function decryptSensitiveFields(obj) {
+                if (!encryptionKey) return obj;
+                
+                const result = {...obj};
+                
+                // Decrypt email if encrypted
+                if (result.email && result.email.encrypted) {
+                    try {
+                        const iv = Uint8Array.from(atob(result.email.iv), c => c.charCodeAt(0));
+                        const encryptedData = Uint8Array.from(atob(result.email.data), c => c.charCodeAt(0));
+                        
+                        const decrypted = await crypto.subtle.decrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encryptedData
+                        );
+                        
+                        result.email = new TextDecoder().decode(decrypted);
+                    } catch (error) {
+                        console.error('Failed to decrypt email:', error);
+                    }
+                }
+                
+                // Decrypt auth token if encrypted
+                if (result.authToken && result.authToken.encrypted) {
+                    try {
+                        const iv = Uint8Array.from(atob(result.authToken.iv), c => c.charCodeAt(0));
+                        const encryptedData = Uint8Array.from(atob(result.authToken.data), c => c.charCodeAt(0));
+                        
+                        const decrypted = await crypto.subtle.decrypt(
+                            { name: 'AES-GCM', iv },
+                            encryptionKey,
+                            encryptedData
+                        );
+                        
+                        result.authToken = new TextDecoder().decode(decrypted);
+                    } catch (error) {
+                        console.error('Failed to decrypt auth token:', error);
+                    }
+                }
+                
+                return result;
+            }
+            
+            // Get audit log
+            async function getAuditLog() {
+                try {
+                    const logData = localStorage.getItem(KEY_AUDIT_LOG);
+                    return logData ? JSON.parse(logData) : [];
+                } catch (error) {
+                    console.error('Failed to get audit log:', error);
+                    return [];
+                }
+            }
+            
+            // Get all encrypted data from localStorage
+            async function getAllEncryptedData() {
+                const encryptedData = [];
+                
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    
+                    // Skip non-data keys
+                    if (key === 'encryptionKey' || key === KEY_AUDIT_LOG || 
+                        key === 'appSettings' || key === 'userSettings' ||
+                        key === 'validTokens' || key === 'authToken') {
+                        continue;
+                    }
+                    
+                    try {
+                        const item = localStorage.getItem(key);
+                        let data = null;
+                        let isEncrypted = false;
+                        let dataType = 'Unknown';
+                        
+                        // Check if it's compressed/encrypted
+                        if (item.startsWith('N') || item.startsWith('e') || item.startsWith('H')) {
+                            isEncrypted = true;
+                            data = await retrieveItem(key);
+                            
+                            // Determine data type based on key prefix
+                            if (key.startsWith(PREFIX_PRODUCT)) {
+                                dataType = 'Product';
+                            } else if (key.startsWith(PREFIX_CUSTOMER)) {
+                                dataType = 'Customer';
+                                // Decrypt sensitive fields for customers
+                                if (data) {
+                                    data = await decryptSensitiveFields(data);
+                                }
+                            } else {
+                                dataType = 'Other';
+                            }
+                        } else {
+                            // Try to parse as JSON
+                            try {
+                                data = JSON.parse(item);
+                                dataType = 'Plain JSON';
+                            } catch (e) {
+                                data = item;
+                                dataType = 'Plain Text';
+                            }
+                        }
+                        
+                        encryptedData.push({
+                            key,
+                            value: data,
+                            rawValue: item,
+                            isEncrypted,
+                            dataType,
+                            size: item.length,
+                            lastModified: new Date().toISOString() // Note: localStorage doesn't store modification dates
+                        });
+                    } catch (error) {
+                        console.error(`Failed to process key ${key}:`, error);
+                        encryptedData.push({
+                            key,
+                            value: null,
+                            rawValue: item,
+                            isEncrypted: false,
+                            dataType: 'Error',
+                            size: item.length,
+                            lastModified: new Date().toISOString(),
+                            error: error.message
+                        });
+                    }
+                }
+                
+                return encryptedData;
+            }
+            
+            // Public API
+            return {
+                init,
+                getAuditLog,
+                getAllEncryptedData
+            };
+        })();
+
+        // DOM Elements
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalClose = document.getElementById('modalClose');
+        
+        // Initialize the application
+        async function initialize() {
+            // Initialize storage manager
+            await storageManager.init();
+            
+            // Apply system dark mode preference
+            applySystemDarkMode();
+            
+            // Load and display audit log
+            loadAuditLog();
+            
+            // Load and display encrypted data
+            loadEncryptedData();
+            
+            // Set up event listeners
+            setupEventListeners();
+        }
+        
+        // Apply system dark mode preference
+        function applySystemDarkMode() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (e.matches) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            });
+        }
+        
+        // Load and display audit log
+        async function loadAuditLog() {
+            try {
+                const auditLog = await storageManager.getAuditLog();
+                const auditLogBody = document.getElementById('audit-log-body');
+                
+                if (auditLog.length === 0) {
+                    auditLogBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <i class="fas fa-clipboard-list"></i>
+                                <h3>Keine Audit-Einträge</h3>
+                                <p>Es wurden noch keine Aktivitäten aufgezeichnet</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                // Show latest entries first
+                auditLog.reverse().forEach(entry => {
+                    const date = new Date(entry.timestamp);
+                    const dateStr = `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
+                    
+                    // Truncate details for table display
+                    let details = JSON.stringify(entry.details || {});
+                    if (details.length > 100) {
+                        details = details.substring(0, 100) + '...';
+                    }
+                    
+                    html += `
+                        <tr>
+                            <td>${dateStr}</td>
+                            <td>${entry.action}</td>
+                            <td>${entry.userId || 'System'}</td>
+                            <td>${details}</td>
+                            <td>
+                                <button class="toolbar-btn" onclick="showAuditDetail('${entry.timestamp}')">
+                                    <i class="fas fa-eye"></i> Details
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                auditLogBody.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading audit log:', error);
+                showNotification('Fehler beim Laden des Audit-Logs', 'error');
+            }
+        }
+        
+        // Load and display encrypted data
+        async function loadEncryptedData() {
+            try {
+                const encryptedData = await storageManager.getAllEncryptedData();
+                const encryptedDataBody = document.getElementById('encrypted-data-body');
+                
+                if (encryptedData.length === 0) {
+                    encryptedDataBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <i class="fas fa-database"></i>
+                                <h3>Keine verschlüsselten Daten</h3>
+                                <p>Es wurden keine verschlüsselten Daten gefunden</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                encryptedData.forEach(data => {
+                    const date = new Date(data.lastModified);
+                    const dateStr = `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})}`;
+                    
+                    html += `
+                        <tr>
+                            <td>${data.key}</td>
+                            <td>${data.dataType} ${data.isEncrypted ? '(Verschlüsselt)' : ''}</td>
+                            <td>${data.size} Bytes</td>
+                            <td>${dateStr}</td>
+                            <td>
+                                <button class="toolbar-btn" onclick="showEncryptedData('${data.key}')">
+                                    <i class="fas fa-eye"></i> Anzeigen
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                encryptedDataBody.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading encrypted data:', error);
+                showNotification('Fehler beim Laden der verschlüsselten Daten', 'error');
+            }
+        }
+        
+        // Show audit detail
+        async function showAuditDetail(timestamp) {
+            try {
+                const auditLog = await storageManager.getAuditLog();
+                const entry = auditLog.find(e => e.timestamp === timestamp);
+                
+                if (!entry) {
+                    showNotification('Audit-Eintrag nicht gefunden', 'error');
+                    return;
+                }
+                
+                const modal = document.getElementById('audit-detail-modal');
+                const content = document.getElementById('audit-detail-content');
+                
+                const date = new Date(entry.timestamp);
+                const dateStr = `${date.toLocaleDateString('de-DE')} ${date.toLocaleTimeString('de-DE')}`;
+                
+                content.innerHTML = `
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Zeitpunkt:</strong> ${dateStr}
+                    </div>
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Aktion:</strong> ${entry.action}
+                    </div>
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Benutzer:</strong> ${entry.userId || 'System'}
+                    </div>
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Details:</strong>
+                        <div class="json-viewer">${JSON.stringify(entry.details, null, 2)}</div>
+                    </div>
+                `;
+                
+                modal.classList.add('active');
+                modalOverlay.classList.add('active');
+            } catch (error) {
+                console.error('Error showing audit detail:', error);
+                showNotification('Fehler beim Anzeigen des Audit-Eintrags', 'error');
+            }
+        }
+        
+        // Show encrypted data
+        async function showEncryptedData(key) {
+            try {
+                const encryptedData = await storageManager.getAllEncryptedData();
+                const data = encryptedData.find(d => d.key === key);
+                
+                if (!data) {
+                    showNotification('Daten nicht gefunden', 'error');
+                    return;
+                }
+                
+                const modal = document.getElementById('encrypted-data-modal');
+                const content = document.getElementById('encrypted-data-content');
+                
+                let valueDisplay;
+                if (data.error) {
+                    valueDisplay = `<div style="color: var(--color-error);">Fehler: ${data.error}</div>`;
+                } else if (typeof data.value === 'object' && data.value !== null) {
+                    valueDisplay = `<div class="json-viewer">${JSON.stringify(data.value, null, 2)}</div>`;
+                } else {
+                    valueDisplay = `<div class="json-viewer">${data.value}</div>`;
+                }
+                
+                content.innerHTML = `
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Schlüssel:</strong> ${data.key}
+                    </div>
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Typ:</strong> ${data.dataType} ${data.isEncrypted ? '(Verschlüsselt)' : ''}
+                    </div>
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Größe:</strong> ${data.size} Bytes
+                    </div>
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Daten:</strong>
+                        ${valueDisplay}
+                    </div>
+                    ${data.isEncrypted ? `
+                    <div style="margin-bottom: var(--spacing-md);">
+                        <strong>Rohdaten (verschlüsselt):</strong>
+                        <div class="json-viewer">${data.rawValue}</div>
+                    </div>
+                    ` : ''}
+                `;
+                
+                modal.classList.add('active');
+                modalOverlay.classList.add('active');
+            } catch (error) {
+                console.error('Error showing encrypted data:', error);
+                showNotification('Fehler beim Anzeigen der Daten', 'error');
+            }
+        }
+        
+        // Show all encrypted data
+        async function showAllEncryptedData() {
+            try {
+                const encryptedData = await storageManager.getAllEncryptedData();
+                const modal = document.getElementById('encrypted-data-modal');
+                const content = document.getElementById('encrypted-data-content');
+                
+                let html = '<div style="margin-bottom: var(--spacing-lg);">';
+                html += `<h3 style="margin-bottom: var(--spacing-md);">Alle gespeicherten Daten (${encryptedData.length})</h3>`;
+                
+                encryptedData.forEach(data => {
+                    html += `
+                        <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius);">
+                            <div style="margin-bottom: var(--spacing-sm);">
+                                <strong>Schlüssel:</strong> ${data.key}
+                            </div>
+                            <div style="margin-bottom: var(--spacing-sm);">
+                                <strong>Typ:</strong> ${data.dataType} ${data.isEncrypted ? '(Verschlüsselt)' : ''}
+                            </div>
+                            <div style="margin-bottom: var(--spacing-sm);">
+                                <strong>Größe:</strong> ${data.size} Bytes
+                            </div>
+                            <div>
+                                <strong>Daten:</strong>
+                                <div class="json-viewer">${typeof data.value === 'object' ? JSON.stringify(data.value, null, 2) : data.value}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                content.innerHTML = html;
+                
+                modal.classList.add('active');
+                modalOverlay.classList.add('active');
+            } catch (error) {
+                console.error('Error showing all encrypted data:', error);
+                showNotification('Fehler beim Anzeigen aller Daten', 'error');
+            }
+        }
+        
+        // Decrypt all data
+        async function decryptAllData() {
+            try {
+                const encryptedData = await storageManager.getAllEncryptedData();
+                const modal = document.getElementById('encrypted-data-modal');
+                const content = document.getElementById('encrypted-data-content');
+                
+                let html = '<div style="margin-bottom: var(--spacing-lg);">';
+                html += `<h3 style="margin-bottom: var(--spacing-md);">Entschlüsselte Daten</h3>`;
+                
+                encryptedData.forEach(data => {
+                    if (data.isEncrypted && data.value) {
+                        html += `
+                            <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); border: 1px solid var(--color-border); border-radius: var(--radius);">
+                                <div style="margin-bottom: var(--spacing-sm);">
+                                    <strong>Schlüssel:</strong> ${data.key}
+                                </div>
+                                <div style="margin-bottom: var(--spacing-sm);">
+                                    <strong>Typ:</strong> ${data.dataType} (Entschlüsselt)
+                                </div>
+                                <div>
+                                    <strong>Daten:</strong>
+                                    <div class="json-viewer">${typeof data.value === 'object' ? JSON.stringify(data.value, null, 2) : data.value}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += '</div>';
+                content.innerHTML = html;
+                
+                modal.classList.add('active');
+                modalOverlay.classList.add('active');
+            } catch (error) {
+                console.error('Error decrypting all data:', error);
+                showNotification('Fehler beim Entschlüsseln der Daten', 'error');
+            }
+        }
+        
+        // Export audit log
+        async function exportAuditLog() {
+            try {
+                const auditLog = await storageManager.getAuditLog();
+                const dataStr = JSON.stringify(auditLog, null, 2);
+                const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                
+                const exportFileDefaultName = `audit_log_${new Date().toISOString().split('T')[0]}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                showNotification('Audit-Log erfolgreich exportiert', 'success');
+            } catch (error) {
+                console.error('Error exporting audit log:', error);
+                showNotification('Fehler beim Exportieren des Audit-Logs', 'error');
+            }
+        }
+        
+        // Clear audit log
+        async function clearAuditLog() {
+            if (confirm('Möchten Sie wirklich den gesamten Audit-Log löschen?')) {
+                try {
+                    localStorage.removeItem('auditLog');
+                    showNotification('Audit-Log erfolgreich gelöscht', 'success');
+                    loadAuditLog();
+                } catch (error) {
+                    console.error('Error clearing audit log:', error);
+                    showNotification('Fehler beim Löschen des Audit-Logs', 'error');
+                }
+            }
+        }
+        
+        // Refresh audit log
+        function refreshAuditLog() {
+            loadAuditLog();
+            loadEncryptedData();
+            showNotification('Daten aktualisiert', 'success');
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+            modalOverlay.classList.remove('active');
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.right = '20px';
+            notification.style.padding = '12px 20px';
+            notification.style.borderRadius = '6px';
+            notification.style.color = 'white';
+            notification.style.fontWeight = '500';
+            notification.style.zIndex = '10000';
+            notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            
+            if (type === 'success') {
+                notification.style.backgroundColor = 'var(--color-success)';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = 'var(--color-error)';
+            } else {
+                notification.style.backgroundColor = 'var(--color-info)';
+            }
+            
+            document.body.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Hamburger menu toggle for mobile
+            hamburger.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+            
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Möchten Sie sich wirklich abmelden?')) {
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'login.html';
+                }
+            });
+            
+            // Close modals
+            modalClose.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', closeModal);
+            
+            // Close modal with ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+        
+        // Initialize the app
+        initialize();
+    </script>
+</body>
+</html>
