@@ -19,6 +19,7 @@
         --color-accent-hover: #1d4ed8;
         --color-success: #16a34a;
         --color-error: #dc2626;
+        --color-warning: #d97706;
         --color-overlay: rgba(0, 0, 0, 0.5);
         --color-tutorial: #FF9900;
         --color-tutorial-light: #FFF3CD;
@@ -51,7 +52,8 @@
         --text-3xl: 1.875rem;
         
         --header-height: 70px;
-        --bottom-nav-height: 70px;
+        --tab-bar-height: 60px;
+        --floating-btn-size: 60px;
     }
 
     * {
@@ -66,10 +68,11 @@
         color: var(--color-text);
         line-height: 1.5;
         min-height: 100vh;
-        padding-bottom: var(--bottom-nav-height);
+        padding-bottom: var(--tab-bar-height);
+        overflow-x: hidden;
     }
 
-    /* Header Styles - Updated */
+    /* Header Styles */
     header {
         height: var(--header-height);
         display: flex;
@@ -80,7 +83,7 @@
         background-color: var(--color-bg);
         position: sticky;
         top: 0;
-        z-index: 50;
+        z-index: 100;
         box-shadow: var(--shadow);
     }
 
@@ -102,34 +105,160 @@
         gap: var(--spacing-sm);
     }
 
-    /* Main Content - Redesigned Layout */
+    /* Main Content */
     main {
         max-width: 1200px;
         margin: 0 auto;
         padding: var(--spacing-lg);
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--spacing-lg);
+        min-height: calc(100vh - var(--header-height) - var(--tab-bar-height));
     }
 
-    @media (min-width: 1024px) {
-        main {
-            grid-template-columns: 1fr 400px;
-        }
+    /* Tab Navigation - Pinned to bottom */
+    .tab-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--tab-bar-height);
+        background-color: var(--color-bg);
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 90;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        padding: 0 var(--spacing-sm);
     }
 
-    .scanner-section, .cart-section {
+    .tab-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        padding: var(--spacing-sm);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: var(--transition);
+        flex: 1;
+        height: 100%;
+        border-radius: var(--radius-sm);
+        position: relative;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .tab-btn:hover {
+        color: var(--color-accent);
+        background-color: #f8fafc;
+    }
+
+    .tab-btn.active {
+        color: var(--color-accent);
+    }
+
+    .tab-btn i {
+        font-size: var(--text-lg);
+        margin-bottom: 4px;
+    }
+
+    .tab-btn span {
+        font-size: var(--text-xs);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .tab-badge {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        background-color: var(--color-error);
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Tab Content */
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Floating Pay Button */
+    .floating-pay-btn {
+        position: fixed;
+        bottom: calc(var(--tab-bar-height) + var(--spacing-lg));
+        right: var(--spacing-lg);
+        width: var(--floating-btn-size);
+        height: var(--floating-btn-size);
+        background-color: var(--color-accent);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-lg);
+        cursor: pointer;
+        transition: var(--transition);
+        z-index: 80;
+    }
+
+    .floating-pay-btn:hover {
+        background-color: var(--color-accent-hover);
+        transform: translateY(-2px) scale(1.05);
+    }
+
+    .floating-pay-btn:active {
+        transform: translateY(0) scale(1);
+    }
+
+    .floating-pay-btn i {
+        font-size: var(--text-xl);
+    }
+
+    .floating-pay-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: var(--color-error);
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: var(--text-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    /* Section Cards */
+    .section-card {
         background: var(--color-bg);
         border-radius: var(--radius-lg);
         border: 1px solid var(--color-border);
         box-shadow: var(--shadow-md);
         overflow: hidden;
+        margin-bottom: var(--spacing-lg);
+        transition: var(--transition);
     }
 
-    .scanner-section {
-        display: flex;
-        flex-direction: column;
-        height: fit-content;
+    .section-card:hover {
+        box-shadow: var(--shadow-lg);
     }
 
     .section-header {
@@ -154,7 +283,7 @@
         color: var(--color-accent);
     }
 
-    /* Scanner Card - Redesigned */
+    /* Scanner Section */
     #scanner-container {
         position: relative;
         width: 100%;
@@ -216,7 +345,23 @@
         background-color: var(--color-error);
     }
 
-    /* Scanner Controls - Redesigned */
+    .scanner-guide {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: var(--color-text-muted);
+        z-index: 5;
+    }
+
+    .scanner-guide i {
+        font-size: 3rem;
+        margin-bottom: var(--spacing-sm);
+        opacity: 0.7;
+    }
+
+    /* Scanner Controls */
     .scanner-controls {
         display: flex;
         padding: var(--spacing-lg);
@@ -230,21 +375,22 @@
         flex-direction: column;
         align-items: center;
         gap: var(--spacing-xs);
-        background: none;
-        border: none;
-        padding: var(--spacing-sm);
-        border-radius: var(--radius-sm);
-        color: var(--color-text-muted);
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        color: var(--color-text);
         font-size: var(--text-xs);
         cursor: pointer;
         transition: var(--transition);
         flex: 1;
-        min-width: 60px;
+        min-width: 80px;
     }
 
     .control-btn:hover {
         background-color: #f9fafb;
-        color: var(--color-text);
+        border-color: var(--color-accent);
+        transform: translateY(-2px);
     }
 
     .control-btn:focus {
@@ -254,6 +400,7 @@
 
     .control-btn i {
         font-size: var(--text-lg);
+        color: var(--color-accent);
     }
 
     .scan-btn {
@@ -284,65 +431,114 @@
         box-shadow: var(--focus-ring);
     }
 
-    /* Product Card - Redesigned */
-    .product-card {
-        background: var(--color-bg);
-        border-radius: var(--radius);
-        border: 1px solid var(--color-border);
-        padding: var(--spacing-lg);
-        margin: var(--spacing-lg);
+    /* NEW: Product Selection Modal */
+    .product-selection-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--color-overlay);
+        z-index: 200;
         display: none;
-        animation: slideUp 0.3s ease-out;
-        box-shadow: var(--shadow-md);
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+        animation: fadeIn 0.3s ease;
     }
 
-    .product-card.visible {
+    .product-selection-modal.active {
         display: flex;
-        flex-direction: column;
     }
 
-    .product-image {
-        width: 80px;
-        height: 80px;
+    .product-selection-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        animation: scaleIn 0.3s ease;
+    }
+
+    .product-selection-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--color-bg-secondary);
+    }
+
+    .product-selection-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .product-selection-close {
+        background: none;
+        border: none;
+        font-size: var(--text-xl);
+        cursor: pointer;
+        color: var(--color-text-muted);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+
+    .product-selection-close:hover {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .product-selection-body {
+        padding: var(--spacing-lg);
+        text-align: center;
+    }
+
+    .product-selection-image {
+        width: 100px;
+        height: 100px;
         background: linear-gradient(135deg, var(--color-accent) 0%, #3b82f6 100%);
         border-radius: var(--radius);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto var(--spacing-md);
-        flex-shrink: 0;
+        margin: 0 auto var(--spacing-lg);
     }
 
-    .product-image i {
+    .product-selection-image i {
         font-size: var(--text-2xl);
         color: white;
     }
 
-    .product-info {
-        text-align: center;
-        margin-bottom: var(--spacing-md);
-    }
-
-    .product-name {
+    .product-selection-name {
         font-weight: 600;
-        font-size: var(--text-base);
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .product-price {
-        font-weight: 700;
         font-size: var(--text-lg);
-        color: var(--color-text);
-        margin-bottom: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
     }
 
-    .product-actions {
+    .product-selection-price {
+        font-weight: 700;
+        font-size: var(--text-xl);
+        color: var(--color-text);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .product-selection-actions {
         display: flex;
         flex-direction: column;
         gap: var(--spacing-md);
     }
 
-    .quantity-controls {
+    .quantity-selection {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -357,8 +553,8 @@
     .quantity-btn {
         background: none;
         border: none;
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -378,12 +574,13 @@
     }
 
     .quantity-value {
-        width: 40px;
+        width: 60px;
         text-align: center;
         font-weight: 600;
+        font-size: var(--text-lg);
     }
 
-    .add-to-cart-btn {
+    .add-to-cart-selection {
         background-color: var(--color-accent);
         color: white;
         border: none;
@@ -396,19 +593,20 @@
         align-items: center;
         justify-content: center;
         gap: var(--spacing-sm);
+        font-size: var(--text-base);
     }
 
-    .add-to-cart-btn:hover {
+    .add-to-cart-selection:hover {
         background-color: var(--color-accent-hover);
         transform: translateY(-2px);
     }
 
-    .add-to-cart-btn:focus {
+    .add-to-cart-selection:focus {
         outline: none;
         box-shadow: var(--focus-ring);
     }
 
-    .replace-scan {
+    .rescan-product {
         color: var(--color-accent);
         font-size: var(--text-sm);
         text-decoration: underline;
@@ -417,16 +615,16 @@
         margin-top: var(--spacing-sm);
     }
 
-    .replace-scan:hover {
+    .rescan-product:hover {
         color: var(--color-accent-hover);
     }
 
-    /* Cart Section - Redesigned */
+    /* Cart Section */
     .cart-section {
         display: flex;
         flex-direction: column;
         height: fit-content;
-        max-height: 80vh;
+        max-height: calc(100vh - var(--header-height) - var(--tab-bar-height) - var(--spacing-xxl));
     }
 
     .cart-header {
@@ -451,7 +649,8 @@
     #cart-items {
         flex: 1;
         overflow-y: auto;
-        max-height: 300px;
+        max-height: 400px;
+        padding: var(--spacing-sm);
     }
 
     .cart-item {
@@ -460,6 +659,8 @@
         padding: var(--spacing-md);
         border-bottom: 1px solid var(--color-border);
         transition: var(--transition);
+        margin-bottom: var(--spacing-sm);
+        border-radius: var(--radius-sm);
     }
 
     .cart-item:hover {
@@ -533,71 +734,75 @@
         background-color: var(--color-bg-secondary);
     }
 
-    /* Bottom Navigation - NEW */
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: var(--bottom-nav-height);
-        background-color: var(--color-bg);
-        border-top: 1px solid var(--color-border);
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        z-index: 40;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    /* Products Grid */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-md);
     }
 
-    .nav-btn {
+    .product-card {
+        background: var(--color-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-md);
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .product-card:hover {
+        border-color: var(--color-accent);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .product-card-image {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--color-accent) 0%, #3b82f6 100%);
+        border-radius: var(--radius);
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: none;
-        border: none;
-        padding: var(--spacing-sm);
-        color: var(--color-text-muted);
-        cursor: pointer;
-        transition: var(--transition);
-        flex: 1;
-        height: 100%;
+        margin: 0 auto var(--spacing-sm);
     }
 
-    .nav-btn:hover {
-        color: var(--color-accent);
-        background-color: #f8fafc;
-    }
-
-    .nav-btn.active {
-        color: var(--color-accent);
-    }
-
-    .nav-btn i {
+    .product-card-image i {
         font-size: var(--text-lg);
-        margin-bottom: 4px;
-    }
-
-    .nav-btn span {
-        font-size: var(--text-xs);
-        font-weight: 500;
-    }
-
-    .nav-btn.pay {
-        background-color: var(--color-accent);
         color: white;
-        border-radius: var(--radius);
-        margin: var(--spacing-sm);
-        flex: 0 0 auto;
-        padding: var(--spacing-sm) var(--spacing-lg);
     }
 
-    .nav-btn.pay:hover {
-        background-color: var(--color-accent-hover);
-        transform: translateY(-2px);
+    .product-card-name {
+        font-weight: 500;
+        margin-bottom: var(--spacing-xs);
+        font-size: var(--text-sm);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    /* Modal Styles - Updated */
+    .product-card-price {
+        font-weight: 600;
+        color: var(--color-success);
+        font-size: var(--text-base);
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: var(--spacing-xl);
+        color: var(--color-text-muted);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: var(--spacing-md);
+        color: var(--color-border);
+    }
+
+    /* Modal Styles */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -734,17 +939,82 @@
         transform: translateY(-2px);
     }
 
+    /* Search Modal */
+    .search-input-container {
+        position: relative;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .search-input {
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 40px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        font-size: var(--text-base);
+        transition: var(--transition);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    .search-input-icon {
+        position: absolute;
+        left: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--color-text-muted);
+    }
+
+    .search-results {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+    }
+
+    .search-result-item {
+        padding: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: var(--transition);
+    }
+
+    .search-result-item:hover {
+        background-color: #f9fafb;
+    }
+
+    .search-result-name {
+        font-weight: 500;
+    }
+
+    .search-result-price {
+        color: var(--color-success);
+        font-weight: 600;
+    }
+
+    .search-no-results {
+        padding: var(--spacing-lg);
+        text-align: center;
+        color: var(--color-text-muted);
+    }
+
     /* Notification */
     .notification {
         position: fixed;
-        bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
+        bottom: calc(var(--tab-bar-height) + var(--spacing-md));
         left: 50%;
         transform: translateX(-50%);
         background-color: var(--color-text);
         color: white;
         padding: var(--spacing-md) var(--spacing-lg);
         border-radius: var(--radius);
-        z-index: 60;
+        z-index: 110;
         display: none;
         animation: slideUp 0.3s ease-out;
         font-weight: 500;
@@ -759,6 +1029,114 @@
 
     .notification.error {
         background-color: var(--color-error);
+    }
+
+    .notification.warning {
+        background-color: var(--color-warning);
+    }
+
+    /* Tutorial Styles */
+    .tutorial-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .tutorial-overlay.active {
+        display: flex;
+    }
+
+    .tutorial-content {
+        background-color: var(--color-bg);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-xl);
+        max-width: 500px;
+        width: 100%;
+        box-shadow: var(--shadow-lg);
+        text-align: center;
+        animation: scaleIn 0.3s ease;
+    }
+
+    .tutorial-icon {
+        font-size: 3rem;
+        color: var(--color-tutorial);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .tutorial-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+        color: var(--color-tutorial);
+    }
+
+    .tutorial-message {
+        margin-bottom: var(--spacing-lg);
+        line-height: 1.6;
+    }
+
+    .tutorial-progress {
+        display: flex;
+        justify-content: center;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .tutorial-progress-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--color-border);
+        transition: var(--transition);
+    }
+
+    .tutorial-progress-dot.active {
+        background-color: var(--color-tutorial);
+    }
+
+    .tutorial-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: center;
+    }
+
+    .tutorial-btn {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: var(--transition);
+        min-width: 120px;
+    }
+
+    .tutorial-btn.primary {
+        background-color: var(--color-tutorial);
+        color: white;
+    }
+
+    .tutorial-btn.primary:hover {
+        background-color: #e68900;
+        transform: translateY(-2px);
+    }
+
+    .tutorial-btn.secondary {
+        background-color: transparent;
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+    }
+
+    .tutorial-btn.secondary:hover {
+        background-color: var(--color-bg-secondary);
+        transform: translateY(-2px);
     }
 
     /* Utility Classes */
@@ -791,12 +1169,20 @@
         :root {
             --spacing-lg: 16px;
             --spacing-xl: 20px;
-            --bottom-nav-height: 70px;
+            --header-height: 60px;
+            --tab-bar-height: 60px;
         }
         
         main {
             padding: var(--spacing-md);
-            grid-template-columns: 1fr;
+        }
+        
+        header {
+            padding: 0 var(--spacing-md);
+        }
+        
+        .logo {
+            font-size: var(--text-lg);
         }
         
         .scanner-controls {
@@ -808,25 +1194,25 @@
             justify-content: center;
         }
         
-        .product-card.visible {
-            flex-direction: column;
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: var(--spacing-sm);
         }
         
-        .cart-item {
-            flex-wrap: wrap;
+        .tab-btn span {
+            display: none;
         }
         
-        .cart-item-quantity {
-            margin-top: var(--spacing-md);
-            margin-right: 0;
-            width: 100%;
-            justify-content: center;
+        .tab-btn i {
+            margin-bottom: 0;
+            font-size: var(--text-xl);
         }
         
-        .cart-item-remove {
-            margin-top: var(--spacing-md);
-            width: 100%;
-            text-align: center;
+        .floating-pay-btn {
+            bottom: calc(var(--tab-bar-height) + var(--spacing-md));
+            right: var(--spacing-md);
+            width: 56px;
+            height: 56px;
         }
         
         .modal {
@@ -837,27 +1223,19 @@
             flex-direction: column;
         }
         
-        .bottom-nav {
-            height: var(--bottom-nav-height);
+        .tutorial-content {
+            padding: var(--spacing-lg);
         }
         
-        .nav-btn span {
-            display: none;
-        }
-        
-        .nav-btn i {
-            margin-bottom: 0;
-            font-size: var(--text-xl);
+        .tutorial-actions {
+            flex-direction: column;
         }
     }
 
     @media (max-width: 480px) {
-        header {
-            padding: 0 var(--spacing-md);
-        }
-        
-        .logo {
-            font-size: var(--text-lg);
+        :root {
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
         }
         
         .modal-content {
@@ -869,6 +1247,14 @@
         }
         
         .section-header {
+            padding: var(--spacing-md);
+        }
+        
+        .product-selection-body {
+            padding: var(--spacing-md);
+        }
+        
+        .tutorial-content {
             padding: var(--spacing-md);
         }
     }
@@ -888,16 +1274,16 @@
             background-color: var(--color-bg);
         }
         
-        .scanner-section, .cart-section, .product-card {
+        .section-card, .product-card, .cart-section {
             background-color: var(--color-bg-secondary);
             border-color: var(--color-border);
         }
         
-        .control-btn:hover, .nav-btn:hover {
+        .control-btn:hover, .tab-btn:hover {
             background-color: #374151;
         }
         
-        .bottom-nav {
+        .tab-bar {
             background-color: var(--color-bg-secondary);
             border-color: var(--color-border);
         }
@@ -905,35 +1291,10 @@
         .cart-item:hover {
             background-color: #374151;
         }
-    }
-    
-    /* Additional styling for better visual hierarchy */
-    .empty-state {
-        text-align: center;
-        padding: var(--spacing-xl);
-        color: var(--color-text-muted);
-    }
-    
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: var(--spacing-md);
-        color: var(--color-border);
-    }
-    
-    .scanner-guide {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: var(--color-text-muted);
-        z-index: 5;
-    }
-    
-    .scanner-guide i {
-        font-size: 3rem;
-        margin-bottom: var(--spacing-sm);
-        opacity: 0.7;
+        
+        .search-result-item:hover {
+            background-color: #374151;
+        }
     }
     
     /* Focus states for accessibility */
@@ -942,624 +1303,19 @@
         outline-offset: 2px;
     }
 
-    /* Maintenance and Closed Screens */
-    #maintenance-modal, #closed-screen {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--color-bg);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-        padding: var(--spacing-lg);
-        text-align: center;
+    /* Loading animation */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
     }
 
-    .maintenance-content, .closed-content {
-        max-width: 500px;
-    }
-
-    .maintenance-icon, .closed-icon {
-        font-size: 4rem;
-        color: var(--color-error);
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .maintenance-title, .closed-title {
-        font-size: var(--text-2xl);
-        font-weight: 700;
-        margin-bottom: var(--spacing-md);
-    }
-
-    .maintenance-message, .closed-message {
-        color: var(--color-text-muted);
-        margin-bottom: var(--spacing-xl);
-    }
-
-    /* NEW: Tutorial Elements */
-    .tutorial-welcome-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
-        z-index: 10000;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-lg);
-    }
-
-    .tutorial-welcome-content {
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        max-width: 500px;
-        width: 100%;
-        box-shadow: var(--shadow-md);
-        text-align: center;
-    }
-
-    .tutorial-welcome-icon {
-        font-size: 3rem;
-        color: var(--color-tutorial);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .tutorial-welcome-title {
-        font-size: var(--text-xl);
-        font-weight: 600;
-        margin-bottom: var(--spacing-md);
-        color: var(--color-tutorial);
-    }
-
-    .tutorial-welcome-message {
-        margin-bottom: var(--spacing-lg);
-        line-height: 1.6;
-    }
-
-    .tutorial-welcome-actions {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-md);
-    }
-
-    .tutorial-welcome-btn {
-        padding: var(--spacing-md);
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        border: none;
-    }
-
-    .tutorial-welcome-btn.primary {
-        background-color: var(--color-tutorial);
-        color: white;
-    }
-
-    .tutorial-welcome-btn.secondary {
-        background-color: transparent;
-        border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
-    }
-
-    .tutorial-welcome-checkbox {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-sm);
-        margin-top: var(--spacing-lg);
-        font-size: var(--text-sm);
-    }
-
-    .tutorial-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 10001;
-        display: none;
-    }
-
-    .tutorial-cutout {
-        position: absolute;
-        border-radius: var(--radius);
-        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 15px 5px rgba(255, 153, 0, 0.5);
-        z-index: 10002;
-        transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
-    }
-
-    .tutorial-bubble {
-        position: fixed;
-        background-color: white;
-        border-radius: var(--radius);
-        padding: var(--spacing-lg);
-        box-shadow: var(--shadow-md);
-        z-index: 10003;
-        max-width: 90%;
-        min-width: 280px;
-        border: 2px solid var(--color-tutorial);
-        animation: fadeIn 0.3s ease-out;
-        font-size: var(--text-base);
-    }
-
-    .tutorial-bubble:after {
-        content: '';
-        position: absolute;
-        width: 0;
-        height: 0;
-        border: 12px solid transparent;
-    }
-
-    .tutorial-bubble.top:after {
-        bottom: -24px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-top-color: var(--color-tutorial);
-    }
-
-    .tutorial-bubble.bottom:after {
-        top: -24px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-bottom-color: var(--color-tutorial);
-    }
-
-    .tutorial-bubble.left:after {
-        right: -24px;
-        top: 50%;
-        transform: translateY(-50%);
-        border-left-color: var(--color-tutorial);
-    }
-
-    .tutorial-bubble.right:after {
-        left: -24px;
-        top: 50%;
-        transform: translateY(-50%);
-        border-right-color: var(--color-tutorial);
-    }
-
-    .tutorial-bubble-title {
-        font-weight: 600;
-        margin-bottom: var(--spacing-sm);
-        color: var(--color-tutorial);
-        font-size: var(--text-lg);
-    }
-
-    .tutorial-bubble-content {
-        margin-bottom: var(--spacing-md);
-        line-height: 1.5;
-    }
-
-    .tutorial-bubble-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: var(--spacing-sm);
-    }
-
-    .tutorial-bubble-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius-sm);
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        transition: var(--transition);
-    }
-
-    .tutorial-bubble-btn.primary {
-        background-color: var(--color-tutorial);
-        color: white;
-    }
-
-    .tutorial-bubble-btn.secondary {
-        background-color: transparent;
-        color: var(--color-text-muted);
-    }
-
-    .tutorial-step-indicator {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--color-tutorial);
-        color: white;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: 20px;
-        z-index: 10004;
-        display: none;
-        font-weight: 500;
-    }
-
-    .tutorial-continue-btn {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: var(--color-tutorial);
-        color: white;
-        border: none;
-        border-radius: var(--radius);
-        padding: var(--spacing-md) var(--spacing-lg);
-        font-weight: 600;
-        cursor: pointer;
-        z-index: 10004;
-        display: none;
-        box-shadow: var(--shadow-md);
-    }
-
-    .tutorial-completion-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
-        z-index: 10000;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-lg);
-    }
-
-    .tutorial-completion-content {
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        padding: var(--spacing-xl);
-        max-width: 500px;
-        width: 100%;
-        box-shadow: var(--shadow-md);
-        text-align: center;
-    }
-
-    .tutorial-completion-icon {
-        font-size: 3rem;
-        color: var(--color-tutorial);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .tutorial-completion-title {
-        font-size: var(--text-xl);
-        font-weight: 600;
-        margin-bottom: var(--spacing-md);
-        color: var(--color-tutorial);
-    }
-
-    .tutorial-completion-message {
-        margin-bottom: var(--spacing-lg);
-        line-height: 1.6;
-    }
-
-    .tutorial-completion-actions {
-        display: flex;
-        gap: var(--spacing-md);
-        justify-content: center;
-    }
-
-    .tutorial-disabled {
-        position: relative;
-        cursor: not-allowed !important;
-    }
-    
-    .tutorial-disabled::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(255, 255, 255, 0.5);
-        z-index: 9999;
-        border-radius: inherit;
-    }
-    
-    .tutorial-disabled:hover::before {
-        content: 'Im Tutorial-Modus - dieser Button ist deaktiviert';
-        position: absolute;
-        top: -40px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--color-tutorial);
-        color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 10000;
-    }
-
-    @keyframes highlight-pulse {
-        0% { box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(255, 153, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(255, 153, 0, 0); }
-    }
-    
-    .tutorial-highlight {
-        animation: highlight-pulse 2s infinite;
-        position: relative;
-        z-index: 10005 !important;
-    }
-
-    .tutorial-error-banner {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--color-error);
-        color: white;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: var(--radius);
-        z-index: 10006;
-        display: none;
-        max-width: 90%;
-        text-align: center;
-    }
-
-    /* NEW: Search modal styles */
-    .search-modal {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-lg);
-        z-index: 1002;
-        width: 90%;
-        max-width: 600px;
-        max-height: 80vh;
-        overflow: hidden;
-    }
-    
-    .search-modal.active {
-        display: block;
-    }
-    
-    .search-header {
-        padding: var(--spacing-lg);
-        border-bottom: 1px solid var(--color-border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .search-input-container {
-        padding: var(--spacing-lg);
-        position: relative;
-    }
-    
-    .search-input {
-        width: 100%;
-        padding: var(--spacing-md) var(--spacing-lg) var(--spacing-md) 40px;
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius);
-        font-size: var(--text-base);
-    }
-    
-    .search-input-icon {
-        position: absolute;
-        left: var(--spacing-lg);
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--color-text-muted);
-    }
-    
-    .search-results {
-        max-height: 300px;
-        overflow-y: auto;
-        padding: 0;
-    }
-    
-    .search-result-item {
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-bottom: 1px solid var(--color-border);
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .search-result-item:hover {
-        background-color: #f9fafb;
-    }
-    
-    .search-result-name {
-        font-weight: 500;
-    }
-    
-    .search-result-price {
-        color: var(--color-success);
-        font-weight: 600;
-    }
-    
-    .search-no-results {
-        padding: var(--spacing-lg);
-        text-align: center;
-        color: var(--color-text-muted);
-    }
-    
-    /* NEW: Confirmation modal styles */
-    .confirmation-modal {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-lg);
-        z-index: 1002;
-        width: 90%;
-        max-width: 400px;
-    }
-    
-    .confirmation-modal.active {
-        display: block;
-    }
-    
-    .confirmation-content {
-        padding: var(--spacing-xl);
-        text-align: center;
-    }
-    
-    .confirmation-icon {
-        font-size: 3rem;
-        color: var(--color-error);
-        margin-bottom: var(--spacing-md);
-    }
-    
-    .confirmation-title {
-        font-size: var(--text-xl);
-        font-weight: 600;
-        margin-bottom: var(--spacing-md);
-    }
-    
-    .confirmation-message {
-        margin-bottom: var(--spacing-xl);
-        color: var(--color-text-muted);
-    }
-    
-    .confirmation-buttons {
-        display: flex;
-        gap: var(--spacing-md);
-        justify-content: center;
-    }
-    
-    .confirmation-btn {
-        padding: var(--spacing-md) var(--spacing-xl);
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        min-width: 100px;
-    }
-    
-    .confirmation-btn.confirm {
-        background-color: var(--color-error);
-        color: white;
-    }
-    
-    .confirmation-btn.cancel {
-        background-color: var(--color-bg);
-        border: 1px solid var(--color-border);
-        color: var(--color-text);
-    }
-    
-    /* NEW: Restore cart modal styles */
-    .restore-modal {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: var(--color-bg);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-lg);
-        z-index: 1002;
-        width: 90%;
-        max-width: 400px;
-    }
-    
-    .restore-modal.active {
-        display: block;
-    }
-    
-    .restore-content {
-        padding: var(--spacing-xl);
-        text-align: center;
-    }
-    
-    .restore-icon {
-        font-size: 3rem;
-        color: var(--color-accent);
-        margin-bottom: var(--spacing-md);
-    }
-    
-    .restore-title {
-        font-size: var(--text-xl);
-        font-weight: 600;
-        margin-bottom: var(--spacing-md);
-    }
-    
-    .restore-message {
-        margin-bottom: var(--spacing-xl);
-        color: var(--color-text-muted);
-    }
-    
-    .restore-buttons {
-        display: flex;
-        gap: var(--spacing-md);
-        justify-content: center;
-    }
-    
-    .restore-btn {
-        padding: var(--spacing-md) var(--spacing-xl);
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        min-width: 100px;
-    }
-    
-    .restore-btn.confirm {
-        background-color: var(--color-success);
-        color: white;
-    }
-    
-    .restore-btn.cancel {
-        background-color: var(--color-bg);
-        border: 1px solid var(--color-border);
-        color: var(--color-text);
-    }
-
-    @media (max-width: 420px){
-      .GP {
-            display: none;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .tutorial-bubble {
-            max-width: 85%;
-            left: 50% !important;
-            transform: translateX(-50%);
-            margin: 0 var(--spacing-md);
-            font-size: var(--text-sm);
-        }
-
-        .tutorial-bubble-title {
-            font-size: var(--text-base);
-        }
-        
-        .tutorial-bubble:after {
-            display: none;
-        }
-        
-        .tutorial-bubble.top {
-            top: var(--spacing-xl);
-        }
-        
-        .tutorial-bubble.bottom {
-            bottom: var(--spacing-xl);
-        }
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .tutorial-bubble {
-            background-color: #1f2937;
-            color: var(--color-text);
-        }
-        
-        .tutorial-welcome-content,
-        .tutorial-completion-content {
-            background-color: #1f2937;
-            border-color: var(--color-border);
-        }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
     </style>
 </head>
@@ -1570,121 +1326,176 @@
             <span>Gittertier Pro</span>
         </div>
         <div class="header-controls">
-            <button class="control-btn" onclick="showWelcomeModal()">
+            <button class="control-btn" id="help-btn">
                 <i class="fas fa-question-circle"></i>
             </button>
             <button class="control-btn" onclick="window.location.href='support'">
                 <i class="fas fa-headset"></i>
             </button>
-            <button class="control-btn" onclick="window.location.href='about'">
-                <i class="fas fa-info-circle"></i>
-            </button>
         </div>
     </header>
 
     <main>
-        <section class="scanner-section">
-            <div class="section-header">
-                <h2 class="section-title"><i class="fas fa-barcode"></i> Produktscanner</h2>
-            </div>
-            <div id="scanner-container">
-                <div class="scanner-guide" id="scanner-guide">
-                    <i class="fas fa-camera"></i>
-                    <p>Scanner starten, um Produkte zu scannen</p>
+        <!-- Scanner Tab -->
+        <div id="scanner-tab" class="tab-content active">
+            <section class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-barcode"></i> Produktscanner</h2>
                 </div>
-                <video id="scanner-video" playsinline></video>
-                <div id="barcode-overlay">
-                    <div id="barcode-box"></div>
-                </div>
-                <div class="scanner-status inactive" id="scanner-status">
-                    <span class="dot"></span>
-                    <span>Scanner pausiert</span>
-                </div>
-            </div>
-            
-            <div class="scanner-controls">
-                <button id="toggle-scanner" class="scan-btn">
-                    <i class="fas fa-camera"></i>
-                    Scanner starten
-                </button>
-                <button class="control-btn" id="manual-add">
-                    <i class="fas fa-pencil-alt"></i>
-                    <span>Manuell</span>
-                </button>
-            </div>
-            
-            <div class="product-card" id="product-card">
-                <div class="product-image">
-                    <i class="fas fa-cube"></i>
-                </div>
-                <div class="product-info">
-                    <div class="product-name" id="product-name">Produktname</div>
-                    <div class="product-price" id="product-price">0,00€</div>
-                </div>
-                <div class="product-actions">
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="adjustProductQuantity(-1)">−</button>
-                        <span class="quantity-value" id="product-quantity">1</span>
-                        <button class="quantity-btn" onclick="adjustProductQuantity(1)">+</button>
+                <div id="scanner-container">
+                    <div class="scanner-guide" id="scanner-guide">
+                        <i class="fas fa-camera"></i>
+                        <p>Scanner starten, um Produkte zu scannen</p>
                     </div>
-                    <button class="add-to-cart-btn" onclick="addCurrentProductToCart()">
-                        <i class="fas fa-cart-plus"></i>
-                        In Warenkorb
+                    <video id="scanner-video" playsinline></video>
+                    <div id="barcode-overlay">
+                        <div id="barcode-box"></div>
+                    </div>
+                    <div class="scanner-status inactive" id="scanner-status">
+                        <span class="dot"></span>
+                        <span>Scanner pausiert</span>
+                    </div>
+                </div>
+                
+                <div class="scanner-controls">
+                    <button id="toggle-scanner" class="scan-btn">
+                        <i class="fas fa-camera"></i>
+                        Scanner starten
                     </button>
-                    <span class="replace-scan" onclick="resetScanner()">Erneut scannen</span>
+                    <button class="control-btn" id="manual-add">
+                        <i class="fas fa-pencil-alt"></i>
+                        <span>Manuell</span>
+                    </button>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
 
-        <section class="cart-section">
-            <div class="section-header">
-                <h2 class="section-title"><i class="fas fa-shopping-cart"></i> Warenkorb</h2>
-                <div class="cart-count" id="cart-count">0 Artikel</div>
-            </div>
-            
-            <div id="cart-items">
-                <div class="empty-state" id="empty-cart">
-                    <i class="fas fa-shopping-cart"></i>
-                    <p>Ihr Warenkorb ist leer</p>
-                    <p class="text-sm">Scannen Sie Produkte, um sie hinzuzufügen</p>
+        <!-- Products Tab -->
+        <div id="products-tab" class="tab-content">
+            <section class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-cube"></i> Produktverwaltung</h2>
                 </div>
-            </div>
-            
-            <div class="cart-total">
-                <span>Gesamt</span>
-                <span id="cart-total-amount">0,00€</span>
-            </div>
-        </section>
+                <div class="scanner-controls">
+                    <button class="scan-btn" onclick="showProductSearchModal()">
+                        <i class="fas fa-search"></i>
+                        Produkte suchen
+                    </button>
+                    <button class="control-btn" onclick="showProductModal()">
+                        <i class="fas fa-plus"></i>
+                        <span>Neu</span>
+                    </button>
+                </div>
+                
+                <div id="products-list" class="products-grid">
+                    <!-- Products will be loaded here -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Cart Tab -->
+        <div id="cart-tab" class="tab-content">
+            <section class="section-card cart-section">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-shopping-cart"></i> Warenkorb</h2>
+                    <div class="cart-count" id="cart-count">0 Artikel</div>
+                </div>
+                
+                <div id="cart-items">
+                    <div class="empty-state" id="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Ihr Warenkorb ist leer</p>
+                        <p class="text-sm">Scannen Sie Produkte, um sie hinzuzufügen</p>
+                    </div>
+                </div>
+                
+                <div class="cart-total">
+                    <span>Gesamt</span>
+                    <span id="cart-total-amount">0,00€</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <section class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-cog"></i> Einstellungen</h2>
+                </div>
+                <div class="empty-state">
+                    <i class="fas fa-cog"></i>
+                    <p>Einstellungen werden geladen</p>
+                    <p class="text-sm">Weiterleitung zu den Benutzereinstellungen</p>
+                    <button class="scan-btn" onclick="window.location.href='user'" style="margin-top: var(--spacing-md);">
+                        <i class="fas fa-external-link-alt"></i>
+                        Zu Einstellungen
+                    </button>
+                </div>
+            </section>
+        </div>
     </main>
 
-    <!-- Bottom Navigation - NEW -->
-    <nav class="bottom-nav">
-        <button class="nav-btn" onclick="toggleScanner()">
+    <!-- Tab Navigation -->
+    <nav class="tab-bar">
+        <button class="tab-btn active" data-tab="scanner-tab">
             <i class="fas fa-camera"></i>
             <span>Scanner</span>
         </button>
-        <button class="nav-btn" onclick="showProductSearchModal()">
-            <i class="fas fa-search"></i>
-            <span>Suchen</span>
+        <button class="tab-btn" data-tab="products-tab">
+            <i class="fas fa-cube"></i>
+            <span>Produkte</span>
         </button>
-        <button class="nav-btn pay" onclick="generateQR()">
-            <i class="fas fa-qrcode"></i>
-            <span>Bezahlen</span>
+        <button class="tab-btn" data-tab="cart-tab">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Warenkorb</span>
+            <span class="tab-badge" id="cart-badge" style="display: none;">0</span>
         </button>
-        <button class="nav-btn" onclick="window.location.href='user'">
+        <button class="tab-btn" data-tab="settings-tab">
             <i class="fas fa-cog"></i>
             <span>Einstellungen</span>
         </button>
-        <button class="nav-btn" onclick="showClearCartConfirmModal()">
-            <i class="fas fa-trash"></i>
-            <span>Leeren</span>
-        </button>
     </nav>
+
+    <!-- Floating Pay Button -->
+    <button class="floating-pay-btn" id="floating-pay-btn">
+        <i class="fas fa-qrcode"></i>
+        <span class="floating-pay-badge" id="floating-pay-badge" style="display: none;">0</span>
+    </button>
+
+    <!-- Product Selection Modal -->
+    <div class="product-selection-modal" id="product-selection-modal">
+        <div class="product-selection-content">
+            <div class="product-selection-header">
+                <h2 class="product-selection-title"><i class="fas fa-cube"></i> Produkt hinzufügen</h2>
+                <button class="product-selection-close" id="product-selection-close">&times;</button>
+            </div>
+            <div class="product-selection-body">
+                <div class="product-selection-image">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="product-selection-name" id="product-selection-name">Produktname</div>
+                <div class="product-selection-price" id="product-selection-price">0,00€</div>
+                
+                <div class="product-selection-actions">
+                    <div class="quantity-selection">
+                        <button class="quantity-btn" id="decrease-quantity">−</button>
+                        <span class="quantity-value" id="product-selection-quantity">1</span>
+                        <button class="quantity-btn" id="increase-quantity">+</button>
+                    </div>
+                    <button class="add-to-cart-selection" id="add-to-cart-selection">
+                        <i class="fas fa-cart-plus"></i>
+                        In Warenkorb
+                    </button>
+                    <span class="rescan-product" id="rescan-product">Erneut scannen</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Overlay -->
     <div class="modal-overlay" id="modal-overlay"></div>
 
-    <!-- Product Modal - REDESIGNED -->
+    <!-- Product Modal -->
     <div id="product-modal" class="modal">
         <div class="modal-header">
             <h2><i class="fas fa-plus-circle"></i> Produkt erfassen</h2>
@@ -1709,7 +1520,7 @@
         </div>
     </div>
     
-    <!-- QR Modal - REDESIGNED -->
+    <!-- QR Modal -->
     <div id="qr-modal" class="modal">
         <div class="modal-header">
             <h2><i class="fas fa-qrcode"></i> Bezahlung initiieren</h2>
@@ -1729,129 +1540,1049 @@
         </div>
     </div>
 
-    <!-- Maintenance and Closed Screens -->
-    <div id="maintenance-modal">
-        <div class="maintenance-content">
-            <div class="maintenance-icon">
-                <i class="fas fa-tools"></i>
+    <!-- Product Search Modal -->
+    <div id="product-search-modal" class="modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-search"></i> Produkte suchen</h2>
+            <button class="modal-close" onclick="closeProductSearchModal()">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div class="search-input-container">
+                <i class="fas fa-search search-input-icon"></i>
+                <input type="text" id="product-search-input" class="search-input" placeholder="Produktname oder Barcode eingeben...">
             </div>
-            <h2 class="maintenance-title">Wartungsarbeiten</h2>
-            <p class="maintenance-message">Der Shop ist derzeit wegen Wartungsarbeiten geschlossen. Bitte versuchen Sie es später erneut.</p>
-            <button class="scan-btn" onclick="location.href='user'">
-                <i class="fas fa-cog"></i>
-                Einstellungen
-            </button>
+            <div class="search-results" id="product-search-results">
+                <div class="search-no-results">Geben Sie einen Suchbegriff ein, um Produkte zu finden</div>
+            </div>
         </div>
     </div>
 
-    <div id="closed-screen">
-        <div class="closed-content">
-            <div class="closed-icon">
-                <i class="fas fa-moon"></i>
-            </div>
-            <h2 class="closed-title">Geschlossen</h2>
-            <p class="closed-message">Wir haben derzeit geschlossen.</p>
-            <p id="opening-hours-display" class="text-muted"></p>
-        </div>
-    </div>
-
-    <!-- New Tutorial Elements -->
-    <div class="tutorial-welcome-modal" id="tutorial-welcome-modal">
-        <div class="tutorial-welcome-content">
-            <div class="tutorial-welcome-icon">
+    <!-- Tutorial Overlay -->
+    <div class="tutorial-overlay" id="tutorial-overlay">
+        <div class="tutorial-content">
+            <div class="tutorial-icon">
                 <i class="fas fa-graduation-cap"></i>
             </div>
-            <h2 class="tutorial-welcome-title">Willkommen bei Gittertier Pro</h2>
-            <p class="tutorial-welcome-message">
+            <h2 class="tutorial-title" id="tutorial-title">Willkommen bei Gittertier Pro</h2>
+            <p class="tutorial-message" id="tutorial-message">
                 Möchten Sie eine geführte Tour durch die App starten? 
                 Das Tutorial zeigt Ihnen Schritt für Schritt, wie Sie Produkte scannen, 
                 Ihren Warenkorb verwalten und Bezahlvorgänge durchführen.
             </p>
-            <div class="tutorial-welcome-actions">
-                <button class="tutorial-welcome-btn primary" onclick="startTutorial()">Tutorial starten</button>
-                <button class="tutorial-welcome-btn secondary" onclick="closeWelcomeModal()">Jetzt nicht</button>
+            <div class="tutorial-progress" id="tutorial-progress">
+                <!-- Progress dots will be added here -->
             </div>
-            <div class="tutorial-welcome-checkbox">
-                <input type="checkbox" id="tutorial-dont-show-again">
-                <label for="tutorial-dont-show-again">Dieses Fenster nicht mehr anzeigen</label>
+            <div class="tutorial-actions">
+                <button class="tutorial-btn secondary" id="tutorial-skip">Überspringen</button>
+                <button class="tutorial-btn primary" id="tutorial-next">Tutorial starten</button>
             </div>
-        </div>
-    </div>
-
-    <div class="tutorial-overlay" id="tutorial-overlay"></div>
-    <div class="tutorial-cutout" id="tutorial-cutout"></div>
-    <div class="tutorial-bubble" id="tutorial-bubble"></div>
-    <div class="tutorial-step-indicator" id="tutorial-step-indicator"></div>
-    <button class="tutorial-continue-btn" id="tutorial-continue-btn">Weiter</button>
-
-    <div class="tutorial-completion-modal" id="tutorial-completion-modal">
-        <div class="tutorial-completion-content">
-            <div class="tutorial-completion-icon">
-                <i class="fas fa-trophy"></i>
-            </div>
-            <h2 class="tutorial-completion-title">Tutorial abgeschlossen!</h2>
-            <p class="tutorial-completion-message">
-                Sie haben erfolgreicht alle Funktionen von Gittertier Pro kennengelernt.
-                Sie können jetzt mit der App arbeiten oder das Tutorial jederzeit erneut starten.
-            </p>
-            <div class="tutorial-completion-actions">
-                <button class="tutorial-welcome-btn secondary" onclick="restartTutorial()">Tutorial wiederholen</button>
-                <button class="tutorial-welcome-btn primary" onclick="closeCompletionModal()">Zur App</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="tutorial-error-banner" id="tutorial-error-banner"></div>
-
-    <!-- NEW: Confirmation Modal for Clearing Cart -->
-    <div id="clear-cart-confirm-modal" class="confirmation-modal">
-        <div class="confirmation-content">
-            <div class="confirmation-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h2 class="confirmation-title">Warenkorb leeren?</h2>
-            <p class="confirmation-message">Möchten Sie wirklich den gesamten Warenkorb leeren? Diese Aktion kann nicht rückgängig gemacht werden.</p>
-            <div class="confirmation-buttons">
-                <button class="confirmation-btn cancel" onclick="closeClearCartConfirmModal()">Abbrechen</button>
-                <button class="confirmation-btn confirm" onclick="confirmClearCart()">Leeren</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW: Restore Cart Modal -->
-    <div id="restore-cart-modal" class="restore-modal">
-        <div class="restore-content">
-            <div class="restore-icon">
-                <i class="fas fa-history"></i>
-            </div>
-            <h2 class="restore-title">Warenkorb wiederherstellen?</h2>
-            <p class="restore-message">Es gibt gespeicherte Artikel in Ihrem Warenkorb von einer früheren Sitzung. Möchten Sie diese wiederherstellen?</p>
-            <div class="restore-buttons">
-                <button class="restore-btn cancel" onclick="closeRestoreCartModal()">Nein</button>
-                <button class="restore-btn confirm" onclick="confirmRestoreCart()">Ja, wiederherstellen</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW: Product Search Modal -->
-    <div id="product-search-modal" class="search-modal">
-        <div class="search-header">
-            <h2><i class="fas fa-search"></i> Produkte suchen</h2>
-            <button class="modal-close" onclick="closeProductSearchModal()">&times;</button>
-        </div>
-        <div class="search-input-container">
-            <i class="fas fa-search search-input-icon"></i>
-            <input type="text" id="product-search-input" class="search-input" placeholder="Produktname oder Barcode eingeben...">
-        </div>
-        <div class="search-results" id="product-search-results">
-            <div class="search-no-results">Geben Sie einen Suchbegriff ein, um Produkte zu finden</div>
         </div>
     </div>
 
     <div class="notification" id="notification"></div>
 
     <script>
-    // ==================== STORAGE MANAGER IMPLEMENTATION ====================
+    // ==================== APP INITIALIZATION ====================
+    let cart = [];
+    let products = {};
+    let scannerActive = false;
+    let mediaStream = null;
+    let currentBarcode = null;
+    let scannedBarcodes = new Set();
+    let qrCode = null;
+    let lastBoxPosition = null;
+    let currencySymbol = '€';
+    let currentProduct = null;
+    let tutorialActive = false;
+    let tutorialStep = 0;
+    let tutorialSteps = [];
+
+    // Barcode Scanner Configuration
+    const scannerConfig = {
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#scanner-video'),
+            constraints: {
+                width: 1280,
+                height: 720,
+                facingMode: "environment"
+            }
+        },
+        decoder: {
+            readers: [
+                'ean_reader', 
+                'ean_8_reader'
+            ],
+            multiple: false
+        },
+        locate: true,
+        frequency: 10
+    };
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Initialize storage manager
+        await storageManager.init();
+        
+        // Load products from storage
+        products = await storageManager.getProducts();
+        
+        // Load cart from sessionStorage if available
+        loadCartFromSession();
+        
+        // Apply settings
+        applySettings();
+        checkShopStatus();
+        applyUserSettings();
+        setInterval(checkShopStatus, 60000);
+        
+        // Initialize currency symbol
+        currencySymbol = '€';
+        window.addEventListener('focus', checkShopStatus);
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Initialize product grid
+        updateProductGrid();
+        
+        // Check if we should show the tutorial
+        checkTutorialStatus();
+        
+        // Update cart display
+        updateCartDisplay();
+    });
+
+    // ==================== EVENT LISTENERS SETUP ====================
+    function setupEventListeners() {
+        // Tab navigation
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                switchTab(tabId);
+            });
+        });
+        
+        // Scanner controls
+        document.getElementById('toggle-scanner').addEventListener('click', toggleScanner);
+        document.getElementById('manual-add').addEventListener('click', () => {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.manualAdd === false) {
+                showNotification('Manuelle Eingabe ist deaktiviert', 'error');
+                return;
+            }
+            currentBarcode = null;
+            showProductModal();
+        });
+        
+        // Product selection modal
+        document.getElementById('product-selection-close').addEventListener('click', closeProductSelectionModal);
+        document.getElementById('decrease-quantity').addEventListener('click', () => adjustSelectionQuantity(-1));
+        document.getElementById('increase-quantity').addEventListener('click', () => adjustSelectionQuantity(1));
+        document.getElementById('add-to-cart-selection').addEventListener('click', addSelectionToCart);
+        document.getElementById('rescan-product').addEventListener('click', resetScanner);
+        
+        // Floating pay button
+        document.getElementById('floating-pay-btn').addEventListener('click', generateQR);
+        
+        // Help button
+        document.getElementById('help-btn').addEventListener('click', startTutorial);
+        
+        // Modal overlay
+        document.getElementById('modal-overlay').addEventListener('click', closeModal);
+        
+        // Search input
+        document.getElementById('product-search-input').addEventListener('input', function(e) {
+            searchProducts(e.target.value);
+        });
+        
+        // Tutorial buttons
+        document.getElementById('tutorial-skip').addEventListener('click', skipTutorial);
+        document.getElementById('tutorial-next').addEventListener('click', nextTutorialStep);
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('product-selection-modal').classList.contains('active')) {
+                    closeProductSelectionModal();
+                } else {
+                    closeModal();
+                }
+            }
+        });
+    }
+
+    // ==================== TAB NAVIGATION ====================
+    function switchTab(tabId) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab-btn').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabId).classList.add('active');
+        
+        // Activate selected tab
+        document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+        
+        // Special handling for scanner tab
+        if (tabId === 'scanner-tab') {
+            // Ensure scanner is visible and ready
+            if (!scannerActive) {
+                document.getElementById('scanner-guide').style.display = 'block';
+            }
+        }
+    }
+
+    // ==================== SCANNER FUNCTIONS ====================
+    async function toggleScanner() {
+        const video = document.getElementById('scanner-video');
+        const status = document.getElementById('scanner-status');
+        const box = document.getElementById('barcode-box');
+        const container = document.getElementById('scanner-container');
+        const toggleBtn = document.getElementById('toggle-scanner');
+        const guide = document.getElementById('scanner-guide');
+        
+        try {
+            if (!scannerActive) {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                
+                video.srcObject = mediaStream;
+                await video.play();
+                
+                status.innerHTML = '<span class="dot"></span><span>Scannt...</span>';
+                status.classList.remove('inactive');
+                scannerActive = true;
+                container.classList.add('active');
+                toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Scanner stoppen';
+                guide.style.display = 'none';
+                await initScanner();
+            } else {
+                mediaStream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                status.innerHTML = '<span class="dot"></span><span>Scanner pausiert</span>';
+                status.classList.add('inactive');
+                scannerActive = false;
+                container.classList.remove('active');
+                toggleBtn.innerHTML = '<i class="fas fa-camera"></i> Scanner starten';
+                box.style.display = 'none';
+                guide.style.display = 'block';
+                Quagga.stop();
+            }
+        } catch (error) {
+            scannerActive = false;
+            showNotification(`Kamerafehler: ${error.message}`, 'error');
+        }
+    }
+
+    async function initScanner() {
+        return new Promise((resolve, reject) => {
+            Quagga.init(scannerConfig, err => {
+                if (err) return reject(err);
+                
+                // Add processed event for visual feedback
+                Quagga.onProcessed(onProcessed);
+                
+                Quagga.onDetected(handleDetection);
+                Quagga.start();
+                resolve();
+            });
+        });
+    }
+
+    function onProcessed(result) {
+        const box = document.getElementById('barcode-box');
+        
+        if (!result || !result.boxes) {
+            box.style.display = 'none';
+            lastBoxPosition = null;
+            return;
+        }
+        
+        const boxes = result.boxes;
+        const video = document.getElementById('scanner-video');
+        const container = document.getElementById('scanner-container');
+        
+        // Skip if video hasn't loaded dimensions yet
+        if (!video.videoWidth || !video.videoHeight) {
+            box.style.display = 'none';
+            return;
+        }
+        
+        // Find the first valid box
+        let validBox = null;
+        for (let i = 0; i < Math.min(boxes.length, 1); i++) {
+            if (boxes[i] && boxes[i].length === 4) {
+                validBox = boxes[i];
+                break;
+            }
+        }
+        
+        if (!validBox) {
+            box.style.display = 'none';
+            lastBoxPosition = null;
+            return;
+        }
+        
+        // Calculate video aspect ratio and scaling
+        const videoWidth = video.videoWidth;
+        const videoHeight = video.videoHeight;
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+        
+        const videoAspect = videoWidth / videoHeight;
+        const containerAspect = containerWidth / containerHeight;
+        
+        let scale, offsetX, offsetY;
+        
+        // Calculate scaling and offsets based on object-fit: cover
+        if (videoAspect > containerAspect) {
+            // Video is wider than container
+            scale = containerHeight / videoHeight;
+            offsetX = (containerWidth - videoWidth * scale) / 2;
+            offsetY = 0;
+        } else {
+            // Video is taller than container
+            scale = containerWidth / videoWidth;
+            offsetX = 0;
+            offsetY = (containerHeight - videoHeight * scale) / 2;
+        }
+        
+        // Calculate box coordinates
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        
+        for (const point of validBox) {
+            if (point.x < minX) minX = point.x;
+            if (point.x > maxX) maxX = point.x;
+            if (point.y < minY) minY = point.y;
+            if (point.y > maxY) maxY = point.y;
+        }
+        
+        const x = offsetX + minX * scale;
+        const y = offsetY + minY * scale;
+        const width = (maxX - minX) * scale;
+        const height = (maxY - minY) * scale;
+        
+        // Update box position with smooth transition
+        box.style.display = 'block';
+        box.style.left = `${x}px`;
+        box.style.top = `${y}px`;
+        box.style.width = `${width}px`;
+        box.style.height = `${height}px`;
+        
+        lastBoxPosition = { x, y, width, height };
+    }
+
+    function handleDetection(result) {
+        const code = result.codeResult.code;
+        if (!scannedBarcodes.has(code)) {
+            scannedBarcodes.add(code);
+            setTimeout(() => scannedBarcodes.delete(code), 2000);
+            handleBarcode(code);
+        }
+    }
+
+    function handleBarcode(barcode) {
+        currentBarcode = barcode;
+        playSound('scan');
+        
+        if (products[barcode]) {
+            // Show product selection modal
+            showProductSelection(products[barcode]);
+            showNotification(`${products[barcode].name} erkannt`);
+        } else {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.manualAdd === false) {
+                showNotification('Produkt nicht gefunden. Manuelle Eingabe ist deaktiviert.', 'error');
+            } else {
+                showProductModal(barcode);
+            }
+        }
+    }
+
+    // ==================== PRODUCT SELECTION MODAL ====================
+    function showProductSelection(product) {
+        currentProduct = product;
+        document.getElementById('product-selection-name').textContent = product.name;
+        document.getElementById('product-selection-price').textContent = product.price.toFixed(2) + currencySymbol;
+        document.getElementById('product-selection-quantity').textContent = '1';
+        document.getElementById('product-selection-modal').classList.add('active');
+    }
+
+    function closeProductSelectionModal() {
+        document.getElementById('product-selection-modal').classList.remove('active');
+        currentProduct = null;
+    }
+
+    function adjustSelectionQuantity(delta) {
+        if (!currentProduct) return;
+        
+        const quantityElement = document.getElementById('product-selection-quantity');
+        let quantity = parseInt(quantityElement.textContent);
+        quantity = Math.max(1, quantity + delta);
+        quantityElement.textContent = quantity;
+    }
+
+    function addSelectionToCart() {
+        if (!currentProduct) return;
+        
+        const quantity = parseInt(document.getElementById('product-selection-quantity').textContent);
+        const existing = cart.find(item => item.barcode === currentProduct.barcode);
+        
+        if (existing) {
+            existing.quantity += quantity;
+        } else {
+            cart.push({
+                ...currentProduct,
+                quantity: quantity
+            });
+        }
+        
+        updateCartDisplay();
+        saveCartToSession();
+        showNotification(`${currentProduct.name} hinzugefügt`);
+        closeProductSelectionModal();
+        
+        // Switch to cart tab if not already there
+        if (!document.getElementById('cart-tab').classList.contains('active')) {
+            switchTab('cart-tab');
+        }
+    }
+
+    function resetScanner() {
+        closeProductSelectionModal();
+        currentProduct = null;
+    }
+
+    // ==================== PRODUCT MANAGEMENT ====================
+    function updateProductGrid() {
+        const productsList = document.getElementById('products-list');
+        
+        if (Object.keys(products).length === 0) {
+            productsList.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fas fa-cube"></i>
+                    <p>Keine Produkte vorhanden</p>
+                    <p class="text-sm">Fügen Sie Produkte über den Scanner oder manuell hinzu</p>
+                </div>
+            `;
+            return;
+        }
+        
+        productsList.innerHTML = Object.values(products).map(product => `
+            <div class="product-card" onclick="selectProduct('${product.barcode}')">
+                <div class="product-card-image">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="product-card-name">${product.name}</div>
+                <div class="product-card-price">${product.price.toFixed(2)}${currencySymbol}</div>
+            </div>
+        `).join('');
+    }
+
+    function selectProduct(barcode) {
+        const product = products[barcode];
+        if (product) {
+            showProductSelection(product);
+        }
+    }
+
+    function showProductModal(barcode = '') {
+        document.getElementById('product-barcode-input').value = barcode;
+        document.getElementById('product-modal').classList.add('active');
+        document.getElementById('modal-overlay').classList.add('active');
+    }
+
+    async function saveProduct() {
+        const name = document.getElementById('product-name-input').value.trim();
+        const price = parseFloat(document.getElementById('product-price-input').value);
+        const barcode = document.getElementById('product-barcode-input').value;
+        playSound('success');
+
+        if (!name || isNaN(price) || !barcode) {
+            showNotification('Ungültige Eingabe', 'error');
+            return;
+        }
+        
+        if (price <= 0) {
+            showNotification('Preis muss größer als 0 sein', 'error');
+            return;
+        }
+
+        const product = { 
+            name, 
+            price, 
+            barcode,
+            stock: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        try {
+            await storageManager.saveProduct(product);
+            // Reload products from storage
+            products = await storageManager.getProducts();
+            updateProductGrid();
+            closeModal();
+            showNotification('Produkt gespeichert');
+        } catch (error) {
+            console.error('Failed to save product:', error);
+            showNotification('Fehler beim Speichern des Produkts', 'error');
+        }
+    }
+
+    // ==================== CART MANAGEMENT ====================
+    function loadCartFromSession() {
+        try {
+            const savedCart = sessionStorage.getItem('gittertier_cart');
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+                
+                // Check if we should show the restore modal
+                const paymentDeclined = sessionStorage.getItem('gittertier_payment_declined');
+                if (paymentDeclined === 'true') {
+                    // Show restore modal after a short delay
+                    setTimeout(showRestoreCartModal, 1000);
+                    // Clear the flag
+                    sessionStorage.removeItem('gittertier_payment_declined');
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load cart from session storage:', e);
+            cart = [];
+        }
+    }
+
+    function saveCartToSession() {
+        try {
+            sessionStorage.setItem('gittertier_cart', JSON.stringify(cart));
+        } catch (e) {
+            console.error('Failed to save cart to session storage:', e);
+        }
+    }
+
+    function clearCartFromSession() {
+        try {
+            sessionStorage.removeItem('gittertier_cart');
+        } catch (e) {
+            console.error('Failed to clear cart from session storage:', e);
+        }
+    }
+
+    function updateCartDisplay() {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const cartItems = document.getElementById('cart-items');
+        const cartCount = document.getElementById('cart-count');
+        const cartTotal = document.getElementById('cart-total-amount');
+        const cartBadge = document.getElementById('cart-badge');
+        const floatingBadge = document.getElementById('floating-pay-badge');
+        
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        
+        if (cart.length === 0) {
+            cartItems.innerHTML = `
+                <div class="empty-state" id="empty-cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>Ihr Warenkorb ist leer</p>
+                    <p class="text-sm">Scannen Sie Produkte, um sie hinzuzufügen</p>
+                </div>
+            `;
+        } else {
+            cartItems.innerHTML = cart.map(item => `
+                <div class="cart-item" data-barcode="${item.barcode}">
+                    <div class="cart-item-image">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">${item.price.toFixed(2)}${currencySymbol} × ${item.quantity}</div>
+                    </div>
+                    <div class="cart-item-quantity">
+                        <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', -1)">−</button>
+                        <span class="quantity-value">${item.quantity}</span>
+                        <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', 1)">+</button>
+                    </div>
+                    <button class="cart-item-remove" onclick="removeCartItem('${item.barcode}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        cartTotal.textContent = total.toFixed(2) + currencySymbol;
+        cartCount.textContent = `${totalItems} Artikel`;
+        
+        // Update badges
+        if (totalItems > 0) {
+            const badgeText = totalItems > 99 ? '99+' : totalItems;
+            cartBadge.textContent = badgeText;
+            cartBadge.style.display = 'flex';
+            floatingBadge.textContent = badgeText;
+            floatingBadge.style.display = 'flex';
+        } else {
+            cartBadge.style.display = 'none';
+            floatingBadge.style.display = 'none';
+        }
+    }
+    
+    function adjustCartItemQuantity(barcode, delta) {
+        const item = cart.find(item => item.barcode === barcode);
+        if (item) {
+            item.quantity = Math.max(0, item.quantity + delta);
+            if (item.quantity === 0) {
+                cart = cart.filter(i => i.barcode !== barcode);
+            }
+            updateCartDisplay();
+            saveCartToSession();
+        }
+    }
+    
+    function removeCartItem(barcode) {
+        cart = cart.filter(item => item.barcode !== barcode);
+        updateCartDisplay();
+        saveCartToSession();
+        showNotification('Artikel entfernt');
+    }
+
+    // ==================== PAYMENT FUNCTIONS ====================
+    function generateQR() {
+        if(cart.length === 0) {
+            showNotification('Warenkorb ist leer', 'error');
+            return;
+        }
+        
+        const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        const paymentData = {
+            paymentId,
+            items: cart.map(item => ({
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                barcode: item.barcode
+            })),
+            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        };
+
+        try {
+            const compressedData = LZString.compressToBase64(JSON.stringify(paymentData));
+            // Clear sessionStorage on successful payment
+            clearCartFromSession();
+            window.location.href = `customer?id=${encodeURIComponent(compressedData)}`;
+        } catch(e) {
+            console.error('Compression error:', e);
+            showNotification('Fehler beim Generieren des QR-Codes', 'error');
+            // Set payment declined flag in sessionStorage
+            sessionStorage.setItem('gittertier_payment_declined', 'true');
+        }
+    }
+
+    // ==================== SEARCH FUNCTIONS ====================
+    function showProductSearchModal() {
+        document.getElementById('product-search-modal').classList.add('active');
+        document.getElementById('modal-overlay').classList.add('active');
+        
+        // Focus on search input
+        setTimeout(() => {
+            document.getElementById('product-search-input').focus();
+        }, 100);
+    }
+    
+    function closeProductSearchModal() {
+        document.getElementById('product-search-modal').classList.remove('active');
+        document.getElementById('modal-overlay').classList.remove('active');
+        document.getElementById('product-search-input').value = '';
+        document.getElementById('product-search-results').innerHTML = '<div class="search-no-results">Geben Sie einen Suchbegriff ein, um Produkte zu finden</div>';
+    }
+    
+    function searchProducts(query) {
+        const resultsContainer = document.getElementById('product-search-results');
+        
+        if (!query || query.trim() === '') {
+            resultsContainer.innerHTML = '<div class="search-no-results">Geben Sie einen Suchbegriff ein, um Produkte zu finden</div>';
+            return;
+        }
+        
+        const searchTerm = query.toLowerCase().trim();
+        const results = [];
+        
+        // Search through products
+        for (const barcode in products) {
+            const product = products[barcode];
+            if (product.name.toLowerCase().includes(searchTerm) || 
+                product.barcode.includes(searchTerm)) {
+                results.push(product);
+            }
+        }
+        
+        // Display results
+        if (results.length === 0) {
+            resultsContainer.innerHTML = '<div class="search-no-results">Keine Produkte gefunden</div>';
+        } else {
+            resultsContainer.innerHTML = results.map(product => `
+                <div class="search-result-item" onclick="selectProductFromSearch('${product.barcode}')">
+                    <div class="search-result-name">${product.name}</div>
+                    <div class="search-result-price">${product.price.toFixed(2)}${currencySymbol}</div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    function selectProductFromSearch(barcode) {
+        const product = products[barcode];
+        if (product) {
+            // Fill the form in the product modal
+            document.getElementById('product-name-input').value = product.name;
+            document.getElementById('product-price-input').value = product.price;
+            document.getElementById('product-barcode-input').value = product.barcode;
+            
+            // Close the search modal
+            closeProductSearchModal();
+            
+            showNotification('Produktdetails wurden eingefüllt');
+        }
+    }
+
+    // ==================== SETTINGS AND UTILITIES ====================
+    function applySettings() {
+        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+        
+        // Apply currency setting
+        currencySymbol = settings.currency || '€';
+        updateCartDisplay();
+        
+        // Apply auto scanner setting
+        if (settings.autoScanner) {
+            // Start scanner after short delay to allow page to load
+            setTimeout(() => {
+                if (!scannerActive) {
+                    toggleScanner();
+                }
+            }, 500);
+        }
+        
+        // Apply notification duration
+        notificationDuration = settings.notificationDuration || 3;
+        
+        // Apply manual add setting
+        const manualAddBtn = document.getElementById('manual-add');
+        if (settings.manualAdd === false) {
+            if (manualAddBtn) {
+                manualAddBtn.disabled = true;
+                manualAddBtn.style.opacity = '0.5';
+            }
+        } else {
+            if (manualAddBtn) {
+                manualAddBtn.disabled = false;
+                manualAddBtn.style.opacity = '1';
+            }
+        }
+
+        // Check shop status after applying settings
+        checkShopStatus();
+    }
+
+    function applyUserSettings() {
+        const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
+        
+        // Apply scanner settings
+        if (settings.continuousScan) {
+            // Auto-start scanner if continuous scanning is enabled
+            setTimeout(() => {
+                if (!scannerActive) {
+                    toggleScanner();
+                }
+            }, 1000);
+        }
+        
+        // Apply sound settings
+        if (settings.scanSound === false) {
+            // Disable scan sounds
+            playSound = function() {}; // Override to do nothing
+        }
+
+        // Apply font size
+        if (settings.fontSize) {
+            document.documentElement.style.fontSize = 
+                settings.fontSize === 'small' ? '14px' : 
+                settings.fontSize === 'large' ? '18px' : '16px';
+        }
+    }
+
+    function timeToMinutes(timeStr) {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
+    }
+
+    function isShopOpen() {
+        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+        const shopHours = settings.shopHours || {};
+        
+        if (!shopHours.enabled) return true;
+        
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const openingMinutes = timeToMinutes(shopHours.openingTime);
+        const closingMinutes = timeToMinutes(shopHours.closingTime);
+        
+        // Handle cases where closing time is after midnight
+        if (closingMinutes < openingMinutes) {
+            return currentMinutes >= openingMinutes || currentMinutes < closingMinutes;
+        }
+        
+        return currentMinutes >= openingMinutes && currentMinutes < closingMinutes;
+    }
+
+    function checkShopStatus() {
+        const open = isShopOpen();
+        const closedScreen = document.getElementById('closed-screen');
+        const mainContent = document.querySelector('main');
+        
+        if (!open && closedScreen && closedScreen.style.display !== 'flex') {
+            closedScreen.style.display = 'flex';
+            mainContent.style.display = 'none';
+            
+            // Show opening hours
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            const shopHours = settings.shopHours || {};
+            if (shopHours.enabled) {
+                document.getElementById('opening-hours-display').textContent = 
+                    `Öffnet um ${shopHours.openingTime} Uhr`;
+            }
+            
+            // Stop scanner if active
+            if (scannerActive) {
+                toggleScanner();
+            }
+        } else {
+            if (closedScreen) closedScreen.style.display = 'none';
+            mainContent.style.display = 'block';
+        }
+    }
+
+    function showNotification(message, type = 'success') {
+        playSound(type);
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = 'notification';
+        notification.classList.add(type);
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+
+    function closeModal() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.classList.remove('active');
+        });
+        document.getElementById('modal-overlay').classList.remove('active');
+        document.getElementById('product-name-input').value = '';
+        document.getElementById('product-price-input').value = '';
+    }
+
+    function playSound(type) {
+        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+        if (!settings.soundEffects) return;
+        
+        const audio = new Audio();
+        audio.volume = 0.3;
+        
+        switch(type) {
+            case 'success':
+                audio.src = 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_f96ec71310.mp3';
+                break;
+            case 'error':
+                audio.src = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_b805049288.mp3';
+                break;
+            case 'scan':
+                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
+                break;
+        }
+        
+        audio.play().catch(e => console.log('Sound playback error:', e));
+    }
+
+    // ==================== TUTORIAL SYSTEM ====================
+    function checkTutorialStatus() {
+        try {
+            const tutorialSeen = localStorage.getItem('gittertier_tutorial_seen');
+            if (tutorialSeen === null) {
+                // Show tutorial after a short delay
+                setTimeout(showTutorial, 1500);
+            }
+        } catch (e) {
+            console.error('Failed to check tutorial status:', e);
+        }
+    }
+
+    function showTutorial() {
+        document.getElementById('tutorial-overlay').classList.add('active');
+        tutorialActive = true;
+        tutorialStep = 0;
+        
+        // Initialize tutorial steps
+        initializeTutorialSteps();
+        
+        // Show first step
+        showTutorialStep();
+    }
+
+    function initializeTutorialSteps() {
+        tutorialSteps = [
+            {
+                title: "Willkommen bei Gittertier Pro",
+                message: "Willkommen zu Ihrer neuen Verkaufsplattform! Dieses Tutorial führt Sie durch die wichtigsten Funktionen der App.",
+                progress: 1
+            },
+            {
+                title: "Tab-Navigation",
+                message: "Unten finden Sie die Hauptnavigation mit vier Tabs: Scanner, Produkte, Warenkorb und Einstellungen. Tippen Sie auf einen Tab, um zwischen den Bereichen zu wechseln.",
+                progress: 2
+            },
+            {
+                title: "Scanner-Tab",
+                message: "Im Scanner-Tab können Sie Barcodes von Produkten scannen. Tippen Sie auf 'Scanner starten', um die Kamera zu aktivieren.",
+                progress: 3
+            },
+            {
+                title: "Produkte-Tab",
+                message: "Im Produkte-Tab finden Sie alle gespeicherten Produkte. Sie können hier auch neue Produkte manuell hinzufügen oder nach vorhandenen Produkten suchen.",
+                progress: 4
+            },
+            {
+                title: "Warenkorb-Tab",
+                message: "Im Warenkorb-Tab sehen Sie alle hinzugefügten Produkte. Sie können Mengen anpassen oder Artikel entfernen.",
+                progress: 5
+            },
+            {
+                title: "Schwebender Bezahl-Button",
+                message: "Der schwebende Button mit dem QR-Code-Symbol ermöglicht Ihnen, eine Zahlung zu initiieren, sobald Artikel im Warenkorb sind.",
+                progress: 6
+            },
+            {
+                title: "Produktscannen",
+                message: "Wenn Sie einen Barcode scannen, öffnet sich ein Modal, in dem Sie die Menge anpassen und das Produkt zum Warenkorb hinzufügen können.",
+                progress: 7
+            },
+            {
+                title: "Tutorial abgeschlossen",
+                message: "Sie haben alle Grundfunktionen kennengelernt! Sie können dieses Tutorial jederzeit über das Fragezeichen in der Kopfzeile erneut starten.",
+                progress: 8
+            }
+        ];
+    }
+
+    function showTutorialStep() {
+        if (tutorialStep >= tutorialSteps.length) {
+            completeTutorial();
+            return;
+        }
+        
+        const step = tutorialSteps[tutorialStep];
+        document.getElementById('tutorial-title').textContent = step.title;
+        document.getElementById('tutorial-message').textContent = step.message;
+        
+        // Update progress dots
+        const progressContainer = document.getElementById('tutorial-progress');
+        progressContainer.innerHTML = '';
+        
+        for (let i = 0; i < tutorialSteps.length; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'tutorial-progress-dot';
+            if (i === tutorialStep) {
+                dot.classList.add('active');
+            }
+            progressContainer.appendChild(dot);
+        }
+        
+        // Update button text
+        if (tutorialStep === 0) {
+            document.getElementById('tutorial-next').textContent = 'Tutorial starten';
+        } else if (tutorialStep === tutorialSteps.length - 1) {
+            document.getElementById('tutorial-next').textContent = 'Abschließen';
+        } else {
+            document.getElementById('tutorial-next').textContent = 'Weiter';
+        }
+        
+        // Special actions for specific steps
+        switch(tutorialStep) {
+            case 2: // Scanner tab
+                switchTab('scanner-tab');
+                break;
+            case 3: // Products tab
+                switchTab('products-tab');
+                break;
+            case 4: // Cart tab
+                switchTab('cart-tab');
+                break;
+            case 5: // Floating button
+                // Ensure cart has items to show the badge
+                if (cart.length === 0) {
+                    // Add a sample item temporarily
+                    const sampleProduct = {
+                        name: 'Beispielprodukt',
+                        price: 9.99,
+                        barcode: '123456789',
+                        quantity: 1
+                    };
+                    cart.push(sampleProduct);
+                    updateCartDisplay();
+                    // Remove it after tutorial
+                    setTimeout(() => {
+                        cart = cart.filter(item => item.barcode !== '123456789');
+                        updateCartDisplay();
+                    }, 5000);
+                }
+                break;
+        }
+    }
+
+    function nextTutorialStep() {
+        tutorialStep++;
+        showTutorialStep();
+    }
+
+    function skipTutorial() {
+        completeTutorial();
+    }
+
+    function completeTutorial() {
+        document.getElementById('tutorial-overlay').classList.remove('active');
+        tutorialActive = false;
+        
+        // Save that tutorial has been completed
+        try {
+            localStorage.setItem('gittertier_tutorial_seen', 'true');
+        } catch (e) {
+            console.error('Failed to save tutorial completion:', e);
+        }
+        
+        // Reset cart if we added a sample item
+        cart = cart.filter(item => item.barcode !== '123456789');
+        updateCartDisplay();
+        
+        showNotification('Tutorial abgeschlossen!', 'success');
+    }
+
+    function startTutorial() {
+        tutorialStep = 0;
+        showTutorial();
+    }
+
+    // ==================== STORAGE MANAGER ====================
     const storageManager = (function() {
         // Constants for localStorage keys
         const PREFIX_PRODUCT = 'product_';
@@ -1933,35 +2664,6 @@
                 }
             }
 
-            function applyUserSettings() {
-                const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
-                
-                // Apply scanner settings
-                if (settings.continuousScan) {
-                    // Auto-start scanner if continuous scanning is enabled
-                    setTimeout(() => {
-                        if (!scannerActive) {
-                            toggleScanner();
-                        }
-                    }, 1000);
-                }
-                
-                // Apply sound settings
-                if (settings.scanSound === false) {
-                    // Disable scan sounds
-                    playSound = function() {}; // Override to do nothing
-                }
-
-                    // Apply font size
-                    if (settings.fontSize) {
-                        document.documentElement.style.fontSize = 
-                            settings.fontSize === 'small' ? '14px' : 
-                            settings.fontSize === 'large' ? '18px' : '16px';
-                    }
-
-            }
-
-            
             // Check for legacy products key (without prefix)
             const legacyProducts = localStorage.getItem('products');
             if (legacyProducts) {
@@ -1983,7 +2685,7 @@
         // Setup offline/online event handlers
         function setupOfflineHandling() {
             window.addEventListener('offline', () => {
-                showNotification('Offline-Modus aktiviert. Änderungen werden später synchronisiert.', 'info');
+                showNotification('Offline-Modus aktiviert. Änderungen werden später synchronisiert.', 'warning');
                 document.body.classList.add('offline');
             });
             
@@ -2032,36 +2734,6 @@
             return true;
         }
         
-        // Validate customer against schema
-        function validateCustomer(customer) {
-            if (!customer || typeof customer !== 'object') {
-                throw new Error('Customer must be an object');
-            }
-            
-            if (!customer.id || typeof customer.id !== 'string' || customer.id.trim() === '') {
-                throw new Error('Customer ID is required and must be a non-empty string');
-            }
-            
-            if (!customer.name || typeof customer.name !== 'string' || customer.name.trim() === '') {
-                throw new Error('Customer name is required and must be a non-empty string');
-            }
-            
-            if (customer.email && (typeof customer.email !== 'string' || customer.email.trim() === '')) {
-                throw new Error('Customer email must be a non-empty string if provided');
-            }
-            
-            if (customer.loyaltyPoints && (typeof customer.loyaltyPoints !== 'number' || 
-                !Number.isInteger(customer.loyaltyPoints) || customer.loyaltyPoints < 0)) {
-                throw new Error('Customer loyalty points must be a non-negative integer if provided');
-            }
-            
-            if (customer.purchaseHistory && !Array.isArray(customer.purchaseHistory)) {
-                throw new Error('Customer purchase history must be an array if provided');
-            }
-            
-            return true;
-        }
-        
         // Create a data wrapper with version and timestamp
         function createDataWrapper(data) {
             return {
@@ -2069,104 +2741,6 @@
                 lastModified: new Date().toISOString(),
                 data: data
             };
-        }
-        
-        // Encrypt sensitive fields in an object
-        async function encryptSensitiveFields(obj) {
-            if (!encryptionKey) return obj;
-            
-            const result = {...obj};
-            
-            // Encrypt email if present
-            if (result.email) {
-                try {
-                    const iv = crypto.getRandomValues(new Uint8Array(12));
-                    const encodedEmail = new TextEncoder().encode(result.email);
-                    
-                    const encrypted = await crypto.subtle.encrypt(
-                        { name: 'AES-GCM', iv },
-                        encryptionKey,
-                        encodedEmail
-                    );
-                    
-                    result.email = {
-                        encrypted: true,
-                        data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-                        iv: btoa(String.fromCharCode(...iv))
-                    };
-                } catch (error) {
-                    console.error('Failed to encrypt email:', error);
-                }
-            }
-            
-            // Encrypt authentication tokens if present
-            if (result.authToken) {
-                try {
-                    const iv = crypto.getRandomValues(new Uint8Array(12));
-                    const encodedToken = new TextEncoder().encode(result.authToken);
-                    
-                    const encrypted = await crypto.subtle.encrypt(
-                        { name: 'AES-GCM', iv },
-                        encryptionKey,
-                        encodedToken
-                    );
-                    
-                    result.authToken = {
-                        encrypted: true,
-                        data: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-                        iv: btoa(String.fromCharCode(...iv))
-                    };
-                } catch (error) {
-                    console.error('Failed to encrypt auth token:', error);
-                }
-            }
-            
-            return result;
-        }
-        
-        // Decrypt sensitive fields in an object
-        async function decryptSensitiveFields(obj) {
-            if (!encryptionKey) return obj;
-            
-            const result = {...obj};
-            
-            // Decrypt email if encrypted
-            if (result.email && result.email.encrypted) {
-                try {
-                    const iv = Uint8Array.from(atob(result.email.iv), c => c.charCodeAt(0));
-                    const encryptedData = Uint8Array.from(atob(result.email.data), c => c.charCodeAt(0));
-                    
-                    const decrypted = await crypto.subtle.decrypt(
-                        { name: 'AES-GCM', iv },
-                        encryptionKey,
-                        encryptedData
-                    );
-                    
-                    result.email = new TextDecoder().decode(decrypted);
-                } catch (error) {
-                    console.error('Failed to decrypt email:', error);
-                }
-            }
-            
-            // Decrypt auth token if encrypted
-            if (result.authToken && result.authToken.encrypted) {
-                try {
-                    const iv = Uint8Array.from(atob(result.authToken.iv), c => c.charCodeAt(0));
-                    const encryptedData = Uint8Array.from(atob(result.authToken.data), c => c.charCodeAt(0));
-                    
-                    const decrypted = await crypto.subtle.decrypt(
-                        { name: 'AES-GCM', iv },
-                        encryptionKey,
-                        encryptedData
-                    );
-                    
-                    result.authToken = new TextDecoder().decode(decrypted);
-                } catch (error) {
-                    console.error('Failed to decrypt auth token:', error);
-                }
-            }
-            
-            return result;
         }
         
         // Store an item with compression and encryption
@@ -2395,13 +2969,10 @@
                     // Validate product
                     validateProduct(product);
                     
-                    // Encrypt sensitive fields if any
-                    const processedProduct = await encryptSensitiveFields(product);
-                    
                     // Store the product
                     const success = await storeItem(
                         `${PREFIX_PRODUCT}${product.barcode}`,
-                        processedProduct,
+                        product,
                         skipAudit
                     );
                     
@@ -2427,9 +2998,7 @@
                     if (key.startsWith(PREFIX_PRODUCT)) {
                         const product = await retrieveItem(key);
                         if (product) {
-                            // Decrypt sensitive fields if any
-                            const decryptedProduct = await decryptSensitiveFields(product);
-                            products[decryptedProduct.barcode] = decryptedProduct;
+                            products[product.barcode] = product;
                         }
                     }
                 }
@@ -2461,1580 +3030,15 @@
                     showNotification('Fehler beim Löschen des Produkts', 'error');
                     return false;
                 }
-            },
-            
-            async importProducts(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    
-                    reader.onload = async (e) => {
-                        try {
-                            const content = e.target.result;
-                            const products = JSON.parse(content);
-                            
-                            if (!Array.isArray(products)) {
-                                throw new Error('Invalid format: expected array of products');
-                            }
-                            
-                            let successCount = 0;
-                            let errorCount = 0;
-                            
-                            for (const product of products) {
-                                try {
-                                    if (await this.saveProduct(product, true)) {
-                                        successCount++;
-                                    } else {
-                                        errorCount++;
-                                    }
-                                } catch (error) {
-                                    console.error('Failed to import product:', error);
-                                    errorCount++;
-                                }
-                            }
-                            
-                            // Log import to audit trail
-                            logAudit('importProducts', { 
-                                file: file.name, 
-                                successCount, 
-                                errorCount 
-                            });
-                            
-                            showNotification(
-                                `Import abgeschlossen: ${successCount} erfolgreich, ${errorCount} fehlgeschlagen`,
-                                successCount > 0 ? 'success' : 'error'
-                            );
-                            
-                            resolve({ successCount, errorCount });
-                        } catch (error) {
-                            console.error('Failed to parse import file:', error);
-                            showNotification('Ungültige Importdatei', 'error');
-                            reject(error);
-                        }
-                    };
-                    
-                    reader.onerror = () => {
-                        reject(new Error('Failed to read file'));
-                    };
-                    
-                    reader.readAsText(file);
-                });
-            },
-            
-            async exportProducts() {
-                try {
-                    const products = await this.getProducts();
-                    const dataStr = JSON.stringify(Object.values(products), null, 2);
-                    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-                    
-                    const exportFileDefaultName = `products_${new Date().toISOString().split('T')[0]}.json`;
-                    
-                    const linkElement = document.createElement('a');
-                    linkElement.setAttribute('href', dataUri);
-                    linkElement.setAttribute('download', exportFileDefaultName);
-                    linkElement.click();
-                    
-                    // Log export to audit trail
-                    logAudit('exportProducts', { count: Object.keys(products).length });
-                    
-                    showNotification('Produkte erfolgreich exportiert', 'success');
-                    return true;
-                } catch (error) {
-                    console.error('Failed to export products:', error);
-                    showNotification('Fehler beim Exportieren der Produkte', 'error');
-                    return false;
-                }
-            },
-            
-            // Customer management
-            async saveCustomer(customer, skipAudit = false) {
-                try {
-                    // Validate customer
-                    validateCustomer(customer);
-                    
-                    // Encrypt sensitive fields
-                    const processedCustomer = await encryptSensitiveFields(customer);
-                    
-                    // Store the customer
-                    const success = await storeItem(
-                        `${PREFIX_CUSTOMER}${customer.id}`,
-                        processedCustomer,
-                        skipAudit
-                    );
-                    
-                    if (success && !skipAudit) {
-                        showNotification('Kunde erfolgreich gespeichert', 'success');
-                    }
-                    
-                    return success;
-                } catch (error) {
-                    console.error('Failed to save customer:', error);
-                    showNotification(`Fehler beim Speichern: ${error.message}`, 'error');
-                    return false;
-                }
-            },
-            
-            async getCustomers() {
-                const customers = {};
-                
-                // Get all customer keys
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    
-                    if (key.startsWith(PREFIX_CUSTOMER)) {
-                        const customer = await retrieveItem(key);
-                        if (customer) {
-                            // Decrypt sensitive fields
-                            const decryptedCustomer = await decryptSensitiveFields(customer);
-                            customers[decryptedCustomer.id] = decryptedCustomer;
-                        }
-                    }
-                }
-                
-                return customers;
-            },
-            
-            async deleteCustomer(id) {
-                try {
-                    const key = `${PREFIX_CUSTOMER}${id}`;
-                    localStorage.removeItem(key);
-                    
-                    // Log to audit trail
-                    logAudit('deleteCustomer', { id });
-                    
-                    // If offline, queue the deletion
-                    if (!navigator.onLine) {
-                        queueOfflineAction({
-                            type: 'delete',
-                            key,
-                            timestamp: new Date().toISOString()
-                        });
-                    }
-                    
-                    showNotification('Kunde erfolgreich gelöscht', 'success');
-                    return true;
-                } catch (error) {
-                    console.error('Failed to delete customer:', error);
-                    showNotification('Fehler beim Löschen des Kunden', 'error');
-                    return false;
-                }
-            },
-            
-            async searchCustomer(query) {
-                try {
-                    const customers = await this.getCustomers();
-                    const results = [];
-                    
-                    const queryLower = query.toLowerCase();
-                    
-                    for (const id in customers) {
-                        const customer = customers[id];
-                        
-                        if (
-                            customer.name.toLowerCase().includes(queryLower) ||
-                            (customer.email && customer.email.toLowerCase().includes(queryLower)) ||
-                            customer.id.toLowerCase().includes(queryLower)
-                        ) {
-                            results.push(customer);
-                        }
-                    }
-                    
-                    return results;
-                } catch (error) {
-                    console.error('Failed to search customers:', error);
-                    return [];
-                }
-            },
-            
-            // Offline queue management
-            queueOfflineAction,
-            replayOfflineQueue,
-            
-            // Audit log management
-            logAudit,
-            
-            async exportAuditLog() {
-                try {
-                    const logData = localStorage.getItem(KEY_AUDIT_LOG);
-                    
-                    if (!logData) {
-                        showNotification('Audit-Log ist leer', 'info');
-                        return false;
-                    }
-                    
-                    // Decompress if needed
-                    let auditLog;
-                    try {
-                        auditLog = JSON.parse(LZString.decompressFromUTF16(logData) || '[]');
-                    } catch (e) {
-                        // Might not be compressed
-                        auditLog = JSON.parse(logData || '[]');
-                    }
-                    
-                    const dataStr = JSON.stringify(auditLog, null, 2);
-                    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-                    
-                    const exportFileDefaultName = `audit_log_${new Date().toISOString().split('T')[0]}.json`;
-                    
-                    const linkElement = document.createElement('a');
-                    linkElement.setAttribute('href', dataUri);
-                    linkElement.setAttribute('download', exportFileDefaultName);
-                    linkElement.click();
-                    
-                    showNotification('Audit-Log erfolgreich exportiert', 'success');
-                    return true;
-                } catch (error) {
-                    console.error('Failed to export audit log:', error);
-                    showNotification('Fehler beim Exportieren des Audit-Logs', 'error');
-                    return false;
-                }
             }
         };
     })();
 
-    // ==================== TUTORIAL AND MAIN APP CODE ====================
-    // Tutorial State Management
-    let tutorialActive = false;
-    let tutorialCurrentStep = 0;
-    let tutorialSteps = [];
-    let tutorialObservers = [];
-    let tutorialStorageAvailable = true;
-    
-    // Main App Variables
-    let cart = [];
-    let products = {};
-    let scannerActive = false;
-    let mediaStream = null;
-    let currentBarcode = null;
-    let scannedBarcodes = new Set();
-    let qrCode = null;
-    let lastBoxPosition = null;
-    let currencySymbol = '€';
-    let currentProduct = null;
-
-    // Barcode Scanner Configuration
-    const scannerConfig = {
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector('#scanner-video'),
-            constraints: {
-                width: 1280,
-                height: 720,
-                facingMode: "environment"
-            }
-        },
-        decoder: {
-            readers: [
-                'ean_reader', 
-                'ean_8_reader'
-            ],
-            multiple: false
-        },
-        locate: true,
-        frequency: 10
-    };
-
-    // Initialize the app
-    document.addEventListener('DOMContentLoaded', async function() {
-        // Initialize storage manager
-        await storageManager.init();
-        
-        // Load products from storageManager
-        products = await storageManager.getProducts();
-        
-        // NEW: Load cart from sessionStorage if available
-        loadCartFromSession();
-        
-        // Apply settings
-        applySettings();
-        checkShopStatus();
-        applyUserSettings();
-        setInterval(checkShopStatus, 60000);
-        
-        // Initialize currency symbol
-        currencySymbol = '€';
-        window.addEventListener('focus', checkShopStatus);
-        
-        // Set up tutorial continue button handler
-        document.getElementById('tutorial-continue-btn').addEventListener('click', nextTutorialStep);
-        
-        // Check if we should show the tutorial
-        checkTutorialStatus();
-        document.getElementById('tutorial-cutout').style.display = 'none';
-        document.getElementById('tutorial-bubble').style.display = 'none';
-        
-        // Set up modal event listeners
-        document.getElementById('modal-overlay').addEventListener('click', closeModal);
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-        
-        // Set up clear cart button to show confirmation modal
-        document.getElementById('tutorial-continue-btn').addEventListener('click', nextTutorialStep);
-        
-        // Check if we need to resume a tutorial in progress
-        try {
-            const tutorialInProgress = localStorage.getItem('gittertier_tutorial_progress') || 
-                                      sessionStorage.getItem('gittertier_tutorial_progress');
-            
-            if (tutorialInProgress) {
-                const progress = JSON.parse(tutorialInProgress);
-                const isRecent = (Date.now() - progress.timestamp) < 0;
-                
-                if (isRecent) {
-                    if (confirm('Möchten Sie das Tutorial fortsetzen, wo Sie aufgehört haben?')) {
-                        tutorialCurrentStep = progress.step;
-                        startTutorial();
-                    }
-                }
-            }
-        } catch (e) {
-            console.error('Failed to check for tutorial progress:', e);
-        }
-    });
-
-    // NEW: Load cart from sessionStorage
-    function loadCartFromSession() {
-        try {
-            const savedCart = sessionStorage.getItem('gittertier_cart');
-            if (savedCart) {
-                cart = JSON.parse(savedCart);
-                updateCartDisplay();
-                
-                // Check if we should show the restore modal
-                const paymentDeclined = sessionStorage.getItem('gittertier_payment_declined');
-                if (paymentDeclined === 'true') {
-                    // Show restore modal after a short delay
-                    setTimeout(showRestoreCartModal, 1000);
-                    // Clear the flag
-                    sessionStorage.removeItem('gittertier_payment_declined');
-                }
-            }
-        } catch (e) {
-            console.error('Failed to load cart from session storage:', e);
-            cart = [];
-        }
-    }
-
-    // NEW: Save cart to sessionStorage
-    function saveCartToSession() {
-        try {
-            sessionStorage.setItem('gittertier_cart', JSON.stringify(cart));
-        } catch (e) {
-            console.error('Failed to save cart to session storage:', e);
-        }
-    }
-
-    // NEW: Clear cart from sessionStorage
-    function clearCartFromSession() {
-        try {
-            sessionStorage.removeItem('gittertier_cart');
-        } catch (e) {
-            console.error('Failed to clear cart from session storage:', e);
-        }
-    }
-
-    // NEW: Show confirmation modal for clearing cart
-    function showClearCartConfirmModal() {
-        if (cart.length === 0) {
-            showNotification('Warenkorb ist bereits leer', 'info');
-            return;
-        }
-        
-        document.getElementById('clear-cart-confirm-modal').classList.add('active');
-        document.getElementById('modal-overlay').classList.add('active');
-    }
-
-    // NEW: Close confirmation modal
-    function closeClearCartConfirmModal() {
-        document.getElementById('clear-cart-confirm-modal').classList.remove('active');
-        document.getElementById('modal-overlay').classList.remove('active');
-    }
-
-    // NEW: Confirm clearing cart
-    function confirmClearCart() {
-        cart = [];
-        updateCartDisplay();
-        clearCartFromSession();
-        showNotification('Warenkorb geleert');
-        closeClearCartConfirmModal();
-    }
-
-    // NEW: Show restore cart modal
+    // ==================== RESTORE CART MODAL (Placeholder) ====================
     function showRestoreCartModal() {
-        document.getElementById('restore-cart-modal').classList.add('active');
-        document.getElementById('modal-overlay').classList.add('active');
-    }
-
-    // NEW: Close restore cart modal
-    function closeRestoreCartModal() {
-        document.getElementById('restore-cart-modal').classList.remove('active');
-        document.getElementById('modal-overlay').classList.remove('active');
-        // Clear the cart if user chooses not to restore
-        cart = [];
-        clearCartFromSession();
-        updateCartDisplay();
-    }
-
-    // NEW: Confirm restoring cart
-    function confirmRestoreCart() {
-        // Cart is already loaded from sessionStorage, just update display
-        updateCartDisplay();
-        showNotification('Warenkorb wiederhergestellt');
-        closeRestoreCartModal();
-    }
-
-    // Scanner Initialization
-    async function initScanner() {
-        return new Promise((resolve, reject) => {
-            Quagga.init(scannerConfig, err => {
-                if (err) return reject(err);
-                
-                // Add processed event for visual feedback
-                Quagga.onProcessed(onProcessed);
-                
-                Quagga.onDetected(handleDetection);
-                Quagga.start();
-                resolve();
-            });
-        });
-    }
-
-    function timeToMinutes(timeStr) {
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      return hours * 60 + minutes;
-    }
-
-    function isShopOpen() {
-        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-        const shopHours = settings.shopHours || {};
-        
-        if (!shopHours.enabled) return true;
-        
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const openingMinutes = timeToMinutes(shopHours.openingTime);
-        const closingMinutes = timeToMinutes(shopHours.closingTime);
-        
-        // Handle cases where closing time is after midnight
-        if (closingMinutes < openingMinutes) {
-            return currentMinutes >= openingMinutes || currentMinutes < closingMinutes;
-        }
-        
-        return currentMinutes >= openingMinutes && currentMinutes < closingMinutes;
-    }
-
-    function checkShopStatus() {
-        const open = isShopOpen();
-        const closedScreen = document.getElementById('closed-screen');
-        const mainContent = document.querySelector('main');
-        const maintenanceModal = document.getElementById('maintenance-modal');
-        
-        if (!open && maintenanceModal.style.display !== 'flex') {
-            closedScreen.style.display = 'flex';
-            mainContent.style.display = 'none';
-            
-            // Show opening hours
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            const shopHours = settings.shopHours || {};
-            if (shopHours.enabled) {
-                document.getElementById('opening-hours-display').textContent = 
-                    `Öffnet um ${shopHours.openingTime} Uhr`;
-            }
-            
-            // Stop scanner if active
-            if (scannerActive) {
-                toggleScanner();
-            }
-        } else {
-            closedScreen.style.display = 'none';
-            mainContent.style.display = 'block';
-        }
-    }
-    
-    // Visual feedback for barcode detection
-    function onProcessed(result) {
-        const box = document.getElementById('barcode-box');
-        
-        if (!result || !result.boxes) {
-            box.style.display = 'none';
-            lastBoxPosition = null;
-            return;
-        }
-        
-        const boxes = result.boxes;
-        const video = document.getElementById('scanner-video');
-        const container = document.getElementById('scanner-container');
-        
-        // Skip if video hasn't loaded dimensions yet
-        if (!video.videoWidth || !video.videoHeight) {
-            box.style.display = 'none';
-            return;
-        }
-        
-        // Find the first valid box
-        let validBox = null;
-        for (let i = 0; i < Math.min(boxes.length, 1); i++) {
-            if (boxes[i] && boxes[i].length === 4) {
-                validBox = boxes[i];
-                break;
-            }
-        }
-        
-        if (!validBox) {
-            box.style.display = 'none';
-            lastBoxPosition = null;
-            return;
-        }
-        
-        // Calculate video aspect ratio and scaling
-        const videoWidth = video.videoWidth;
-        const videoHeight = video.videoHeight;
-        const containerWidth = container.offsetWidth;
-        const containerHeight = container.offsetHeight;
-        
-        const videoAspect = videoWidth / videoHeight;
-        const containerAspect = containerWidth / containerHeight;
-        
-        let scale, offsetX, offsetY;
-        
-        // Calculate scaling and offsets based on object-fit: cover
-        if (videoAspect > containerAspect) {
-            // Video is wider than container
-            scale = containerHeight / videoHeight;
-            offsetX = (containerWidth - videoWidth * scale) / 2;
-            offsetY = 0;
-        } else {
-            // Video is taller than container
-            scale = containerWidth / videoWidth;
-            offsetX = 0;
-            offsetY = (containerHeight - videoHeight * scale) / 2;
-        }
-        
-        // Calculate box coordinates
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        
-        for (const point of validBox) {
-            if (point.x < minX) minX = point.x;
-            if (point.x > maxX) maxX = point.x;
-            if (point.y < minY) minY = point.y;
-            if (point.y > maxY) maxY = point.y;
-        }
-        
-        const x = offsetX + minX * scale;
-        const y = offsetY + minY * scale;
-        const width = (maxX - minX) * scale;
-        const height = (maxY - minY) * scale;
-        
-        // Update box position with smooth transition
-        box.style.display = 'block';
-        box.style.left = `${x}px`;
-        box.style.top = `${y}px`;
-        box.style.width = `${width}px`;
-        box.style.height = `${height}px`;
-        
-        lastBoxPosition = { x, y, width, height };
-    }
-
-    function handleDetection(result) {
-        const code = result.codeResult.code;
-        if (!scannedBarcodes.has(code)) {
-            scannedBarcodes.add(code);
-            setTimeout(() => scannedBarcodes.delete(code), 2000);
-            handleBarcode(code);
-        }
-    }
-
-    // Barcode Handling
-    function handleBarcode(barcode) {
-        currentBarcode = barcode;
-        playSound('scan');
-        
-        if (products[barcode]) {
-            // Check if auto add to cart is enabled
-            const userSettings = JSON.parse(localStorage.getItem('userSettings')) || {};
-            
-            if (userSettings.autoAddToCart) {
-                // Auto add to cart
-                currentProduct = products[barcode];
-                addCurrentProductToCart();
-                showNotification(`${products[barcode].name} automatisch hinzugefügt`);
-            } else {
-                showProduct(products[barcode]);
-                showNotification(`${products[barcode].name} erkannt`);
-            }
-        } else {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.manualAdd === false) {
-                showNotification('Nicht erlaubt!', 'error');
-            } else {
-                showProductModal(barcode);
-            }
-        }
-    }
-
-    function showProduct(product) {
-        currentProduct = product;
-        document.getElementById('product-name').textContent = product.name;
-        document.getElementById('product-price').textContent = product.price.toFixed(2) + currencySymbol;
-        document.getElementById('product-quantity').textContent = '1';
-        document.getElementById('product-card').classList.add('visible');
-    }
-
-    function adjustProductQuantity(delta) {
-        if (!currentProduct) return;
-        
-        const quantityElement = document.getElementById('product-quantity');
-        let quantity = parseInt(quantityElement.textContent);
-        quantity = Math.max(1, quantity + delta);
-        quantityElement.textContent = quantity;
-    }
-
-    function addCurrentProductToCart() {
-        if (!currentProduct) return;
-        
-        const quantity = parseInt(document.getElementById('product-quantity').textContent);
-        const existing = cart.find(item => item.barcode === currentProduct.barcode);
-        
-        if (existing) {
-            existing.quantity += quantity;
-        } else {
-            cart.push({
-                ...currentProduct,
-                quantity: quantity
-            });
-        }
-        
-        updateCartDisplay();
-        // NEW: Save cart to sessionStorage
-        saveCartToSession();
-        showNotification(`${currentProduct.name} hinzugefügt`);
-    }
-
-    function resetScanner() {
-        document.getElementById('product-card').classList.remove('visible');
-        currentProduct = null;
-    }
-
-    // Cart Management
-    function addToCart(product) {
-        const existing = cart.find(item => item.barcode === product.barcode);
-        if (existing) {
-            existing.quantity++;
-        } else {
-            cart.push({...product, quantity: 1});
-        }
-        updateCartDisplay();
-        // NEW: Save cart to sessionStorage
-        saveCartToSession();
-    }
-
-    function updateCartDisplay() {
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const cartItems = document.getElementById('cart-items');
-        const cartCount = document.getElementById('cart-count');
-        const cartTotal = document.getElementById('cart-total-amount');
-        
-        cartItems.innerHTML = '';
-        
-        if (cart.length === 0) {
-            cartItems.innerHTML = `
-                <div class="empty-state" id="empty-cart">
-                    <i class="fas fa-shopping-cart"></i>
-                    <p>Ihr Warenkorb ist leer</p>
-                    <p class="text-sm">Scannen Sie Produkte, um sie hinzuzufügen</p>
-                </div>
-            `;
-        } else {
-            cart.innerHTML = cart.map(item => `
-                <div class="cart-item" data-barcode="${item.barcode}">
-                    <div class="cart-item-image">
-                        <i class="fas fa-cube"></i>
-                    </div>
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">${item.price.toFixed(2)}${currencySymbol} × ${item.quantity}</div>
-                    </div>
-                    <div class="cart-item-quantity">
-                        <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', -1)">−</button>
-                        <span class="quantity-value">${item.quantity}</span>
-                        <button class="quantity-btn" onclick="adjustCartItemQuantity('${item.barcode}', 1)">+</button>
-                    </div>
-                    <button class="cart-item-remove" onclick="removeCartItem('${item.barcode}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-        
-        cartTotal.textContent = total.toFixed(2) + currencySymbol;
-        cartCount.textContent = `${cart.reduce((sum, item) => sum + item.quantity, 0)} Artikel`;
-    }
-    
-    function adjustCartItemQuantity(barcode, delta) {
-        const item = cart.find(item => item.barcode === barcode);
-        if (item) {
-            item.quantity = Math.max(0, item.quantity + delta);
-            if (item.quantity === 0) {
-                cart = cart.filter(i => i.barcode !== barcode);
-            }
-            updateCartDisplay();
-            // NEW: Save cart to sessionStorage
-            saveCartToSession();
-        }
-    }
-    
-    function removeCartItem(barcode) {
-        cart = cart.filter(item => item.barcode !== barcode);
-        updateCartDisplay();
-        // NEW: Save cart to sessionStorage
-        saveCartToSession();
-        showNotification('Artikel entfernt');
-    }
-
-    // Product Management
-    function showProductModal(barcode) {
-        document.getElementById('product-barcode-input').value = barcode || '';
-        document.getElementById('product-modal').classList.add('active');
-        document.getElementById('modal-overlay').classList.add('active');
-    }
-
-    async function saveProduct() {
-        const name = document.getElementById('product-name-input').value.trim();
-        const price = parseFloat(document.getElementById('product-price-input').value);
-        const barcode = document.getElementById('product-barcode-input').value;
-        playSound('success');
-
-        if (!name || isNaN(price) || !barcode) {
-            showNotification('Ungültige Eingabe', 'error');
-            return;
-        }
-        
-        if (price <= 0) {
-            showNotification('Preis muss größer als 0 sein', 'error');
-            return;
-        }
-
-        const product = { 
-            name, 
-            price, 
-            barcode,
-            stock: 0,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-        
-        try {
-            await storageManager.saveProduct(product);
-            // Reload products from storage
-            products = await storageManager.getProducts();
-            showProduct(product);
-            closeModal();
-            showNotification('Produkt gespeichert');
-        } catch (error) {
-            console.error('Failed to save product:', error);
-            showNotification('Fehler beim Speichern des Produkts', 'error');
-        }
-    }
-
-    // QR Generation
-    function generateQR() {
-        if(cart.length === 0) {
-            showNotification('Warenkorb ist leer', 'error');
-            return;
-        }
-        
-        const paymentId = 'PAY-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
-        const paymentData = {
-            paymentId,
-            items: cart.map(item => ({
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                barcode: item.barcode
-            })),
-            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-        };
-
-        try {
-            const compressedData = LZString.compressToBase64(JSON.stringify(paymentData));
-            // NEW: Clear sessionStorage on successful payment
-            clearCartFromSession();
-            window.location.href = `customer?id=${encodeURIComponent(compressedData)}`;
-        } catch(e) {
-            console.error('Compression error:', e);
-            showNotification('Fehler beim Generieren des QR-Codes', 'error');
-            // NEW: Set payment declined flag in sessionStorage
-            sessionStorage.setItem('gittertier_payment_declined', 'true');
-        }
-    }
-
-    // Apply all settings from localStorage
-    function applySettings() {
-        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-        
-        // Apply currency setting
-        currencySymbol = settings.currency || '€';
-        updateCartDisplay();
-        
-        // Apply auto scanner setting
-        if (settings.autoScanner) {
-            // Start scanner after short delay to allow page to load
-            setTimeout(() => {
-                if (!scannerActive) {
-                    toggleScanner();
-                }
-            }, 500);
-        }
-        
-        // Apply notification duration
-        notificationDuration = settings.notificationDuration || 3;
-        
-        // Apply manual add setting
-        const manualAddBtn = document.getElementById('manual-add');
-        if (settings.manualAdd === false) {
-            if (manualAddBtn) {
-                manualAddBtn.disabled = true;
-                manualAddBtn.style.opacity = '0.5';
-            }
-        } else {
-            if (manualAddBtn) {
-                manualAddBtn.disabled = false;
-                manualAddBtn.style.opacity = '1';
-            }
-        }
-
-        // Check shop status after applying settings
-        checkShopStatus();
-    }
-    
-    // Scanner Control
-    async function toggleScanner() {
-        const video = document.getElementById('scanner-video');
-        const status = document.getElementById('scanner-status');
-        const box = document.getElementById('barcode-box');
-        const container = document.getElementById('scanner-container');
-        const toggleBtn = document.getElementById('toggle-scanner');
-        
-        try {
-            if (!scannerActive) {
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                });
-                
-                video.srcObject = mediaStream;
-                await video.play();
-                
-                status.innerHTML = '<span class="dot"></span><span>Scannt...</span>';
-                status.classList.remove('inactive');
-                scannerActive = true;
-                container.classList.add('active');
-                toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Scanner stoppen';
-                await initScanner();
-            } else {
-                mediaStream.getTracks().forEach(track => track.stop());
-                video.srcObject = null;
-                status.innerHTML = '<span class="dot"></span><span>Scanner pausiert</span>';
-                status.classList.add('inactive');
-                scannerActive = false;
-                container.classList.remove('active');
-                toggleBtn.innerHTML = '<i class="fas fa-camera"></i> Scanner starten';
-                box.style.display = 'none';
-                Quagga.stop();
-            }
-        } catch (error) {
-            scannerActive = false;
-            showNotification(`Kamerafehler: ${error.message}`, 'error');
-        }
-    }
-
-    // UI Helpers
-    function showNotification(message, type = 'success') {
-        playSound(type);
-        const notification = document.getElementById('notification');
-        notification.textContent = message;
-        notification.className = 'notification';
-        notification.classList.add(type);
-        notification.style.display = 'block';
-        
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 3000);
-    }
-
-    function closeModal() {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.classList.remove('active');
-        });
-        document.getElementById('modal-overlay').classList.remove('active');
-        document.getElementById('product-name-input').value = '';
-        document.getElementById('product-price-input').value = '';
-    }
-
-    // Event Listeners
-    document.getElementById('toggle-scanner').addEventListener('click', toggleScanner);
-    document.getElementById('manual-add').addEventListener('click', () => {
-        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-        if (settings.manualAdd === false) {
-            showNotification('Manuelle Eingabe ist deaktiviert', 'error');
-            return;
-        }
-        currentBarcode = null;
-        showProductModal();
-    });
-
-    function playSound(type) {
-        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-        if (!settings.soundEffects) return;
-        
-        const audio = new Audio();
-        audio.volume = 0.3;
-        
-        switch(type) {
-            case 'success':
-                audio.src = 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_f96ec71310.mp3';
-                break;
-            case 'error':
-                audio.src = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_b805049288.mp3';
-                break;
-            case 'scan':
-                audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAAAA';
-                break;
-        }
-        
-        audio.play().catch(e => console.log('Sound playback error:', e));
-    }
-
-    // ==================== TUTORIAL FUNCTIONS ====================
-    // Tutorial Steps Configuration
-    function initializeTutorialSteps() {
-        tutorialSteps = [
-            {
-                title: "Header-Bedienelemente",
-                content: "Oben rechts finden Sie verschiedene Bedienelemente: Einstellungen, Hilfe (öffnet dieses Tutorial), Support (Fragen & Anliegen) und Info (Über diese App).",
-                element: ".header-controls",
-                position: "bottom",
-                action: null
-            },
-            {
-                title: "Scanner-Bereich",
-                content: "Dies ist der Scanner-Bereich. Hier scannen Sie Barcodes von Produkten, um sie zum Warenkorb hinzuzufügen.",
-                element: "#scanner-container",
-                position: "top",
-                action: null
-            },
-            {
-                title: "Scanner starten",
-                content: "Klicken Sie auf 'Scanner starten', um die Kamera zu aktivieren und Barcodes zu erkennen.",
-                element: "#toggle-scanner",
-                position: "top",
-                action: "click",
-                simulate: function() {
-                    // If camera access fails, provide fallback
-                    try {
-                        document.getElementById('toggle-scanner').click();
-                    } catch (error) {
-                        showTutorialError("Kamera konnte nicht gestartet werden. Bitte erlauben Sie Kamera-Zugriff in Ihren Browsereinstellungen.");
-                        document.getElementById('tutorial-bubble').innerHTML += `
-                            <div class="tutorial-bubble-actions" style="margin-top: 10px;">
-                                <button class="tutorial-bubble-btn primary" onclick="simulateBarcodeScan()">Scan simulieren</button>
-                            </div>
-                        `;
-                    }
-                }
-            },
-            {
-                title: "Manuelle Eingabe",
-                content: "Falls ein Produkt nicht in unserem Register ist, können Sie hier Name und Preis eingeben. Achtung: Wir achten auf Betrug!",
-                element: "#manual-add",
-                position: "top",
-                action: "none",
-            },
-            {
-                title: "Produktinformationen",
-                content: "Hier werden die Details des gescannten Produkts angezeigt. Sie können die Menge anpassen und das Produkt zum Warenkorb hinzufügen.",
-                element: "#product-card",
-                position: "bottom",
-                action: null,
-                prepare: function() {
-                    // Ensure product card is visible
-                    if (!document.getElementById('product-card').classList.contains('visible')) {
-                        showProduct({
-                            name: 'Beispielprodukt',
-                            price: 9.99,
-                            barcode: '123456789'
-                        });
-                    }
-                }
-            },
-            {
-                title: "Mengensteuerung",
-                content: "Passen Sie hier die Menge des Produkts an, bevor Sie es zum Warenkorb hinzufügen.",
-                element: ".quantity-controls",
-                position: "bottom",
-                action: "click",
-                simulate: function() {
-                    document.getElementById('product-quantity').textContent = '2';
-                }
-            },
-            {
-                title: "Zum Warenkorb hinzufügen",
-                content: "Klicken Sie auf 'In Warenkorb', um das Produkt mit der eingestellten Menge zum Warenkorb hinzuzufügen.",
-                element: ".add-to-cart-btn",
-                position: "bottom",
-                action: "click",
-                simulate: function() {
-                    addToCart({
-                        name: 'Beispielprodukt',
-                        price: 9.99,
-                        barcode: '123456789'
-                    });
-                }
-            },
-            {
-                title: "Warenkorb",
-                content: "Hier sehen Sie alle Artikel in Ihren Warenkorb. Sie können Mengen anpassen oder Artikel entfernen.",
-                element: ".cart-section",
-                position: "bottom",
-                action: null
-            },
-            {
-                title: "Warenkorb leeren",
-                content: "Mit diesem Button können Sie den gesamten Warenkorb auf einmal leeren.",
-                element: ".nav-btn:nth-child(5)", // Clear cart button in bottom nav
-                position: "top",
-                action: "click",
-                simulate: function() {
-                    // Clear the cart but keep the tutorial item
-                    const exampleItem = cart.find(item => item.name === 'Beispielprodukt');
-                    cart = exampleItem ? [exampleItem] : [];
-                    updateCartDisplay();
-                }
-            },
-            {
-                title: "Bezahlvorgang",
-                content: "Klicken Sie auf 'Bezahlen', um einen QR-Code zu generieren und den Bezahlvorgang abzuschließen.",
-                element: ".nav-btn.pay",
-                position: "top",
-                action: "click",
-                prepare: function() {
-                    // Ensure there's at least one item in the cart
-                    if (cart.length === 0) {
-                        addToCart({
-                            name: 'Beispielprodukt',
-                            price: 9.99,
-                            barcode: '123456789'
-                        });
-                    }
-                },
-                simulate: function() {
-                    document.getElementById('qr-modal').classList.add('active');
-                    document.getElementById('modal-overlay').classList.add('active');
-                }
-            }
-        ];
-    }
-
-    // Check if tutorial should be shown
-    function checkTutorialStatus() {
-        try {
-            const tutorialSeen = localStorage.getItem('gittertier_tutorial_seen');
-            if (tutorialSeen === null) {
-                // Check if we can use localStorage
-                localStorage.setItem('gittertier_test', 'test');
-                localStorage.removeItem('gittertier_test');
-                
-                // Show welcome modal after a short delay
-                setTimeout(showWelcomeModal, 1000);
-            }
-        } catch (e) {
-            tutorialStorageAvailable = false;
-            // Fallback to sessionStorage
-            try {
-                const sessionTutorialSeen = sessionStorage.getItem('gittertier_tutorial_seen');
-                if (sessionTutorialSeen === null) {
-                    showWelcomeModal();
-                    showTutorialError("Ihre Einstellungen können nicht dauerhaft gespeichert werden. Das Tutorial wird bei Ihrem nächsten Besuch erneut angezeigt.");
-                }
-            } catch (e) {
-                // Both storage methods failed
-                showTutorialError("Ihre Browsereinstellungen erlauben das Speichern von Präferenzen nicht.");
-            }
-        }
-    }
-
-    function showWelcomeModal() {
-        document.getElementById('tutorial-welcome-modal').style.display = 'flex';
-        document.getElementById('tutorial-cutout').style.display = 'none';
-        document.getElementById('tutorial-bubble').style.display = 'none';
-    }
-
-    function closeWelcomeModal() {
-        document.getElementById('tutorial-welcome-modal').style.display = 'none';
-        
-        // Save preference if "don't show again" is checked
-        const dontShowAgain = document.getElementById('tutorial-dont-show-again').checked;
-        if (dontShowAgain) {
-            try {
-                if (tutorialStorageAvailable) {
-                    localStorage.setItem('gittertier_tutorial_seen', 'true');
-                } else {
-                    sessionStorage.setItem('gittertier_tutorial_seen', 'true');
-                }
-            } catch (e) {
-                console.error('Failed to save tutorial preference:', e);
-            }
-        }
-    }
-
-    function startTutorial() {
-        document.getElementById('tutorial-welcome-modal').style.display = 'none';
-        tutorialActive = true;
-        tutorialCurrentStep = 0;
-        
-        // Save tutorial progress
-        saveTutorialProgress();
-        
-        // Initialize tutorial steps
-        initializeTutorialSteps();
-        
-        // Start the first step
-        showTutorialStep(tutorialCurrentStep);
-    }
-
-    function showTutorialStep(stepIndex) {
-        if (stepIndex >= tutorialSteps.length) {
-            completeTutorial();
-            return;
-        }
-        
-        const step = tutorialSteps[stepIndex];
-        
-        // Update step indicator
-        document.getElementById('tutorial-step-indicator').textContent = `${stepIndex + 1}/${tutorialSteps.length}`;
-        document.getElementById('tutorial-step-indicator').style.display = 'block';
-        
-        // Prepare the step if needed
-        if (step.prepare) {
-            step.prepare();
-        }
-        
-        // Show overlay and cutout
-        document.getElementById('tutorial-overlay').style.display = 'block';
-        
-        // Position cutout around the target element
-        positionCutout(step.element);
-        
-        // Create and position tutorial bubble
-        positionBubble(step);
-        
-        // Add highlight animation to the element
-        const targetElement = document.querySelector(step.element);
-        if (targetElement) {
-            targetElement.classList.add('tutorial-highlight');
-            
-            // Scroll to element if needed
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // If the step has an action, set up the event listener
-            if (step.action === 'click') {
-                const clickHandler = function() {
-                    targetElement.removeEventListener('click', clickHandler);
-                    targetElement.classList.remove('tutorial-highlight');
-                    
-                    if (step.simulate) {
-                        step.simulate();
-                    }
-                    
-                    // Auto-proceed to next step after interaction
-                    setTimeout(() => {
-                        nextTutorialStep();
-                    }, 500);
-                };
-                
-                targetElement.addEventListener('click', clickHandler);
-            } else {
-                // For steps without action, show continue button
-                document.getElementById('tutorial-continue-btn').style.display = 'block';
-            }
-        }
-        
-        // For steps with simulation but no user action
-        if (step.simulate && !step.action) {
-            step.simulate();
-            document.getElementById('tutorial-continue-btn').style.display = 'block';
-        }
-        
-        // Set up observers to keep elements positioned correctly
-        setupObservers(step.element);
-    }
-
-    function positionCutout(elementSelector) {
-        const element = document.querySelector(elementSelector);
-        if (!element) return;
-        
-        const rect = element.getBoundingClientRect();
-        const cutout = document.getElementById('tutorial-cutout');
-        
-        cutout.style.display = 'block';
-        cutout.style.width = `${rect.width + 20}px`;
-        cutout.style.height = `${rect.height + 20}px`;
-        cutout.style.top = `${rect.top - 10 + window.scrollY}px`;
-        cutout.style.left = `${rect.left - 10 + window.scrollX}px`;
-    }
-
-    function positionBubble(step) {
-        const element = document.querySelector(step.element);
-        if (!element) return;
-        
-        const rect = element.getBoundingClientRect();
-        const bubble = document.getElementById('tutorial-bubble');
-        
-        // Determine bubble position based on element position
-        const viewportCenter = window.innerHeight / 2;
-        const elementCenter = rect.top + (rect.height / 2);
-        
-        let positionClass = elementCenter < viewportCenter ? 'bottom' : 'top';
-        
-        // Create bubble content
-        bubble.innerHTML = `
-            <div class="tutorial-bubble-title">${step.title}</div>
-            <div class="tutorial-bubble-content">${step.content}</div>
-        `;
-        
-        // Add simulation button if needed
-        if (step.simulate && !step.action) {
-            bubble.innerHTML += `
-                <div class="tutorial-bubble-actions">
-                    <button class="tutorial-bubble-btn primary" onclick="tutorialSteps[${tutorialCurrentStep}].simulate(); document.getElementById('tutorial-continue-btn').style.display = 'block';">Simulieren</button>
-                </div>
-            `;
-        }
-        
-        // Position the bubble
-        bubble.className = `tutorial-bubble ${positionClass}`;
-        
-        if (positionClass === 'bottom') {
-            bubble.style.top = `${rect.bottom + 20 + window.scrollY}px`;
-            bubble.style.bottom = 'auto';
-        } else {
-            bubble.style.top = 'auto';
-            bubble.style.bottom = `${window.innerHeight - rect.top + 20}px`;
-        }
-        
-        // Center horizontally
-        const bubbleWidth = bubble.offsetWidth;
-        bubble.style.left = `${rect.left + (rect.width / 2) - (bubbleWidth / 2)}px`;
-        
-        // Ensure bubble stays within viewport
-        const bubbleRect = bubble.getBoundingClientRect();
-        
-        if (bubbleRect.left < 10) {
-            bubble.style.left = '10px';
-        }
-        
-        if (bubbleRect.right > window.innerWidth - 10) {
-            bubble.style.left = `${window.innerWidth - bubbleRect.width - 10}px`;
-        }
-        
-        bubble.style.display = 'block';
-    }
-
-    function setupObservers(elementSelector) {
-        // Clean up previous observers
-        tutorialObservers.forEach(observer => {
-            observer.disconnect();
-        });
-        tutorialObservers = [];
-        
-        const element = document.querySelector(elementSelector);
-        if (!element) return;
-        
-        // MutationObserver for DOM changes
-        const mutationObserver = new MutationObserver(() => {
-            positionCutout(elementSelector);
-            positionBubble(tutorialSteps[tutorialCurrentStep]);
-        });
-        
-        mutationObserver.observe(element, { 
-            attributes: true,
-            childList: true,
-            subtree: true
-        });
-        
-        tutorialObservers.push(mutationObserver);
-        
-        // ResizeObserver for size changes
-        if (typeof ResizeObserver !== 'undefined') {
-            const resizeObserver = new ResizeObserver(() => {
-                positionCutout(elementSelector);
-                positionBubble(tutorialSteps[tutorialCurrentStep]);
-            });
-            
-            resizeObserver.observe(element);
-            tutorialObservers.push(resizeObserver);
-        }
-        
-        // Listen for window resize and scroll events
-        const resizeHandler = () => {
-            positionCutout(elementSelector);
-            positionBubble(tutorialSteps[tutorialCurrentStep]);
-        };
-        
-        const scrollHandler = () => {
-            positionCutout(elementSelector);
-            positionBubble(tutorialSteps[tutorialCurrentStep]);
-        };
-        
-        window.addEventListener('resize', resizeHandler);
-        window.addEventListener('scroll', scrollHandler);
-        
-        tutorialObservers.push({
-            disconnect: () => {
-                window.removeEventListener('resize', resizeHandler);
-                window.removeEventListener('scroll', scrollHandler);
-            }
-        });
-    }
-
-    function nextTutorialStep() {
-        // Remove any highlight from current step
-        const currentElement = document.querySelector(tutorialSteps[tutorialCurrentStep].element);
-        if (currentElement) {
-            currentElement.classList.remove('tutorial-highlight');
-        }
-        
-        // Clean up observers
-        tutorialObservers.forEach(observer => {
-            observer.disconnect();
-        });
-        tutorialObservers = [];
-        
-        // Hide continue button
-        document.getElementById('tutorial-continue-btn').style.display = 'none';
-        
-        // Move to next step
-        tutorialCurrentStep++;
-        
-        // Save progress
-        saveTutorialProgress();
-        
-        // Show next step
-        showTutorialStep(tutorialCurrentStep);
-    }
-
-    function completeTutorial() {
-        // Clean up tutorial elements
-        document.getElementById('tutorial-overlay').style.display = 'none';
-        document.getElementById('tutorial-cutout').style.display = 'none';
-        document.getElementById('tutorial-bubble').style.display = 'none';
-        document.getElementById('tutorial-step-indicator').style.display = 'none';
-        document.getElementById('tutorial-continue-btn').style.display = 'none';
-        
-        // Remove any highlight classes
-        document.querySelectorAll('.tutorial-highlight').forEach(el => {
-            el.classList.remove('tutorial-highlight');
-        });
-        
-        // Clean up observers
-        tutorialObservers.forEach(observer => {
-            observer.disconnect();
-        });
-        tutorialObservers = [];
-        
-        // Show completion modal
-        document.getElementById('tutorial-completion-modal').style.display = 'flex';
-        
-        // Save that tutorial has been completed
-        try {
-            if (tutorialStorageAvailable) {
-                localStorage.setItem('gittertier_tutorial_seen', 'true');
-                localStorage.removeItem('gittertier_tutorial_progress');
-            } else {
-                sessionStorage.setItem('gittertier_tutorial_seen', 'true');
-                sessionStorage.removeItem('gittertier_tutorial_progress');
-            }
-        } catch (e) {
-            console.error('Failed to save tutorial completion:', e);
-        }
-        
-        tutorialActive = false;
-    }
-
-    function closeCompletionModal() {
-        document.getElementById('tutorial-completion-modal').style.display = 'none';
-    }
-
-    function restartTutorial() {
-        document.getElementById('tutorial-completion-modal').style.display = 'none';
-        startTutorial();
-    }
-
-    function saveTutorialProgress() {
-        try {
-            const progress = {
-                step: tutorialCurrentStep,
-                timestamp: Date.now()
-            };
-            
-            if (tutorialStorageAvailable) {
-                localStorage.setItem('gittertier_tutorial_progress', JSON.stringify(progress));
-            } else {
-                sessionStorage.setItem('gittertier_tutorial_progress', JSON.stringify(progress));
-            }
-        } catch (e) {
-            console.error('Failed to save tutorial progress:', e);
-        }
-    }
-
-    function simulateBarcodeScan() {
-        // Simulate a barcode scan
-        handleBarcode('123456789');
-        
-        // Add the product to our products list if not already there
-        if (!products['123456789']) {
-            products['123456789'] = {
-                name: 'Beispielprodukt',
-                price: 9.99,
-                barcode: '123456789'
-            };
-        }
-        
-        // Show the product card
-        showProduct(products['123456789']);
-        
-        // Hide error banner if shown
-        document.getElementById('tutorial-error-banner').style.display = 'none';
-        
-        // Proceed to next step
-        nextTutorialStep();
-    }
-
-    function showTutorialError(message) {
-        const errorBanner = document.getElementById('tutorial-error-banner');
-        errorBanner.textContent = message;
-        errorBanner.style.display = 'block';
-        
-        setTimeout(() => {
-            errorBanner.style.display = 'none';
-        }, 5000);
-    }
-
-    // Show tutorial from help button
-    function showTutorial() {
-        startTutorial();
-    }
-    
-    // NEW: Show product search modal
-    function showProductSearchModal() {
-        document.getElementById('product-search-modal').classList.add('active');
-        document.getElementById('modal-overlay').classList.add('active');
-        
-        // Focus on search input
-        setTimeout(() => {
-            document.getElementById('product-search-input').focus();
-        }, 100);
-    }
-    
-    // NEW: Close product search modal
-    function closeProductSearchModal() {
-        document.getElementById('product-search-modal').classList.remove('active');
-        document.getElementById('modal-overlay').classList.remove('active');
-        document.getElementById('product-search-input').value = '';
-        document.getElementById('product-search-results').innerHTML = '<div class="search-no-results">Geben Sie einen Suchbegriff ein, um Produkte zu finden</div>';
-    }
-    
-    // NEW: Search products function
-    function searchProducts(query) {
-        const resultsContainer = document.getElementById('product-search-results');
-        
-        if (!query || query.trim() === '') {
-            resultsContainer.innerHTML = '<div class="search-no-results">Geben Sie einen Suchbegriff ein, um Produkte zu finden</div>';
-            return;
-        }
-        
-        const searchTerm = query.toLowerCase().trim();
-        const results = [];
-        
-        // Search through products
-        for (const barcode in products) {
-            const product = products[barcode];
-            if (product.name.toLowerCase().includes(searchTerm) || 
-                product.barcode.includes(searchTerm)) {
-                results.push(product);
-            }
-        }
-        
-        // Display results
-        if (results.length === 0) {
-            resultsContainer.innerHTML = '<div class="search-no-results">Keine Produkte gefunden</div>';
-        } else {
-            resultsContainer.innerHTML = results.map(product => `
-                <div class="search-result-item" onclick="selectProductFromSearch('${product.barcode}')">
-                    <div class="search-result-name">${product.name}</div>
-                    <div class="search-result-price">${product.price.toFixed(2)}${currencySymbol}</div>
-                </div>
-            `).join('');
-        }
-    }
-    
-    // NEW: Select product from search results
-    function selectProductFromSearch(barcode) {
-        const product = products[barcode];
-        if (product) {
-            // Fill the form in the product modal
-            document.getElementById('product-name-input').value = product.name;
-            document.getElementById('product-price-input').value = product.price;
-            document.getElementById('product-barcode-input').value = product.barcode;
-            
-            // Close the search modal
-            closeProductSearchModal();
-            
-            showNotification('Produktdetails wurden eingefüllt');
-        }
-    }
-    
-    // NEW: Event listener for search input
-    document.getElementById('product-search-input').addEventListener('input', function(e) {
-        searchProducts(e.target.value);
-    });
-    
-    // NEW: Event listener for Enter key in search
-    document.getElementById('product-search-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchProducts(e.target.value);
-        }
-    });
-
-    function applyUserSettings() {
-        const settings = JSON.parse(localStorage.getItem('userSettings')) || {};
-        
-        // Apply scanner settings
-        if (settings.continuousScan) {
-            // Auto-start scanner if continuous scanning is enabled
-            setTimeout(() => {
-                if (!scannerActive) {
-                    toggleScanner();
-                }
-            }, 1000);
-        }
-        
-        // Apply sound settings
-        if (settings.scanSound === false) {
-            // Disable scan sounds
-            playSound = function() {}; // Override to do nothing
-        }
-
-        // Apply font size
-        if (settings.fontSize) {
-            document.documentElement.style.fontSize = 
-                settings.fontSize === 'small' ? '14px' : 
-                settings.fontSize === 'large' ? '18px' : '16px';
-        }
+        // This would show a modal asking if the user wants to restore their cart
+        // For now, we'll just show a notification
+        showNotification('Ihr Warenkorb aus der letzten Sitzung wurde wiederhergestellt', 'success');
     }
     </script>
 </body>
