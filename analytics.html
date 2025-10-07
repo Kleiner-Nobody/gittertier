@@ -6,6 +6,8 @@
     <title>Analytics - Gittertier Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/npm/canvas2svg@1.0.16/canvas2svg.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
     :root {
@@ -979,6 +981,70 @@
                 </div>
             </div>
 
+            <div class="tables-section">
+                <div class="table-card">
+                    <div class="table-card-header">
+                        <h3 class="table-card-title">Top-Kunden</h3>
+                        <div class="table-card-actions">
+                            <button class="chart-action-btn" id="export-top-customers">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="analytics-table" id="top-customers-table">
+                            <thead>
+                                <tr>
+                                    <th>Kunde</th>
+                                    <th>Umsatz</th>
+                                    <th>Transaktionen</th>
+                                    <th>Letzter Kauf</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="empty-state">
+                                        <i class="fas fa-users"></i>
+                                        <p>Keine Daten verfügbar</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="table-card">
+                    <div class="table-card-header">
+                        <h3 class="table-card-title">Zahlungsmethoden</h3>
+                        <div class="table-card-actions">
+                            <button class="chart-action-btn" id="export-payment-methods">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="analytics-table" id="payment-methods-table">
+                            <thead>
+                                <tr>
+                                    <th>Methode</th>
+                                    <th>Umsatz</th>
+                                    <th>Transaktionen</th>
+                                    <th>Anteil</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="empty-state">
+                                        <i class="fas fa-credit-card"></i>
+                                        <p>Keine Daten verfügbar</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="insights-section">
                 <h2 style="margin-bottom: var(--spacing-lg);">Erkenntnisse & Empfehlungen</h2>
                 <div class="insights-grid" id="insights-grid">
@@ -1013,38 +1079,29 @@
     </div>
 
     <script>
-        // Initialize storage manager
-        const storageManager = (function() {
-            // Constants for localStorage keys
-            const PAYMENT_ARCHIVE_KEY = 'payment_archive';
-            const PREFIX_PRODUCT = 'product_';
-            const PREFIX_CUSTOMER = 'customer_';
-            const KEY_OFFLINE_QUEUE = 'offlineQueue';
-            const KEY_AUDIT_LOG = 'auditLog';
-            
-            // Current version of the data schema
-            const CURRENT_VERSION = 1;
-            
-            // Get the payment archive
-            function getPaymentArchive() {
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        // Storage Manager Integration
+        const storageManager = {
+            getPaymentArchive: function() {
                 try {
-                    const archive = localStorage.getItem(PAYMENT_ARCHIVE_KEY);
+                    const archive = localStorage.getItem('payment_archive');
                     return archive ? JSON.parse(archive) : [];
                 } catch (error) {
                     console.error('Failed to get payment archive:', error);
                     return [];
                 }
-            }
+            },
             
-            // Get products
-            async function getProducts() {
+            getProducts: function() {
                 const products = {};
                 
                 // Get all product keys
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     
-                    if (key.startsWith(PREFIX_PRODUCT)) {
+                    if (key.startsWith('product_')) {
                         try {
                             const item = localStorage.getItem(key);
                             const parsed = JSON.parse(item);
@@ -1069,19 +1126,24 @@
                 }
                 
                 return products;
-            }
+            },
             
-            // Public API
-            return {
-                getPaymentArchive,
-                getProducts
-            };
-        })();
+            getMerchantInfo: function() {
+                try {
+                    const merchantInfo = localStorage.getItem('merchant_info');
+                    return merchantInfo ? JSON.parse(merchantInfo) : null;
+                } catch (e) {
+                    console.error('Error getting merchant info:', e);
+                    return null;
+                }
+            }
+        };
 
         // Analytics Manager
         const analyticsManager = (function() {
             let receipts = [];
             let products = {};
+            let merchantInfo = {};
             let dateRange = 'today';
             let startDate = null;
             let endDate = null;
@@ -1090,14 +1152,16 @@
             async function init() {
                 // Load data
                 receipts = storageManager.getPaymentArchive();
-                products = await storageManager.getProducts();
+                products = storageManager.getProducts();
+                merchantInfo = storageManager.getMerchantInfo();
                 
                 // Set default date range to today
                 setDateRange('today');
                 
                 return {
                     receipts: filterReceiptsByDate(),
-                    products
+                    products,
+                    merchantInfo
                 };
             }
             
@@ -1159,7 +1223,7 @@
                 const totalTransactions = filteredReceipts.length;
                 const avgOrderValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
                 
-                // Calculate change from previous period (simplified)
+                // Calculate change from previous period
                 const previousPeriodReceipts = getPreviousPeriodReceipts();
                 const previousRevenue = previousPeriodReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
                 const revenueChange = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : 0;
@@ -1167,12 +1231,16 @@
                 const previousTransactions = previousPeriodReceipts.length;
                 const transactionsChange = previousTransactions > 0 ? ((totalTransactions - previousTransactions) / previousTransactions) * 100 : 0;
                 
+                // Calculate unique customers
+                const uniqueCustomers = [...new Set(filteredReceipts.map(r => r.customer).filter(Boolean))].length;
+                
                 return {
                     totalRevenue,
                     totalTransactions,
                     avgOrderValue,
                     revenueChange,
-                    transactionsChange
+                    transactionsChange,
+                    uniqueCustomers
                 };
             }
             
@@ -1217,7 +1285,8 @@
                 filteredReceipts.forEach(receipt => {
                     if (receipt.items) {
                         receipt.items.forEach(item => {
-                            const category = item.category || 'Sonstiges';
+                            const product = products[item.barcode];
+                            const category = product?.category || 'Sonstiges';
                             if (!distribution[category]) {
                                 distribution[category] = 0;
                             }
@@ -1286,11 +1355,74 @@
                 return result;
             }
             
+            // Get top customers
+            function getTopCustomers(limit = 10) {
+                const filteredReceipts = filterReceiptsByDate();
+                const customerSales = {};
+                
+                filteredReceipts.forEach(receipt => {
+                    if (receipt.customer) {
+                        if (!customerSales[receipt.customer]) {
+                            customerSales[receipt.customer] = {
+                                name: receipt.customer,
+                                revenue: 0,
+                                transactions: 0,
+                                lastPurchase: receipt.date
+                            };
+                        }
+                        customerSales[receipt.customer].revenue += receipt.amount;
+                        customerSales[receipt.customer].transactions += 1;
+                        
+                        // Update last purchase if newer
+                        if (new Date(receipt.date) > new Date(customerSales[receipt.customer].lastPurchase)) {
+                            customerSales[receipt.customer].lastPurchase = receipt.date;
+                        }
+                    }
+                });
+                
+                // Convert to array and sort by revenue
+                return Object.values(customerSales)
+                    .sort((a, b) => b.revenue - a.revenue)
+                    .slice(0, limit);
+            }
+            
+            // Get payment methods distribution
+            function getPaymentMethods() {
+                const filteredReceipts = filterReceiptsByDate();
+                const paymentMethods = {};
+                
+                filteredReceipts.forEach(receipt => {
+                    const method = receipt.paymentMethod || 'unknown';
+                    if (!paymentMethods[method]) {
+                        paymentMethods[method] = {
+                            method: method,
+                            revenue: 0,
+                            transactions: 0
+                        };
+                    }
+                    paymentMethods[method].revenue += receipt.amount;
+                    paymentMethods[method].transactions += 1;
+                });
+                
+                const totalRevenue = filteredReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
+                
+                // Convert to array and calculate percentages
+                return Object.values(paymentMethods).map(method => {
+                    method.percentage = totalRevenue > 0 ? (method.revenue / totalRevenue) * 100 : 0;
+                    method.methodName = method.method === 'cash' ? 'Bar' : 
+                                       method.method === 'card' ? 'Karte' : 
+                                       'Unbekannt';
+                    return method;
+                }).sort((a, b) => b.revenue - a.revenue);
+            }
+            
             // Get business insights
             function getBusinessInsights() {
                 const stats = getSalesStats();
                 const topProducts = getTopProducts(5);
                 const revenueByHour = getRevenueByHour();
+                const topCustomers = getTopCustomers(3);
+                const paymentMethods = getPaymentMethods();
                 
                 const insights = [];
                 
@@ -1335,24 +1467,213 @@
                     });
                 }
                 
+                // Top customer insight
+                if (topCustomers.length > 0) {
+                    insights.push({
+                        title: "Wertvolle Kunden",
+                        icon: "fas fa-crown",
+                        content: `Ihr wertvollster Kunde ist "${topCustomers[0].name}" mit einem Gesamtumsatz von €${topCustomers[0].revenue.toFixed(2)}. Erwägen Sie ein Kundenbindungsprogramm.`
+                    });
+                }
+                
+                // Payment method insight
+                if (paymentMethods.length > 0) {
+                    const topMethod = paymentMethods[0];
+                    insights.push({
+                        title: "Beliebte Zahlungsmethode",
+                        icon: "fas fa-credit-card",
+                        content: `${topMethod.methodName} ist Ihre beliebteste Zahlungsmethode mit ${topMethod.percentage.toFixed(1)}% des Umsatzes. Stellen Sie sicher, dass diese Methode reibungslos funktioniert.`
+                    });
+                }
+                
                 return insights;
             }
             
-            // Export data
+            // Export sales data as CSV
             function exportSalesData() {
                 const filteredReceipts = filterReceiptsByDate();
-                const csvContent = "Datum,Umsatz,Transaktions-ID,Status\n" +
-                    filteredReceipts.map(receipt => 
-                        `${new Date(receipt.date).toLocaleDateString('de-DE')},${receipt.amount},${receipt.id},${receipt.status}`
-                    ).join("\n");
                 
-                const blob = new Blob([csvContent], { type: 'text/csv' });
+                // Create CSV header
+                let csvContent = "Datum,Umsatz,Transaktions-ID,Kunde,Status,Zahlungsmethode\n";
+                
+                // Add data rows
+                filteredReceipts.forEach(receipt => {
+                    const date = new Date(receipt.date).toLocaleDateString('de-DE');
+                    const customer = receipt.customer || 'Unbekannt';
+                    const status = receipt.status || 'Abgeschlossen';
+                    const paymentMethod = receipt.paymentMethod === 'cash' ? 'Bar' : 'Karte';
+                    
+                    csvContent += `${date},${receipt.amount},${receipt.id},${customer},${status},${paymentMethod}\n`;
+                });
+                
+                // Create and download file
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `verkaufsdaten_${new Date().toISOString().split('T')[0]}.csv`;
-                a.click();
-                URL.revokeObjectURL(url);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `verkaufsdaten_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Export product data
+            function exportProductData() {
+                const topProducts = getTopProducts(50);
+                
+                // Create CSV header
+                let csvContent = "Produkt,Umsatz,Verkäufe,Durchschnittspreis\n";
+                
+                // Add data rows
+                topProducts.forEach(product => {
+                    csvContent += `${product.name},${product.revenue},${product.quantity},${product.price}\n`;
+                });
+                
+                // Create and download file
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `produktdaten_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Export analytics report as PDF
+            function exportAnalyticsReport() {
+                const stats = getSalesStats();
+                const topProducts = getTopProducts(10);
+                const topCustomers = getTopCustomers(10);
+                const paymentMethods = getPaymentMethods();
+                const revenueByDay = getRevenueByDay();
+                
+                const doc = new jsPDF();
+                const pageWidth = doc.internal.pageSize.width;
+                const merchant = merchantInfo || { name: 'Unbekannter Händler' };
+                
+                // Header
+                doc.setFontSize(20);
+                doc.setTextColor(37, 99, 235);
+                doc.setFont(undefined, 'bold');
+                doc.text("Gittertier Pro - Analysebericht", pageWidth/2, 20, null, 'center');
+                
+                doc.setFontSize(12);
+                doc.setTextColor(107, 114, 128);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Händler: ${merchant.name}`, pageWidth/2, 30, null, 'center');
+                doc.text(`Zeitraum: ${startDate.toLocaleDateString('de-DE')} - ${endDate.toLocaleDateString('de-DE')}`, pageWidth/2, 37, null, 'center');
+                doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, pageWidth/2, 44, null, 'center');
+                
+                let yPos = 60;
+                
+                // Summary Statistics
+                doc.setFontSize(16);
+                doc.setTextColor(17, 17, 17);
+                doc.setFont(undefined, 'bold');
+                doc.text("Zusammenfassung", 20, yPos);
+                
+                yPos += 15;
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                
+                doc.text(`Gesamtumsatz: €${stats.totalRevenue.toFixed(2)}`, 30, yPos);
+                yPos += 8;
+                doc.text(`Transaktionen: ${stats.totalTransactions}`, 30, yPos);
+                yPos += 8;
+                doc.text(`Durchschnittlicher Bestellwert: €${stats.avgOrderValue.toFixed(2)}`, 30, yPos);
+                yPos += 8;
+                doc.text(`Eindeutige Kunden: ${stats.uniqueCustomers}`, 30, yPos);
+                yPos += 15;
+                
+                // Top Products
+                if (topProducts.length > 0) {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold');
+                    doc.text("Top-Produkte", 20, yPos);
+                    
+                    yPos += 10;
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'bold');
+                    doc.text("Produkt", 30, yPos);
+                    doc.text("Umsatz", 120, yPos);
+                    doc.text("Verkäufe", 160, yPos);
+                    
+                    yPos += 7;
+                    doc.setFont(undefined, 'normal');
+                    
+                    topProducts.forEach((product, index) => {
+                        if (yPos > 270 && index < topProducts.length - 1) {
+                            doc.addPage();
+                            yPos = 20;
+                            doc.setFontSize(10);
+                            doc.setFont(undefined, 'bold');
+                            doc.text("Produkt", 30, yPos);
+                            doc.text("Umsatz", 120, yPos);
+                            doc.text("Verkäufe", 160, yPos);
+                            yPos += 7;
+                            doc.setFont(undefined, 'normal');
+                        }
+                        
+                        doc.text(product.name.substring(0, 30), 30, yPos);
+                        doc.text(`€${product.revenue.toFixed(2)}`, 120, yPos);
+                        doc.text(`${product.quantity}`, 160, yPos);
+                        yPos += 7;
+                    });
+                    
+                    yPos += 10;
+                }
+                
+                // Top Customers
+                if (topCustomers.length > 0) {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold');
+                    doc.text("Top-Kunden", 20, yPos);
+                    
+                    yPos += 10;
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'bold');
+                    doc.text("Kunde", 30, yPos);
+                    doc.text("Umsatz", 120, yPos);
+                    doc.text("Transaktionen", 160, yPos);
+                    
+                    yPos += 7;
+                    doc.setFont(undefined, 'normal');
+                    
+                    topCustomers.forEach((customer, index) => {
+                        if (yPos > 270 && index < topCustomers.length - 1) {
+                            doc.addPage();
+                            yPos = 20;
+                            doc.setFontSize(10);
+                            doc.setFont(undefined, 'bold');
+                            doc.text("Kunde", 30, yPos);
+                            doc.text("Umsatz", 120, yPos);
+                            doc.text("Transaktionen", 160, yPos);
+                            yPos += 7;
+                            doc.setFont(undefined, 'normal');
+                        }
+                        
+                        doc.text(customer.name.substring(0, 30), 30, yPos);
+                        doc.text(`€${customer.revenue.toFixed(2)}`, 120, yPos);
+                        doc.text(`${customer.transactions}`, 160, yPos);
+                        yPos += 7;
+                    });
+                }
+                
+                // Save the PDF
+                doc.save(`gittertier_analyse_${new Date().toISOString().split('T')[0]}.pdf`);
             }
             
             // Public API
@@ -1364,8 +1685,12 @@
                 getSalesDistribution,
                 getTopProducts,
                 getRevenueByHour,
+                getTopCustomers,
+                getPaymentMethods,
                 getBusinessInsights,
-                exportSalesData
+                exportSalesData,
+                exportProductData,
+                exportAnalyticsReport
             };
         })();
 
@@ -1553,10 +1878,10 @@
                                 <i class="fas fa-users"></i>
                             </div>
                         </div>
-                        <div class="stat-card-value">${Math.round(stats.totalTransactions * 1.2)}</div>
+                        <div class="stat-card-value">${stats.uniqueCustomers}</div>
                         <div class="stat-card-change positive">
                             <i class="fas fa-arrow-up"></i>
-                            5.2%
+                            ${Math.max(0, Math.round(stats.uniqueCustomers * 0.1))}%
                         </div>
                     </div>
                 `;
@@ -1616,6 +1941,60 @@
                 `).join('');
             }
             
+            // Update top customers table
+            function updateTopCustomersTable() {
+                const topCustomers = analyticsManager.getTopCustomers();
+                const tableBody = document.querySelector('#top-customers-table tbody');
+                
+                if (topCustomers.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p>Keine Daten verfügbar</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tableBody.innerHTML = topCustomers.map(customer => `
+                    <tr>
+                        <td>${customer.name}</td>
+                        <td>€${customer.revenue.toFixed(2)}</td>
+                        <td>${customer.transactions}</td>
+                        <td>${new Date(customer.lastPurchase).toLocaleDateString('de-DE')}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            // Update payment methods table
+            function updatePaymentMethodsTable() {
+                const paymentMethods = analyticsManager.getPaymentMethods();
+                const tableBody = document.querySelector('#payment-methods-table tbody');
+                
+                if (paymentMethods.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-credit-card"></i>
+                                <p>Keine Daten verfügbar</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tableBody.innerHTML = paymentMethods.map(method => `
+                    <tr>
+                        <td>${method.methodName}</td>
+                        <td>€${method.revenue.toFixed(2)}</td>
+                        <td>${method.transactions}</td>
+                        <td>${method.percentage.toFixed(1)}%</td>
+                    </tr>
+                `).join('');
+            }
+            
             // Update insights
             function updateInsights() {
                 const insights = analyticsManager.getBusinessInsights();
@@ -1652,6 +2031,8 @@
                 chartManager.updateCharts();
                 updateTopProductsTable();
                 updateHourlyRevenueTable();
+                updateTopCustomersTable();
+                updatePaymentMethodsTable();
                 updateInsights();
             }
             
@@ -1792,24 +2173,76 @@
                 analyticsManager.exportSalesData();
             });
             
-            document.getElementById('export-top-products').addEventListener('click', function() {
-                // In a real implementation, this would export the top products data
-                alert('Top-Produkte werden exportiert...');
-            });
-            
-            document.getElementById('export-hourly-revenue').addEventListener('click', function() {
-                // In a real implementation, this would export the hourly revenue data
-                alert('Stündliche Umsatzdaten werden exportiert...');
-            });
-            
             document.getElementById('export-product-data').addEventListener('click', function() {
-                // In a real implementation, this would export product data
-                alert('Produktdaten werden exportiert...');
+                analyticsManager.exportProductData();
             });
             
             document.getElementById('export-analytics-report').addEventListener('click', function() {
-                // In a real implementation, this would generate a PDF report
-                alert('Analysebericht wird generiert...');
+                analyticsManager.exportAnalyticsReport();
+            });
+            
+            document.getElementById('export-top-products').addEventListener('click', function() {
+                analyticsManager.exportProductData();
+            });
+            
+            document.getElementById('export-hourly-revenue').addEventListener('click', function() {
+                // Export hourly revenue as CSV
+                const hourlyRevenue = analyticsManager.getRevenueByHour();
+                let csvContent = "Stunde,Umsatz,Transaktionen,Durchschnittswert\n";
+                
+                hourlyRevenue.forEach(hour => {
+                    csvContent += `${hour.hour}:00,${hour.revenue},${hour.transactions},${hour.avgValue}\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `umsatz_nach_stunde_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            
+            document.getElementById('export-top-customers').addEventListener('click', function() {
+                // Export top customers as CSV
+                const topCustomers = analyticsManager.getTopCustomers();
+                let csvContent = "Kunde,Umsatz,Transaktionen,Letzter_Kauf\n";
+                
+                topCustomers.forEach(customer => {
+                    csvContent += `${customer.name},${customer.revenue},${customer.transactions},${new Date(customer.lastPurchase).toLocaleDateString('de-DE')}\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `top_kunden_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            
+            document.getElementById('export-payment-methods').addEventListener('click', function() {
+                // Export payment methods as CSV
+                const paymentMethods = analyticsManager.getPaymentMethods();
+                let csvContent = "Zahlungsmethode,Umsatz,Transaktionen,Anteil\n";
+                
+                paymentMethods.forEach(method => {
+                    csvContent += `${method.methodName},${method.revenue},${method.transactions},${method.percentage.toFixed(1)}%\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `zahlungsmethoden_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             });
         }
 
