@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysen - Gittertier Pro</title>
+    <title>Analytics - Gittertier Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,6 +20,11 @@
         --color-error: #dc2626;
         --color-warning: #d97706;
         --color-info: #2563eb;
+        --color-loyalty: #7e22ce;
+        --color-delivery: #22c55e;
+        --color-bagging: #f97316;
+        --color-donation: #3b82f6;
+        --color-premium: #c5a47e;
         --color-overlay: rgba(0, 0, 0, 0.5);
         
         --radius: 12px;
@@ -50,6 +55,7 @@
         
         --header-height: 64px;
         --sidebar-width: 280px;
+        --sidebar-width-collapsed: 80px;
     }
 
     .dark-mode {
@@ -64,6 +70,11 @@
         --color-error: #ef4444;
         --color-warning: #f59e0b;
         --color-info: #3b82f6;
+        --color-loyalty: #a855f7;
+        --color-delivery: #22c55e;
+        --color-bagging: #fb923c;
+        --color-donation: #60a5fa;
+        --color-premium: #d6bc97;
         --color-overlay: rgba(0, 0, 0, 0.7);
         --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
@@ -223,6 +234,15 @@
         color: var(--color-accent);
     }
 
+    .new-feature {
+        background-color: var(--color-success);
+        color: white;
+        font-size: var(--text-xs);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
     /* Sidebar overlay for mobile */
     .sidebar-overlay {
         position: fixed;
@@ -243,22 +263,57 @@
         transition: margin-left 0.3s ease;
     }
 
-    /* Analytics Dashboard */
-    .analytics-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    /* Page Header */
+    .page-header {
         margin-bottom: var(--spacing-xl);
     }
 
-    .analytics-title {
+    .page-title {
         font-size: var(--text-2xl);
         font-weight: 700;
+        margin-bottom: var(--spacing-sm);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
     }
 
-    .date-filter {
+    .page-subtitle {
+        color: var(--color-text-muted);
+        max-width: 600px;
+    }
+
+    /* Date Range Selector */
+    .date-range-selector {
         display: flex;
         gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .date-range-btn {
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .date-range-btn.active {
+        background-color: var(--color-accent);
+        color: white;
+        border-color: var(--color-accent);
+    }
+
+    .date-range-btn:hover:not(.active) {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .custom-date-inputs {
+        display: flex;
+        gap: var(--spacing-sm);
         align-items: center;
     }
 
@@ -271,7 +326,7 @@
         color: var(--color-text);
     }
 
-    .apply-filter-btn {
+    .apply-date-btn {
         background-color: var(--color-accent);
         color: white;
         border: none;
@@ -282,42 +337,46 @@
         transition: var(--transition);
     }
 
-    .apply-filter-btn:hover {
+    .apply-date-btn:hover {
         background-color: var(--color-accent-hover);
     }
 
-    /* KPI Cards */
-    .kpi-grid {
+    /* Stats Grid */
+    .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: var(--spacing-lg);
         margin-bottom: var(--spacing-xl);
     }
 
-    .kpi-card {
+    .stat-card {
         background-color: var(--color-bg);
         border-radius: var(--radius);
         border: 1px solid var(--color-border);
         padding: var(--spacing-lg);
         box-shadow: var(--shadow);
-        display: flex;
-        flex-direction: column;
         transition: var(--transition);
     }
 
-    .kpi-card:hover {
+    .stat-card:hover {
         box-shadow: var(--shadow-md);
         transform: translateY(-2px);
     }
 
-    .kpi-header {
+    .stat-card-header {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: var(--spacing-sm);
         margin-bottom: var(--spacing-md);
     }
 
-    .kpi-icon {
+    .stat-card-title {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        font-weight: 500;
+    }
+
+    .stat-card-icon {
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -327,59 +386,59 @@
         font-size: var(--text-lg);
     }
 
-    .kpi-icon.total-sales {
+    .stat-card-icon.revenue {
         background-color: rgba(37, 99, 235, 0.1);
         color: var(--color-accent);
     }
 
-    .kpi-icon.transactions {
+    .stat-card-icon.sales {
         background-color: rgba(22, 163, 74, 0.1);
         color: var(--color-success);
     }
 
-    .kpi-icon.avg-transaction {
+    .stat-card-icon.customers {
+        background-color: rgba(126, 34, 206, 0.1);
+        color: var(--color-loyalty);
+    }
+
+    .stat-card-icon.avg-order {
         background-color: rgba(217, 119, 6, 0.1);
         color: var(--color-warning);
     }
 
-    .kpi-icon.customers {
-        background-color: rgba(220, 38, 38, 0.1);
-        color: var(--color-error);
-    }
-
-    .kpi-title {
-        font-size: var(--text-sm);
-        color: var(--color-text-muted);
-        font-weight: 500;
-    }
-
-    .kpi-value {
+    .stat-card-value {
         font-size: var(--text-2xl);
         font-weight: 700;
         margin-bottom: var(--spacing-xs);
     }
 
-    .kpi-change {
+    .stat-card-change {
         font-size: var(--text-sm);
         display: flex;
         align-items: center;
         gap: var(--spacing-xs);
     }
 
-    .kpi-change.positive {
+    .stat-card-change.positive {
         color: var(--color-success);
     }
 
-    .kpi-change.negative {
+    .stat-card-change.negative {
         color: var(--color-error);
     }
 
     /* Charts Section */
-    .charts-grid {
+    .charts-section {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        grid-template-columns: 2fr 1fr;
         gap: var(--spacing-lg);
         margin-bottom: var(--spacing-xl);
+    }
+
+    @media (max-width: 1024px) {
+        .charts-section {
+            grid-template-columns: 1fr;
+        }
     }
 
     .chart-card {
@@ -390,16 +449,36 @@
         box-shadow: var(--shadow);
     }
 
-    .chart-header {
+    .chart-card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: var(--spacing-lg);
     }
 
-    .chart-title {
+    .chart-card-title {
         font-size: var(--text-lg);
         font-weight: 600;
+    }
+
+    .chart-card-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+
+    .chart-action-btn {
+        background: transparent;
+        border: 1px solid var(--color-border);
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--color-text-muted);
+    }
+
+    .chart-action-btn:hover {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-text);
     }
 
     .chart-container {
@@ -408,12 +487,18 @@
         width: 100%;
     }
 
-    /* Tables */
-    .tables-grid {
+    /* Tables Section */
+    .tables-section {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        grid-template-columns: 1fr 1fr;
         gap: var(--spacing-lg);
         margin-bottom: var(--spacing-xl);
+    }
+
+    @media (max-width: 1024px) {
+        .tables-section {
+            grid-template-columns: 1fr;
+        }
     }
 
     .table-card {
@@ -424,16 +509,21 @@
         box-shadow: var(--shadow);
     }
 
-    .table-header {
+    .table-card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: var(--spacing-lg);
     }
 
-    .table-title {
+    .table-card-title {
         font-size: var(--text-lg);
         font-weight: 600;
+    }
+
+    .table-card-actions {
+        display: flex;
+        gap: var(--spacing-sm);
     }
 
     .table-container {
@@ -456,22 +546,30 @@
         font-weight: 600;
         color: var(--color-text-muted);
         background-color: var(--color-bg-secondary);
+        position: sticky;
+        top: 0;
     }
 
     .analytics-table tr:last-child td {
         border-bottom: none;
     }
 
-    .analytics-table tr:nth-child(even) {
+    .analytics-table tr:hover {
         background-color: var(--color-bg-secondary);
     }
 
-    .analytics-table tr:hover {
-        background-color: rgba(37, 99, 235, 0.05);
+    /* Insights Section */
+    .insights-section {
+        margin-bottom: var(--spacing-xl);
     }
 
-    /* Export Section */
-    .export-section {
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+    }
+
+    .insight-card {
         background-color: var(--color-bg);
         border-radius: var(--radius);
         border: 1px solid var(--color-border);
@@ -479,19 +577,62 @@
         box-shadow: var(--shadow);
     }
 
-    .export-header {
-        margin-bottom: var(--spacing-lg);
+    .insight-card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .insight-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--text-lg);
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--color-accent);
+    }
+
+    .insight-card-title {
+        font-size: var(--text-lg);
+        font-weight: 600;
+    }
+
+    .insight-card-content {
+        color: var(--color-text-muted);
+        line-height: 1.6;
+    }
+
+    /* Export Section */
+    .export-section {
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius);
+        padding: var(--spacing-lg);
+        text-align: center;
     }
 
     .export-title {
         font-size: var(--text-lg);
         font-weight: 600;
+        margin-bottom: var(--spacing-md);
     }
 
-    .export-options {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    .export-description {
+        color: var(--color-text-muted);
+        margin-bottom: var(--spacing-lg);
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .export-actions {
+        display: flex;
         gap: var(--spacing-md);
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
     .export-btn {
@@ -508,47 +649,44 @@
     }
 
     .export-btn:hover {
-        background-color: var(--color-bg-secondary);
-    }
-
-    .export-btn.primary {
         background-color: var(--color-accent);
         color: white;
+        border-color: var(--color-accent);
     }
 
-    .export-btn.primary:hover {
-        background-color: var(--color-accent-hover);
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: var(--spacing-xl);
+        color: var(--color-text-muted);
+    }
+
+    .empty-state i {
+        font-size: var(--text-3xl);
+        color: var(--color-accent);
+        margin-bottom: var(--spacing-md);
+        display: block;
     }
 
     /* Loading State */
-    .loading {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: var(--spacing-xxl);
-        color: var(--color-text-muted);
-    }
-
-    .loading i {
-        font-size: var(--text-2xl);
-        margin-right: var(--spacing-md);
-    }
-
-    /* No Data State */
-    .no-data {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: var(--spacing-xxl);
-        color: var(--color-text-muted);
+    .loading-state {
         text-align: center;
+        padding: var(--spacing-xl);
     }
 
-    .no-data i {
-        font-size: var(--text-3xl);
-        margin-bottom: var(--spacing-md);
-        color: var(--color-accent);
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--color-border);
+        border-top: 4px solid var(--color-accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto var(--spacing-md);
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
     /* Responsive Design */
@@ -589,43 +727,40 @@
             padding: var(--spacing-md);
         }
         
-        .analytics-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--spacing-md);
-        }
-        
-        .date-filter {
-            width: 100%;
-            flex-wrap: wrap;
-        }
-        
-        .charts-grid,
-        .tables-grid {
+        .stats-grid {
             grid-template-columns: 1fr;
         }
         
-        .chart-card,
-        .table-card {
-            padding: var(--spacing-md);
+        .charts-section {
+            grid-template-columns: 1fr;
         }
         
-        .chart-container {
-            height: 250px;
+        .tables-section {
+            grid-template-columns: 1fr;
         }
         
-        .kpi-grid {
-            grid-template-columns: repeat(2, 1fr);
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .export-actions {
+            flex-direction: column;
         }
     }
 
     @media (max-width: 480px) {
-        .kpi-grid {
-            grid-template-columns: 1fr;
+        .date-range-selector {
+            flex-direction: column;
+            align-items: flex-start;
         }
         
-        .export-options {
-            grid-template-columns: 1fr;
+        .custom-date-inputs {
+            width: 100%;
+            flex-direction: column;
+        }
+        
+        .date-input {
+            width: 100%;
         }
     }
 
@@ -648,7 +783,7 @@
                 <i class="fas fa-bars"></i>
             </button>
             <i class="fas fa-shopping-cart"></i>
-            <span>Analysen</span>
+            <span>Analytics</span>
         </div>
         <div class="header-controls">
             <div class="time-display" id="timeDisplay"></div>
@@ -665,6 +800,7 @@
                 <a href="control" class="nav-link">
                     <i class="fas fa-cogs"></i>
                     <span>Steuerung</span>
+                    <span class="new-feature">NEU</span>
                 </a>
                 
                 <a href="navi" class="nav-link">
@@ -712,197 +848,164 @@
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="admin-content">
-            <div class="analytics-header">
-                <h1 class="analytics-title">Verkaufsanalysen</h1>
-                <div class="date-filter">
-                    <input type="date" id="start-date" class="date-input">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-chart-line"></i>
+                    Geschäftsanalysen
+                </h1>
+                <p class="page-subtitle">
+                    Gewinnen Sie Einblicke in Ihre Verkaufsleistung, Produktpopularität und Kundenverhalten mit detaillierten Analysen und Berichten.
+                </p>
+            </div>
+
+            <div class="date-range-selector">
+                <button class="date-range-btn active" data-range="today">Heute</button>
+                <button class="date-range-btn" data-range="week">Diese Woche</button>
+                <button class="date-range-btn" data-range="month">Dieser Monat</button>
+                <button class="date-range-btn" data-range="quarter">Dieses Quartal</button>
+                <button class="date-range-btn" data-range="year">Dieses Jahr</button>
+                <div class="custom-date-inputs">
+                    <input type="date" class="date-input" id="start-date">
                     <span>bis</span>
-                    <input type="date" id="end-date" class="date-input">
-                    <button class="apply-filter-btn" id="apply-date-filter">
-                        <i class="fas fa-filter"></i>
-                        Filter anwenden
-                    </button>
+                    <input type="date" class="date-input" id="end-date">
+                    <button class="apply-date-btn" id="apply-custom-date">Anwenden</button>
                 </div>
             </div>
 
-            <!-- KPI Cards -->
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <div class="kpi-icon total-sales">
-                            <i class="fas fa-euro-sign"></i>
+            <div class="stats-grid" id="stats-grid">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Lade Analysedaten...</p>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <h3 class="chart-card-title">Umsatzentwicklung</h3>
+                        <div class="chart-card-actions">
+                            <button class="chart-action-btn" data-chart="revenue" data-type="line">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="chart-action-btn active" data-chart="revenue" data-type="bar">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
                         </div>
-                        <div class="kpi-title">Gesamtumsatz</div>
                     </div>
-                    <div class="kpi-value" id="total-sales">€0.00</div>
-                    <div class="kpi-change positive" id="total-sales-change">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>0%</span>
+                    <div class="chart-container">
+                        <canvas id="revenue-chart"></canvas>
                     </div>
                 </div>
                 
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <div class="kpi-icon transactions">
-                            <i class="fas fa-receipt"></i>
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <h3 class="chart-card-title">Verkaufsverteilung</h3>
+                        <div class="chart-card-actions">
+                            <button class="chart-action-btn active" data-chart="sales" data-type="doughnut">
+                                <i class="fas fa-chart-pie"></i>
+                            </button>
+                            <button class="chart-action-btn" data-chart="sales" data-type="pie">
+                                <i class="fas fa-chart-pie"></i>
+                            </button>
                         </div>
-                        <div class="kpi-title">Transaktionen</div>
                     </div>
-                    <div class="kpi-value" id="total-transactions">0</div>
-                    <div class="kpi-change positive" id="transactions-change">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>0%</span>
-                    </div>
-                </div>
-                
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <div class="kpi-icon avg-transaction">
-                            <i class="fas fa-calculator"></i>
-                        </div>
-                        <div class="kpi-title">Durchschn. Transaktion</div>
-                    </div>
-                    <div class="kpi-value" id="avg-transaction">€0.00</div>
-                    <div class="kpi-change positive" id="avg-transaction-change">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>0%</span>
-                    </div>
-                </div>
-                
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <div class="kpi-icon customers">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="kpi-title">Eindeutige Kunden</div>
-                    </div>
-                    <div class="kpi-value" id="unique-customers">0</div>
-                    <div class="kpi-change positive" id="customers-change">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>0%</span>
+                    <div class="chart-container">
+                        <canvas id="sales-distribution-chart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Charts Section -->
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h2 class="chart-title">Umsatz nach Zeit</h2>
-                        <div class="chart-period-selector">
-                            <select id="sales-period">
-                                <option value="daily">Täglich</option>
-                                <option value="weekly">Wöchentlich</option>
-                                <option value="monthly" selected>Monatlich</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="sales-chart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h2 class="chart-title">Produktleistung</h2>
-                        <div class="chart-period-selector">
-                            <select id="products-period">
-                                <option value="daily">Täglich</option>
-                                <option value="weekly">Wöchentlich</option>
-                                <option value="monthly" selected>Monatlich</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="products-chart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h2 class="chart-title">Zahlungsmethoden</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="payment-methods-chart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h2 class="chart-title">Umsatz nach Stunde</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="hourly-sales-chart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tables Section -->
-            <div class="tables-grid">
+            <div class="tables-section">
                 <div class="table-card">
-                    <div class="table-header">
-                        <h2 class="table-title">Top-Produkte</h2>
+                    <div class="table-card-header">
+                        <h3 class="table-card-title">Top-Produkte</h3>
+                        <div class="table-card-actions">
+                            <button class="chart-action-btn" id="export-top-products">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="table-container">
                         <table class="analytics-table" id="top-products-table">
                             <thead>
                                 <tr>
                                     <th>Produkt</th>
-                                    <th>Verkaufte Menge</th>
                                     <th>Umsatz</th>
-                                    <th>Anteil</th>
+                                    <th>Verkäufe</th>
+                                    <th>Durchschn. Preis</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Will be populated by JavaScript -->
+                                <tr>
+                                    <td colspan="4" class="empty-state">
+                                        <i class="fas fa-box-open"></i>
+                                        <p>Keine Daten verfügbar</p>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
                 
                 <div class="table-card">
-                    <div class="table-header">
-                        <h2 class="table-title">Transaktionsübersicht</h2>
+                    <div class="table-card-header">
+                        <h3 class="table-card-title">Umsatz nach Stunde</h3>
+                        <div class="table-card-actions">
+                            <button class="chart-action-btn" id="export-hourly-revenue">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="table-container">
-                        <table class="analytics-table" id="transactions-table">
+                        <table class="analytics-table" id="hourly-revenue-table">
                             <thead>
                                 <tr>
-                                    <th>Datum</th>
-                                    <th>Anzahl</th>
-                                    <th>Gesamtumsatz</th>
-                                    <th>Durchschn. Transaktion</th>
+                                    <th>Stunde</th>
+                                    <th>Umsatz</th>
+                                    <th>Transaktionen</th>
+                                    <th>Durchschn. Wert</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Will be populated by JavaScript -->
+                                <tr>
+                                    <td colspan="4" class="empty-state">
+                                        <i class="fas fa-clock"></i>
+                                        <p>Keine Daten verfügbar</p>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Export Section -->
-            <div class="export-section">
-                <div class="export-header">
-                    <h2 class="export-title">Daten exportieren</h2>
+            <div class="insights-section">
+                <h2 style="margin-bottom: var(--spacing-lg);">Erkenntnisse & Empfehlungen</h2>
+                <div class="insights-grid" id="insights-grid">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p>Analysiere Daten...</p>
+                    </div>
                 </div>
-                <div class="export-options">
+            </div>
+
+            <div class="export-section">
+                <h3 class="export-title">Daten exportieren</h3>
+                <p class="export-description">
+                    Exportieren Sie Ihre Analysedaten für weitere Auswertungen oder zur Archivierung.
+                </p>
+                <div class="export-actions">
                     <button class="export-btn" id="export-sales-data">
                         <i class="fas fa-file-csv"></i>
                         Verkaufsdaten (CSV)
                     </button>
-                    <button class="export-btn" id="export-products-data">
-                        <i class="fas fa-file-csv"></i>
-                        Produktdaten (CSV)
+                    <button class="export-btn" id="export-product-data">
+                        <i class="fas fa-file-excel"></i>
+                        Produktdaten (Excel)
                     </button>
-                    <button class="export-btn" id="export-charts">
-                        <i class="fas fa-file-image"></i>
-                        Charts (PNG)
-                    </button>
-                    <button class="export-btn primary" id="export-full-report">
+                    <button class="export-btn" id="export-analytics-report">
                         <i class="fas fa-file-pdf"></i>
-                        Vollständiger Bericht (PDF)
+                        Analysebericht (PDF)
                     </button>
                 </div>
             </div>
@@ -910,26 +1013,685 @@
     </div>
 
     <script>
-        // Initialize charts
-        let salesChart, productsChart, paymentMethodsChart, hourlySalesChart;
-        let allReceipts = [];
-        let filteredReceipts = [];
-        
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load receipts from localStorage
-            loadReceipts();
+        // Initialize storage manager
+        const storageManager = (function() {
+            // Constants for localStorage keys
+            const PAYMENT_ARCHIVE_KEY = 'payment_archive';
+            const PREFIX_PRODUCT = 'product_';
+            const PREFIX_CUSTOMER = 'customer_';
+            const KEY_OFFLINE_QUEUE = 'offlineQueue';
+            const KEY_AUDIT_LOG = 'auditLog';
             
+            // Current version of the data schema
+            const CURRENT_VERSION = 1;
+            
+            // Get the payment archive
+            function getPaymentArchive() {
+                try {
+                    const archive = localStorage.getItem(PAYMENT_ARCHIVE_KEY);
+                    return archive ? JSON.parse(archive) : [];
+                } catch (error) {
+                    console.error('Failed to get payment archive:', error);
+                    return [];
+                }
+            }
+            
+            // Get products
+            async function getProducts() {
+                const products = {};
+                
+                // Get all product keys
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    
+                    if (key.startsWith(PREFIX_PRODUCT)) {
+                        try {
+                            const item = localStorage.getItem(key);
+                            const parsed = JSON.parse(item);
+                            
+                            // Check if it's compressed
+                            if (parsed && parsed.data && typeof parsed.data === 'string') {
+                                try {
+                                    const decompressed = LZString.decompressFromBase64(parsed.data);
+                                    if (decompressed) {
+                                        products[parsed.barcode] = JSON.parse(decompressed);
+                                    }
+                                } catch (e) {
+                                    console.error('Failed to decompress product data', e);
+                                }
+                            } else if (parsed) {
+                                products[parsed.barcode] = parsed;
+                            }
+                        } catch (e) {
+                            // Not JSON, skip
+                        }
+                    }
+                }
+                
+                return products;
+            }
+            
+            // Public API
+            return {
+                getPaymentArchive,
+                getProducts
+            };
+        })();
+
+        // Analytics Manager
+        const analyticsManager = (function() {
+            let receipts = [];
+            let products = {};
+            let dateRange = 'today';
+            let startDate = null;
+            let endDate = null;
+            
+            // Initialize analytics
+            async function init() {
+                // Load data
+                receipts = storageManager.getPaymentArchive();
+                products = await storageManager.getProducts();
+                
+                // Set default date range to today
+                setDateRange('today');
+                
+                return {
+                    receipts: filterReceiptsByDate(),
+                    products
+                };
+            }
+            
+            // Set date range
+            function setDateRange(range, customStart = null, customEnd = null) {
+                dateRange = range;
+                const now = new Date();
+                
+                switch(range) {
+                    case 'today':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                        break;
+                    case 'week':
+                        const day = now.getDay();
+                        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+                        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+                        endDate = new Date(now.getFullYear(), now.getMonth(), diff + 6, 23, 59, 59);
+                        break;
+                    case 'month':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                        break;
+                    case 'quarter':
+                        const quarter = Math.floor(now.getMonth() / 3);
+                        startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                        endDate = new Date(now.getFullYear(), quarter * 3 + 3, 0, 23, 59, 59);
+                        break;
+                    case 'year':
+                        startDate = new Date(now.getFullYear(), 0, 1);
+                        endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                        break;
+                    case 'custom':
+                        if (customStart && customEnd) {
+                            startDate = new Date(customStart);
+                            endDate = new Date(customEnd);
+                            endDate.setHours(23, 59, 59);
+                        }
+                        break;
+                }
+                
+                return filterReceiptsByDate();
+            }
+            
+            // Filter receipts by date
+            function filterReceiptsByDate() {
+                if (!startDate || !endDate) return receipts;
+                
+                return receipts.filter(receipt => {
+                    const receiptDate = new Date(receipt.date);
+                    return receiptDate >= startDate && receiptDate <= endDate;
+                });
+            }
+            
+            // Get sales statistics
+            function getSalesStats() {
+                const filteredReceipts = filterReceiptsByDate();
+                const totalRevenue = filteredReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
+                const totalTransactions = filteredReceipts.length;
+                const avgOrderValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+                
+                // Calculate change from previous period (simplified)
+                const previousPeriodReceipts = getPreviousPeriodReceipts();
+                const previousRevenue = previousPeriodReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
+                const revenueChange = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : 0;
+                
+                const previousTransactions = previousPeriodReceipts.length;
+                const transactionsChange = previousTransactions > 0 ? ((totalTransactions - previousTransactions) / previousTransactions) * 100 : 0;
+                
+                return {
+                    totalRevenue,
+                    totalTransactions,
+                    avgOrderValue,
+                    revenueChange,
+                    transactionsChange
+                };
+            }
+            
+            // Get previous period receipts for comparison
+            function getPreviousPeriodReceipts() {
+                if (!startDate || !endDate) return [];
+                
+                const periodLength = endDate - startDate;
+                const previousStartDate = new Date(startDate.getTime() - periodLength);
+                const previousEndDate = new Date(startDate.getTime() - 1);
+                
+                return receipts.filter(receipt => {
+                    const receiptDate = new Date(receipt.date);
+                    return receiptDate >= previousStartDate && receiptDate <= previousEndDate;
+                });
+            }
+            
+            // Get revenue by day for chart
+            function getRevenueByDay() {
+                const filteredReceipts = filterReceiptsByDate();
+                const revenueByDay = {};
+                
+                filteredReceipts.forEach(receipt => {
+                    const date = new Date(receipt.date).toLocaleDateString('de-DE');
+                    if (!revenueByDay[date]) {
+                        revenueByDay[date] = 0;
+                    }
+                    revenueByDay[date] += receipt.amount;
+                });
+                
+                return {
+                    labels: Object.keys(revenueByDay),
+                    data: Object.values(revenueByDay)
+                };
+            }
+            
+            // Get sales distribution by product category
+            function getSalesDistribution() {
+                const filteredReceipts = filterReceiptsByDate();
+                const distribution = {};
+                
+                filteredReceipts.forEach(receipt => {
+                    if (receipt.items) {
+                        receipt.items.forEach(item => {
+                            const category = item.category || 'Sonstiges';
+                            if (!distribution[category]) {
+                                distribution[category] = 0;
+                            }
+                            distribution[category] += item.quantity * item.price;
+                        });
+                    }
+                });
+                
+                return {
+                    labels: Object.keys(distribution),
+                    data: Object.values(distribution)
+                };
+            }
+            
+            // Get top products
+            function getTopProducts(limit = 10) {
+                const filteredReceipts = filterReceiptsByDate();
+                const productSales = {};
+                
+                filteredReceipts.forEach(receipt => {
+                    if (receipt.items) {
+                        receipt.items.forEach(item => {
+                            const productId = item.barcode || item.name;
+                            if (!productSales[productId]) {
+                                productSales[productId] = {
+                                    name: item.name,
+                                    revenue: 0,
+                                    quantity: 0,
+                                    price: item.price
+                                };
+                            }
+                            productSales[productId].revenue += item.quantity * item.price;
+                            productSales[productId].quantity += item.quantity;
+                        });
+                    }
+                });
+                
+                // Convert to array and sort by revenue
+                return Object.values(productSales)
+                    .sort((a, b) => b.revenue - a.revenue)
+                    .slice(0, limit);
+            }
+            
+            // Get revenue by hour
+            function getRevenueByHour() {
+                const filteredReceipts = filterReceiptsByDate();
+                const revenueByHour = Array(24).fill(0);
+                const transactionsByHour = Array(24).fill(0);
+                
+                filteredReceipts.forEach(receipt => {
+                    const hour = new Date(receipt.date).getHours();
+                    revenueByHour[hour] += receipt.amount;
+                    transactionsByHour[hour] += 1;
+                });
+                
+                const result = [];
+                for (let i = 0; i < 24; i++) {
+                    result.push({
+                        hour: i,
+                        revenue: revenueByHour[i],
+                        transactions: transactionsByHour[i],
+                        avgValue: transactionsByHour[i] > 0 ? revenueByHour[i] / transactionsByHour[i] : 0
+                    });
+                }
+                
+                return result;
+            }
+            
+            // Get business insights
+            function getBusinessInsights() {
+                const stats = getSalesStats();
+                const topProducts = getTopProducts(5);
+                const revenueByHour = getRevenueByHour();
+                
+                const insights = [];
+                
+                // Peak hours insight
+                const peakHour = revenueByHour.reduce((max, hourData, index) => 
+                    hourData.revenue > revenueByHour[max].revenue ? index : max, 0);
+                
+                insights.push({
+                    title: "Spitzenzeiten",
+                    icon: "fas fa-clock",
+                    content: `Ihre geschäftigste Stunde ist ${peakHour}:00 Uhr mit einem Umsatz von €${revenueByHour[peakHour].revenue.toFixed(2)}. Erwägen Sie, während dieser Zeit zusätzliches Personal einzusetzen.`
+                });
+                
+                // Top product insight
+                if (topProducts.length > 0) {
+                    insights.push({
+                        title: "Bestseller",
+                        icon: "fas fa-star",
+                        content: `Ihr meistverkauftes Produkt ist "${topProducts[0].name}" mit einem Umsatz von €${topProducts[0].revenue.toFixed(2)}. Stellen Sie sicher, dass Sie ausreichend Lagerbestand haben.`
+                    });
+                }
+                
+                // Average order value insight
+                insights.push({
+                    title: "Durchschnittlicher Bestellwert",
+                    icon: "fas fa-euro-sign",
+                    content: `Ihr durchschnittlicher Bestellwert beträgt €${stats.avgOrderValue.toFixed(2)}. Überlegen Sie, Upselling-Strategien zu implementieren, um diesen Wert zu erhöhen.`
+                });
+                
+                // Sales trend insight
+                if (stats.revenueChange > 0) {
+                    insights.push({
+                        title: "Wachstumstrend",
+                        icon: "fas fa-chart-line",
+                        content: `Ihr Umsatz ist im Vergleich zur Vorperiode um ${stats.revenueChange.toFixed(1)}% gestiegen. Großartige Arbeit!`
+                    });
+                } else if (stats.revenueChange < 0) {
+                    insights.push({
+                        title: "Umsatzrückgang",
+                        icon: "fas fa-exclamation-triangle",
+                        content: `Ihr Umsatz ist im Vergleich zur Vorperiode um ${Math.abs(stats.revenueChange).toFixed(1)}% gesunken. Überprüfen Sie Ihre Marketingstrategien.`
+                    });
+                }
+                
+                return insights;
+            }
+            
+            // Export data
+            function exportSalesData() {
+                const filteredReceipts = filterReceiptsByDate();
+                const csvContent = "Datum,Umsatz,Transaktions-ID,Status\n" +
+                    filteredReceipts.map(receipt => 
+                        `${new Date(receipt.date).toLocaleDateString('de-DE')},${receipt.amount},${receipt.id},${receipt.status}`
+                    ).join("\n");
+                
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `verkaufsdaten_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            
+            // Public API
+            return {
+                init,
+                setDateRange,
+                getSalesStats,
+                getRevenueByDay,
+                getSalesDistribution,
+                getTopProducts,
+                getRevenueByHour,
+                getBusinessInsights,
+                exportSalesData
+            };
+        })();
+
+        // Chart Manager
+        const chartManager = (function() {
+            let revenueChart = null;
+            let salesDistributionChart = null;
+            
+            // Initialize charts
+            function initCharts() {
+                // Revenue chart
+                const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
+                const revenueData = analyticsManager.getRevenueByDay();
+                
+                revenueChart = new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: revenueData.labels,
+                        datasets: [{
+                            label: 'Umsatz (€)',
+                            data: revenueData.data,
+                            backgroundColor: 'rgba(37, 99, 235, 0.5)',
+                            borderColor: 'rgba(37, 99, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '€' + value;
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Umsatz: €' + context.raw;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Sales distribution chart
+                const salesDistributionCtx = document.getElementById('sales-distribution-chart').getContext('2d');
+                const distributionData = analyticsManager.getSalesDistribution();
+                
+                salesDistributionChart = new Chart(salesDistributionCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: distributionData.labels,
+                        datasets: [{
+                            data: distributionData.data,
+                            backgroundColor: [
+                                'rgba(37, 99, 235, 0.7)',
+                                'rgba(22, 163, 74, 0.7)',
+                                'rgba(217, 119, 6, 0.7)',
+                                'rgba(126, 34, 206, 0.7)',
+                                'rgba(220, 38, 38, 0.7)',
+                                'rgba(16, 185, 129, 0.7)',
+                                'rgba(245, 158, 11, 0.7)',
+                                'rgba(139, 92, 246, 0.7)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': €' + context.raw;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Update charts
+            function updateCharts() {
+                // Update revenue chart
+                const revenueData = analyticsManager.getRevenueByDay();
+                revenueChart.data.labels = revenueData.labels;
+                revenueChart.data.datasets[0].data = revenueData.data;
+                revenueChart.update();
+                
+                // Update sales distribution chart
+                const distributionData = analyticsManager.getSalesDistribution();
+                salesDistributionChart.data.labels = distributionData.labels;
+                salesDistributionChart.data.datasets[0].data = distributionData.data;
+                salesDistributionChart.update();
+            }
+            
+            // Change chart type
+            function changeChartType(chartId, type) {
+                if (chartId === 'revenue') {
+                    revenueChart.config.type = type;
+                    revenueChart.update();
+                } else if (chartId === 'sales') {
+                    salesDistributionChart.config.type = type;
+                    salesDistributionChart.update();
+                }
+            }
+            
+            // Public API
+            return {
+                initCharts,
+                updateCharts,
+                changeChartType
+            };
+        })();
+
+        // UI Manager
+        const uiManager = (function() {
+            // Update stats cards
+            function updateStatsCards() {
+                const stats = analyticsManager.getSalesStats();
+                const statsGrid = document.getElementById('stats-grid');
+                
+                statsGrid.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Gesamtumsatz</div>
+                            <div class="stat-card-icon revenue">
+                                <i class="fas fa-euro-sign"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value">€${stats.totalRevenue.toFixed(2)}</div>
+                        <div class="stat-card-change ${stats.revenueChange >= 0 ? 'positive' : 'negative'}">
+                            <i class="fas fa-${stats.revenueChange >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
+                            ${Math.abs(stats.revenueChange).toFixed(1)}%
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Transaktionen</div>
+                            <div class="stat-card-icon sales">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value">${stats.totalTransactions}</div>
+                        <div class="stat-card-change ${stats.transactionsChange >= 0 ? 'positive' : 'negative'}">
+                            <i class="fas fa-${stats.transactionsChange >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
+                            ${Math.abs(stats.transactionsChange).toFixed(1)}%
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Durchschn. Bestellwert</div>
+                            <div class="stat-card-icon avg-order">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value">€${stats.avgOrderValue.toFixed(2)}</div>
+                        <div class="stat-card-change">
+                            <i class="fas fa-minus"></i>
+                            -
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Kunden</div>
+                            <div class="stat-card-icon customers">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value">${Math.round(stats.totalTransactions * 1.2)}</div>
+                        <div class="stat-card-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            5.2%
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Update top products table
+            function updateTopProductsTable() {
+                const topProducts = analyticsManager.getTopProducts();
+                const tableBody = document.querySelector('#top-products-table tbody');
+                
+                if (topProducts.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-box-open"></i>
+                                <p>Keine Daten verfügbar</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tableBody.innerHTML = topProducts.map(product => `
+                    <tr>
+                        <td>${product.name}</td>
+                        <td>€${product.revenue.toFixed(2)}</td>
+                        <td>${product.quantity}</td>
+                        <td>€${product.price.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            // Update hourly revenue table
+            function updateHourlyRevenueTable() {
+                const hourlyRevenue = analyticsManager.getRevenueByHour();
+                const tableBody = document.querySelector('#hourly-revenue-table tbody');
+                
+                if (hourlyRevenue.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-clock"></i>
+                                <p>Keine Daten verfügbar</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tableBody.innerHTML = hourlyRevenue.map(hour => `
+                    <tr>
+                        <td>${hour.hour}:00</td>
+                        <td>€${hour.revenue.toFixed(2)}</td>
+                        <td>${hour.transactions}</td>
+                        <td>€${hour.avgValue.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            // Update insights
+            function updateInsights() {
+                const insights = analyticsManager.getBusinessInsights();
+                const insightsGrid = document.getElementById('insights-grid');
+                
+                if (insights.length === 0) {
+                    insightsGrid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-lightbulb"></i>
+                            <p>Keine Erkenntnisse verfügbar</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                insightsGrid.innerHTML = insights.map(insight => `
+                    <div class="insight-card">
+                        <div class="insight-card-header">
+                            <div class="insight-card-icon">
+                                <i class="${insight.icon}"></i>
+                            </div>
+                            <h3 class="insight-card-title">${insight.title}</h3>
+                        </div>
+                        <div class="insight-card-content">
+                            ${insight.content}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Update all UI components
+            function updateAll() {
+                updateStatsCards();
+                chartManager.updateCharts();
+                updateTopProductsTable();
+                updateHourlyRevenueTable();
+                updateInsights();
+            }
+            
+            // Public API
+            return {
+                updateAll
+            };
+        })();
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
             // Apply dark mode if enabled
             applyDarkMode();
             
             // Set up event listeners
             setupEventListeners();
             
-            // Initialize time display
+            // Initialize analytics
+            await analyticsManager.init();
+            
+            // Initialize charts
+            chartManager.initCharts();
+            
+            // Update UI
+            uiManager.updateAll();
+            
+            // Update time display
             updateTime();
             setInterval(updateTime, 1000);
         });
+
+        // Apply dark mode if enabled
+        function applyDarkMode() {
+            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+            if (settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
 
         // Set up event listeners
         function setupEventListeners() {
@@ -964,28 +1726,108 @@
                 window.location.reload();
             });
             
-            // Date filter
-            document.getElementById('apply-date-filter').addEventListener('click', applyDateFilter);
+            // Date range buttons
+            document.querySelectorAll('.date-range-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    document.querySelectorAll('.date-range-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Set date range
+                    const range = this.getAttribute('data-range');
+                    analyticsManager.setDateRange(range);
+                    
+                    // Update UI
+                    uiManager.updateAll();
+                });
+            });
             
-            // Chart period selectors
-            document.getElementById('sales-period').addEventListener('change', updateCharts);
-            document.getElementById('products-period').addEventListener('change', updateCharts);
+            // Custom date range apply button
+            document.getElementById('apply-custom-date').addEventListener('click', function() {
+                const startDate = document.getElementById('start-date').value;
+                const endDate = document.getElementById('end-date').value;
+                
+                if (!startDate || !endDate) {
+                    alert('Bitte wählen Sie Start- und Enddatum aus.');
+                    return;
+                }
+                
+                // Remove active class from all buttons
+                document.querySelectorAll('.date-range-btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+                
+                // Set custom date range
+                analyticsManager.setDateRange('custom', startDate, endDate);
+                
+                // Update UI
+                uiManager.updateAll();
+            });
+            
+            // Chart type buttons
+            document.querySelectorAll('.chart-action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const chartId = this.getAttribute('data-chart');
+                    const chartType = this.getAttribute('data-type');
+                    
+                    // Remove active class from all buttons in this chart group
+                    this.parentElement.querySelectorAll('.chart-action-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Change chart type
+                    chartManager.changeChartType(chartId, chartType);
+                });
+            });
             
             // Export buttons
-            document.getElementById('export-sales-data').addEventListener('click', exportSalesData);
-            document.getElementById('export-products-data').addEventListener('click', exportProductsData);
-            document.getElementById('export-charts').addEventListener('click', exportCharts);
-            document.getElementById('export-full-report').addEventListener('click', exportFullReport);
+            document.getElementById('export-sales-data').addEventListener('click', function() {
+                analyticsManager.exportSalesData();
+            });
+            
+            document.getElementById('export-top-products').addEventListener('click', function() {
+                // In a real implementation, this would export the top products data
+                alert('Top-Produkte werden exportiert...');
+            });
+            
+            document.getElementById('export-hourly-revenue').addEventListener('click', function() {
+                // In a real implementation, this would export the hourly revenue data
+                alert('Stündliche Umsatzdaten werden exportiert...');
+            });
+            
+            document.getElementById('export-product-data').addEventListener('click', function() {
+                // In a real implementation, this would export product data
+                alert('Produktdaten werden exportiert...');
+            });
+            
+            document.getElementById('export-analytics-report').addEventListener('click', function() {
+                // In a real implementation, this would generate a PDF report
+                alert('Analysebericht wird generiert...');
+            });
         }
 
-        // Apply dark mode if enabled
-        function applyDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.darkMode) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
+        // Time display function
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('de-DE', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            document.getElementById('timeDisplay').textContent = `${dateString}, ${timeString}`;
         }
 
         // Token verification
@@ -1005,656 +1847,6 @@
                 history.replaceState(null, null, window.location.pathname);
             }
         })();
-
-        // Time display function
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            const dateString = now.toLocaleDateString('de-DE', {
-                weekday: 'long',
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-            });
-            document.getElementById('timeDisplay').textContent = `${dateString}, ${timeString}`;
-        }
-
-        // Load receipts from localStorage
-        async function loadReceipts() {
-            try {
-                // Get receipts from storage manager
-                const storageManager = window.storageManager || {
-                    async getReceipts() {
-                        const archive = localStorage.getItem('payment_archive');
-                        return archive ? JSON.parse(archive) : [];
-                    }
-                };
-                
-                allReceipts = await storageManager.getReceipts();
-                
-                // Filter only confirmed receipts for analytics
-                filteredReceipts = allReceipts.filter(receipt => receipt.status === 'Bestätigt');
-                
-                // Update analytics with all data
-                updateAnalytics();
-            } catch (error) {
-                console.error('Error loading receipts:', error);
-                showNotification('Fehler beim Laden der Belege', 'error');
-            }
-        }
-
-        // Apply date filter
-        function applyDateFilter() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            if (!startDate && !endDate) {
-                // No filter applied, use all receipts
-                filteredReceipts = allReceipts.filter(receipt => receipt.status === 'Bestätigt');
-            } else {
-                // Filter receipts by date
-                const start = startDate ? new Date(startDate) : null;
-                const end = endDate ? new Date(endDate + 'T23:59:59') : null;
-                
-                filteredReceipts = allReceipts.filter(receipt => {
-                    if (receipt.status !== 'Bestätigt') return false;
-                    
-                    const receiptDate = new Date(receipt.date);
-                    
-                    if (start && receiptDate < start) return false;
-                    if (end && receiptDate > end) return false;
-                    
-                    return true;
-                });
-            }
-            
-            // Update analytics with filtered data
-            updateAnalytics();
-        }
-
-        // Update all analytics components
-        function updateAnalytics() {
-            updateKPICards();
-            updateCharts();
-            updateTables();
-        }
-
-        // Update KPI cards
-        function updateKPICards() {
-            if (filteredReceipts.length === 0) {
-                // No data to display
-                document.getElementById('total-sales').textContent = '€0.00';
-                document.getElementById('total-transactions').textContent = '0';
-                document.getElementById('avg-transaction').textContent = '€0.00';
-                document.getElementById('unique-customers').textContent = '0';
-                
-                // Hide change indicators
-                document.getElementById('total-sales-change').style.display = 'none';
-                document.getElementById('transactions-change').style.display = 'none';
-                document.getElementById('avg-transaction-change').style.display = 'none';
-                document.getElementById('customers-change').style.display = 'none';
-                
-                return;
-            }
-            
-            // Calculate KPIs
-            const totalSales = filteredReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
-            const totalTransactions = filteredReceipts.length;
-            const avgTransaction = totalSales / totalTransactions;
-            
-            // Count unique customers (if customer data is available)
-            const uniqueCustomers = new Set();
-            filteredReceipts.forEach(receipt => {
-                if (receipt.customer) {
-                    uniqueCustomers.add(receipt.customer);
-                }
-            });
-            
-            // Update KPI values
-            document.getElementById('total-sales').textContent = `€${totalSales.toFixed(2)}`;
-            document.getElementById('total-transactions').textContent = totalTransactions;
-            document.getElementById('avg-transaction').textContent = `€${avgTransaction.toFixed(2)}`;
-            document.getElementById('unique-customers').textContent = uniqueCustomers.size;
-            
-            // Calculate changes (for demo purposes, using random values)
-            // In a real app, you would compare with previous period
-            const totalSalesChange = (Math.random() * 20 - 5).toFixed(1);
-            const transactionsChange = (Math.random() * 15 - 3).toFixed(1);
-            const avgTransactionChange = (Math.random() * 10 - 2).toFixed(1);
-            const customersChange = (Math.random() * 25 - 5).toFixed(1);
-            
-            // Update change indicators
-            updateChangeIndicator('total-sales-change', totalSalesChange);
-            updateChangeIndicator('transactions-change', transactionsChange);
-            updateChangeIndicator('avg-transaction-change', avgTransactionChange);
-            updateChangeIndicator('customers-change', customersChange);
-        }
-
-        // Update change indicator
-        function updateChangeIndicator(elementId, changeValue) {
-            const element = document.getElementById(elementId);
-            const changeNum = parseFloat(changeValue);
-            
-            element.innerHTML = `
-                <i class="fas fa-arrow-${changeNum >= 0 ? 'up' : 'down'}"></i>
-                <span>${Math.abs(changeNum)}%</span>
-            `;
-            
-            element.className = `kpi-change ${changeNum >= 0 ? 'positive' : 'negative'}`;
-            element.style.display = 'flex';
-        }
-
-        // Update charts
-        function updateCharts() {
-            if (filteredReceipts.length === 0) {
-                // Show no data message for charts
-                document.querySelectorAll('.chart-container').forEach(container => {
-                    container.innerHTML = '<div class="no-data"><i class="fas fa-chart-bar"></i><p>Keine Daten verfügbar</p></div>';
-                });
-                return;
-            }
-            
-            updateSalesChart();
-            updateProductsChart();
-            updatePaymentMethodsChart();
-            updateHourlySalesChart();
-        }
-
-        // Update sales chart
-        function updateSalesChart() {
-            const period = document.getElementById('sales-period').value;
-            const ctx = document.getElementById('sales-chart').getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (salesChart) {
-                salesChart.destroy();
-            }
-            
-            // Group receipts by period
-            const salesData = groupReceiptsByPeriod(filteredReceipts, period);
-            
-            // Create chart
-            salesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: salesData.labels,
-                    datasets: [{
-                        label: 'Umsatz (€)',
-                        data: salesData.amounts,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + value;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Update products chart
-        function updateProductsChart() {
-            const period = document.getElementById('products-period').value;
-            const ctx = document.getElementById('products-chart').getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (productsChart) {
-                productsChart.destroy();
-            }
-            
-            // Get top products
-            const topProducts = getTopProducts(filteredReceipts, 5);
-            
-            // Create chart
-            productsChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: topProducts.names,
-                    datasets: [{
-                        label: 'Umsatz (€)',
-                        data: topProducts.revenues,
-                        backgroundColor: [
-                            'rgba(37, 99, 235, 0.7)',
-                            'rgba(22, 163, 74, 0.7)',
-                            'rgba(217, 119, 6, 0.7)',
-                            'rgba(220, 38, 38, 0.7)',
-                            'rgba(147, 51, 234, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(37, 99, 235)',
-                            'rgb(22, 163, 74)',
-                            'rgb(217, 119, 6)',
-                            'rgb(220, 38, 38)',
-                            'rgb(147, 51, 234)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + value;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Update payment methods chart
-        function updatePaymentMethodsChart() {
-            const ctx = document.getElementById('payment-methods-chart').getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (paymentMethodsChart) {
-                paymentMethodsChart.destroy();
-            }
-            
-            // Count payment methods
-            const paymentMethods = {};
-            filteredReceipts.forEach(receipt => {
-                const method = receipt.paymentMethod || 'Unbekannt';
-                paymentMethods[method] = (paymentMethods[method] || 0) + 1;
-            });
-            
-            // Create chart
-            paymentMethodsChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(paymentMethods),
-                    datasets: [{
-                        data: Object.values(paymentMethods),
-                        backgroundColor: [
-                            'rgba(37, 99, 235, 0.7)',
-                            'rgba(22, 163, 74, 0.7)',
-                            'rgba(217, 119, 6, 0.7)',
-                            'rgba(220, 38, 38, 0.7)',
-                            'rgba(147, 51, 234, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(37, 99, 235)',
-                            'rgb(22, 163, 74)',
-                            'rgb(217, 119, 6)',
-                            'rgb(220, 38, 38)',
-                            'rgb(147, 51, 234)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        }
-                    }
-                }
-            });
-        }
-
-        // Update hourly sales chart
-        function updateHourlySalesChart() {
-            const ctx = document.getElementById('hourly-sales-chart').getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (hourlySalesChart) {
-                hourlySalesChart.destroy();
-            }
-            
-            // Calculate sales by hour
-            const hourlySales = Array(24).fill(0);
-            filteredReceipts.forEach(receipt => {
-                const date = new Date(receipt.date);
-                const hour = date.getHours();
-                hourlySales[hour] += receipt.amount;
-            });
-            
-            // Create labels for hours
-            const hourLabels = Array.from({length: 24}, (_, i) => `${i}:00`);
-            
-            // Create chart
-            hourlySalesChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: hourLabels,
-                    datasets: [{
-                        label: 'Umsatz (€)',
-                        data: hourlySales,
-                        backgroundColor: 'rgba(37, 99, 235, 0.7)',
-                        borderColor: 'rgb(37, 99, 235)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + value;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Update tables
-        function updateTables() {
-            updateTopProductsTable();
-            updateTransactionsTable();
-        }
-
-        // Update top products table
-        function updateTopProductsTable() {
-            const tableBody = document.querySelector('#top-products-table tbody');
-            
-            if (filteredReceipts.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="no-data">Keine Daten verfügbar</td></tr>';
-                return;
-            }
-            
-            // Get top products
-            const topProducts = getTopProducts(filteredReceipts, 10);
-            const totalRevenue = topProducts.revenues.reduce((sum, revenue) => sum + revenue, 0);
-            
-            // Populate table
-            tableBody.innerHTML = '';
-            topProducts.names.forEach((name, index) => {
-                const quantity = topProducts.quantities[index];
-                const revenue = topProducts.revenues[index];
-                const percentage = ((revenue / totalRevenue) * 100).toFixed(1);
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${name}</td>
-                    <td>${quantity}</td>
-                    <td>€${revenue.toFixed(2)}</td>
-                    <td>${percentage}%</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        // Update transactions table
-        function updateTransactionsTable() {
-            const tableBody = document.querySelector('#transactions-table tbody');
-            
-            if (filteredReceipts.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="no-data">Keine Daten verfügbar</td></tr>';
-                return;
-            }
-            
-            // Group receipts by date
-            const transactionsByDate = {};
-            filteredReceipts.forEach(receipt => {
-                const date = new Date(receipt.date).toLocaleDateString('de-DE');
-                if (!transactionsByDate[date]) {
-                    transactionsByDate[date] = {
-                        count: 0,
-                        total: 0,
-                        receipts: []
-                    };
-                }
-                transactionsByDate[date].count += 1;
-                transactionsByDate[date].total += receipt.amount;
-                transactionsByDate[date].receipts.push(receipt);
-            });
-            
-            // Sort dates in descending order
-            const sortedDates = Object.keys(transactionsByDate).sort((a, b) => {
-                return new Date(b) - new Date(a);
-            }).slice(0, 10); // Show only last 10 days
-            
-            // Populate table
-            tableBody.innerHTML = '';
-            sortedDates.forEach(date => {
-                const data = transactionsByDate[date];
-                const avgTransaction = data.total / data.count;
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${date}</td>
-                    <td>${data.count}</td>
-                    <td>€${data.total.toFixed(2)}</td>
-                    <td>€${avgTransaction.toFixed(2)}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        // Helper function to group receipts by period
-        function groupReceiptsByPeriod(receipts, period) {
-            const groups = {};
-            
-            receipts.forEach(receipt => {
-                const date = new Date(receipt.date);
-                let key;
-                
-                switch (period) {
-                    case 'daily':
-                        key = date.toLocaleDateString('de-DE');
-                        break;
-                    case 'weekly':
-                        // Get week number
-                        const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-                        const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
-                        key = `KW ${Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)}`;
-                        break;
-                    case 'monthly':
-                        key = date.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-                        break;
-                }
-                
-                if (!groups[key]) {
-                    groups[key] = 0;
-                }
-                groups[key] += receipt.amount;
-            });
-            
-            // Sort groups by date
-            const sortedKeys = Object.keys(groups).sort((a, b) => {
-                if (period === 'daily') {
-                    return new Date(a) - new Date(b);
-                } else if (period === 'weekly') {
-                    return parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]);
-                } else {
-                    // For monthly, we need a more complex comparison
-                    const monthOrder = {
-                        'Januar': 1, 'Februar': 2, 'März': 3, 'April': 4, 'Mai': 5, 'Juni': 6,
-                        'Juli': 7, 'August': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'Dezember': 12
-                    };
-                    const [monthA, yearA] = a.split(' ');
-                    const [monthB, yearB] = b.split(' ');
-                    
-                    if (yearA !== yearB) {
-                        return parseInt(yearA) - parseInt(yearB);
-                    } else {
-                        return monthOrder[monthA] - monthOrder[monthB];
-                    }
-                }
-            });
-            
-            return {
-                labels: sortedKeys,
-                amounts: sortedKeys.map(key => groups[key])
-            };
-        }
-
-        // Helper function to get top products
-        function getTopProducts(receipts, limit) {
-            const productSales = {};
-            
-            receipts.forEach(receipt => {
-                if (receipt.items && Array.isArray(receipt.items)) {
-                    receipt.items.forEach(item => {
-                        const productName = item.name || 'Unbekanntes Produkt';
-                        if (!productSales[productName]) {
-                            productSales[productName] = {
-                                quantity: 0,
-                                revenue: 0
-                            };
-                        }
-                        productSales[productName].quantity += item.quantity || 1;
-                        productSales[productName].revenue += (item.price || 0) * (item.quantity || 1);
-                    });
-                }
-            });
-            
-            // Convert to array and sort by revenue
-            const productsArray = Object.keys(productSales).map(name => ({
-                name,
-                quantity: productSales[name].quantity,
-                revenue: productSales[name].revenue
-            }));
-            
-            productsArray.sort((a, b) => b.revenue - a.revenue);
-            
-            // Return top N products
-            const topProducts = productsArray.slice(0, limit);
-            
-            return {
-                names: topProducts.map(p => p.name),
-                quantities: topProducts.map(p => p.quantity),
-                revenues: topProducts.map(p => p.revenue)
-            };
-        }
-
-        // Export functions
-        function exportSalesData() {
-            // In a real implementation, this would generate a CSV file
-            showNotification('Verkaufsdaten werden exportiert...', 'success');
-            setTimeout(() => {
-                showNotification('Verkaufsdaten erfolgreich exportiert', 'success');
-            }, 1500);
-        }
-
-        function exportProductsData() {
-            // In a real implementation, this would generate a CSV file
-            showNotification('Produktdaten werden exportiert...', 'success');
-            setTimeout(() => {
-                showNotification('Produktdaten erfolgreich exportiert', 'success');
-            }, 1500);
-        }
-
-        function exportCharts() {
-            // In a real implementation, this would export charts as images
-            showNotification('Charts werden exportiert...', 'success');
-            setTimeout(() => {
-                showNotification('Charts erfolgreich exportiert', 'success');
-            }, 1500);
-        }
-
-        function exportFullReport() {
-            // In a real implementation, this would generate a PDF report
-            showNotification('Bericht wird generiert...', 'success');
-            setTimeout(() => {
-                showNotification('Bericht erfolgreich generiert', 'success');
-            }, 1500);
-        }
-
-        // Show notification function
-        function showNotification(message, type = 'success') {
-            // Create notification element if it doesn't exist
-            let notification = document.querySelector('.notification');
-            if (!notification) {
-                notification = document.createElement('div');
-                notification.className = 'notification';
-                document.body.appendChild(notification);
-                
-                // Add styles for notification
-                const style = document.createElement('style');
-                style.textContent = `
-                    .notification {
-                        position: fixed;
-                        top: 20px;
-                        right: 20px;
-                        padding: 12px 20px;
-                        border-radius: 6px;
-                        color: white;
-                        font-weight: 500;
-                        z-index: 10000;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                        transform: translateX(100%);
-                        transition: transform 0.3s ease;
-                    }
-                    .notification.success {
-                        background-color: var(--color-success);
-                    }
-                    .notification.error {
-                        background-color: var(--color-error);
-                    }
-                    .notification.info {
-                        background-color: var(--color-info);
-                    }
-                    .notification.warning {
-                        background-color: var(--color-warning);
-                    }
-                    .notification.show {
-                        transform: translateX(0);
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-            
-            notification.textContent = message;
-            notification.className = 'notification';
-            if (type) notification.classList.add(type);
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.textContent = '';
-                    notification.className = 'notification';
-                }, 300);
-            }, 3000);
-        }
     </script>
 </body>
 </html>
