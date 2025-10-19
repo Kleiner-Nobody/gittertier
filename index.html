@@ -22,13 +22,6 @@
             position: fixed;
         }
 
-        /* Safe area support */
-        @supports(padding: max(0px)) {
-            .safe-area-top {
-                padding-top: max(0px, env(safe-area-inset-top));
-            }
-        }
-
         .app-container {
             width: 100%;
             height: 100%;
@@ -112,36 +105,342 @@
             display: block;
         }
 
-        /* Loading indicator */
+        /* Complex Loading Animation */
         .loading-indicator {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #111827;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 50;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.5s ease;
+            overflow: hidden;
         }
 
-        .loading-spinner {
-            width: 48px;
-            height: 48px;
-            border: 3px solid rgba(37, 99, 235, 0.2);
-            border-left-color: #2563eb;
+        .animation-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Store shelves background */
+        .shelves {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, transparent 49%, #334155 49%, #334155 51%, transparent 51%) 0 30% / 20% 60%,
+                linear-gradient(90deg, transparent 49%, #334155 49%, #334155 51%, transparent 51%) 0 70% / 20% 60%,
+                linear-gradient(90deg, transparent 49%, #334155 49%, #334155 51%, transparent 51%) 100% 30% / 20% 60%,
+                linear-gradient(90deg, transparent 49%, #334155 49%, #334155 51%, transparent 51%) 100% 70% / 20% 60%;
+            background-repeat: no-repeat;
+            opacity: 0.3;
+        }
+
+        /* Shopping cart with complex details */
+        .shopping-cart {
+            position: relative;
+            width: 120px;
+            height: 80px;
+            animation: cartDrive 8s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        .cart-body {
+            position: absolute;
+            width: 100px;
+            height: 50px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 10px 10px 5px 5px;
+            box-shadow: 
+                0 4px 12px rgba(30, 64, 175, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .cart-handle {
+            position: absolute;
+            top: -15px;
+            right: -10px;
+            width: 40px;
+            height: 20px;
+            background: #1e40af;
+            border-radius: 10px 10px 0 0;
+            transform: rotate(-10deg);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .cart-wheels {
+            position: absolute;
+            bottom: -5px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+
+        .wheel {
+            width: 15px;
+            height: 15px;
+            background: #1e293b;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 16px;
+            position: relative;
+            animation: wheelRotate 2s linear infinite;
+            box-shadow: 
+                inset 0 0 0 2px #0f172a,
+                0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
+        .wheel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background: #64748b;
+            border-radius: 50%;
+        }
+
+        /* Cart contents */
+        .cart-contents {
+            position: absolute;
+            top: -20px;
+            left: 15px;
+            width: 70px;
+            height: 30px;
+        }
+
+        .item {
+            position: absolute;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            animation: itemsBounce 8s ease-in-out infinite;
+        }
+
+        .item-1 {
+            width: 20px;
+            height: 25px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            top: 0;
+            left: 0;
+            animation-delay: 0.5s;
+        }
+
+        .item-2 {
+            width: 18px;
+            height: 22px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            top: 5px;
+            left: 25px;
+            animation-delay: 1s;
+        }
+
+        .item-3 {
+            width: 22px;
+            height: 18px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            top: 2px;
+            left: 45px;
+            animation-delay: 1.5s;
+        }
+
+        /* Floating products on shelves */
+        .floating-products {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .product {
+            position: absolute;
+            border-radius: 6px;
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .product-1 {
+            width: 30px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            top: 20%;
+            left: 15%;
+            animation-delay: 0s;
+        }
+
+        .product-2 {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+            top: 65%;
+            left: 80%;
+            animation-delay: 1s;
+        }
+
+        .product-3 {
+            width: 25px;
+            height: 45px;
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            top: 75%;
+            left: 20%;
+            animation-delay: 2s;
+        }
+
+        .product-4 {
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
+            top: 25%;
+            left: 75%;
+            animation-delay: 3s;
+        }
+
+        /* Scanning laser effect */
+        .scanner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .laser {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, #60a5fa 50%, transparent 100%);
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scan 4s linear infinite;
+            box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
+        }
+
+        /* Loading text with gradient */
         .loading-text {
-            color: #9ca3af;
-            font-size: 16px;
-            font-weight: 500;
+            margin-top: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa, #60a5fa);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textShine 3s ease-in-out infinite;
+            text-align: center;
+        }
+
+        .loading-subtext {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* Animations */
+        @keyframes cartDrive {
+            0%, 100% {
+                transform: translateX(-100px) scaleX(1);
+            }
+            25% {
+                transform: translateX(0) scaleX(1);
+            }
+            50% {
+                transform: translateX(100px) scaleX(1);
+            }
+            75% {
+                transform: translateX(0) scaleX(-1);
+            }
+        }
+
+        @keyframes wheelRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes itemsBounce {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-5px) rotate(5deg);
+            }
+            50% {
+                transform: translateY(0) rotate(0deg);
+            }
+            75% {
+                transform: translateY(-3px) rotate(-3deg);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(-15px) rotate(5deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes scan {
+            0% {
+                transform: translateX(-50%) translateY(-100%);
+            }
+            100% {
+                transform: translateX(-50%) translateY(100%);
+            }
+        }
+
+        @keyframes textShine {
+            0%, 100% {
+                background-position: -200% 0;
+            }
+            50% {
+                background-position: 200% 0;
+            }
+        }
+
+        /* Sparkle effects */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle 2s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes sparkle {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0);
+            }
         }
 
         /* Touch area for showing controls */
@@ -179,11 +478,6 @@
             background: rgba(220, 38, 38, 0.95);
         }
 
-        /* Animations */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
         @keyframes slideUp {
             from { 
                 transform: translateX(-50%) translateY(20px);
@@ -214,6 +508,15 @@
                 font-size: 16px;
             }
             
+            .animation-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .loading-text {
+                font-size: 16px;
+            }
+            
             .touch-area {
                 height: 60px;
             }
@@ -237,6 +540,25 @@
                 height: 36px;
             }
             
+            .animation-container {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .shopping-cart {
+                width: 100px;
+                height: 70px;
+            }
+            
+            .cart-body {
+                width: 80px;
+                height: 45px;
+            }
+            
+            .loading-text {
+                font-size: 15px;
+            }
+            
             .touch-area {
                 height: 50px;
             }
@@ -249,6 +571,16 @@
             }
             
             .header-title {
+                font-size: 14px;
+            }
+            
+            .animation-container {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .loading-text {
+                margin-top: 15px;
                 font-size: 14px;
             }
             
@@ -294,9 +626,39 @@
         <!-- Main content -->
         <div class="content-area">
             <div class="loading-indicator" id="loading-indicator">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">Lade Protokoll-Daten...</div>
+                <div class="animation-container">
+                    <div class="shelves"></div>
+                    
+                    <div class="floating-products">
+                        <div class="product product-1"></div>
+                        <div class="product product-2"></div>
+                        <div class="product product-3"></div>
+                        <div class="product product-4"></div>
+                    </div>
+                    
+                    <div class="scanner">
+                        <div class="laser"></div>
+                    </div>
+                    
+                    <div class="shopping-cart">
+                        <div class="cart-handle"></div>
+                        <div class="cart-body"></div>
+                        <div class="cart-contents">
+                            <div class="item item-1"></div>
+                            <div class="item item-2"></div>
+                            <div class="item item-3"></div>
+                        </div>
+                        <div class="cart-wheels">
+                            <div class="wheel"></div>
+                            <div class="wheel"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loading-text">Gittertier Pro lädt...</div>
+                <div class="loading-subtext">Protokoll-Daten werden vorbereitet</div>
             </div>
+            
             <iframe 
                 class="appsheet-frame" 
                 id="appsheet-frame"
@@ -325,7 +687,7 @@
                 document.getElementById('loading-indicator').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loading-indicator').style.display = 'none';
-                }, 300);
+                }, 500);
                 showNotification('Protokoll-Daten geladen', 'success');
             });
             
@@ -341,6 +703,9 @@
             if (isMobile) {
                 setTimeout(toggleFullscreen, 1000);
             }
+
+            // Create sparkle effects
+            createSparkles();
 
             // Prevent zooming on mobile
             document.addEventListener('touchstart', function(e) {
@@ -358,6 +723,30 @@
                 lastTouchEnd = now;
             }, false);
         });
+
+        // Create sparkle effects
+        function createSparkles() {
+            const container = document.querySelector('.animation-container');
+            const sparkleCount = 15;
+            
+            for (let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                
+                // Random position
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = 1 + Math.random() * 2;
+                
+                sparkle.style.left = `${left}%`;
+                sparkle.style.top = `${top}%`;
+                sparkle.style.animationDelay = `${delay}s`;
+                sparkle.style.animationDuration = `${duration}s`;
+                
+                container.appendChild(sparkle);
+            }
+        }
 
         // Set up touch area for showing controls
         function setupTouchArea() {
@@ -395,15 +784,6 @@
             if (controlsVisible) {
                 controlsVisible = false;
                 document.getElementById('header').classList.remove('visible');
-            }
-        }
-
-        // Toggle controls visibility
-        function toggleControls() {
-            if (controlsVisible) {
-                hideControls();
-            } else {
-                showControls();
             }
         }
 
