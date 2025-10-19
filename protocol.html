@@ -17,9 +17,23 @@
             height: 100%;
             overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: #111827;
-            color: #f3f4f6;
+            background: var(--bg-color, #ffffff);
+            color: var(--text-color, #111111);
             position: fixed;
+        }
+
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #111111;
+            --accent-color: #111111;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #111111;
+                --text-color: #ffffff;
+                --accent-color: #ffffff;
+            }
         }
 
         /* Safe area support */
@@ -41,7 +55,7 @@
             top: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, transparent 100%);
+            background: rgba(var(--bg-color-rgb, 255, 255, 255), 0.95);
             padding: max(12px, env(safe-area-inset-top)) 16px 12px 16px;
             z-index: 100;
             display: flex;
@@ -52,6 +66,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(var(--text-color-rgb, 17, 17, 17), 0.1);
         }
 
         .header.visible {
@@ -62,7 +77,7 @@
         .header-title {
             font-size: 18px;
             font-weight: 600;
-            color: white;
+            color: var(--text-color);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -78,8 +93,8 @@
             height: 44px;
             border: none;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: rgba(var(--text-color-rgb, 17, 17, 17), 0.1);
+            color: var(--text-color);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -90,7 +105,7 @@
         }
 
         .control-btn:active {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(var(--text-color-rgb, 17, 17, 17), 0.2);
             transform: scale(0.95);
         }
 
@@ -112,14 +127,14 @@
             display: block;
         }
 
-        /* Loading indicator */
+        /* Gittertier Pro Loading Animation */
         .loading-indicator {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #111827;
+            background: var(--bg-color);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -128,20 +143,54 @@
             transition: opacity 0.3s ease;
         }
 
-        .loading-spinner {
-            width: 48px;
-            height: 48px;
-            border: 3px solid rgba(37, 99, 235, 0.2);
-            border-left-color: #2563eb;
+        .gittertier-animation {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-icon {
+            font-size: 60px;
+            color: var(--accent-color);
+            position: relative;
+            z-index: 2;
+            animation: cartBounce 2s infinite ease-in-out;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--accent-color);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 16px;
+            animation: pulse 2s infinite ease-in-out;
+            opacity: 0.6;
+        }
+
+        .pulse-ring:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .pulse-ring:nth-child(3) {
+            animation-delay: 1s;
         }
 
         .loading-text {
-            color: #9ca3af;
+            color: var(--text-color);
             font-size: 16px;
             font-weight: 500;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 5px;
+            color: var(--accent-color);
         }
 
         /* Touch area for showing controls */
@@ -160,8 +209,8 @@
             top: 100px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(22, 163, 74, 0.95);
-            color: white;
+            background: rgba(var(--text-color-rgb, 17, 17, 17), 0.9);
+            color: var(--bg-color);
             padding: 12px 20px;
             border-radius: 12px;
             z-index: 200;
@@ -175,13 +224,32 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        .notification.error {
-            background: rgba(220, 38, 38, 0.95);
+        /* Animations */
+        @keyframes cartBounce {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-10px) rotate(-5deg);
+            }
+            75% {
+                transform: translateY(-5px) rotate(5deg);
+            }
         }
 
-        /* Animations */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.6;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.2;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 0.6;
+            }
         }
 
         @keyframes slideUp {
@@ -217,6 +285,20 @@
             .touch-area {
                 height: 60px;
             }
+
+            .gittertier-animation {
+                width: 100px;
+                height: 100px;
+            }
+
+            .cart-icon {
+                font-size: 50px;
+            }
+
+            .pulse-ring {
+                width: 80px;
+                height: 80px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -240,6 +322,28 @@
             .touch-area {
                 height: 50px;
             }
+
+            .gittertier-animation {
+                width: 80px;
+                height: 80px;
+            }
+
+            .cart-icon {
+                font-size: 40px;
+            }
+
+            .pulse-ring {
+                width: 60px;
+                height: 60px;
+            }
+
+            .loading-text {
+                font-size: 14px;
+            }
+
+            .brand-name {
+                font-size: 16px;
+            }
         }
 
         /* Landscape optimizations */
@@ -254,6 +358,29 @@
             
             .touch-area {
                 height: 40px;
+            }
+
+            .gittertier-animation {
+                width: 70px;
+                height: 70px;
+            }
+
+            .cart-icon {
+                font-size: 35px;
+            }
+
+            .pulse-ring {
+                width: 50px;
+                height: 50px;
+            }
+
+            .loading-text {
+                font-size: 12px;
+                margin-top: 10px;
+            }
+
+            .brand-name {
+                font-size: 14px;
             }
         }
 
@@ -294,8 +421,14 @@
         <!-- Main content -->
         <div class="content-area">
             <div class="loading-indicator" id="loading-indicator">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">Lade Protokoll-Daten...</div>
+                <div class="gittertier-animation">
+                    <i class="fas fa-shopping-cart cart-icon"></i>
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="loading-text">Lade Protokoll-Daten</div>
+                <div class="brand-name">Gittertier Pro</div>
             </div>
             <iframe 
                 class="appsheet-frame" 
@@ -311,6 +444,10 @@
     <div class="notification" id="notification"></div>
 
     <script>
+        // Set CSS variables for RGB values
+        document.documentElement.style.setProperty('--bg-color-rgb', getComputedStyle(document.documentElement).getPropertyValue('--bg-color') === '#111111' ? '17,17,17' : '255,255,255');
+        document.documentElement.style.setProperty('--text-color-rgb', getComputedStyle(document.documentElement).getPropertyValue('--text-color') === '#ffffff' ? '255,255,255' : '17,17,17');
+
         // State management
         let controlsVisible = false;
         let controlsTimeout = null;
@@ -466,10 +603,6 @@
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
-            notification.className = 'notification';
-            if (type === 'error') {
-                notification.classList.add('error');
-            }
             notification.style.display = 'block';
             
             setTimeout(() => {
