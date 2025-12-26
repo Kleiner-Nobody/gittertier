@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Dashboard - Gittertier Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
@@ -62,6 +62,7 @@
         --header-height: 64px;
         --sidebar-width: 280px;
         --sidebar-width-collapsed: 80px;
+        --touch-target: 44px;
     }
 
     .dark-mode {
@@ -96,6 +97,7 @@
         box-sizing: border-box;
         margin: 0;
         padding: 0;
+        -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -106,20 +108,29 @@
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Header Styles */
+    /* Header Styles - Enhanced for mobile */
     .admin-header {
         height: var(--header-height);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 var(--spacing-lg);
+        padding: 0 var(--spacing-md);
         border-bottom: 1px solid var(--color-border);
         background-color: var(--color-bg);
         position: sticky;
         top: 0;
         z-index: 50;
+        min-height: var(--touch-target);
+    }
+
+    @media (max-width: 480px) {
+        .admin-header {
+            padding: 0 var(--spacing-sm);
+        }
     }
 
     .logo {
@@ -128,6 +139,7 @@
         gap: var(--spacing-md);
         font-weight: 700;
         font-size: var(--text-xl);
+        min-height: var(--touch-target);
     }
 
     .logo i {
@@ -137,7 +149,7 @@
 
     .header-controls {
         display: flex;
-        gap: var(--spacing-md);
+        gap: var(--spacing-sm);
         align-items: center;
     }
 
@@ -148,6 +160,9 @@
         font-size: var(--text-sm);
         color: var(--color-text-muted);
         display: none;
+        min-height: var(--touch-target);
+        display: flex;
+        align-items: center;
     }
 
     .logout-btn {
@@ -162,10 +177,13 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+        min-height: var(--touch-target);
+        min-width: var(--touch-target);
     }
 
-    .logout-btn:hover {
+    .logout-btn:hover, .logout-btn:active, .logout-btn:focus {
         background-color: var(--color-bg-secondary);
+        outline: none;
     }
 
     .hamburger {
@@ -176,16 +194,18 @@
         color: var(--color-text);
         cursor: pointer;
         transition: var(--transition);
-        width: 42px;
-        height: 42px;
+        width: var(--touch-target);
+        height: var(--touch-target);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        touch-action: manipulation;
     }
 
-    .hamburger:hover {
+    .hamburger:hover, .hamburger:active, .hamburger:focus {
         background-color: var(--color-bg-secondary);
+        outline: none;
     }
 
     /* Main layout */
@@ -194,7 +214,7 @@
         flex: 1;
     }
 
-    /* Sidebar */
+    /* Sidebar - Enhanced for mobile touch */
     .admin-sidebar {
         width: var(--sidebar-width);
         background-color: var(--color-bg);
@@ -207,6 +227,8 @@
         transition: transform 0.3s ease;
         z-index: 40;
         padding: var(--spacing-lg) 0;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
 
     .nav-container {
@@ -226,10 +248,13 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-md);
+        min-height: var(--touch-target);
+        touch-action: manipulation;
     }
 
-    .nav-link:hover {
+    .nav-link:hover, .nav-link:active, .nav-link:focus {
         background-color: var(--color-bg-secondary);
+        outline: none;
     }
 
     .nav-link.active {
@@ -240,6 +265,7 @@
     .nav-link i {
         width: 24px;
         text-align: center;
+        font-size: var(--text-lg);
     }
 
     .nav-link.active i {
@@ -265,6 +291,7 @@
         background-color: var(--color-overlay);
         z-index: 35;
         display: none;
+        touch-action: none;
     }
 
     /* Main content */
@@ -273,6 +300,13 @@
         padding: var(--spacing-lg);
         margin-left: var(--sidebar-width);
         transition: margin-left 0.3s ease;
+        overflow-x: hidden;
+    }
+
+    @media (max-width: 768px) {
+        .admin-content {
+            padding: var(--spacing-md);
+        }
     }
 
     /* Page Header */
@@ -287,14 +321,16 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-md);
+        line-height: 1.2;
     }
 
     .page-subtitle {
         color: var(--color-text-muted);
         max-width: 600px;
+        line-height: 1.4;
     }
 
-    /* Welcome Card */
+    /* Welcome Card - Enhanced for mobile */
     .welcome-card {
         background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
         color: white;
@@ -326,11 +362,13 @@
         font-size: var(--text-2xl);
         font-weight: 700;
         margin-bottom: var(--spacing-sm);
+        line-height: 1.2;
     }
 
     .welcome-subtitle {
         opacity: 0.9;
         margin-bottom: var(--spacing-md);
+        line-height: 1.4;
     }
 
     .welcome-actions {
@@ -343,7 +381,7 @@
         background: rgba(255, 255, 255, 0.2);
         color: white;
         border: 1px solid rgba(255, 255, 255, 0.3);
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: var(--spacing-md);
         border-radius: var(--radius);
         font-weight: 600;
         cursor: pointer;
@@ -351,13 +389,21 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+        min-height: var(--touch-target);
+        min-width: min-content;
+        flex: 1;
+        touch-action: manipulation;
+        justify-content: center;
+        text-align: center;
     }
 
-    .welcome-btn:hover {
+    .welcome-btn:hover, .welcome-btn:active, .welcome-btn:focus {
         background: rgba(255, 255, 255, 0.3);
+        outline: none;
+        transform: translateY(-1px);
     }
 
-    /* Stats Grid */
+    /* Stats Grid - Enhanced for mobile */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -372,9 +418,13 @@
         padding: var(--spacing-lg);
         box-shadow: var(--shadow);
         transition: var(--transition);
+        min-height: 140px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-    .stat-card:hover {
+    .stat-card:hover, .stat-card:active {
         box-shadow: var(--shadow-md);
         transform: translateY(-2px);
     }
@@ -426,6 +476,7 @@
         font-size: var(--text-2xl);
         font-weight: 700;
         margin-bottom: var(--spacing-xs);
+        line-height: 1.2;
     }
 
     .stat-card-change {
@@ -443,18 +494,12 @@
         color: var(--color-error);
     }
 
-    /* Dashboard Grid */
+    /* Dashboard Grid - Enhanced for mobile */
     .dashboard-grid {
         display: grid;
         grid-template-columns: 2fr 1fr;
         gap: var(--spacing-lg);
         margin-bottom: var(--spacing-xl);
-    }
-
-    @media (max-width: 1024px) {
-        .dashboard-grid {
-            grid-template-columns: 1fr;
-        }
     }
 
     /* Cards */
@@ -472,6 +517,8 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
     }
 
     .card-title {
@@ -480,10 +527,12 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+        line-height: 1.2;
     }
 
     .card-title i {
         color: var(--color-accent);
+        font-size: var(--text-xl);
     }
 
     .card-actions {
@@ -494,16 +543,29 @@
     .card-action-btn {
         background: transparent;
         border: 1px solid var(--color-border);
-        padding: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
         border-radius: var(--radius-sm);
         cursor: pointer;
         transition: var(--transition);
         color: var(--color-text-muted);
+        min-height: var(--touch-target);
+        min-width: var(--touch-target);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: manipulation;
     }
 
-    .card-action-btn:hover {
+    .card-action-btn:hover, .card-action-btn:active, .card-action-btn:focus {
         background-color: var(--color-bg-secondary);
         color: var(--color-text);
+        outline: none;
+    }
+
+    .card-action-btn.active {
+        background-color: var(--color-accent);
+        color: white;
+        border-color: var(--color-accent);
     }
 
     /* Charts */
@@ -511,9 +573,10 @@
         position: relative;
         height: 300px;
         width: 100%;
+        touch-action: pinch-zoom;
     }
 
-    /* Recent Activity */
+    /* Recent Activity - Enhanced for mobile */
     .activity-list {
         display: flex;
         flex-direction: column;
@@ -526,9 +589,10 @@
         padding: var(--spacing-md);
         border-radius: var(--radius);
         transition: var(--transition);
+        align-items: flex-start;
     }
 
-    .activity-item:hover {
+    .activity-item:hover, .activity-item:active {
         background-color: var(--color-bg-secondary);
     }
 
@@ -541,6 +605,7 @@
         justify-content: center;
         font-size: var(--text-lg);
         flex-shrink: 0;
+        min-width: 40px;
     }
 
     .activity-icon.success {
@@ -560,16 +625,19 @@
 
     .activity-content {
         flex: 1;
+        min-width: 0;
     }
 
     .activity-title {
         font-weight: 600;
         margin-bottom: var(--spacing-xs);
+        line-height: 1.2;
     }
 
     .activity-description {
         color: var(--color-text-muted);
         font-size: var(--text-sm);
+        line-height: 1.4;
     }
 
     .activity-time {
@@ -596,9 +664,13 @@
         padding: var(--spacing-lg);
         box-shadow: var(--shadow);
         transition: var(--transition);
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-    .goal-card:hover {
+    .goal-card:hover, .goal-card:active {
         box-shadow: var(--shadow-md);
     }
 
@@ -612,6 +684,7 @@
     .goal-title {
         font-size: var(--text-lg);
         font-weight: 600;
+        line-height: 1.2;
     }
 
     .goal-progress {
@@ -620,6 +693,7 @@
         border-radius: 4px;
         overflow: hidden;
         margin-bottom: var(--spacing-md);
+        position: relative;
     }
 
     .goal-progress-bar {
@@ -645,6 +719,8 @@
         justify-content: space-between;
         font-size: var(--text-sm);
         color: var(--color-text-muted);
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
     }
 
     .goal-actions {
@@ -662,6 +738,12 @@
         cursor: pointer;
         transition: var(--transition);
         font-size: var(--text-sm);
+        min-height: var(--touch-target);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-xs);
+        touch-action: manipulation;
     }
 
     .goal-btn.edit {
@@ -669,8 +751,9 @@
         color: var(--color-text);
     }
 
-    .goal-btn.edit:hover {
+    .goal-btn.edit:hover, .goal-btn.edit:active, .goal-btn.edit:focus {
         background-color: var(--color-border);
+        outline: none;
     }
 
     .goal-btn.delete {
@@ -678,11 +761,12 @@
         color: var(--color-error);
     }
 
-    .goal-btn.delete:hover {
+    .goal-btn.delete:hover, .goal-btn.delete:active, .goal-btn.delete:focus {
         background-color: rgba(220, 38, 38, 0.2);
+        outline: none;
     }
 
-    /* Quick Actions */
+    /* Quick Actions - Enhanced for mobile touch */
     .quick-actions {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -703,12 +787,16 @@
         transition: var(--transition);
         text-decoration: none;
         color: var(--color-text);
+        min-height: 120px;
+        touch-action: manipulation;
+        justify-content: center;
     }
 
-    .quick-action-btn:hover {
+    .quick-action-btn:hover, .quick-action-btn:active, .quick-action-btn:focus {
         background-color: var(--color-bg-secondary);
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
+        outline: none;
     }
 
     .quick-action-icon {
@@ -726,14 +814,16 @@
     .quick-action-text {
         font-weight: 600;
         text-align: center;
+        line-height: 1.2;
     }
 
-    /* AI Assistant */
+    /* AI Assistant - Enhanced for mobile */
     .ai-assistant {
         position: fixed;
         bottom: var(--spacing-lg);
         right: var(--spacing-lg);
         width: 350px;
+        max-height: 500px;
         background-color: var(--color-ai-light);
         border-radius: var(--radius);
         border: 1px solid var(--color-ai-primary);
@@ -741,10 +831,11 @@
         z-index: 100;
         overflow: hidden;
         display: none;
+        flex-direction: column;
     }
 
     .ai-assistant.active {
-        display: block;
+        display: flex;
         animation: slideUp 0.3s ease;
     }
 
@@ -755,6 +846,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        min-height: var(--touch-target);
+        flex-shrink: 0;
     }
 
     .ai-title {
@@ -762,6 +855,7 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+        line-height: 1.2;
     }
 
     .ai-close {
@@ -769,23 +863,28 @@
         border: none;
         color: white;
         cursor: pointer;
-        width: 32px;
-        height: 32px;
+        width: var(--touch-target);
+        height: var(--touch-target);
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
         transition: var(--transition);
+        touch-action: manipulation;
+        flex-shrink: 0;
     }
 
-    .ai-close:hover {
+    .ai-close:hover, .ai-close:active, .ai-close:focus {
         background-color: rgba(255, 255, 255, 0.2);
+        outline: none;
     }
 
     .ai-body {
         padding: var(--spacing-md);
-        max-height: 300px;
         overflow-y: auto;
+        flex: 1;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
 
     .ai-message {
@@ -793,17 +892,43 @@
         padding: var(--spacing-md);
         border-radius: var(--radius);
         font-size: var(--text-sm);
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 85%;
     }
 
     .ai-message.user {
         background-color: var(--color-bg);
-        margin-left: var(--spacing-xl);
+        margin-left: auto;
         border: 1px solid var(--color-border);
     }
 
     .ai-message.assistant {
         background-color: var(--color-ai-secondary);
-        margin-right: var(--spacing-xl);
+        margin-right: auto;
+    }
+
+    .ai-typing {
+        display: flex;
+        gap: 4px;
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .ai-typing-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--color-ai-primary);
+        animation: typingBounce 1.4s infinite ease-in-out;
+    }
+
+    .ai-typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .ai-typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
     }
 
     .ai-input-container {
@@ -811,16 +936,26 @@
         padding: var(--spacing-md);
         border-top: 1px solid var(--color-border);
         background-color: var(--color-bg);
+        gap: var(--spacing-sm);
+        flex-shrink: 0;
     }
 
     .ai-input {
         flex: 1;
-        padding: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-sm);
         font-size: var(--text-sm);
         background-color: var(--color-bg);
         color: var(--color-text);
+        min-height: var(--touch-target);
+        line-height: 1.4;
+    }
+
+    .ai-input:focus {
+        outline: none;
+        border-color: var(--color-ai-primary);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
     }
 
     .ai-send {
@@ -829,13 +964,27 @@
         border: none;
         padding: var(--spacing-sm) var(--spacing-md);
         border-radius: var(--radius-sm);
-        margin-left: var(--spacing-sm);
         cursor: pointer;
         transition: var(--transition);
+        min-width: var(--touch-target);
+        min-height: var(--touch-target);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: manipulation;
+        flex-shrink: 0;
     }
 
-    .ai-send:hover {
+    .ai-send:hover, .ai-send:active, .ai-send:focus {
         background-color: var(--color-success-dark);
+        outline: none;
+        transform: scale(1.05);
+    }
+
+    .ai-send:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
     }
 
     .ai-toggle {
@@ -856,10 +1005,43 @@
         z-index: 99;
         transition: var(--transition);
         animation: pulse 2s infinite;
+        touch-action: manipulation;
     }
 
-    .ai-toggle:hover {
+    .ai-toggle:hover, .ai-toggle:active, .ai-toggle:focus {
         transform: scale(1.1);
+        outline: none;
+    }
+
+    /* AI Quick Commands */
+    .ai-quick-commands {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-md);
+        border-top: 1px solid var(--color-border);
+        background-color: var(--color-bg-secondary);
+    }
+
+    .ai-command-btn {
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--text-xs);
+        color: var(--color-text);
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+        touch-action: manipulation;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+    }
+
+    .ai-command-btn:hover, .ai-command-btn:active, .ai-command-btn:focus {
+        background-color: var(--color-bg-secondary);
+        outline: none;
     }
 
     /* Product Performance */
@@ -871,11 +1053,13 @@
         overflow-x: auto;
         border-radius: var(--radius);
         border: 1px solid var(--color-border);
+        -webkit-overflow-scrolling: touch;
     }
 
     .product-table {
         width: 100%;
         border-collapse: collapse;
+        min-width: 600px;
     }
 
     .product-table th,
@@ -883,6 +1067,7 @@
         padding: var(--spacing-sm);
         text-align: left;
         border-bottom: 1px solid var(--color-border);
+        vertical-align: middle;
     }
 
     .product-table th {
@@ -891,13 +1076,15 @@
         background-color: var(--color-bg-secondary);
         position: sticky;
         top: 0;
+        white-space: nowrap;
+        min-height: var(--touch-target);
     }
 
     .product-table tr:last-child td {
         border-bottom: none;
     }
 
-    .product-table tr:hover {
+    .product-table tr:hover, .product-table tr:active {
         background-color: var(--color-bg-secondary);
     }
 
@@ -920,6 +1107,7 @@
         border-radius: var(--radius);
         background-color: rgba(217, 119, 6, 0.1);
         border-left: 4px solid var(--color-warning);
+        flex-wrap: wrap;
     }
 
     .alert-icon {
@@ -937,16 +1125,19 @@
 
     .alert-content {
         flex: 1;
+        min-width: 0;
     }
 
     .alert-title {
         font-weight: 600;
         margin-bottom: var(--spacing-xs);
+        line-height: 1.2;
     }
 
     .alert-description {
         color: var(--color-text-muted);
         font-size: var(--text-sm);
+        line-height: 1.4;
     }
 
     .alert-action {
@@ -959,10 +1150,14 @@
         cursor: pointer;
         transition: var(--transition);
         flex-shrink: 0;
+        min-height: var(--touch-target);
+        touch-action: manipulation;
     }
 
-    .alert-action:hover {
+    .alert-action:hover, .alert-action:active, .alert-action:focus {
         background-color: #b45309;
+        outline: none;
+        transform: translateY(-1px);
     }
 
     /* Weather Widget */
@@ -984,6 +1179,7 @@
 
     .weather-location {
         font-weight: 600;
+        line-height: 1.2;
     }
 
     .weather-icon {
@@ -994,11 +1190,13 @@
         font-size: var(--text-3xl);
         font-weight: 700;
         margin-bottom: var(--spacing-xs);
+        line-height: 1;
     }
 
     .weather-desc {
         opacity: 0.9;
         margin-bottom: var(--spacing-md);
+        line-height: 1.4;
     }
 
     .weather-details {
@@ -1014,7 +1212,7 @@
         gap: var(--spacing-sm);
     }
 
-    /* Modal Styles */
+    /* Modal Styles - Enhanced for mobile */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -1028,6 +1226,8 @@
         z-index: 1000;
         display: none;
         padding: var(--spacing-md);
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
     }
 
     .modal-overlay.active {
@@ -1045,6 +1245,7 @@
         animation: scaleIn 0.3s ease;
         max-height: 90vh;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .modal-header {
@@ -1057,6 +1258,7 @@
     .modal-title {
         font-size: var(--text-xl);
         font-weight: 600;
+        line-height: 1.2;
     }
 
     .close-modal {
@@ -1065,17 +1267,20 @@
         font-size: var(--text-xl);
         color: var(--color-text);
         cursor: pointer;
-        width: 32px;
-        height: 32px;
+        width: var(--touch-target);
+        height: var(--touch-target);
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
         transition: var(--transition);
+        touch-action: manipulation;
+        flex-shrink: 0;
     }
 
-    .close-modal:hover {
+    .close-modal:hover, .close-modal:active, .close-modal:focus {
         background-color: var(--color-bg-secondary);
+        outline: none;
     }
 
     .modal-body {
@@ -1090,6 +1295,7 @@
         display: block;
         margin-bottom: var(--spacing-sm);
         font-weight: 500;
+        line-height: 1.4;
     }
 
     .form-input {
@@ -1101,6 +1307,10 @@
         background-color: var(--color-bg);
         color: var(--color-text);
         transition: var(--transition);
+        min-height: var(--touch-target);
+        line-height: 1.4;
+        -webkit-appearance: none;
+        appearance: none;
     }
 
     .form-input:focus {
@@ -1118,6 +1328,10 @@
         background-color: var(--color-bg);
         color: var(--color-text);
         transition: var(--transition);
+        min-height: var(--touch-target);
+        line-height: 1.4;
+        -webkit-appearance: none;
+        appearance: none;
     }
 
     .form-select:focus {
@@ -1130,6 +1344,7 @@
         display: flex;
         gap: var(--spacing-md);
         justify-content: flex-end;
+        flex-wrap: wrap;
     }
 
     .btn {
@@ -1142,6 +1357,11 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+        min-height: var(--touch-target);
+        touch-action: manipulation;
+        flex: 1;
+        justify-content: center;
+        text-align: center;
     }
 
     .btn-primary {
@@ -1149,8 +1369,10 @@
         color: white;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover, .btn-primary:active, .btn-primary:focus {
         background-color: var(--color-accent-hover);
+        outline: none;
+        transform: translateY(-1px);
     }
 
     .btn-secondary {
@@ -1159,8 +1381,55 @@
         border: 1px solid var(--color-border);
     }
 
-    .btn-secondary:hover {
+    .btn-secondary:hover, .btn-secondary:active, .btn-secondary:focus {
         background-color: var(--color-border);
+        outline: none;
+        transform: translateY(-1px);
+    }
+
+    /* Empty States */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-xl);
+        text-align: center;
+        color: var(--color-text-muted);
+    }
+
+    .empty-state i {
+        font-size: var(--text-3xl);
+        margin-bottom: var(--spacing-md);
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: var(--text-sm);
+        line-height: 1.4;
+    }
+
+    /* Swipe to refresh indicator */
+    .refresh-indicator {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        height: 4px;
+        background-color: var(--color-accent);
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+        z-index: 100;
+    }
+
+    .refresh-indicator.active {
+        transform: translateY(0);
+    }
+
+    /* Mobile gestures */
+    .mobile-gesture-area {
+        position: relative;
+        overflow: hidden;
     }
 
     /* Animations */
@@ -1180,15 +1449,22 @@
     }
 
     @keyframes pulse {
-        0% { transform: scale(1); }
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
         50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+        100% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
     }
 
-    /* Responsive Design */
+    @keyframes typingBounce {
+        0%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-6px); }
+    }
+
+    /* Responsive Design - Mobile First Approach */
     @media (max-width: 1024px) {
         .admin-sidebar {
             transform: translateX(-100%);
+            width: 280px;
+            max-width: 85vw;
         }
         
         .admin-sidebar.active {
@@ -1207,22 +1483,14 @@
             width: calc(100% - var(--spacing-lg) * 2);
             right: var(--spacing-lg);
             left: var(--spacing-lg);
-        }
-    }
-
-    @media (min-width: 768px) {
-        .time-display {
-            display: block;
-        }
-        
-        .logout-btn span {
-            display: inline;
+            bottom: 80px;
+            max-height: 60vh;
         }
     }
 
     @media (max-width: 768px) {
         .admin-header {
-            padding: 0 var(--spacing-md);
+            padding: 0 var(--spacing-sm);
         }
         
         .admin-content {
@@ -1231,27 +1499,39 @@
         
         .stats-grid {
             grid-template-columns: 1fr;
+            gap: var(--spacing-md);
         }
         
         .dashboard-grid {
             grid-template-columns: 1fr;
+            gap: var(--spacing-md);
         }
         
         .quick-actions {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--spacing-sm);
         }
         
         .goals-grid {
             grid-template-columns: 1fr;
+            gap: var(--spacing-md);
         }
         
         .welcome-actions {
             flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        
+        .welcome-btn {
+            width: 100%;
+            justify-content: center;
         }
         
         .ai-toggle {
             bottom: var(--spacing-md);
             right: var(--spacing-md);
+            width: 56px;
+            height: 56px;
         }
         
         .ai-assistant {
@@ -1259,31 +1539,144 @@
             right: var(--spacing-md);
             left: var(--spacing-md);
             width: auto;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .welcome-card {
-            padding: var(--spacing-lg);
+            max-height: 70vh;
         }
         
-        .quick-actions {
-            grid-template-columns: 1fr 1fr;
+        .time-display {
+            display: none;
+        }
+        
+        .logout-btn span {
+            display: none;
+        }
+        
+        .logout-btn {
+            width: var(--touch-target);
+            padding: var(--spacing-sm);
+            justify-content: center;
+        }
+        
+        .card-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        
+        .modal {
+            padding: var(--spacing-lg);
+            max-height: 85vh;
+        }
+        
+        .modal-footer {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
         }
         
         .activity-item {
             flex-direction: column;
             align-items: flex-start;
+            gap: var(--spacing-sm);
         }
         
         .alert-item {
             flex-direction: column;
             align-items: flex-start;
+            gap: var(--spacing-sm);
         }
         
         .alert-action {
             align-self: stretch;
             margin-top: var(--spacing-sm);
+            text-align: center;
+        }
+        
+        .welcome-card {
+            padding: var(--spacing-lg);
+        }
+        
+        .page-title {
+            font-size: var(--text-xl);
+        }
+        
+        .card-title {
+            font-size: var(--text-base);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .quick-actions {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .ai-assistant {
+            max-height: 80vh;
+            bottom: 70px;
+        }
+        
+        .ai-toggle {
+            width: 50px;
+            height: 50px;
+            font-size: var(--text-lg);
+        }
+        
+        .stat-card {
+            padding: var(--spacing-md);
+        }
+        
+        .dashboard-card {
+            padding: var(--spacing-md);
+        }
+        
+        .goal-card {
+            padding: var(--spacing-md);
+        }
+        
+        .welcome-title {
+            font-size: var(--text-xl);
+        }
+        
+        .weather-widget {
+            padding: var(--spacing-md);
+        }
+    }
+
+    /* Landscape orientation */
+    @media (max-height: 600px) and (orientation: landscape) {
+        .admin-sidebar {
+            height: calc(100vh - var(--header-height));
+            overflow-y: auto;
+        }
+        
+        .ai-assistant {
+            max-height: 50vh;
+        }
+        
+        .welcome-card {
+            padding: var(--spacing-lg);
+        }
+    }
+
+    /* High-resolution displays */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        .stat-card,
+        .dashboard-card,
+        .goal-card {
+            border-width: 0.5px;
+        }
+    }
+
+    /* Reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+        
+        .ai-toggle {
+            animation: none;
         }
     }
 
@@ -1297,12 +1690,30 @@
             --color-border: #374151;
         }
     }
+
+    /* iOS specific styles */
+    @supports (-webkit-touch-callout: none) {
+        .admin-sidebar,
+        .ai-body {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .ai-toggle {
+            bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom));
+        }
+        
+        .ai-assistant {
+            bottom: calc(80px + env(safe-area-inset-bottom));
+        }
+    }
     </style>
 </head>
 <body>
+    <div class="refresh-indicator" id="refresh-indicator"></div>
+    
     <div class="admin-header">
         <div class="logo">
-            <button class="hamburger" id="hamburger">
+            <button class="hamburger" id="hamburger" aria-label="Menü öffnen">
                 <i class="fas fa-bars"></i>
             </button>
             <i class="fas fa-shopping-cart"></i>
@@ -1310,7 +1721,7 @@
         </div>
         <div class="header-controls">
             <div class="time-display" id="timeDisplay"></div>
-            <button class="logout-btn" id="logoutBtn">
+            <button class="logout-btn" id="logoutBtn" aria-label="Abmelden">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Abmelden</span>
             </button>
@@ -1370,13 +1781,13 @@
         
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <main class="admin-content">
+        <main class="admin-content mobile-gesture-area" id="main-content">
             <div class="page-header">
                 <h1 class="page-title">
                     <i class="fas fa-tachometer-alt"></i>
                     Dashboard
                 </h1>
-                <p class="page-subtitle">
+                <p class="page-subtitle" id="page-subtitle">
                     Willkommen zurück! Hier finden Sie einen Überblick über Ihr Geschäft und wichtige Kennzahlen.
                 </p>
             </div>
@@ -1384,20 +1795,24 @@
             <!-- Welcome Card -->
             <div class="welcome-card">
                 <div class="welcome-content">
-                    <h2 class="welcome-title">Willkommen bei Gittertier Pro!</h2>
+                    <h2 class="welcome-title" id="welcome-title">Willkommen bei Gittertier Pro!</h2>
                     <p class="welcome-subtitle" id="welcome-subtitle">Heute ist ein guter Tag für Ihr Geschäft. Hier ist Ihr aktueller Status:</p>
                     <div class="welcome-actions">
-                        <button class="welcome-btn" id="quick-sale-btn">
+                        <button class="welcome-btn" id="quick-sale-btn" aria-label="Schnellverkauf starten">
                             <i class="fas fa-cash-register"></i>
                             Schnellverkauf
                         </button>
-                        <button class="welcome-btn" id="add-product-btn">
+                        <button class="welcome-btn" id="add-product-btn" aria-label="Neues Produkt hinzufügen">
                             <i class="fas fa-plus"></i>
                             Produkt hinzufügen
                         </button>
-                        <button class="welcome-btn" id="view-reports-btn">
+                        <button class="welcome-btn" id="view-reports-btn" aria-label="Berichte anzeigen">
                             <i class="fas fa-chart-bar"></i>
                             Berichte anzeigen
+                        </button>
+                        <button class="welcome-btn" id="ai-help-btn" aria-label="KI-Assistent fragen">
+                            <i class="fas fa-robot"></i>
+                            KI-Assistent
                         </button>
                     </div>
                 </div>
@@ -1420,19 +1835,19 @@
                                 Umsatzentwicklung
                             </h2>
                             <div class="card-actions">
-                                <button class="card-action-btn" id="revenue-week">
+                                <button class="card-action-btn" id="revenue-week" aria-label="Wochenansicht">
                                     Woche
                                 </button>
-                                <button class="card-action-btn active" id="revenue-month">
+                                <button class="card-action-btn active" id="revenue-month" aria-label="Monatsansicht">
                                     Monat
                                 </button>
-                                <button class="card-action-btn" id="revenue-year">
+                                <button class="card-action-btn" id="revenue-year" aria-label="Jahresansicht">
                                     Jahr
                                 </button>
                             </div>
                         </div>
                         <div class="chart-container">
-                            <canvas id="revenue-chart"></canvas>
+                            <canvas id="revenue-chart" role="img" aria-label="Umsatzentwicklung Diagramm"></canvas>
                         </div>
                     </div>
 
@@ -1444,7 +1859,7 @@
                                 Letzte Aktivitäten
                             </h2>
                             <div class="card-actions">
-                                <button class="card-action-btn" id="refresh-activities">
+                                <button class="card-action-btn" id="refresh-activities" aria-label="Aktivitäten aktualisieren">
                                     <i class="fas fa-sync"></i>
                                 </button>
                             </div>
@@ -1462,19 +1877,22 @@
                                 Produktperformance
                             </h2>
                             <div class="card-actions">
-                                <button class="card-action-btn" id="export-products">
+                                <button class="card-action-btn" id="export-products" aria-label="Produktdaten exportieren">
                                     <i class="fas fa-download"></i>
+                                </button>
+                                <button class="card-action-btn" id="ai-analyze-products" aria-label="KI-Analyse der Produkte">
+                                    <i class="fas fa-robot"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="product-table-container">
-                            <table class="product-table" id="product-performance-table">
+                            <table class="product-table" id="product-performance-table" role="grid">
                                 <thead>
                                     <tr>
-                                        <th>Produkt</th>
-                                        <th>Umsatz</th>
-                                        <th>Verkäufe</th>
-                                        <th>Trend</th>
+                                        <th scope="col">Produkt</th>
+                                        <th scope="col">Umsatz</th>
+                                        <th scope="col">Verkäufe</th>
+                                        <th scope="col">Trend</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1495,8 +1913,11 @@
                                 Meine Ziele
                             </h2>
                             <div class="card-actions">
-                                <button class="card-action-btn" id="add-goal-btn">
+                                <button class="card-action-btn" id="add-goal-btn" aria-label="Neues Ziel hinzufügen">
                                     <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="card-action-btn" id="ai-suggest-goals" aria-label="KI-Zielvorschläge">
+                                    <i class="fas fa-lightbulb"></i>
                                 </button>
                             </div>
                         </div>
@@ -1514,29 +1935,41 @@
                             </h2>
                         </div>
                         <div class="quick-actions">
-                            <a href="products" class="quick-action-btn">
+                            <a href="products" class="quick-action-btn" aria-label="Produkte verwalten">
                                 <div class="quick-action-icon">
                                     <i class="fas fa-box"></i>
                                 </div>
                                 <div class="quick-action-text">Produkte verwalten</div>
                             </a>
-                            <a href="index" class="quick-action-btn">
+                            <a href="index" class="quick-action-btn" aria-label="Kasse öffnen">
                                 <div class="quick-action-icon">
                                     <i class="fas fa-cash-register"></i>
                                 </div>
                                 <div class="quick-action-text">Kasse öffnen</div>
                             </a>
-                            <a href="analytics" class="quick-action-btn">
+                            <a href="analytics" class="quick-action-btn" aria-label="Analysen anzeigen">
                                 <div class="quick-action-icon">
                                     <i class="fas fa-chart-bar"></i>
                                 </div>
                                 <div class="quick-action-text">Analysen</div>
                             </a>
-                            <button class="quick-action-btn" id="backup-data-btn">
+                            <button class="quick-action-btn" id="backup-data-btn" aria-label="Backup erstellen">
                                 <div class="quick-action-icon">
                                     <i class="fas fa-download"></i>
                                 </div>
                                 <div class="quick-action-text">Backup erstellen</div>
+                            </button>
+                            <button class="quick-action-btn" id="ai-quick-help" aria-label="KI-Schnellhilfe">
+                                <div class="quick-action-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="quick-action-text">KI-Hilfe</div>
+                            </button>
+                            <button class="quick-action-btn" id="mobile-refresh" aria-label="Dashboard aktualisieren">
+                                <div class="quick-action-icon">
+                                    <i class="fas fa-sync"></i>
+                                </div>
+                                <div class="quick-action-text">Aktualisieren</div>
                             </button>
                         </div>
                     </div>
@@ -1549,8 +1982,11 @@
                                 Lagerwarnungen
                             </h2>
                             <div class="card-actions">
-                                <button class="card-action-btn" id="refresh-alerts">
+                                <button class="card-action-btn" id="refresh-alerts" aria-label="Warnungen aktualisieren">
                                     <i class="fas fa-sync"></i>
+                                </button>
+                                <button class="card-action-btn" id="ai-restock-suggestions" aria-label="KI-Nachbestellvorschläge">
+                                    <i class="fas fa-robot"></i>
                                 </button>
                             </div>
                         </div>
@@ -1594,48 +2030,62 @@
     </div>
 
     <!-- AI Assistant -->
-    <div class="ai-assistant" id="ai-assistant">
+    <div class="ai-assistant" id="ai-assistant" role="dialog" aria-label="KI-Assistent">
         <div class="ai-header">
             <div class="ai-title">
                 <i class="fas fa-robot"></i>
                 Gittertier Assistant
             </div>
-            <button class="ai-close" id="ai-close">
+            <button class="ai-close" id="ai-close" aria-label="KI-Assistent schließen">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="ai-body" id="ai-body">
             <div class="ai-message assistant">
-                Hallo! Ich bin Ihr Gittertier Assistant. Wie kann ich Ihnen heute helfen?
+                Hallo! Ich bin Ihr Gittertier Assistant. Ich kann Ihnen bei folgenden Aufgaben helfen:
+                <br><br>
+                • Umsatzanalyse und Prognosen<br>
+                • Produktoptimierungsvorschläge<br>
+                • Zielsetzung und Tracking<br>
+                • Lagerbestandsmanagement<br>
+                • Schnelle Aktionen ausführen<br>
+                <br>
+                Fragen Sie mich einfach!
             </div>
         </div>
+        <div class="ai-quick-commands" id="ai-quick-commands">
+            <button class="ai-command-btn" data-command="Wie ist mein aktueller Umsatz?">Umsatz anzeigen</button>
+            <button class="ai-command-btn" data-command="Welche Produkte verkaufen sich am besten?">Top-Produkte</button>
+            <button class="ai-command-btn" data-command="Wie kann ich meinen Umsatz steigern?">Umsatz steigern</button>
+            <button class="ai-command-btn" data-command="Zeige mir Lagerwarnungen">Lagerwarnungen</button>
+        </div>
         <div class="ai-input-container">
-            <input type="text" class="ai-input" id="ai-input" placeholder="Fragen Sie mich etwas...">
-            <button class="ai-send" id="ai-send">
+            <input type="text" class="ai-input" id="ai-input" placeholder="Fragen Sie mich etwas..." aria-label="KI-Assistent Eingabe">
+            <button class="ai-send" id="ai-send" aria-label="Nachricht senden">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
     </div>
 
-    <div class="ai-toggle" id="ai-toggle">
+    <div class="ai-toggle" id="ai-toggle" aria-label="KI-Assistent öffnen">
         <i class="fas fa-robot"></i>
     </div>
 
     <!-- Goal Modal -->
-    <div class="modal-overlay" id="goal-modal">
+    <div class="modal-overlay" id="goal-modal" role="dialog" aria-labelledby="goal-modal-title" aria-hidden="true">
         <div class="modal">
             <div class="modal-header">
                 <h2 class="modal-title" id="goal-modal-title">Ziel hinzufügen</h2>
-                <button class="close-modal" id="close-goal-modal">&times;</button>
+                <button class="close-modal" id="close-goal-modal" aria-label="Modal schließen">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label" for="goal-title">Zielname</label>
-                    <input type="text" class="form-input" id="goal-title" placeholder="z.B. Monatsumsatz">
+                    <input type="text" class="form-input" id="goal-title" placeholder="z.B. Monatsumsatz" aria-required="true">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="goal-type">Zieltyp</label>
-                    <select class="form-select" id="goal-type">
+                    <select class="form-select" id="goal-type" aria-required="true">
                         <option value="revenue">Umsatz</option>
                         <option value="sales">Verkäufe</option>
                         <option value="customers">Kunden</option>
@@ -1644,11 +2094,11 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="goal-target">Zielwert</label>
-                    <input type="number" class="form-input" id="goal-target" placeholder="z.B. 5000">
+                    <input type="number" class="form-input" id="goal-target" placeholder="z.B. 5000" aria-required="true" min="1">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="goal-deadline">Frist</label>
-                    <input type="date" class="form-input" id="goal-deadline">
+                    <input type="date" class="form-input" id="goal-deadline" aria-required="true">
                 </div>
             </div>
             <div class="modal-footer">
@@ -1659,26 +2109,26 @@
     </div>
 
     <!-- Quick Sale Modal -->
-    <div class="modal-overlay" id="quick-sale-modal">
+    <div class="modal-overlay" id="quick-sale-modal" role="dialog" aria-labelledby="quick-sale-title" aria-hidden="true">
         <div class="modal">
             <div class="modal-header">
-                <h2 class="modal-title">Schnellverkauf</h2>
-                <button class="close-modal" id="close-quick-sale-modal">&times;</button>
+                <h2 class="modal-title" id="quick-sale-title">Schnellverkauf</h2>
+                <button class="close-modal" id="close-quick-sale-modal" aria-label="Modal schließen">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label" for="sale-product">Produkt</label>
-                    <select class="form-select" id="sale-product">
+                    <select class="form-select" id="sale-product" aria-required="true">
                         <!-- Products will be populated by JavaScript -->
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="sale-quantity">Menge</label>
-                    <input type="number" class="form-input" id="sale-quantity" value="1" min="1">
+                    <input type="number" class="form-input" id="sale-quantity" value="1" min="1" aria-required="true">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="sale-price">Preis (€)</label>
-                    <input type="number" class="form-input" id="sale-price" step="0.01" placeholder="0.00">
+                    <input type="number" class="form-input" id="sale-price" step="0.01" placeholder="0.00" aria-required="true">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="sale-customer">Kunde (optional)</label>
@@ -1692,11 +2142,30 @@
         </div>
     </div>
 
+    <!-- AI Analysis Modal -->
+    <div class="modal-overlay" id="ai-analysis-modal" role="dialog" aria-labelledby="ai-analysis-title" aria-hidden="true">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="ai-analysis-title">KI-Analyse</h2>
+                <button class="close-modal" id="close-ai-analysis-modal" aria-label="Modal schließen">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="ai-analysis-content">
+                    <!-- AI Analysis content will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="close-analysis-btn">Schließen</button>
+                <button class="btn btn-primary" id="apply-analysis-btn" style="display: none;">Vorschlag anwenden</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize jsPDF
         const { jsPDF } = window.jspdf;
 
-        // Dashboard Manager
+        // Dashboard Manager with enhanced AI capabilities
         const dashboardManager = (function() {
             let receipts = [];
             let products = {};
@@ -1704,6 +2173,8 @@
             let goals = [];
             let activities = [];
             let currentEditingGoal = null;
+            let aiContext = [];
+            let mobileGestureState = { startY: 0, isRefreshing: false };
 
             // Initialize dashboard
             async function init() {
@@ -1713,6 +2184,7 @@
                 merchantInfo = getMerchantInfo();
                 goals = getGoals();
                 activities = getActivities();
+                aiContext = getAIContext();
 
                 // Initialize default goals if none exist
                 if (goals.length === 0) {
@@ -1724,13 +2196,89 @@
                     initDefaultActivities();
                 }
 
+                // Initialize AI context if empty
+                if (aiContext.length === 0) {
+                    aiContext.push({
+                        role: 'system',
+                        content: 'Du bist ein hilfreicher KI-Assistent für das Gittertier Pro Dashboard. Du hilfst bei der Analyse von Umsatzdaten, Produktperformance, Zielsetzung und Lagerbestandsmanagement. Du kannst auch schnelle Aktionen auslösen.'
+                    });
+                    saveAIContext(aiContext);
+                }
+
+                // Initialize mobile gesture detection
+                initMobileGestures();
+
                 return {
                     receipts,
                     products,
                     merchantInfo,
                     goals,
-                    activities
+                    activities,
+                    aiContext
                 };
+            }
+
+            // Initialize mobile gesture detection
+            function initMobileGestures() {
+                const mainContent = document.getElementById('main-content');
+                if (!mainContent) return;
+
+                mainContent.addEventListener('touchstart', function(e) {
+                    if (window.innerWidth <= 768 && e.touches.length === 1) {
+                        const touch = e.touches[0];
+                        mobileGestureState.startY = touch.clientY;
+                        mobileGestureState.isRefreshing = false;
+                    }
+                }, { passive: true });
+
+                mainContent.addEventListener('touchmove', function(e) {
+                    if (window.innerWidth <= 768 && e.touches.length === 1 && !mobileGestureState.isRefreshing) {
+                        const touch = e.touches[0];
+                        const deltaY = touch.clientY - mobileGestureState.startY;
+                        
+                        if (deltaY > 100 && window.scrollY === 0) {
+                            mobileGestureState.isRefreshing = true;
+                            triggerRefresh();
+                        }
+                    }
+                }, { passive: true });
+
+                mainContent.addEventListener('touchend', function() {
+                    mobileGestureState.startY = 0;
+                }, { passive: true });
+            }
+
+            // Trigger refresh with visual feedback
+            function triggerRefresh() {
+                const refreshIndicator = document.getElementById('refresh-indicator');
+                if (refreshIndicator) {
+                    refreshIndicator.classList.add('active');
+                    
+                    // Simulate refresh delay
+                    setTimeout(() => {
+                        refreshIndicator.classList.remove('active');
+                        updateAllData();
+                        addActivity({
+                            type: 'info',
+                            title: 'Dashboard aktualisiert',
+                            description: 'Alle Daten wurden aktualisiert.'
+                        });
+                        showNotification('Dashboard aktualisiert', 'success');
+                    }, 1000);
+                }
+            }
+
+            // Update all data
+            function updateAllData() {
+                receipts = getReceipts();
+                products = getProducts();
+                goals = getGoals();
+                activities = getActivities();
+                
+                // Update goal progress
+                updateGoalProgress();
+                
+                return true;
             }
 
             // Get receipts from localStorage
@@ -1834,6 +2382,32 @@
                 }
             }
 
+            // Get AI context from localStorage
+            function getAIContext() {
+                try {
+                    const context = localStorage.getItem('ai_context');
+                    return context ? JSON.parse(context) : [];
+                } catch (e) {
+                    console.error('Error getting AI context:', e);
+                    return [];
+                }
+            }
+
+            // Save AI context to localStorage
+            function saveAIContext(context) {
+                try {
+                    // Keep only last 20 messages to prevent localStorage overflow
+                    if (context.length > 20) {
+                        context = context.slice(-20);
+                    }
+                    localStorage.setItem('ai_context', JSON.stringify(context));
+                    return true;
+                } catch (e) {
+                    console.error('Error saving AI context:', e);
+                    return false;
+                }
+            }
+
             // Initialize default goals
             function initDefaultGoals() {
                 const currentDate = new Date();
@@ -1849,7 +2423,8 @@
                         target: 5000,
                         current: 0,
                         deadline: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${lastDay}`,
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        aiSuggested: false
                     },
                     {
                         id: 'goal-2',
@@ -1858,7 +2433,8 @@
                         target: 100,
                         current: 0,
                         deadline: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${lastDay}`,
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        aiSuggested: false
                     },
                     {
                         id: 'goal-3',
@@ -1867,7 +2443,8 @@
                         target: 25,
                         current: 0,
                         deadline: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${lastDay}`,
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        aiSuggested: false
                     }
                 ];
                 
@@ -1884,14 +2461,16 @@
                         type: 'info',
                         title: 'Willkommen bei Gittertier Pro!',
                         description: 'Ihr Dashboard wurde eingerichtet. Beginnen Sie mit dem Hinzufügen von Produkten.',
-                        time: currentDate.toISOString()
+                        time: currentDate.toISOString(),
+                        read: false
                     },
                     {
                         id: 'activity-2',
                         type: 'success',
                         title: 'Erstes Ziel festgelegt',
                         description: 'Sie haben Ihr erstes Umsatzziel für diesen Monat festgelegt.',
-                        time: new Date(currentDate.getTime() - 10 * 60 * 1000).toISOString() // 10 minutes ago
+                        time: new Date(currentDate.getTime() - 10 * 60 * 1000).toISOString(), // 10 minutes ago
+                        read: false
                     }
                 ];
                 
@@ -2018,7 +2597,7 @@
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 
-                // Initialize last 30 days with 0 revenue
+                // Initialize last X days with 0 revenue
                 for (let i = days - 1; i >= 0; i--) {
                     const date = new Date(today);
                     date.setDate(date.getDate() - i);
@@ -2063,7 +2642,8 @@
                                     name: item.name,
                                     revenue: 0,
                                     quantity: 0,
-                                    price: item.price
+                                    price: item.price,
+                                    barcode: item.barcode
                                 };
                             }
                             productSales[productId].revenue += item.quantity * item.price;
@@ -2082,19 +2662,36 @@
             function getInventoryAlerts() {
                 const alerts = [];
                 const lowStockThreshold = 10;
+                const criticalStockThreshold = 3;
                 
                 Object.values(products).forEach(product => {
-                    if (product.stock !== undefined && product.stock <= lowStockThreshold) {
-                        alerts.push({
-                            id: `alert-${product.barcode}`,
-                            title: 'Niedriger Lagerbestand',
-                            description: `${product.name} hat nur noch ${product.stock} Einheiten auf Lager.`,
-                            product: product
-                        });
+                    if (product.stock !== undefined) {
+                        if (product.stock <= criticalStockThreshold) {
+                            alerts.push({
+                                id: `alert-critical-${product.barcode}`,
+                                title: 'Kritischer Lagerbestand',
+                                description: `${product.name} hat nur noch ${product.stock} Einheiten auf Lager.`,
+                                product: product,
+                                severity: 'critical'
+                            });
+                        } else if (product.stock <= lowStockThreshold) {
+                            alerts.push({
+                                id: `alert-low-${product.barcode}`,
+                                title: 'Niedriger Lagerbestand',
+                                description: `${product.name} hat nur noch ${product.stock} Einheiten auf Lager.`,
+                                product: product,
+                                severity: 'warning'
+                            });
+                        }
                     }
                 });
                 
-                return alerts;
+                // Sort by severity (critical first)
+                return alerts.sort((a, b) => {
+                    if (a.severity === 'critical' && b.severity !== 'critical') return -1;
+                    if (b.severity === 'critical' && a.severity !== 'critical') return 1;
+                    return 0;
+                });
             }
 
             // Add a new goal
@@ -2102,6 +2699,7 @@
                 goal.id = `goal-${Date.now()}`;
                 goal.createdAt = new Date().toISOString();
                 goal.current = 0;
+                goal.aiSuggested = goal.aiSuggested || false;
                 
                 goals.push(goal);
                 saveGoals(goals);
@@ -2163,6 +2761,7 @@
             function addActivity(activity) {
                 activity.id = `activity-${Date.now()}`;
                 activity.time = new Date().toISOString();
+                activity.read = false;
                 
                 activities.unshift(activity);
                 
@@ -2179,6 +2778,22 @@
             // Process quick sale
             function processQuickSale(saleData) {
                 const { productId, quantity, price, customer } = saleData;
+                const product = products[productId];
+                
+                if (!product) {
+                    return {
+                        success: false,
+                        message: 'Produkt nicht gefunden'
+                    };
+                }
+                
+                // Check stock if available
+                if (product.stock !== undefined && product.stock < quantity) {
+                    return {
+                        success: false,
+                        message: `Nicht genügend Lagerbestand. Verfügbar: ${product.stock}`
+                    };
+                }
                 
                 // Create a receipt
                 const receipt = {
@@ -2188,9 +2803,10 @@
                     status: 'Bestätigt',
                     items: [
                         {
-                            name: products[productId]?.name || 'Unbekanntes Produkt',
+                            name: product.name || 'Unbekanntes Produkt',
                             quantity: quantity,
-                            price: price
+                            price: price,
+                            barcode: productId
                         }
                     ],
                     customer: customer || null,
@@ -2205,17 +2821,20 @@
                     localStorage.setItem('payment_archive', JSON.stringify(receipts));
                 } catch (e) {
                     console.error('Error saving receipt:', e);
-                    return false;
+                    return {
+                        success: false,
+                        message: 'Fehler beim Speichern des Verkaufs'
+                    };
                 }
                 
-                // Update product stock if product exists
-                if (products[productId] && products[productId].stock !== undefined) {
-                    products[productId].stock -= quantity;
+                // Update product stock if product exists and has stock
+                if (product.stock !== undefined) {
+                    product.stock -= quantity;
                     
                     // Update product in localStorage
                     try {
                         const productKey = `product_${productId}`;
-                        localStorage.setItem(productKey, JSON.stringify(products[productId]));
+                        localStorage.setItem(productKey, JSON.stringify(product));
                     } catch (e) {
                         console.error('Error updating product stock:', e);
                     }
@@ -2225,10 +2844,13 @@
                 addActivity({
                     type: 'success',
                     title: 'Schnellverkauf abgeschlossen',
-                    description: `${quantity}x ${products[productId]?.name || 'Produkt'} für €${(quantity * price).toFixed(2)} verkauft.`
+                    description: `${quantity}x ${product.name} für €${(quantity * price).toFixed(2)} verkauft.`
                 });
                 
-                return true;
+                return {
+                    success: true,
+                    message: `Verkauf erfolgreich: €${(quantity * price).toFixed(2)}`
+                };
             }
 
             // Update goal progress
@@ -2246,43 +2868,407 @@
                         case 'customers':
                             goal.current = stats.thisMonth.customers;
                             break;
-                        // Add more goal types as needed
+                        case 'products':
+                            // Count unique products sold this month
+                            const productSet = new Set();
+                            receipts.forEach(receipt => {
+                                if (receipt.items && new Date(receipt.date) >= new Date(new Date().getFullYear(), new Date().getMonth(), 1)) {
+                                    receipt.items.forEach(item => {
+                                        if (item.barcode) productSet.add(item.barcode);
+                                    });
+                                }
+                            });
+                            goal.current = productSet.size;
+                            break;
                     }
                 });
                 
                 saveGoals(goals);
             }
 
-            // Get AI response
+            // Get AI response with enhanced capabilities
             function getAIResponse(message) {
                 const lowerMessage = message.toLowerCase();
                 
-                // Simple response logic - in a real app, this would connect to an AI service
+                // Add user message to context
+                aiContext.push({
+                    role: 'user',
+                    content: message,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Enhanced response logic with real actions
                 if (lowerMessage.includes('hallo') || lowerMessage.includes('hi') || lowerMessage.includes('guten tag')) {
-                    return 'Hallo! Wie kann ich Ihnen helfen?';
-                } else if (lowerMessage.includes('umsatz') || lowerMessage.includes('einnahmen')) {
+                    const response = 'Hallo! Wie kann ich Ihnen helfen? Ich kann Ihnen bei Umsatzanalysen, Produktoptimierung, Zielsetzung und Lagerbestandsmanagement helfen.';
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('umsatz') || lowerMessage.includes('einnahmen') || lowerMessage.includes('umsätze')) {
                     const stats = getSalesStats();
-                    return `Ihr heutiger Umsatz beträgt €${stats.today.revenue.toFixed(2)}. Der Umsatz diesen Monat liegt bei €${stats.thisMonth.revenue.toFixed(2)}.`;
-                } else if (lowerMessage.includes('verkäufe') || lowerMessage.includes('transaktionen')) {
+                    const response = `Ihr heutiger Umsatz beträgt €${stats.today.revenue.toFixed(2)}. Der Umsatz diesen Monat liegt bei €${stats.thisMonth.revenue.toFixed(2)}. Das ist eine Veränderung von ${stats.changes.revenue >= 0 ? '+' : ''}${stats.changes.revenue.toFixed(1)}% gegenüber gestern.`;
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('verkäufe') || lowerMessage.includes('transaktionen') || lowerMessage.includes('verkauf')) {
                     const stats = getSalesStats();
-                    return `Sie hatten heute ${stats.today.transactions} Verkäufe. Dieser Monat sind es bereits ${stats.thisMonth.transactions} Transaktionen.`;
-                } else if (lowerMessage.includes('kunden')) {
+                    const response = `Sie hatten heute ${stats.today.transactions} Verkäufe. Dieser Monat sind es bereits ${stats.thisMonth.transactions} Transaktionen. Das entspricht ${stats.today.avgOrder.toFixed(2)}€ durchschnittlichem Bestellwert.`;
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('kunden') || lowerMessage.includes('kundschaft')) {
                     const stats = getSalesStats();
-                    return `Heute hatten Sie ${stats.today.customers} Kunden. Insgesamt diesen Monat waren es ${stats.thisMonth.customers} verschiedene Kunden.`;
+                    const response = `Heute hatten Sie ${stats.today.customers} Kunden. Insgesamt diesen Monat waren es ${stats.thisMonth.customers} verschiedene Kunden.`;
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
                 } else if (lowerMessage.includes('ziel') || lowerMessage.includes('ziele')) {
-                    return `Sie haben ${goals.length} aktive Ziele. Sie können Ihre Ziele im Dashboard verwalten.`;
-                } else if (lowerMessage.includes('produkt') || lowerMessage.includes('lager')) {
+                    const goalStats = goals.map(goal => {
+                        const progress = Math.min(100, (goal.current / goal.target) * 100);
+                        return `${goal.title}: ${progress.toFixed(1)}% erreicht (${goal.current}/${goal.target})`;
+                    }).join('\n');
+                    
+                    const response = `Sie haben ${goals.length} aktive Ziele:\n${goalStats}\n\nMöchten Sie ein neues Ziel hinzufügen oder ein bestehendes bearbeiten?`;
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('produkt') || lowerMessage.includes('produkte') || lowerMessage.includes('top produkte')) {
+                    const topProducts = getProductPerformance(5);
+                    const productList = topProducts.map((p, i) => `${i + 1}. ${p.name}: €${p.revenue.toFixed(2)} (${p.quantity} verkauft)`).join('\n');
+                    
+                    const response = `Ihre Top-Produkte:\n${productList}\n\nMöchten Sie eine detaillierte Analyse oder Optimierungsvorschläge?`;
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('lager') || lowerMessage.includes('inventar') || lowerMessage.includes('bestand') || lowerMessage.includes('warnungen')) {
                     const alerts = getInventoryAlerts();
                     if (alerts.length > 0) {
-                        return `Sie haben ${alerts.length} Lagerwarnungen. ${alerts[0].description}`;
+                        const alertList = alerts.slice(0, 3).map(alert => `• ${alert.description}`).join('\n');
+                        const response = `Sie haben ${alerts.length} Lagerwarnungen:\n${alertList}\n\nMöchten Sie Nachbestellungen vornehmen?`;
+                        aiContext.push({
+                            role: 'assistant',
+                            content: response,
+                            timestamp: new Date().toISOString()
+                        });
+                        saveAIContext(aiContext);
+                        return response;
                     } else {
-                        return 'Ihr Lagerbestand sieht gut aus. Keine kritischen Warnungen.';
+                        const response = 'Ihr Lagerbestand sieht gut aus. Keine kritischen Warnungen.';
+                        aiContext.push({
+                            role: 'assistant',
+                            content: response,
+                            timestamp: new Date().toISOString()
+                        });
+                        saveAIContext(aiContext);
+                        return response;
                     }
-                } else if (lowerMessage.includes('hilfe') || lowerMessage.includes('unterstützung')) {
-                    return 'Ich kann Ihnen bei Fragen zu Umsätzen, Verkäufen, Kunden, Zielen und Lagerbeständen helfen. Was möchten Sie wissen?';
+                } else if (lowerMessage.includes('hilfe') || lowerMessage.includes('unterstützung') || lowerMessage.includes('was kannst du')) {
+                    const response = `Ich kann Ihnen bei folgenden Aufgaben helfen:
+
+1. **Umsatzanalyse**: Aktuelle Umsätze, Trends, Prognosen
+2. **Produktoptimierung**: Top-Produkte identifizieren, Schwachstellen finden
+3. **Zielmanagement**: Ziele setzen, Fortschritt tracken, Vorschläge machen
+4. **Lagerbestand**: Warnungen, Nachbestellungsvorschläge
+5. **Schnellaktionen**: Verkäufe, Berichte, Backups
+
+Fragen Sie mich konkret oder nutzen Sie die Quick-Commands!`;
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('analyse') || lowerMessage.includes('auswertung') || lowerMessage.includes('bericht')) {
+                    const stats = getSalesStats();
+                    const topProducts = getProductPerformance(3);
+                    const alerts = getInventoryAlerts();
+                    
+                    const response = `**Zusammenfassung Ihrer Geschäftsdaten:**
+
+📊 **Umsatz**: €${stats.thisMonth.revenue.toFixed(2)} diesen Monat
+🛒 **Verkäufe**: ${stats.thisMonth.transactions} Transaktionen
+👥 **Kunden**: ${stats.thisMonth.customers} verschiedene Kunden
+📈 **Trend**: ${stats.changes.revenue >= 0 ? 'Positiv' : 'Negativ'} (${stats.changes.revenue.toFixed(1)}%)
+
+🏆 **Top 3 Produkte**:
+${topProducts.map((p, i) => `${i + 1}. ${p.name}: €${p.revenue.toFixed(2)}`).join('\n')}
+
+⚠️ **Lagerwarnungen**: ${alerts.length} aktive Warnungen
+
+Möchten Sie detaillierte Empfehlungen?`;
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('empfehlung') || lowerMessage.includes('vorschlag') || lowerMessage.includes('tipp')) {
+                    const stats = getSalesStats();
+                    const topProducts = getProductPerformance(5);
+                    const alerts = getInventoryAlerts();
+                    
+                    let recommendations = [];
+                    
+                    if (stats.changes.revenue < -10) {
+                        recommendations.push("• Umsatzrückgang erkannt. Prüfen Sie Ihre Preise und Marketingaktionen.");
+                    }
+                    
+                    if (stats.today.avgOrder < 20) {
+                        recommendations.push("• Niedriger durchschnittlicher Bestellwert. Bieten Sie Upselling-Optionen an.");
+                    }
+                    
+                    if (alerts.length > 0) {
+                        recommendations.push("• Kritische Lagerbestände. Bitte nachbestellen.");
+                    }
+                    
+                    if (topProducts.length > 0) {
+                        recommendations.push(`• Fokussieren Sie auf Ihr Top-Produkt: ${topProducts[0].name}`);
+                    }
+                    
+                    if (recommendations.length === 0) {
+                        recommendations.push("• Alles sieht gut aus! Konzentrieren Sie sich auf Kundenbindung.");
+                    }
+                    
+                    const response = `**Meine Empfehlungen für Sie:**\n${recommendations.join('\n')}`;
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('schnellverkauf') || lowerMessage.includes('verkauf starten') || lowerMessage.includes('schnell kaufen')) {
+                    // This would trigger the quick sale modal
+                    setTimeout(() => {
+                        document.getElementById('quick-sale-btn').click();
+                    }, 100);
+                    
+                    const response = 'Öffne das Schnellverkaufs-Formular für Sie...';
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('ziel hinzufügen') || lowerMessage.includes('neues ziel') || lowerMessage.includes('ziel setzen')) {
+                    // This would trigger the goal modal
+                    setTimeout(() => {
+                        document.getElementById('add-goal-btn').click();
+                    }, 100);
+                    
+                    const response = 'Öffne das Ziel-Formular für Sie...';
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('backup') || lowerMessage.includes('sicherung')) {
+                    setTimeout(() => {
+                        document.getElementById('backup-data-btn').click();
+                    }, 100);
+                    
+                    const response = 'Starte Backup-Erstellung...';
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
+                } else if (lowerMessage.includes('produkte verwalten') || lowerMessage.includes('zum produkt')) {
+                    setTimeout(() => {
+                        window.location.href = 'products';
+                    }, 500);
+                    
+                    const response = 'Navigiere zur Produktverwaltung...';
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
                 } else {
-                    return 'Entschuldigung, ich verstehe Ihre Frage nicht ganz. Könnten Sie sie anders formulieren? Ich kann Ihnen bei Fragen zu Umsätzen, Verkäufen und Lagerbeständen helfen.';
+                    const response = 'Entschuldigung, ich verstehe Ihre Frage nicht ganz. Könnten Sie sie anders formulieren? Sie können mich nach Umsätzen, Verkäufen, Produkten, Zielen oder Lagerbeständen fragen. Oder sagen Sie "Hilfe" für eine Liste meiner Fähigkeiten.';
+                    aiContext.push({
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toISOString()
+                    });
+                    saveAIContext(aiContext);
+                    return response;
                 }
+            }
+
+            // Generate AI-suggested goals based on data
+            function generateAISuggestedGoals() {
+                const stats = getSalesStats();
+                const suggestions = [];
+                const currentDate = new Date();
+                const currentMonth = currentDate.getMonth();
+                const currentYear = currentDate.getFullYear();
+                const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+                
+                // Revenue goal suggestion
+                if (stats.thisMonth.revenue > 0) {
+                    const suggestedRevenue = Math.round(stats.thisMonth.revenue * 1.2); // 20% increase
+                    suggestions.push({
+                        title: 'Umsatzsteigerung nächster Monat',
+                        type: 'revenue',
+                        target: suggestedRevenue,
+                        current: 0,
+                        deadline: `${currentYear}-${String(currentMonth + 2).padStart(2, '0')}-${lastDay}`,
+                        aiSuggested: true,
+                        reason: `Basierend auf aktuellen €${stats.thisMonth.revenue.toFixed(2)} (+20% Ziel)`
+                    });
+                }
+                
+                // Customer goal suggestion
+                if (stats.thisMonth.customers > 0) {
+                    const suggestedCustomers = Math.round(stats.thisMonth.customers * 1.15); // 15% increase
+                    suggestions.push({
+                        title: 'Kundenwachstum',
+                        type: 'customers',
+                        target: suggestedCustomers,
+                        current: 0,
+                        deadline: `${currentYear}-${String(currentMonth + 2).padStart(2, '0')}-${lastDay}`,
+                        aiSuggested: true,
+                        reason: `Basierend auf ${stats.thisMonth.customers} aktuellen Kunden (+15% Ziel)`
+                    });
+                }
+                
+                // Product diversification goal
+                const uniqueProducts = new Set();
+                receipts.forEach(receipt => {
+                    if (receipt.items) {
+                        receipt.items.forEach(item => {
+                            if (item.barcode) uniqueProducts.add(item.barcode);
+                        });
+                    }
+                });
+                
+                if (uniqueProducts.size > 0) {
+                    suggestions.push({
+                        title: 'Produktdiversifikation',
+                        type: 'products',
+                        target: uniqueProducts.size + 3, // Add 3 new products
+                        current: uniqueProducts.size,
+                        deadline: `${currentYear}-${String(currentMonth + 2).padStart(2, '0')}-${lastDay}`,
+                        aiSuggested: true,
+                        reason: `Aktuell ${uniqueProducts.size} verschiedene Produkte (+3 neue Produkte)`
+                    });
+                }
+                
+                return suggestions;
+            }
+
+            // Generate product analysis
+            function generateProductAnalysis() {
+                const topProducts = getProductPerformance(10);
+                const alerts = getInventoryAlerts();
+                const stats = getSalesStats();
+                
+                let analysis = `# Produktanalyse\n\n`;
+                analysis += `**Zeitraum**: Letzter Monat\n`;
+                analysis += `**Gesamtumsatz**: €${stats.thisMonth.revenue.toFixed(2)}\n`;
+                analysis += `**Anzahl Produkte**: ${Object.keys(products).length}\n\n`;
+                
+                analysis += `## Top 5 Produkte\n`;
+                topProducts.slice(0, 5).forEach((product, index) => {
+                    const share = (product.revenue / stats.thisMonth.revenue * 100).toFixed(1);
+                    analysis += `${index + 1}. **${product.name}**\n`;
+                    analysis += `   - Umsatz: €${product.revenue.toFixed(2)} (${share}%)\n`;
+                    analysis += `   - Verkauft: ${product.quantity} Einheiten\n`;
+                    analysis += `   - Ø Preis: €${product.price?.toFixed(2) || '0.00'}\n`;
+                });
+                
+                if (alerts.length > 0) {
+                    analysis += `\n## ⚠️ Lagerwarnungen\n`;
+                    alerts.slice(0, 3).forEach(alert => {
+                        analysis += `- ${alert.description}\n`;
+                    });
+                }
+                
+                analysis += `\n## 📈 Empfehlungen\n`;
+                
+                if (topProducts.length > 0) {
+                    const topProduct = topProducts[0];
+                    analysis += `1. **${topProduct.name} stärker bewerben** - Dies ist Ihr Bestseller\n`;
+                    
+                    if (topProducts.length >= 3) {
+                        const bottomProducts = topProducts.slice(-3);
+                        analysis += `2. **Schwache Produkte überprüfen**: ${bottomProducts.map(p => p.name).join(', ')}\n`;
+                    }
+                }
+                
+                if (alerts.length > 0) {
+                    analysis += `3. **Lagerbestände auffüllen** - ${alerts.length} Produkte sind knapp\n`;
+                }
+                
+                return analysis;
+            }
+
+            // Generate restock suggestions
+            function generateRestockSuggestions() {
+                const alerts = getInventoryAlerts();
+                const topProducts = getProductPerformance(20);
+                
+                if (alerts.length === 0) {
+                    return {
+                        hasSuggestions: false,
+                        message: 'Keine dringenden Nachbestellungen erforderlich.'
+                    };
+                }
+                
+                const suggestions = alerts.map(alert => {
+                    const product = alert.product;
+                    const suggestedQuantity = product.stock !== undefined ? Math.max(10, Math.round(product.stock * 2)) : 10;
+                    
+                    return {
+                        product: product,
+                        currentStock: product.stock || 0,
+                        suggestedQuantity: suggestedQuantity,
+                        urgency: alert.severity === 'critical' ? 'Hoch' : 'Mittel',
+                        estimatedCost: (product.price || 0) * suggestedQuantity
+                    };
+                });
+                
+                const totalCost = suggestions.reduce((sum, s) => sum + s.estimatedCost, 0);
+                
+                return {
+                    hasSuggestions: true,
+                    suggestions: suggestions,
+                    totalCost: totalCost,
+                    message: `${suggestions.length} Nachbestellungen empfohlen. Geschätzte Kosten: €${totalCost.toFixed(2)}`
+                };
             }
 
             // Public API
@@ -2294,27 +3280,37 @@
                 getInventoryAlerts,
                 getGoals: () => goals,
                 getActivities: () => activities,
+                getProducts: () => products,
                 addGoal,
                 updateGoal,
                 deleteGoal,
                 addActivity,
                 processQuickSale,
                 updateGoalProgress,
-                getAIResponse
+                getAIResponse,
+                generateAISuggestedGoals,
+                generateProductAnalysis,
+                generateRestockSuggestions,
+                updateAllData,
+                triggerRefresh
             };
         })();
 
         // Chart Manager
         const chartManager = (function() {
             let revenueChart = null;
+            let currentPeriod = 'month';
             
             // Initialize charts
             function initCharts() {
                 // Revenue chart
-                const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
+                const revenueCtx = document.getElementById('revenue-chart');
+                if (!revenueCtx) return;
+                
+                const ctx = revenueCtx.getContext('2d');
                 const revenueData = dashboardManager.getRevenueByDay(30);
                 
-                revenueChart = new Chart(revenueCtx, {
+                revenueChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: revenueData.labels,
@@ -2325,7 +3321,12 @@
                             borderColor: 'rgba(37, 99, 235, 1)',
                             borderWidth: 2,
                             tension: 0.4,
-                            fill: true
+                            fill: true,
+                            pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         }]
                     },
                     options: {
@@ -2337,7 +3338,24 @@
                                 ticks: {
                                     callback: function(value) {
                                         return '€' + value;
+                                    },
+                                    font: {
+                                        size: window.innerWidth <= 768 ? 10 : 12
                                     }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth <= 768 ? 10 : 12
+                                    },
+                                    maxRotation: window.innerWidth <= 768 ? 45 : 0
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
                                 }
                             }
                         },
@@ -2350,8 +3368,21 @@
                                     label: function(context) {
                                         return 'Umsatz: €' + context.raw;
                                     }
+                                },
+                                titleFont: {
+                                    size: window.innerWidth <= 768 ? 12 : 14
+                                },
+                                bodyFont: {
+                                    size: window.innerWidth <= 768 ? 12 : 14
                                 }
                             }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        animation: {
+                            duration: window.innerWidth <= 768 ? 0 : 1000
                         }
                     }
                 });
@@ -2359,90 +3390,108 @@
             
             // Update charts
             function updateCharts() {
-                // Update revenue chart
-                const revenueData = dashboardManager.getRevenueByDay(30);
-                revenueChart.data.labels = revenueData.labels;
-                revenueChart.data.datasets[0].data = revenueData.data;
-                revenueChart.update();
-            }
-            
-            // Change chart period
-            function changeChartPeriod(days) {
+                if (!revenueChart) return;
+                
+                const days = currentPeriod === 'week' ? 7 : currentPeriod === 'year' ? 365 : 30;
                 const revenueData = dashboardManager.getRevenueByDay(days);
                 revenueChart.data.labels = revenueData.labels;
                 revenueChart.data.datasets[0].data = revenueData.data;
                 revenueChart.update();
             }
             
+            // Change chart period
+            function changeChartPeriod(days, period) {
+                if (!revenueChart) return;
+                
+                currentPeriod = period;
+                const revenueData = dashboardManager.getRevenueByDay(days);
+                revenueChart.data.labels = revenueData.labels;
+                revenueChart.data.datasets[0].data = revenueData.data;
+                
+                // Update animation based on screen size
+                revenueChart.options.animation.duration = window.innerWidth <= 768 ? 0 : 500;
+                revenueChart.update();
+            }
+            
+            // Get current period
+            function getCurrentPeriod() {
+                return currentPeriod;
+            }
+            
             // Public API
             return {
                 initCharts,
                 updateCharts,
-                changeChartPeriod
+                changeChartPeriod,
+                getCurrentPeriod
             };
         })();
 
         // UI Manager
         const uiManager = (function() {
+            let isMobile = window.innerWidth <= 768;
+            
             // Update stats cards
             function updateStatsCards() {
                 const stats = dashboardManager.getSalesStats();
                 const statsGrid = document.getElementById('stats-grid');
                 
+                if (!statsGrid) return;
+                
                 statsGrid.innerHTML = `
-                    <div class="stat-card">
+                    <div class="stat-card" role="region" aria-label="Umsatz Statistik">
                         <div class="stat-card-header">
                             <div class="stat-card-title">Heutiger Umsatz</div>
-                            <div class="stat-card-icon revenue">
+                            <div class="stat-card-icon revenue" aria-hidden="true">
                                 <i class="fas fa-euro-sign"></i>
                             </div>
                         </div>
-                        <div class="stat-card-value">€${stats.today.revenue.toFixed(2)}</div>
-                        <div class="stat-card-change ${stats.changes.revenue >= 0 ? 'positive' : 'negative'}">
+                        <div class="stat-card-value" id="today-revenue">€${stats.today.revenue.toFixed(2)}</div>
+                        <div class="stat-card-change ${stats.changes.revenue >= 0 ? 'positive' : 'negative'}" aria-live="polite">
                             <i class="fas fa-${stats.changes.revenue >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
-                            ${Math.abs(stats.changes.revenue).toFixed(1)}%
+                            ${Math.abs(stats.changes.revenue).toFixed(1)}% ${stats.changes.revenue >= 0 ? 'Steigerung' : 'Rückgang'} gegenüber gestern
                         </div>
                     </div>
                     
-                    <div class="stat-card">
+                    <div class="stat-card" role="region" aria-label="Verkäufe Statistik">
                         <div class="stat-card-header">
                             <div class="stat-card-title">Heutige Verkäufe</div>
-                            <div class="stat-card-icon sales">
+                            <div class="stat-card-icon sales" aria-hidden="true">
                                 <i class="fas fa-shopping-cart"></i>
                             </div>
                         </div>
-                        <div class="stat-card-value">${stats.today.transactions}</div>
-                        <div class="stat-card-change ${stats.changes.transactions >= 0 ? 'positive' : 'negative'}">
+                        <div class="stat-card-value" id="today-sales">${stats.today.transactions}</div>
+                        <div class="stat-card-change ${stats.changes.transactions >= 0 ? 'positive' : 'negative'}" aria-live="polite">
                             <i class="fas fa-${stats.changes.transactions >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
-                            ${Math.abs(stats.changes.transactions).toFixed(1)}%
+                            ${Math.abs(stats.changes.transactions).toFixed(1)}% ${stats.changes.transactions >= 0 ? 'Steigerung' : 'Rückgang'} gegenüber gestern
                         </div>
                     </div>
                     
-                    <div class="stat-card">
+                    <div class="stat-card" role="region" aria-label="Kunden Statistik">
                         <div class="stat-card-header">
                             <div class="stat-card-title">Heutige Kunden</div>
-                            <div class="stat-card-icon customers">
+                            <div class="stat-card-icon customers" aria-hidden="true">
                                 <i class="fas fa-users"></i>
                             </div>
                         </div>
-                        <div class="stat-card-value">${stats.today.customers}</div>
-                        <div class="stat-card-change ${stats.changes.customers >= 0 ? 'positive' : 'negative'}">
+                        <div class="stat-card-value" id="today-customers">${stats.today.customers}</div>
+                        <div class="stat-card-change ${stats.changes.customers >= 0 ? 'positive' : 'negative'}" aria-live="polite">
                             <i class="fas fa-${stats.changes.customers >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
-                            ${Math.abs(stats.changes.customers).toFixed(1)}%
+                            ${Math.abs(stats.changes.customers).toFixed(1)}% ${stats.changes.customers >= 0 ? 'Steigerung' : 'Rückgang'} gegenüber gestern
                         </div>
                     </div>
                     
-                    <div class="stat-card">
+                    <div class="stat-card" role="region" aria-label="Durchschnittlicher Bestellwert Statistik">
                         <div class="stat-card-header">
                             <div class="stat-card-title">Durchschn. Bestellwert</div>
-                            <div class="stat-card-icon avg-order">
+                            <div class="stat-card-icon avg-order" aria-hidden="true">
                                 <i class="fas fa-receipt"></i>
                             </div>
                         </div>
-                        <div class="stat-card-value">€${stats.today.avgOrder.toFixed(2)}</div>
-                        <div class="stat-card-change ${stats.changes.avgOrder >= 0 ? 'positive' : 'negative'}">
+                        <div class="stat-card-value" id="today-avg-order">€${stats.today.avgOrder.toFixed(2)}</div>
+                        <div class="stat-card-change ${stats.changes.avgOrder >= 0 ? 'positive' : 'negative'}" aria-live="polite">
                             <i class="fas fa-${stats.changes.avgOrder >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
-                            ${Math.abs(stats.changes.avgOrder).toFixed(1)}%
+                            ${Math.abs(stats.changes.avgOrder).toFixed(1)}% ${stats.changes.avgOrder >= 0 ? 'Steigerung' : 'Rückgang'} gegenüber gestern
                         </div>
                     </div>
                 `;
@@ -2452,21 +3501,42 @@
             function updateWelcomeMessage() {
                 const stats = dashboardManager.getSalesStats();
                 const welcomeSubtitle = document.getElementById('welcome-subtitle');
+                const welcomeTitle = document.getElementById('welcome-title');
+                const pageSubtitle = document.getElementById('page-subtitle');
+                
+                if (!welcomeSubtitle || !welcomeTitle || !pageSubtitle) return;
+                
+                const now = new Date();
+                const hour = now.getHours();
+                let greeting = '';
+                
+                if (hour < 12) {
+                    greeting = 'Guten Morgen';
+                } else if (hour < 18) {
+                    greeting = 'Guten Tag';
+                } else {
+                    greeting = 'Guten Abend';
+                }
+                
+                welcomeTitle.textContent = `${greeting} bei Gittertier Pro!`;
                 
                 if (stats.today.revenue > 0) {
                     welcomeSubtitle.textContent = `Großartig! Sie haben heute bereits €${stats.today.revenue.toFixed(2)} umgesetzt.`;
+                } else if (stats.today.transactions > 0) {
+                    welcomeSubtitle.textContent = `Sie hatten heute bereits ${stats.today.transactions} Verkäufe.`;
                 } else {
-                    const now = new Date();
-                    const hour = now.getHours();
-                    
-                    if (hour < 12) {
-                        welcomeSubtitle.textContent = 'Guten Morgen! Ein neuer Tag für Ihr Geschäft beginnt.';
-                    } else if (hour < 18) {
-                        welcomeSubtitle.textContent = 'Guten Tag! Wie läuft Ihr Geschäft heute?';
-                    } else {
-                        welcomeSubtitle.textContent = 'Guten Abend! Hoffentlich war es ein erfolgreicher Tag.';
-                    }
+                    const messages = [
+                        'Ein neuer Tag für Ihr Geschäft beginnt.',
+                        'Bereit für erfolgreiche Verkäufe?',
+                        'Zeit, Ihr Geschäft voranzubringen.',
+                        'Perfekter Zeitpunkt für neue Kunden.'
+                    ];
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    welcomeSubtitle.textContent = randomMessage;
                 }
+                
+                // Update page subtitle with current stats
+                pageSubtitle.textContent = `Aktueller Status: €${stats.thisMonth.revenue.toFixed(2)} Umsatz diesen Monat, ${stats.thisMonth.transactions} Verkäufe, ${stats.thisMonth.customers} Kunden.`;
             }
             
             // Update recent activities
@@ -2474,11 +3544,14 @@
                 const activities = dashboardManager.getActivities();
                 const activityList = document.getElementById('activity-list');
                 
+                if (!activityList) return;
+                
                 if (activities.length === 0) {
                     activityList.innerHTML = `
-                        <div class="empty-state">
+                        <div class="empty-state" aria-live="polite">
                             <i class="fas fa-clock"></i>
-                            <p>Keine Aktivitäten</p>
+                            <p>Keine Aktivitäten vorhanden</p>
+                            <p class="empty-state-hint">Sobald Sie Aktionen durchführen, erscheinen sie hier.</p>
                         </div>
                     `;
                     return;
@@ -2490,13 +3563,19 @@
                     const dateString = time.toLocaleDateString('de-DE');
                     
                     let iconClass = 'info';
-                    if (activity.type === 'success') iconClass = 'success';
-                    if (activity.type === 'warning') iconClass = 'warning';
+                    let icon = 'info';
+                    if (activity.type === 'success') {
+                        iconClass = 'success';
+                        icon = 'check';
+                    } else if (activity.type === 'warning') {
+                        iconClass = 'warning';
+                        icon = 'exclamation';
+                    }
                     
                     return `
-                        <div class="activity-item">
-                            <div class="activity-icon ${iconClass}">
-                                <i class="fas fa-${activity.type === 'success' ? 'check' : activity.type === 'warning' ? 'exclamation' : 'info'}"></i>
+                        <div class="activity-item" role="article" aria-label="Aktivität: ${activity.title}">
+                            <div class="activity-icon ${iconClass}" aria-hidden="true">
+                                <i class="fas fa-${icon}"></i>
                             </div>
                             <div class="activity-content">
                                 <div class="activity-title">${activity.title}</div>
@@ -2513,29 +3592,33 @@
                 const products = dashboardManager.getProductPerformance();
                 const tableBody = document.querySelector('#product-performance-table tbody');
                 
+                if (!tableBody) return;
+                
                 if (products.length === 0) {
                     tableBody.innerHTML = `
                         <tr>
                             <td colspan="4" class="empty-state">
                                 <i class="fas fa-box-open"></i>
-                                <p>Keine Verkaufsdaten</p>
+                                <p>Noch keine Verkaufsdaten</p>
+                                <p class="empty-state-hint">Beginnen Sie mit dem Verkauf von Produkten.</p>
                             </td>
                         </tr>
                     `;
                     return;
                 }
                 
-                tableBody.innerHTML = products.map(product => {
-                    // Determine trend (simple mock)
-                    const trend = Math.random() > 0.5 ? 'up' : 'down';
+                tableBody.innerHTML = products.map((product, index) => {
+                    // Determine trend based on recent performance (simplified)
+                    const trend = index < 3 ? 'up' : index > 7 ? 'down' : 'right';
+                    const trendLabel = index < 3 ? 'Steigend' : index > 7 ? 'Fallend' : 'Stabil';
                     
                     return `
-                        <tr>
-                            <td>${product.name}</td>
-                            <td>€${product.revenue.toFixed(2)}</td>
-                            <td>${product.quantity}</td>
-                            <td>
-                                <i class="fas fa-arrow-${trend} ${trend === 'up' ? 'positive' : 'negative'}"></i>
+                        <tr role="row" aria-rowindex="${index + 2}">
+                            <td role="cell" data-label="Produkt">${product.name}</td>
+                            <td role="cell" data-label="Umsatz">€${product.revenue.toFixed(2)}</td>
+                            <td role="cell" data-label="Verkäufe">${product.quantity}</td>
+                            <td role="cell" data-label="Trend">
+                                <i class="fas fa-arrow-${trend} ${trend === 'up' ? 'positive' : trend === 'down' ? 'negative' : ''}" aria-label="${trendLabel}"></i>
                             </td>
                         </tr>
                     `;
@@ -2549,69 +3632,77 @@
                 const goalsGrid = document.getElementById('goals-grid');
                 
                 // Update goals list (sidebar)
-                if (goals.length === 0) {
-                    goalsList.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-bullseye"></i>
-                            <p>Keine Ziele</p>
-                        </div>
-                    `;
-                } else {
-                    goalsList.innerHTML = goals.slice(0, 3).map(goal => {
+                if (goalsList) {
+                    if (goals.length === 0) {
+                        goalsList.innerHTML = `
+                            <div class="empty-state" aria-live="polite">
+                                <i class="fas fa-bullseye"></i>
+                                <p>Noch keine Ziele</p>
+                                <p class="empty-state-hint">Setzen Sie sich Ziele für Ihr Geschäft.</p>
+                            </div>
+                        `;
+                    } else {
+                        goalsList.innerHTML = goals.slice(0, 3).map(goal => {
+                            const progress = Math.min(100, (goal.current / goal.target) * 100);
+                            const deadline = new Date(goal.deadline);
+                            const now = new Date();
+                            const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                            const daysText = daysLeft > 0 ? `${daysLeft} Tage` : 'Abgelaufen';
+                            
+                            return `
+                                <div class="goal-card" role="region" aria-label="Ziel: ${goal.title}">
+                                    <div class="goal-header">
+                                        <div class="goal-title">${goal.title}</div>
+                                        <div class="goal-value" aria-label="Fortschritt: ${Math.round(progress)} Prozent">${Math.round(progress)}%</div>
+                                    </div>
+                                    <div class="goal-progress" role="progressbar" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="goal-progress-bar ${goal.type}" style="width: ${progress}%" aria-hidden="true"></div>
+                                    </div>
+                                    <div class="goal-details">
+                                        <span>${goal.current} / ${goal.target} ${getGoalUnit(goal.type)}</span>
+                                        <span>${daysText}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                }
+                
+                // Update goals grid (main section)
+                if (goalsGrid) {
+                    goalsGrid.innerHTML = goals.map(goal => {
                         const progress = Math.min(100, (goal.current / goal.target) * 100);
                         const deadline = new Date(goal.deadline);
                         const now = new Date();
                         const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                        const daysText = daysLeft > 0 ? `${daysLeft} Tage verbleibend` : 'Abgelaufen';
+                        const aiBadge = goal.aiSuggested ? '<span class="ai-badge" aria-label="KI-vorgeschlagen">KI</span>' : '';
                         
                         return `
-                            <div class="goal-card">
+                            <div class="goal-card" role="region" aria-label="Ziel: ${goal.title}">
                                 <div class="goal-header">
-                                    <div class="goal-title">${goal.title}</div>
-                                    <div class="goal-value">${Math.round(progress)}%</div>
+                                    <div class="goal-title">${goal.title} ${aiBadge}</div>
+                                    <div class="goal-value" aria-label="Fortschritt: ${Math.round(progress)} Prozent">${Math.round(progress)}%</div>
                                 </div>
-                                <div class="goal-progress">
-                                    <div class="goal-progress-bar ${goal.type}" style="width: ${progress}%"></div>
+                                <div class="goal-progress" role="progressbar" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="goal-progress-bar ${goal.type}" style="width: ${progress}%" aria-hidden="true"></div>
                                 </div>
                                 <div class="goal-details">
-                                    <span>€${goal.current.toFixed(2)} / €${goal.target.toFixed(2)}</span>
-                                    <span>${daysLeft} Tage</span>
+                                    <span>${goal.current} / ${goal.target} ${getGoalUnit(goal.type)}</span>
+                                    <span>${daysText}</span>
+                                </div>
+                                <div class="goal-actions">
+                                    <button class="goal-btn edit" data-goal-id="${goal.id}" aria-label="Ziel ${goal.title} bearbeiten">
+                                        <i class="fas fa-edit"></i> ${isMobile ? '' : 'Bearbeiten'}
+                                    </button>
+                                    <button class="goal-btn delete" data-goal-id="${goal.id}" aria-label="Ziel ${goal.title} löschen">
+                                        <i class="fas fa-trash"></i> ${isMobile ? '' : 'Löschen'}
+                                    </button>
                                 </div>
                             </div>
                         `;
                     }).join('');
                 }
-                
-                // Update goals grid (main section)
-                goalsGrid.innerHTML = goals.map(goal => {
-                    const progress = Math.min(100, (goal.current / goal.target) * 100);
-                    const deadline = new Date(goal.deadline);
-                    const now = new Date();
-                    const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-                    
-                    return `
-                        <div class="goal-card">
-                            <div class="goal-header">
-                                <div class="goal-title">${goal.title}</div>
-                                <div class="goal-value">${Math.round(progress)}%</div>
-                            </div>
-                            <div class="goal-progress">
-                                <div class="goal-progress-bar ${goal.type}" style="width: ${progress}%"></div>
-                            </div>
-                            <div class="goal-details">
-                                <span>${goal.current} / ${goal.target} ${getGoalUnit(goal.type)}</span>
-                                <span>${daysLeft} Tage</span>
-                            </div>
-                            <div class="goal-actions">
-                                <button class="goal-btn edit" data-goal-id="${goal.id}">
-                                    <i class="fas fa-edit"></i> Bearbeiten
-                                </button>
-                                <button class="goal-btn delete" data-goal-id="${goal.id}">
-                                    <i class="fas fa-trash"></i> Löschen
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
             }
             
             // Get goal unit based on type
@@ -2630,27 +3721,30 @@
                 const alerts = dashboardManager.getInventoryAlerts();
                 const alertList = document.getElementById('alert-list');
                 
+                if (!alertList) return;
+                
                 if (alerts.length === 0) {
                     alertList.innerHTML = `
-                        <div class="empty-state">
+                        <div class="empty-state" aria-live="polite">
                             <i class="fas fa-check-circle"></i>
                             <p>Keine Warnungen</p>
+                            <p class="empty-state-hint">Alle Lagerbestände sind ausreichend.</p>
                         </div>
                     `;
                     return;
                 }
                 
                 alertList.innerHTML = alerts.slice(0, 3).map(alert => `
-                    <div class="alert-item">
-                        <div class="alert-icon">
+                    <div class="alert-item" role="alert" aria-label="Lagerwarnung: ${alert.title}">
+                        <div class="alert-icon" aria-hidden="true">
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="alert-content">
                             <div class="alert-title">${alert.title}</div>
                             <div class="alert-description">${alert.description}</div>
                         </div>
-                        <button class="alert-action" data-product-id="${alert.product.barcode}">
-                            Bestellen
+                        <button class="alert-action" data-product-id="${alert.product.barcode}" aria-label="Nachbestellung für ${alert.product.name}">
+                            ${isMobile ? 'Bestellen' : 'Nachbestellen'}
                         </button>
                     </div>
                 `).join('');
@@ -2661,8 +3755,18 @@
                 const products = dashboardManager.getProducts();
                 const dropdown = document.getElementById('sale-product');
                 
-                dropdown.innerHTML = Object.values(products).map(product => `
-                    <option value="${product.barcode}">${product.name} - €${product.price?.toFixed(2) || '0.00'}</option>
+                if (!dropdown) return;
+                
+                const productArray = Object.values(products);
+                
+                if (productArray.length === 0) {
+                    dropdown.innerHTML = '<option value="" disabled>Keine Produkte verfügbar</option>';
+                    document.getElementById('sale-price').value = '0.00';
+                    return;
+                }
+                
+                dropdown.innerHTML = productArray.map(product => `
+                    <option value="${product.barcode}">${product.name} - €${product.price?.toFixed(2) || '0.00'} (${product.stock !== undefined ? product.stock : '∞'} verfügbar)</option>
                 `).join('');
                 
                 // Set default price when product is selected
@@ -2674,7 +3778,7 @@
                 });
                 
                 // Set initial price if dropdown has options
-                if (dropdown.options.length > 0) {
+                if (dropdown.options.length > 0 && dropdown.options[0].value) {
                     const firstProduct = products[dropdown.options[0].value];
                     if (firstProduct && firstProduct.price) {
                         document.getElementById('sale-price').value = firstProduct.price.toFixed(2);
@@ -2685,35 +3789,139 @@
             // Update weather widget
             function updateWeatherWidget() {
                 // In a real app, this would fetch data from a weather API
-                // For now, we'll use mock data
-                const weatherData = {
-                    location: 'München',
-                    temp: 22,
-                    description: 'Sonnig',
-                    icon: 'fa-sun',
-                    wind: '5 km/h',
-                    humidity: '45%'
-                };
+                // For now, we'll use mock data that changes based on time
+                const now = new Date();
+                const hour = now.getHours();
                 
-                document.getElementById('weather-location').textContent = weatherData.location;
-                document.getElementById('weather-icon').innerHTML = `<i class="fas ${weatherData.icon}"></i>`;
-                document.getElementById('weather-temp').textContent = `${weatherData.temp}°C`;
-                document.getElementById('weather-desc').textContent = weatherData.description;
-                document.getElementById('weather-wind').textContent = weatherData.wind;
-                document.getElementById('weather-humidity').textContent = weatherData.humidity;
+                let weatherData;
+                
+                if (hour >= 6 && hour < 12) {
+                    weatherData = {
+                        location: 'München',
+                        temp: 18 + Math.floor(Math.random() * 5),
+                        description: 'Heiter',
+                        icon: 'fa-sun',
+                        wind: (3 + Math.floor(Math.random() * 5)) + ' km/h',
+                        humidity: (40 + Math.floor(Math.random() * 20)) + '%'
+                    };
+                } else if (hour >= 12 && hour < 18) {
+                    weatherData = {
+                        location: 'München',
+                        temp: 22 + Math.floor(Math.random() * 5),
+                        description: 'Sonnig',
+                        icon: 'fa-sun',
+                        wind: (5 + Math.floor(Math.random() * 5)) + ' km/h',
+                        humidity: (35 + Math.floor(Math.random() * 15)) + '%'
+                    };
+                } else {
+                    weatherData = {
+                        location: 'München',
+                        temp: 15 + Math.floor(Math.random() * 5),
+                        description: 'Klar',
+                        icon: 'fa-moon',
+                        wind: (2 + Math.floor(Math.random() * 3)) + ' km/h',
+                        humidity: (50 + Math.floor(Math.random() * 20)) + '%'
+                    };
+                }
+                
+                const locationEl = document.getElementById('weather-location');
+                const iconEl = document.getElementById('weather-icon');
+                const tempEl = document.getElementById('weather-temp');
+                const descEl = document.getElementById('weather-desc');
+                const windEl = document.getElementById('weather-wind');
+                const humidityEl = document.getElementById('weather-humidity');
+                
+                if (locationEl) locationEl.textContent = weatherData.location;
+                if (iconEl) iconEl.innerHTML = `<i class="fas ${weatherData.icon}"></i>`;
+                if (tempEl) tempEl.textContent = `${weatherData.temp}°C`;
+                if (descEl) descEl.textContent = weatherData.description;
+                if (windEl) windEl.textContent = weatherData.wind;
+                if (humidityEl) humidityEl.textContent = weatherData.humidity;
             }
             
-            // Add AI message to chat
+            // Add AI message to chat with typing indicator
             function addAIMessage(message, isUser = false) {
                 const aiBody = document.getElementById('ai-body');
+                if (!aiBody) return;
+                
+                // Remove any existing typing indicator
+                const existingTyping = aiBody.querySelector('.ai-typing');
+                if (existingTyping) {
+                    existingTyping.remove();
+                }
+                
                 const messageClass = isUser ? 'user' : 'assistant';
                 
                 const messageElement = document.createElement('div');
                 messageElement.className = `ai-message ${messageClass}`;
                 messageElement.textContent = message;
+                messageElement.setAttribute('role', 'log');
+                messageElement.setAttribute('aria-live', 'polite');
                 
                 aiBody.appendChild(messageElement);
                 aiBody.scrollTop = aiBody.scrollHeight;
+            }
+            
+            // Show typing indicator
+            function showTypingIndicator() {
+                const aiBody = document.getElementById('ai-body');
+                if (!aiBody) return;
+                
+                // Remove any existing typing indicator
+                const existingTyping = aiBody.querySelector('.ai-typing');
+                if (existingTyping) {
+                    existingTyping.remove();
+                }
+                
+                const typingElement = document.createElement('div');
+                typingElement.className = 'ai-typing';
+                typingElement.setAttribute('aria-label', 'KI-Assistent schreibt');
+                typingElement.innerHTML = `
+                    <div class="ai-typing-dot"></div>
+                    <div class="ai-typing-dot"></div>
+                    <div class="ai-typing-dot"></div>
+                `;
+                
+                aiBody.appendChild(typingElement);
+                aiBody.scrollTop = aiBody.scrollHeight;
+                
+                return typingElement;
+            }
+            
+            // Hide typing indicator
+            function hideTypingIndicator() {
+                const aiBody = document.getElementById('ai-body');
+                if (!aiBody) return;
+                
+                const typingElement = aiBody.querySelector('.ai-typing');
+                if (typingElement) {
+                    typingElement.remove();
+                }
+            }
+            
+            // Update AI quick commands
+            function updateAIQuickCommands() {
+                const quickCommands = document.getElementById('ai-quick-commands');
+                if (!quickCommands) return;
+                
+                // Quick commands are static for now, but could be dynamic based on context
+            }
+            
+            // Show AI analysis modal
+            function showAIAnalysisModal(content, showApplyButton = false) {
+                const modal = document.getElementById('ai-analysis-modal');
+                const contentEl = document.getElementById('ai-analysis-content');
+                const applyBtn = document.getElementById('apply-analysis-btn');
+                
+                if (!modal || !contentEl) return;
+                
+                contentEl.innerHTML = `<div style="white-space: pre-line; line-height: 1.6;">${content}</div>`;
+                
+                if (applyBtn) {
+                    applyBtn.style.display = showApplyButton ? 'flex' : 'none';
+                }
+                
+                modal.classList.add('active');
             }
             
             // Update all UI components
@@ -2726,14 +3934,27 @@
                 updateInventoryAlerts();
                 updateProductDropdown();
                 updateWeatherWidget();
+                updateAIQuickCommands();
                 chartManager.updateCharts();
                 dashboardManager.updateGoalProgress();
+                
+                // Update mobile state
+                isMobile = window.innerWidth <= 768;
+            }
+            
+            // Check if mobile
+            function isMobileView() {
+                return isMobile;
             }
             
             // Public API
             return {
                 updateAll,
-                addAIMessage
+                addAIMessage,
+                showTypingIndicator,
+                hideTypingIndicator,
+                showAIAnalysisModal,
+                isMobileView
             };
         })();
 
@@ -2757,137 +3978,466 @@
             // Update time display
             updateTime();
             setInterval(updateTime, 1000);
+            
+            // Check for updates every 5 minutes
+            setInterval(() => {
+                dashboardManager.updateAllData();
+                uiManager.updateAll();
+            }, 5 * 60 * 1000);
+            
+            // Initialize mobile-specific features
+            initMobileFeatures();
         });
 
         // Apply dark mode if enabled
         function applyDarkMode() {
             const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.darkMode) {
+            if (settings.darkMode === true) {
                 document.body.classList.add('dark-mode');
-            } else {
+            } else if (settings.darkMode === false) {
                 document.body.classList.remove('dark-mode');
+            } else {
+                // Use system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }
+        }
+
+        // Initialize mobile-specific features
+        function initMobileFeatures() {
+            if (window.innerWidth <= 768) {
+                // Add touch-friendly enhancements
+                document.body.classList.add('mobile-view');
+                
+                // Make sure all interactive elements have proper touch targets
+                const interactiveElements = document.querySelectorAll('button, a, input, select, [role="button"]');
+                interactiveElements.forEach(el => {
+                    if (el.offsetHeight < 44 || el.offsetWidth < 44) {
+                        el.style.minHeight = '44px';
+                        el.style.minWidth = '44px';
+                        el.style.padding = '12px';
+                    }
+                });
+                
+                // Add swipe gesture for sidebar
+                let touchStartX = 0;
+                let touchEndX = 0;
+                
+                document.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                
+                document.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, { passive: true });
+                
+                function handleSwipe() {
+                    const swipeThreshold = 50;
+                    const swipeDistance = touchEndX - touchStartX;
+                    
+                    // Swipe right to open sidebar
+                    if (swipeDistance > swipeThreshold && touchStartX < 50) {
+                        document.getElementById('sidebar').classList.add('active');
+                        document.getElementById('sidebarOverlay').classList.add('active');
+                    }
+                    
+                    // Swipe left to close sidebar
+                    if (swipeDistance < -swipeThreshold && touchStartX > 50) {
+                        document.getElementById('sidebar').classList.remove('active');
+                        document.getElementById('sidebarOverlay').classList.remove('active');
+                    }
+                }
             }
         }
 
         // Set up event listeners
         function setupEventListeners() {
             // Hamburger menu toggle for mobile
-            document.getElementById('hamburger').addEventListener('click', () => {
-                const sidebar = document.getElementById('sidebar');
-                const sidebarOverlay = document.getElementById('sidebarOverlay');
-                sidebar.classList.toggle('active');
-                sidebarOverlay.classList.toggle('active');
-            });
+            const hamburger = document.getElementById('hamburger');
+            if (hamburger) {
+                hamburger.addEventListener('click', () => {
+                    const sidebar = document.getElementById('sidebar');
+                    const sidebarOverlay = document.getElementById('sidebarOverlay');
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                    
+                    // Close AI assistant when opening sidebar on mobile
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('ai-assistant').classList.remove('active');
+                    }
+                });
+                
+                // Add touch feedback
+                hamburger.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.95)';
+                }, { passive: true });
+                
+                hamburger.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                }, { passive: true });
+            }
             
             // Close sidebar when clicking overlay
-            document.getElementById('sidebarOverlay').addEventListener('click', () => {
-                const sidebar = document.getElementById('sidebar');
-                const sidebarOverlay = document.getElementById('sidebarOverlay');
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-            });
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    const sidebar = document.getElementById('sidebar');
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+                
+                // Also close on touch
+                sidebarOverlay.addEventListener('touchstart', () => {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                }, { passive: true });
+            }
             
             // Logout functionality
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                
-                if (settings.logoutConfirmation) {
-                    if (!confirm('Möchten Sie sich wirklich abmelden?')) {
-                        return;
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                    
+                    if (settings.logoutConfirmation !== false) {
+                        if (!confirm('Möchten Sie sich wirklich abmelden?')) {
+                            return;
+                        }
                     }
-                }
+                    
+                    sessionStorage.removeItem('validTokens');
+                    localStorage.removeItem('authToken');
+                    window.location.reload();
+                });
                 
-                sessionStorage.removeItem('validTokens');
-                localStorage.removeItem('authToken');
-                window.location.reload();
-            });
+                // Add touch feedback for mobile
+                logoutBtn.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.backgroundColor = 'var(--color-bg-secondary)';
+                    }
+                }, { passive: true });
+                
+                logoutBtn.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.backgroundColor = '';
+                    }
+                }, { passive: true });
+            }
             
             // Chart period buttons
-            document.getElementById('revenue-week').addEventListener('click', function() {
-                document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-                chartManager.changeChartPeriod(7);
-            });
+            const revenueWeekBtn = document.getElementById('revenue-week');
+            const revenueMonthBtn = document.getElementById('revenue-month');
+            const revenueYearBtn = document.getElementById('revenue-year');
             
-            document.getElementById('revenue-month').addEventListener('click', function() {
-                document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
-                    btn.classList.remove('active');
+            if (revenueWeekBtn) {
+                revenueWeekBtn.addEventListener('click', function() {
+                    document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    chartManager.changeChartPeriod(7, 'week');
+                    
+                    // Add activity
+                    dashboardManager.addActivity({
+                        type: 'info',
+                        title: 'Diagramm aktualisiert',
+                        description: 'Umsatzdiagramm auf Wochenansicht geändert.'
+                    });
+                    
+                    uiManager.updateAll();
                 });
-                this.classList.add('active');
-                chartManager.changeChartPeriod(30);
-            });
+                
+                // Touch feedback
+                revenueWeekBtn.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+            }
             
-            document.getElementById('revenue-year').addEventListener('click', function() {
-                document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
-                    btn.classList.remove('active');
+            if (revenueMonthBtn) {
+                revenueMonthBtn.addEventListener('click', function() {
+                    document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    chartManager.changeChartPeriod(30, 'month');
+                    
+                    // Add activity
+                    dashboardManager.addActivity({
+                        type: 'info',
+                        title: 'Diagramm aktualisiert',
+                        description: 'Umsatzdiagramm auf Monatsansicht geändert.'
+                    });
+                    
+                    uiManager.updateAll();
                 });
-                this.classList.add('active');
-                chartManager.changeChartPeriod(365);
-            });
+                
+                // Touch feedback
+                revenueMonthBtn.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+            }
+            
+            if (revenueYearBtn) {
+                revenueYearBtn.addEventListener('click', function() {
+                    document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    chartManager.changeChartPeriod(365, 'year');
+                    
+                    // Add activity
+                    dashboardManager.addActivity({
+                        type: 'info',
+                        title: 'Diagramm aktualisiert',
+                        description: 'Umsatzdiagramm auf Jahresansicht geändert.'
+                    });
+                    
+                    uiManager.updateAll();
+                });
+                
+                // Touch feedback
+                revenueYearBtn.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+            }
             
             // Refresh activities
-            document.getElementById('refresh-activities').addEventListener('click', function() {
-                uiManager.updateAll();
-                showNotification('Aktivitäten aktualisiert', 'success');
-            });
+            const refreshActivitiesBtn = document.getElementById('refresh-activities');
+            if (refreshActivitiesBtn) {
+                refreshActivitiesBtn.addEventListener('click', function() {
+                    // Add rotation animation
+                    this.style.transform = 'rotate(180deg)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 300);
+                    
+                    dashboardManager.updateAllData();
+                    uiManager.updateAll();
+                    showNotification('Aktivitäten aktualisiert', 'success');
+                });
+                
+                // Touch feedback
+                refreshActivitiesBtn.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.backgroundColor = 'var(--color-bg-secondary)';
+                    }
+                }, { passive: true });
+            }
             
             // Refresh alerts
-            document.getElementById('refresh-alerts').addEventListener('click', function() {
-                uiManager.updateAll();
-                showNotification('Warnungen aktualisiert', 'success');
-            });
+            const refreshAlertsBtn = document.getElementById('refresh-alerts');
+            if (refreshAlertsBtn) {
+                refreshAlertsBtn.addEventListener('click', function() {
+                    // Add rotation animation
+                    this.style.transform = 'rotate(180deg)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 300);
+                    
+                    dashboardManager.updateAllData();
+                    uiManager.updateAll();
+                    showNotification('Warnungen aktualisiert', 'success');
+                });
+                
+                // Touch feedback
+                refreshAlertsBtn.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.backgroundColor = 'var(--color-bg-secondary)';
+                    }
+                }, { passive: true });
+            }
+            
+            // Mobile refresh button
+            const mobileRefreshBtn = document.getElementById('mobile-refresh');
+            if (mobileRefreshBtn) {
+                mobileRefreshBtn.addEventListener('click', function() {
+                    dashboardManager.triggerRefresh();
+                });
+            }
+            
+            // AI help button in welcome card
+            const aiHelpBtn = document.getElementById('ai-help-btn');
+            if (aiHelpBtn) {
+                aiHelpBtn.addEventListener('click', function() {
+                    document.getElementById('ai-assistant').classList.add('active');
+                    document.getElementById('ai-input').focus();
+                });
+            }
+            
+            // AI quick help button
+            const aiQuickHelpBtn = document.getElementById('ai-quick-help');
+            if (aiQuickHelpBtn) {
+                aiQuickHelpBtn.addEventListener('click', function() {
+                    document.getElementById('ai-assistant').classList.add('active');
+                    document.getElementById('ai-input').focus();
+                    
+                    // Add a quick help question
+                    setTimeout(() => {
+                        const input = document.getElementById('ai-input');
+                        input.value = 'Was sind meine Top-Produkte?';
+                        document.getElementById('ai-send').click();
+                    }, 100);
+                });
+            }
+            
+            // AI analyze products button
+            const aiAnalyzeProductsBtn = document.getElementById('ai-analyze-products');
+            if (aiAnalyzeProductsBtn) {
+                aiAnalyzeProductsBtn.addEventListener('click', function() {
+                    const analysis = dashboardManager.generateProductAnalysis();
+                    uiManager.showAIAnalysisModal(analysis, false);
+                });
+            }
+            
+            // AI suggest goals button
+            const aiSuggestGoalsBtn = document.getElementById('ai-suggest-goals');
+            if (aiSuggestGoalsBtn) {
+                aiSuggestGoalsBtn.addEventListener('click', function() {
+                    const suggestions = dashboardManager.generateAISuggestedGoals();
+                    
+                    let analysis = `# KI-Zielvorschläge\n\n`;
+                    analysis += `Basierend auf Ihren aktuellen Verkaufsdaten schlage ich folgende Ziele vor:\n\n`;
+                    
+                    suggestions.forEach((suggestion, index) => {
+                        analysis += `## Vorschlag ${index + 1}: ${suggestion.title}\n`;
+                        analysis += `- **Typ**: ${suggestion.type === 'revenue' ? 'Umsatz' : suggestion.type === 'customers' ? 'Kunden' : 'Produkte'}\n`;
+                        analysis += `- **Zielwert**: ${suggestion.target} ${suggestion.type === 'revenue' ? '€' : ''}\n`;
+                        analysis += `- **Begründung**: ${suggestion.reason}\n`;
+                        analysis += `- **Frist**: ${new Date(suggestion.deadline).toLocaleDateString('de-DE')}\n\n`;
+                    });
+                    
+                    analysis += `Möchten Sie eines dieser Ziele übernehmen?`;
+                    
+                    uiManager.showAIAnalysisModal(analysis, true);
+                });
+            }
+            
+            // AI restock suggestions button
+            const aiRestockBtn = document.getElementById('ai-restock-suggestions');
+            if (aiRestockBtn) {
+                aiRestockBtn.addEventListener('click', function() {
+                    const restockData = dashboardManager.generateRestockSuggestions();
+                    
+                    let analysis = `# KI-Nachbestellvorschläge\n\n`;
+                    
+                    if (!restockData.hasSuggestions) {
+                        analysis += restockData.message;
+                    } else {
+                        analysis += `${restockData.message}\n\n`;
+                        analysis += `## Detailierte Vorschläge:\n\n`;
+                        
+                        restockData.suggestions.forEach((suggestion, index) => {
+                            analysis += `### ${index + 1}. ${suggestion.product.name}\n`;
+                            analysis += `- **Aktueller Bestand**: ${suggestion.currentStock}\n`;
+                            analysis += `- **Empfohlene Menge**: ${suggestion.suggestedQuantity}\n`;
+                            analysis += `- **Dringlichkeit**: ${suggestion.urgency}\n`;
+                            analysis += `- **Geschätzte Kosten**: €${suggestion.estimatedCost.toFixed(2)}\n\n`;
+                        });
+                        
+                        analysis += `## Zusammenfassung\n`;
+                        analysis += `- **Gesamtkosten**: €${restockData.totalCost.toFixed(2)}\n`;
+                        analysis += `- **Anzahl Produkte**: ${restockData.suggestions.length}\n`;
+                        analysis += `- **Dringlichkeit**: ${restockData.suggestions.some(s => s.urgency === 'Hoch') ? 'Hoch - sofort handeln' : 'Mittel - bald nachbestellen'}\n`;
+                    }
+                    
+                    uiManager.showAIAnalysisModal(analysis, false);
+                });
+            }
             
             // Add goal button
-            document.getElementById('add-goal-btn').addEventListener('click', function() {
-                document.getElementById('goal-modal-title').textContent = 'Ziel hinzufügen';
-                document.getElementById('goal-title').value = '';
-                document.getElementById('goal-type').value = 'revenue';
-                document.getElementById('goal-target').value = '';
+            const addGoalBtn = document.getElementById('add-goal-btn');
+            if (addGoalBtn) {
+                addGoalBtn.addEventListener('click', function() {
+                    document.getElementById('goal-modal-title').textContent = 'Ziel hinzufügen';
+                    document.getElementById('goal-title').value = '';
+                    document.getElementById('goal-type').value = 'revenue';
+                    document.getElementById('goal-target').value = '';
+                    
+                    // Remove any existing goal ID from save button
+                    document.getElementById('save-goal').removeAttribute('data-goal-id');
+                    
+                    // Set default deadline to end of current month
+                    const currentDate = new Date();
+                    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+                    document.getElementById('goal-deadline').value = lastDay.toISOString().split('T')[0];
+                    
+                    document.getElementById('goal-modal').classList.add('active');
+                });
                 
-                // Set default deadline to end of current month
-                const currentDate = new Date();
-                const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-                document.getElementById('goal-deadline').value = lastDay.toISOString().split('T')[0];
-                
-                document.getElementById('goal-modal').classList.add('active');
-            });
+                // Touch feedback
+                addGoalBtn.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+            }
             
             // Save goal
-            document.getElementById('save-goal').addEventListener('click', function() {
-                const title = document.getElementById('goal-title').value.trim();
-                const type = document.getElementById('goal-type').value;
-                const target = parseFloat(document.getElementById('goal-target').value);
-                const deadline = document.getElementById('goal-deadline').value;
-                
-                if (!title || !target || !deadline) {
-                    alert('Bitte füllen Sie alle Felder aus.');
-                    return;
-                }
-                
-                const goal = {
-                    title,
-                    type,
-                    target,
-                    deadline
-                };
-                
-                dashboardManager.addGoal(goal);
-                uiManager.updateAll();
-                document.getElementById('goal-modal').classList.remove('active');
-                showNotification('Ziel erfolgreich hinzugefügt', 'success');
-            });
+            const saveGoalBtn = document.getElementById('save-goal');
+            if (saveGoalBtn) {
+                saveGoalBtn.addEventListener('click', function() {
+                    const goalId = this.getAttribute('data-goal-id');
+                    const title = document.getElementById('goal-title').value.trim();
+                    const type = document.getElementById('goal-type').value;
+                    const target = parseFloat(document.getElementById('goal-target').value);
+                    const deadline = document.getElementById('goal-deadline').value;
+                    
+                    if (!title || !target || !deadline || target <= 0) {
+                        showNotification('Bitte füllen Sie alle Felder korrekt aus.', 'error');
+                        return;
+                    }
+                    
+                    if (goalId) {
+                        // Update existing goal
+                        const success = dashboardManager.updateGoal(goalId, { title, type, target, deadline });
+                        if (success) {
+                            uiManager.updateAll();
+                            document.getElementById('goal-modal').classList.remove('active');
+                            showNotification('Ziel erfolgreich aktualisiert', 'success');
+                            this.removeAttribute('data-goal-id');
+                        }
+                    } else {
+                        // Add new goal
+                        const goal = {
+                            title,
+                            type,
+                            target,
+                            deadline
+                        };
+                        
+                        dashboardManager.addGoal(goal);
+                        uiManager.updateAll();
+                        document.getElementById('goal-modal').classList.remove('active');
+                        showNotification('Ziel erfolgreich hinzugefügt', 'success');
+                    }
+                });
+            }
             
             // Cancel goal
-            document.getElementById('cancel-goal').addEventListener('click', function() {
-                document.getElementById('goal-modal').classList.remove('active');
-            });
+            const cancelGoalBtn = document.getElementById('cancel-goal');
+            if (cancelGoalBtn) {
+                cancelGoalBtn.addEventListener('click', function() {
+                    document.getElementById('goal-modal').classList.remove('active');
+                });
+            }
             
             // Close goal modal
-            document.getElementById('close-goal-modal').addEventListener('click', function() {
-                document.getElementById('goal-modal').classList.remove('active');
-            });
+            const closeGoalModalBtn = document.getElementById('close-goal-modal');
+            if (closeGoalModalBtn) {
+                closeGoalModalBtn.addEventListener('click', function() {
+                    document.getElementById('goal-modal').classList.remove('active');
+                });
+            }
             
             // Goal actions (edit/delete) - event delegation
             document.addEventListener('click', function(e) {
@@ -2912,8 +4462,10 @@
                 
                 if (e.target.closest('.goal-btn.delete')) {
                     const goalId = e.target.closest('.goal-btn.delete').getAttribute('data-goal-id');
+                    const goals = dashboardManager.getGoals();
+                    const goal = goals.find(g => g.id === goalId);
                     
-                    if (confirm('Möchten Sie dieses Ziel wirklich löschen?')) {
+                    if (goal && confirm(`Möchten Sie das Ziel "${goal.title}" wirklich löschen?`)) {
                         dashboardManager.deleteGoal(goalId);
                         uiManager.updateAll();
                         showNotification('Ziel gelöscht', 'success');
@@ -2921,150 +4473,227 @@
                 }
             });
             
-            // Update save goal button for editing
-            document.getElementById('save-goal').addEventListener('click', function() {
-                const goalId = this.getAttribute('data-goal-id');
-                
-                if (goalId) {
-                    // Update existing goal
-                    const title = document.getElementById('goal-title').value.trim();
-                    const type = document.getElementById('goal-type').value;
-                    const target = parseFloat(document.getElementById('goal-target').value);
-                    const deadline = document.getElementById('goal-deadline').value;
+            // Apply analysis button
+            const applyAnalysisBtn = document.getElementById('apply-analysis-btn');
+            if (applyAnalysisBtn) {
+                applyAnalysisBtn.addEventListener('click', function() {
+                    // This would apply AI suggestions
+                    // For now, just show a message
+                    showNotification('KI-Vorschläge wurden übernommen', 'success');
+                    document.getElementById('ai-analysis-modal').classList.remove('active');
+                });
+            }
+            
+            // Close analysis modal
+            const closeAnalysisBtn = document.getElementById('close-analysis-btn');
+            const closeAiAnalysisModalBtn = document.getElementById('close-ai-analysis-modal');
+            
+            if (closeAnalysisBtn) {
+                closeAnalysisBtn.addEventListener('click', function() {
+                    document.getElementById('ai-analysis-modal').classList.remove('active');
+                });
+            }
+            
+            if (closeAiAnalysisModalBtn) {
+                closeAiAnalysisModalBtn.addEventListener('click', function() {
+                    document.getElementById('ai-analysis-modal').classList.remove('active');
+                });
+            }
+            
+            // Quick sale button
+            const quickSaleBtn = document.getElementById('quick-sale-btn');
+            if (quickSaleBtn) {
+                quickSaleBtn.addEventListener('click', function() {
+                    document.getElementById('quick-sale-modal').classList.add('active');
+                    // Focus on first input
+                    setTimeout(() => {
+                        document.getElementById('sale-product').focus();
+                    }, 100);
+                });
+            }
+            
+            // Complete quick sale
+            const completeQuickSaleBtn = document.getElementById('complete-quick-sale');
+            if (completeQuickSaleBtn) {
+                completeQuickSaleBtn.addEventListener('click', function() {
+                    const productId = document.getElementById('sale-product').value;
+                    const quantity = parseInt(document.getElementById('sale-quantity').value);
+                    const price = parseFloat(document.getElementById('sale-price').value);
+                    const customer = document.getElementById('sale-customer').value.trim();
                     
-                    if (!title || !target || !deadline) {
-                        alert('Bitte füllen Sie alle Felder aus.');
+                    if (!productId || !quantity || !price || quantity <= 0 || price <= 0) {
+                        showNotification('Bitte füllen Sie alle erforderlichen Felder korrekt aus.', 'error');
                         return;
                     }
                     
-                    dashboardManager.updateGoal(goalId, { title, type, target, deadline });
-                    uiManager.updateAll();
-                    document.getElementById('goal-modal').classList.remove('active');
-                    showNotification('Ziel erfolgreich aktualisiert', 'success');
+                    const result = dashboardManager.processQuickSale({
+                        productId,
+                        quantity,
+                        price,
+                        customer
+                    });
                     
-                    // Reset the data attribute
-                    this.removeAttribute('data-goal-id');
-                }
-            });
-            
-            // Quick sale button
-            document.getElementById('quick-sale-btn').addEventListener('click', function() {
-                document.getElementById('quick-sale-modal').classList.add('active');
-            });
-            
-            // Complete quick sale
-            document.getElementById('complete-quick-sale').addEventListener('click', function() {
-                const productId = document.getElementById('sale-product').value;
-                const quantity = parseInt(document.getElementById('sale-quantity').value);
-                const price = parseFloat(document.getElementById('sale-price').value);
-                const customer = document.getElementById('sale-customer').value.trim();
-                
-                if (!productId || !quantity || !price) {
-                    alert('Bitte füllen Sie alle erforderlichen Felder aus.');
-                    return;
-                }
-                
-                const success = dashboardManager.processQuickSale({
-                    productId,
-                    quantity,
-                    price,
-                    customer
+                    if (result.success) {
+                        uiManager.updateAll();
+                        document.getElementById('quick-sale-modal').classList.remove('active');
+                        showNotification(result.message, 'success');
+                        
+                        // Reset form
+                        document.getElementById('sale-quantity').value = 1;
+                        document.getElementById('sale-customer').value = '';
+                    } else {
+                        showNotification(result.message, 'error');
+                    }
                 });
-                
-                if (success) {
-                    uiManager.updateAll();
-                    document.getElementById('quick-sale-modal').classList.remove('active');
-                    showNotification('Verkauf erfolgreich abgeschlossen', 'success');
-                    
-                    // Reset form
-                    document.getElementById('sale-quantity').value = 1;
-                    document.getElementById('sale-customer').value = '';
-                } else {
-                    showNotification('Fehler beim Verkauf', 'error');
-                }
-            });
+            }
             
             // Cancel quick sale
-            document.getElementById('cancel-quick-sale').addEventListener('click', function() {
-                document.getElementById('quick-sale-modal').classList.remove('active');
-            });
+            const cancelQuickSaleBtn = document.getElementById('cancel-quick-sale');
+            if (cancelQuickSaleBtn) {
+                cancelQuickSaleBtn.addEventListener('click', function() {
+                    document.getElementById('quick-sale-modal').classList.remove('active');
+                });
+            }
             
             // Close quick sale modal
-            document.getElementById('close-quick-sale-modal').addEventListener('click', function() {
-                document.getElementById('quick-sale-modal').classList.remove('active');
-            });
+            const closeQuickSaleModalBtn = document.getElementById('close-quick-sale-modal');
+            if (closeQuickSaleModalBtn) {
+                closeQuickSaleModalBtn.addEventListener('click', function() {
+                    document.getElementById('quick-sale-modal').classList.remove('active');
+                });
+            }
             
             // Backup data button
-            document.getElementById('backup-data-btn').addEventListener('click', function() {
-                // Create a backup of important data
-                const receipts = dashboardManager.getReceipts();
-                const products = dashboardManager.getProducts();
-                const goals = dashboardManager.getGoals();
-                
-                const backupData = {
-                    receipts,
-                    products: Object.values(products),
-                    goals,
-                    backupDate: new Date().toISOString()
-                };
-                
-                const dataStr = JSON.stringify(backupData, null, 2);
-                const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-                
-                const exportFileDefaultName = `gittertier_backup_${new Date().toISOString().split('T')[0]}.json`;
-                
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', dataUri);
-                linkElement.setAttribute('download', exportFileDefaultName);
-                linkElement.click();
-                
-                // Add activity
-                dashboardManager.addActivity({
-                    type: 'success',
-                    title: 'Backup erstellt',
-                    description: 'Ein Backup Ihrer Daten wurde erstellt.'
+            const backupDataBtn = document.getElementById('backup-data-btn');
+            if (backupDataBtn) {
+                backupDataBtn.addEventListener('click', function() {
+                    // Create a backup of important data
+                    const receipts = dashboardManager.getReceipts();
+                    const products = dashboardManager.getProducts();
+                    const goals = dashboardManager.getGoals();
+                    const activities = dashboardManager.getActivities();
+                    
+                    const backupData = {
+                        receipts,
+                        products: Object.values(products),
+                        goals,
+                        activities,
+                        backupDate: new Date().toISOString(),
+                        version: '1.0'
+                    };
+                    
+                    const dataStr = JSON.stringify(backupData, null, 2);
+                    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                    
+                    const exportFileDefaultName = `gittertier_backup_${new Date().toISOString().split('T')[0]}.json`;
+                    
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', exportFileDefaultName);
+                    linkElement.click();
+                    
+                    // Add activity
+                    dashboardManager.addActivity({
+                        type: 'success',
+                        title: 'Backup erstellt',
+                        description: 'Ein Backup Ihrer Daten wurde erstellt.'
+                    });
+                    
+                    uiManager.updateAll();
+                    showNotification('Backup erfolgreich erstellt', 'success');
                 });
                 
-                uiManager.updateAll();
-                showNotification('Backup erfolgreich erstellt', 'success');
-            });
+                // Touch feedback
+                backupDataBtn.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+            }
             
             // AI Assistant toggle
-            document.getElementById('ai-toggle').addEventListener('click', function() {
-                document.getElementById('ai-assistant').classList.toggle('active');
-            });
+            const aiToggle = document.getElementById('ai-toggle');
+            if (aiToggle) {
+                aiToggle.addEventListener('click', function() {
+                    const aiAssistant = document.getElementById('ai-assistant');
+                    aiAssistant.classList.toggle('active');
+                    
+                    if (aiAssistant.classList.contains('active')) {
+                        document.getElementById('ai-input').focus();
+                    }
+                });
+                
+                // Touch feedback
+                aiToggle.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.95)';
+                }, { passive: true });
+            }
             
             // AI Assistant close
-            document.getElementById('ai-close').addEventListener('click', function() {
-                document.getElementById('ai-assistant').classList.remove('active');
-            });
+            const aiClose = document.getElementById('ai-close');
+            if (aiClose) {
+                aiClose.addEventListener('click', function() {
+                    document.getElementById('ai-assistant').classList.remove('active');
+                });
+                
+                // Touch feedback
+                aiClose.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                    }
+                }, { passive: true });
+            }
             
             // AI Assistant send message
-            document.getElementById('ai-send').addEventListener('click', function() {
-                const input = document.getElementById('ai-input');
-                const message = input.value.trim();
+            const aiSend = document.getElementById('ai-send');
+            if (aiSend) {
+                aiSend.addEventListener('click', function() {
+                    sendAIMessage();
+                });
                 
-                if (message) {
-                    // Add user message
-                    uiManager.addAIMessage(message, true);
-                    
-                    // Clear input
-                    input.value = '';
-                    
-                    // Get AI response
-                    const response = dashboardManager.getAIResponse(message);
-                    
-                    // Add AI response after a short delay
-                    setTimeout(() => {
-                        uiManager.addAIMessage(response);
-                    }, 500);
-                }
-            });
+                // Touch feedback
+                aiSend.addEventListener('touchstart', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+            }
             
             // AI Assistant input enter key
-            document.getElementById('ai-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    document.getElementById('ai-send').click();
+            const aiInput = document.getElementById('ai-input');
+            if (aiInput) {
+                aiInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendAIMessage();
+                    }
+                });
+                
+                // Clear placeholder on focus for mobile
+                aiInput.addEventListener('focus', function() {
+                    if (window.innerWidth <= 768) {
+                        this.setAttribute('data-placeholder', this.getAttribute('placeholder'));
+                        this.setAttribute('placeholder', '');
+                    }
+                });
+                
+                aiInput.addEventListener('blur', function() {
+                    if (window.innerWidth <= 768 && this.getAttribute('data-placeholder')) {
+                        this.setAttribute('placeholder', this.getAttribute('data-placeholder'));
+                        this.removeAttribute('data-placeholder');
+                    }
+                });
+            }
+            
+            // AI quick command buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.ai-command-btn')) {
+                    const command = e.target.closest('.ai-command-btn').getAttribute('data-command');
+                    const aiInput = document.getElementById('ai-input');
+                    
+                    if (aiInput) {
+                        aiInput.value = command;
+                        sendAIMessage();
+                    }
                 }
             });
             
@@ -3072,36 +4701,134 @@
             document.addEventListener('click', function(e) {
                 if (e.target.closest('.alert-action')) {
                     const productId = e.target.closest('.alert-action').getAttribute('data-product-id');
-                    showNotification(`Bestellung für Produkt ${productId} wurde ausgelöst`, 'success');
-                    // In a real app, this would trigger an order process
+                    const products = dashboardManager.getProducts();
+                    const product = products[productId];
+                    
+                    if (product) {
+                        // In a real app, this would trigger an order process
+                        // For now, show a confirmation
+                        if (confirm(`Möchten Sie ${product.name} nachbestellen?`)) {
+                            showNotification(`Nachbestellung für ${product.name} wurde ausgelöst`, 'success');
+                            
+                            // Add activity
+                            dashboardManager.addActivity({
+                                type: 'info',
+                                title: 'Nachbestellung ausgelöst',
+                                description: `${product.name} wurde zur Nachbestellung markiert.`
+                            });
+                            
+                            uiManager.updateAll();
+                        }
+                    }
                 }
             });
             
             // Other quick action buttons
-            document.getElementById('add-product-btn').addEventListener('click', function() {
-                window.location.href = 'products';
+            const addProductBtn = document.getElementById('add-product-btn');
+            if (addProductBtn) {
+                addProductBtn.addEventListener('click', function() {
+                    window.location.href = 'products';
+                });
+            }
+            
+            const viewReportsBtn = document.getElementById('view-reports-btn');
+            if (viewReportsBtn) {
+                viewReportsBtn.addEventListener('click', function() {
+                    window.location.href = 'analytics';
+                });
+            }
+            
+            // Export products button
+            const exportProductsBtn = document.getElementById('export-products');
+            if (exportProductsBtn) {
+                exportProductsBtn.addEventListener('click', function() {
+                    const products = dashboardManager.getProductPerformance();
+                    const dataStr = JSON.stringify(products, null, 2);
+                    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                    
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', `produkt_performance_${new Date().toISOString().split('T')[0]}.json`);
+                    linkElement.click();
+                    
+                    showNotification('Produktdaten exportiert', 'success');
+                });
+            }
+            
+            // Window resize handler for responsive updates
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    uiManager.updateAll();
+                    chartManager.updateCharts();
+                }, 250);
             });
             
-            document.getElementById('view-reports-btn').addEventListener('click', function() {
-                window.location.href = 'analytics';
-            });
+            // Prevent zoom on double-tap for mobile
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        }
+
+        // Send AI message
+        function sendAIMessage() {
+            const input = document.getElementById('ai-input');
+            const sendBtn = document.getElementById('ai-send');
+            const message = input.value.trim();
+            
+            if (message && !sendBtn.disabled) {
+                // Disable send button while processing
+                sendBtn.disabled = true;
+                
+                // Add user message
+                uiManager.addAIMessage(message, true);
+                
+                // Clear input
+                input.value = '';
+                
+                // Show typing indicator
+                const typingIndicator = uiManager.showTypingIndicator();
+                
+                // Get AI response after a short delay
+                setTimeout(() => {
+                    const response = dashboardManager.getAIResponse(message);
+                    uiManager.hideTypingIndicator();
+                    uiManager.addAIMessage(response);
+                    
+                    // Re-enable send button
+                    sendBtn.disabled = false;
+                    input.focus();
+                }, 1000 + Math.random() * 1000); // Random delay for natural feel
+            }
         }
 
         // Time display function
         function updateTime() {
             const now = new Date();
-            const timeString = now.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            const dateString = now.toLocaleDateString('de-DE', {
-                weekday: 'long',
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-            });
-            document.getElementById('timeDisplay').textContent = `${dateString}, ${timeString}`;
+            const timeDisplay = document.getElementById('timeDisplay');
+            
+            if (timeDisplay) {
+                const timeString = now.toLocaleTimeString('de-DE', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: window.innerWidth <= 768 ? undefined : '2-digit'
+                });
+                const dateString = now.toLocaleDateString('de-DE', {
+                    weekday: window.innerWidth <= 768 ? 'short' : 'long',
+                    day: '2-digit',
+                    month: window.innerWidth <= 768 ? 'short' : 'long',
+                    year: window.innerWidth <= 768 ? undefined : 'numeric'
+                });
+                timeDisplay.textContent = window.innerWidth <= 768 ? 
+                    `${dateString}, ${timeString}` : 
+                    `${dateString}, ${timeString}`;
+            }
         }
 
         // Show notification function
@@ -3126,8 +4853,11 @@
                         font-weight: 500;
                         z-index: 10000;
                         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                        transform: translateX(100%);
+                        transform: translateX(calc(100% + 20px));
                         transition: transform 0.3s ease;
+                        max-width: calc(100vw - 40px);
+                        word-break: break-word;
+                        line-height: 1.4;
                     }
                     .notification-toast.success {
                         background-color: var(--color-success);
@@ -3144,6 +4874,18 @@
                     .notification-toast.show {
                         transform: translateX(0);
                     }
+                    @media (max-width: 768px) {
+                        .notification-toast {
+                            top: 10px;
+                            right: 10px;
+                            left: 10px;
+                            max-width: none;
+                            transform: translateY(-100px);
+                        }
+                        .notification-toast.show {
+                            transform: translateY(0);
+                        }
+                    }
                 `;
                 document.head.appendChild(style);
             }
@@ -3151,13 +4893,23 @@
             notification.textContent = message;
             notification.className = 'notification-toast';
             if (type) notification.classList.add(type);
+            
+            // Remove any existing show class
+            notification.classList.remove('show');
+            
+            // Trigger reflow
+            void notification.offsetWidth;
+            
+            // Add show class
             notification.classList.add('show');
             
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => {
-                    notification.textContent = '';
-                    notification.className = 'notification-toast';
+                    if (notification.textContent === message) {
+                        notification.textContent = '';
+                        notification.className = 'notification-toast';
+                    }
                 }, 300);
             }, 3000);
         }
