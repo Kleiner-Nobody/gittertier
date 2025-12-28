@@ -1706,6 +1706,72 @@
             bottom: calc(80px + env(safe-area-inset-bottom));
         }
     }
+
+    /* AI Badge for AI-suggested goals */
+    .ai-badge {
+        background-color: var(--color-ai-primary);
+        color: white;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+
+    /* Notification toast styles (added for showNotification function) */
+    .notification-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateX(calc(100% + 20px));
+        transition: transform 0.3s ease;
+        max-width: calc(100vw - 40px);
+        word-break: break-word;
+        line-height: 1.4;
+    }
+    .notification-toast.success {
+        background-color: var(--color-success);
+    }
+    .notification-toast.error {
+        background-color: var(--color-error);
+    }
+    .notification-toast.info {
+        background-color: var(--color-info);
+    }
+    .notification-toast.warning {
+        background-color: var(--color-warning);
+    }
+    .notification-toast.show {
+        transform: translateX(0);
+    }
+    @media (max-width: 768px) {
+        .notification-toast {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+            transform: translateY(-100px);
+        }
+        .notification-toast.show {
+            transform: translateY(0);
+        }
+    }
+
+    /* Mobile view indicator */
+    .mobile-view body {
+        font-size: 16px; /* Prevent iOS zoom on focus */
+    }
+    .mobile-view input,
+    .mobile-view select,
+    .mobile-view textarea {
+        font-size: 16px; /* Prevent iOS zoom on focus */
+    }
     </style>
 </head>
 <body>
@@ -2300,26 +2366,35 @@
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     
-                    if (key.startsWith('product_')) {
+                    if (key && key.startsWith('product_')) {
                         try {
                             const item = localStorage.getItem(key);
-                            const parsed = JSON.parse(item);
-                            
-                            // Check if it's compressed
-                            if (parsed && parsed.data && typeof parsed.data === 'string') {
-                                try {
-                                    const decompressed = LZString.decompressFromBase64(parsed.data);
-                                    if (decompressed) {
-                                        products[parsed.barcode] = JSON.parse(decompressed);
+                            if (item) {
+                                const parsed = JSON.parse(item);
+                                
+                                // Check if it's compressed
+                                if (parsed && parsed.data && typeof parsed.data === 'string') {
+                                    try {
+                                        const decompressed = LZString.decompressFromBase64(parsed.data);
+                                        if (decompressed) {
+                                            const productData = JSON.parse(decompressed);
+                                            if (productData && productData.barcode) {
+                                                products[productData.barcode] = productData;
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.error('Failed to decompress product data', e);
+                                        // Fallback to regular data
+                                        if (parsed.barcode) {
+                                            products[parsed.barcode] = parsed;
+                                        }
                                     }
-                                } catch (e) {
-                                    console.error('Failed to decompress product data', e);
+                                } else if (parsed && parsed.barcode) {
+                                    products[parsed.barcode] = parsed;
                                 }
-                            } else if (parsed) {
-                                products[parsed.barcode] = parsed;
                             }
                         } catch (e) {
-                            // Not JSON, skip
+                            console.error('Error parsing product data for key', key, e);
                         }
                     }
                 }
@@ -2519,11 +2594,11 @@
                 });
                 
                 // Calculate totals
-                const todayRevenue = todayReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
-                const yesterdayRevenue = yesterdayReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
-                const thisWeekRevenue = thisWeekReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
-                const thisMonthRevenue = thisMonthReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
-                const lastMonthRevenue = lastMonthReceipts.reduce((sum, receipt) => sum + receipt.amount, 0);
+                const todayRevenue = todayReceipts.reduce((sum, receipt) => sum + (receipt.amount || 0), 0);
+                const yesterdayRevenue = yesterdayReceipts.reduce((sum, receipt) => sum + (receipt.amount || 0), 0);
+                const thisWeekRevenue = thisWeekReceipts.reduce((sum, receipt) => sum + (receipt.amount || 0), 0);
+                const thisMonthRevenue = thisMonthReceipts.reduce((sum, receipt) => sum + (receipt.amount || 0), 0);
+                const lastMonthRevenue = lastMonthReceipts.reduce((sum, receipt) => sum + (receipt.amount || 0), 0);
                 
                 const todayTransactions = todayReceipts.length;
                 const yesterdayTransactions = yesterdayReceipts.length;
@@ -2546,14 +2621,14 @@
                 const lastMonthAvgOrder = lastMonthTransactions > 0 ? lastMonthRevenue / lastMonthTransactions : 0;
                 
                 // Calculate changes
-                const revenueChange = yesterdayRevenue > 0 ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100 : 0;
-                const transactionsChange = yesterdayTransactions > 0 ? ((todayTransactions - yesterdayTransactions) / yesterdayTransactions) * 100 : 0;
-                const customersChange = yesterdayCustomers > 0 ? ((todayCustomers - yesterdayCustomers) / yesterdayCustomers) * 100 : 0;
-                const avgOrderChange = yesterdayAvgOrder > 0 ? ((todayAvgOrder - yesterdayAvgOrder) / yesterdayAvgOrder) * 100 : 0;
+                const revenueChange = yesterdayRevenue > 0 ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100 : (todayRevenue > 0 ? 100 : 0);
+                const transactionsChange = yesterdayTransactions > 0 ? ((todayTransactions - yesterdayTransactions) / yesterdayTransactions) * 100 : (todayTransactions > 0 ? 100 : 0);
+                const customersChange = yesterdayCustomers > 0 ? ((todayCustomers - yesterdayCustomers) / yesterdayCustomers) * 100 : (todayCustomers > 0 ? 100 : 0);
+                const avgOrderChange = yesterdayAvgOrder > 0 ? ((todayAvgOrder - yesterdayAvgOrder) / yesterdayAvgOrder) * 100 : (todayAvgOrder > 0 ? 100 : 0);
                 
                 // Monthly comparison
-                const monthlyRevenueChange = lastMonthRevenue > 0 ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
-                const monthlyTransactionsChange = lastMonthTransactions > 0 ? ((thisMonthTransactions - lastMonthTransactions) / lastMonthTransactions) * 100 : 0;
+                const monthlyRevenueChange = lastMonthRevenue > 0 ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : (thisMonthRevenue > 0 ? 100 : 0);
+                const monthlyTransactionsChange = lastMonthTransactions > 0 ? ((thisMonthTransactions - lastMonthTransactions) / lastMonthTransactions) * 100 : (thisMonthTransactions > 0 ? 100 : 0);
                 
                 return {
                     today: {
@@ -2607,11 +2682,13 @@
                 
                 // Fill with actual revenue data
                 receipts.forEach(receipt => {
-                    const receiptDate = new Date(receipt.date);
-                    const dateString = receiptDate.toISOString().split('T')[0];
-                    
-                    if (revenueByDay.hasOwnProperty(dateString)) {
-                        revenueByDay[dateString] += receipt.amount;
+                    if (receipt && receipt.date) {
+                        const receiptDate = new Date(receipt.date);
+                        const dateString = receiptDate.toISOString().split('T')[0];
+                        
+                        if (revenueByDay.hasOwnProperty(dateString)) {
+                            revenueByDay[dateString] += (receipt.amount || 0);
+                        }
                     }
                 });
                 
@@ -2634,20 +2711,22 @@
                 const productSales = {};
                 
                 receipts.forEach(receipt => {
-                    if (receipt.items) {
+                    if (receipt && receipt.items) {
                         receipt.items.forEach(item => {
-                            const productId = item.barcode || item.name;
-                            if (!productSales[productId]) {
-                                productSales[productId] = {
-                                    name: item.name,
-                                    revenue: 0,
-                                    quantity: 0,
-                                    price: item.price,
-                                    barcode: item.barcode
-                                };
+                            if (item) {
+                                const productId = item.barcode || item.name;
+                                if (!productSales[productId]) {
+                                    productSales[productId] = {
+                                        name: item.name || 'Unbekanntes Produkt',
+                                        revenue: 0,
+                                        quantity: 0,
+                                        price: item.price || 0,
+                                        barcode: item.barcode
+                                    };
+                                }
+                                productSales[productId].revenue += (item.quantity || 0) * (item.price || 0);
+                                productSales[productId].quantity += (item.quantity || 0);
                             }
-                            productSales[productId].revenue += item.quantity * item.price;
-                            productSales[productId].quantity += item.quantity;
                         });
                     }
                 });
@@ -2665,20 +2744,20 @@
                 const criticalStockThreshold = 3;
                 
                 Object.values(products).forEach(product => {
-                    if (product.stock !== undefined) {
+                    if (product && product.stock !== undefined && product.stock !== null) {
                         if (product.stock <= criticalStockThreshold) {
                             alerts.push({
-                                id: `alert-critical-${product.barcode}`,
+                                id: `alert-critical-${product.barcode || product.name}`,
                                 title: 'Kritischer Lagerbestand',
-                                description: `${product.name} hat nur noch ${product.stock} Einheiten auf Lager.`,
+                                description: `${product.name || 'Unbekanntes Produkt'} hat nur noch ${product.stock} Einheiten auf Lager.`,
                                 product: product,
                                 severity: 'critical'
                             });
                         } else if (product.stock <= lowStockThreshold) {
                             alerts.push({
-                                id: `alert-low-${product.barcode}`,
+                                id: `alert-low-${product.barcode || product.name}`,
                                 title: 'Niedriger Lagerbestand',
-                                description: `${product.name} hat nur noch ${product.stock} Einheiten auf Lager.`,
+                                description: `${product.name || 'Unbekanntes Produkt'} hat nur noch ${product.stock} Einheiten auf Lager.`,
                                 product: product,
                                 severity: 'warning'
                             });
@@ -2788,7 +2867,7 @@
                 }
                 
                 // Check stock if available
-                if (product.stock !== undefined && product.stock < quantity) {
+                if (product.stock !== undefined && product.stock !== null && product.stock < quantity) {
                     return {
                         success: false,
                         message: `Nicht genügend Lagerbestand. Verfügbar: ${product.stock}`
@@ -2828,7 +2907,7 @@
                 }
                 
                 // Update product stock if product exists and has stock
-                if (product.stock !== undefined) {
+                if (product.stock !== undefined && product.stock !== null) {
                     product.stock -= quantity;
                     
                     // Update product in localStorage
@@ -2844,8 +2923,11 @@
                 addActivity({
                     type: 'success',
                     title: 'Schnellverkauf abgeschlossen',
-                    description: `${quantity}x ${product.name} für €${(quantity * price).toFixed(2)} verkauft.`
+                    description: `${quantity}x ${product.name || 'Produkt'} für €${(quantity * price).toFixed(2)} verkauft.`
                 });
+                
+                // Update goal progress
+                updateGoalProgress();
                 
                 return {
                     success: true,
@@ -2872,9 +2954,9 @@
                             // Count unique products sold this month
                             const productSet = new Set();
                             receipts.forEach(receipt => {
-                                if (receipt.items && new Date(receipt.date) >= new Date(new Date().getFullYear(), new Date().getMonth(), 1)) {
+                                if (receipt && receipt.items && new Date(receipt.date) >= new Date(new Date().getFullYear(), new Date().getMonth(), 1)) {
                                     receipt.items.forEach(item => {
-                                        if (item.barcode) productSet.add(item.barcode);
+                                        if (item && item.barcode) productSet.add(item.barcode);
                                     });
                                 }
                             });
@@ -2919,7 +3001,7 @@
                     return response;
                 } else if (lowerMessage.includes('verkäufe') || lowerMessage.includes('transaktionen') || lowerMessage.includes('verkauf')) {
                     const stats = getSalesStats();
-                    const response = `Sie hatten heute ${stats.today.transactions} Verkäufe. Dieser Monat sind es bereits ${stats.thisMonth.transactions} Transaktionen. Das entspricht ${stats.today.avgOrder.toFixed(2)}€ durchschnittlichem Bestellwert.`;
+                    const response = `Sie hatten heute ${stats.today.transactions} Verkäufe. Dieser Monat sind es bereits ${stats.thisMonth.transactions} Transaktionen. Das entspricht €${stats.today.avgOrder.toFixed(2)} durchschnittlichem Bestellwert.`;
                     aiContext.push({
                         role: 'assistant',
                         content: response,
@@ -3065,7 +3147,8 @@ Möchten Sie detaillierte Empfehlungen?`;
                 } else if (lowerMessage.includes('schnellverkauf') || lowerMessage.includes('verkauf starten') || lowerMessage.includes('schnell kaufen')) {
                     // This would trigger the quick sale modal
                     setTimeout(() => {
-                        document.getElementById('quick-sale-btn').click();
+                        const btn = document.getElementById('quick-sale-btn');
+                        if (btn) btn.click();
                     }, 100);
                     
                     const response = 'Öffne das Schnellverkaufs-Formular für Sie...';
@@ -3079,7 +3162,8 @@ Möchten Sie detaillierte Empfehlungen?`;
                 } else if (lowerMessage.includes('ziel hinzufügen') || lowerMessage.includes('neues ziel') || lowerMessage.includes('ziel setzen')) {
                     // This would trigger the goal modal
                     setTimeout(() => {
-                        document.getElementById('add-goal-btn').click();
+                        const btn = document.getElementById('add-goal-btn');
+                        if (btn) btn.click();
                     }, 100);
                     
                     const response = 'Öffne das Ziel-Formular für Sie...';
@@ -3092,7 +3176,8 @@ Möchten Sie detaillierte Empfehlungen?`;
                     return response;
                 } else if (lowerMessage.includes('backup') || lowerMessage.includes('sicherung')) {
                     setTimeout(() => {
-                        document.getElementById('backup-data-btn').click();
+                        const btn = document.getElementById('backup-data-btn');
+                        if (btn) btn.click();
                     }, 100);
                     
                     const response = 'Starte Backup-Erstellung...';
@@ -3168,9 +3253,9 @@ Möchten Sie detaillierte Empfehlungen?`;
                 // Product diversification goal
                 const uniqueProducts = new Set();
                 receipts.forEach(receipt => {
-                    if (receipt.items) {
+                    if (receipt && receipt.items) {
                         receipt.items.forEach(item => {
-                            if (item.barcode) uniqueProducts.add(item.barcode);
+                            if (item && item.barcode) uniqueProducts.add(item.barcode);
                         });
                     }
                 });
@@ -3203,11 +3288,11 @@ Möchten Sie detaillierte Empfehlungen?`;
                 
                 analysis += `## Top 5 Produkte\n`;
                 topProducts.slice(0, 5).forEach((product, index) => {
-                    const share = (product.revenue / stats.thisMonth.revenue * 100).toFixed(1);
+                    const share = stats.thisMonth.revenue > 0 ? (product.revenue / stats.thisMonth.revenue * 100).toFixed(1) : '0.0';
                     analysis += `${index + 1}. **${product.name}**\n`;
                     analysis += `   - Umsatz: €${product.revenue.toFixed(2)} (${share}%)\n`;
                     analysis += `   - Verkauft: ${product.quantity} Einheiten\n`;
-                    analysis += `   - Ø Preis: €${product.price?.toFixed(2) || '0.00'}\n`;
+                    analysis += `   - Ø Preis: €${(product.price || 0).toFixed(2)}\n`;
                 });
                 
                 if (alerts.length > 0) {
@@ -3250,7 +3335,7 @@ Möchten Sie detaillierte Empfehlungen?`;
                 
                 const suggestions = alerts.map(alert => {
                     const product = alert.product;
-                    const suggestedQuantity = product.stock !== undefined ? Math.max(10, Math.round(product.stock * 2)) : 10;
+                    const suggestedQuantity = product.stock !== undefined && product.stock !== null ? Math.max(10, Math.round(product.stock * 2)) : 10;
                     
                     return {
                         product: product,
@@ -3261,7 +3346,7 @@ Möchten Sie detaillierte Empfehlungen?`;
                     };
                 });
                 
-                const totalCost = suggestions.reduce((sum, s) => sum + s.estimatedCost, 0);
+                const totalCost = suggestions.reduce((sum, s) => sum + (s.estimatedCost || 0), 0);
                 
                 return {
                     hasSuggestions: true,
@@ -3281,6 +3366,7 @@ Möchten Sie detaillierte Empfehlungen?`;
                 getGoals: () => goals,
                 getActivities: () => activities,
                 getProducts: () => products,
+                getReceipts: () => receipts,
                 addGoal,
                 updateGoal,
                 deleteGoal,
@@ -3643,7 +3729,7 @@ Möchten Sie detaillierte Empfehlungen?`;
                         `;
                     } else {
                         goalsList.innerHTML = goals.slice(0, 3).map(goal => {
-                            const progress = Math.min(100, (goal.current / goal.target) * 100);
+                            const progress = goal.target > 0 ? Math.min(100, (goal.current / goal.target) * 100) : 0;
                             const deadline = new Date(goal.deadline);
                             const now = new Date();
                             const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
@@ -3671,7 +3757,7 @@ Möchten Sie detaillierte Empfehlungen?`;
                 // Update goals grid (main section)
                 if (goalsGrid) {
                     goalsGrid.innerHTML = goals.map(goal => {
-                        const progress = Math.min(100, (goal.current / goal.target) * 100);
+                        const progress = goal.target > 0 ? Math.min(100, (goal.current / goal.target) * 100) : 0;
                         const deadline = new Date(goal.deadline);
                         const now = new Date();
                         const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
@@ -3743,7 +3829,7 @@ Möchten Sie detaillierte Empfehlungen?`;
                             <div class="alert-title">${alert.title}</div>
                             <div class="alert-description">${alert.description}</div>
                         </div>
-                        <button class="alert-action" data-product-id="${alert.product.barcode}" aria-label="Nachbestellung für ${alert.product.name}">
+                        <button class="alert-action" data-product-id="${alert.product.barcode || alert.product.name}" aria-label="Nachbestellung für ${alert.product.name}">
                             ${isMobile ? 'Bestellen' : 'Nachbestellen'}
                         </button>
                     </div>
@@ -3761,27 +3847,30 @@ Möchten Sie detaillierte Empfehlungen?`;
                 
                 if (productArray.length === 0) {
                     dropdown.innerHTML = '<option value="" disabled>Keine Produkte verfügbar</option>';
-                    document.getElementById('sale-price').value = '0.00';
+                    const priceInput = document.getElementById('sale-price');
+                    if (priceInput) priceInput.value = '0.00';
                     return;
                 }
                 
                 dropdown.innerHTML = productArray.map(product => `
-                    <option value="${product.barcode}">${product.name} - €${product.price?.toFixed(2) || '0.00'} (${product.stock !== undefined ? product.stock : '∞'} verfügbar)</option>
+                    <option value="${product.barcode}">${product.name || 'Unbenannt'} - €${(product.price || 0).toFixed(2)} (${product.stock !== undefined && product.stock !== null ? product.stock : '∞'} verfügbar)</option>
                 `).join('');
                 
                 // Set default price when product is selected
                 dropdown.addEventListener('change', function() {
                     const selectedProduct = products[this.value];
-                    if (selectedProduct && selectedProduct.price) {
-                        document.getElementById('sale-price').value = selectedProduct.price.toFixed(2);
+                    const priceInput = document.getElementById('sale-price');
+                    if (selectedProduct && selectedProduct.price && priceInput) {
+                        priceInput.value = selectedProduct.price.toFixed(2);
                     }
                 });
                 
                 // Set initial price if dropdown has options
                 if (dropdown.options.length > 0 && dropdown.options[0].value) {
                     const firstProduct = products[dropdown.options[0].value];
-                    if (firstProduct && firstProduct.price) {
-                        document.getElementById('sale-price').value = firstProduct.price.toFixed(2);
+                    const priceInput = document.getElementById('sale-price');
+                    if (firstProduct && firstProduct.price && priceInput) {
+                        priceInput.value = firstProduct.price.toFixed(2);
                     }
                 }
             }
@@ -3954,7 +4043,8 @@ Möchten Sie detaillierte Empfehlungen?`;
                 showTypingIndicator,
                 hideTypingIndicator,
                 showAIAnalysisModal,
-                isMobileView
+                isMobileView,
+                updateProductDropdown
             };
         })();
 
@@ -3991,18 +4081,22 @@ Möchten Sie detaillierte Empfehlungen?`;
 
         // Apply dark mode if enabled
         function applyDarkMode() {
-            const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-            if (settings.darkMode === true) {
-                document.body.classList.add('dark-mode');
-            } else if (settings.darkMode === false) {
-                document.body.classList.remove('dark-mode');
-            } else {
-                // Use system preference
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            try {
+                const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                if (settings.darkMode === true) {
                     document.body.classList.add('dark-mode');
-                } else {
+                } else if (settings.darkMode === false) {
                     document.body.classList.remove('dark-mode');
+                } else {
+                    // Use system preference
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        document.body.classList.add('dark-mode');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                    }
                 }
+            } catch (e) {
+                console.error('Error applying dark mode:', e);
             }
         }
 
@@ -4041,14 +4135,18 @@ Möchten Sie detaillierte Empfehlungen?`;
                     
                     // Swipe right to open sidebar
                     if (swipeDistance > swipeThreshold && touchStartX < 50) {
-                        document.getElementById('sidebar').classList.add('active');
-                        document.getElementById('sidebarOverlay').classList.add('active');
+                        const sidebar = document.getElementById('sidebar');
+                        const sidebarOverlay = document.getElementById('sidebarOverlay');
+                        if (sidebar) sidebar.classList.add('active');
+                        if (sidebarOverlay) sidebarOverlay.classList.add('active');
                     }
                     
                     // Swipe left to close sidebar
                     if (swipeDistance < -swipeThreshold && touchStartX > 50) {
-                        document.getElementById('sidebar').classList.remove('active');
-                        document.getElementById('sidebarOverlay').classList.remove('active');
+                        const sidebar = document.getElementById('sidebar');
+                        const sidebarOverlay = document.getElementById('sidebarOverlay');
+                        if (sidebar) sidebar.classList.remove('active');
+                        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                     }
                 }
             }
@@ -4062,12 +4160,13 @@ Möchten Sie detaillierte Empfehlungen?`;
                 hamburger.addEventListener('click', () => {
                     const sidebar = document.getElementById('sidebar');
                     const sidebarOverlay = document.getElementById('sidebarOverlay');
-                    sidebar.classList.toggle('active');
-                    sidebarOverlay.classList.toggle('active');
+                    if (sidebar) sidebar.classList.toggle('active');
+                    if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
                     
                     // Close AI assistant when opening sidebar on mobile
                     if (window.innerWidth <= 768) {
-                        document.getElementById('ai-assistant').classList.remove('active');
+                        const aiAssistant = document.getElementById('ai-assistant');
+                        if (aiAssistant) aiAssistant.classList.remove('active');
                     }
                 });
                 
@@ -4086,13 +4185,14 @@ Möchten Sie detaillierte Empfehlungen?`;
             if (sidebarOverlay) {
                 sidebarOverlay.addEventListener('click', () => {
                     const sidebar = document.getElementById('sidebar');
-                    sidebar.classList.remove('active');
+                    if (sidebar) sidebar.classList.remove('active');
                     sidebarOverlay.classList.remove('active');
                 });
                 
                 // Also close on touch
                 sidebarOverlay.addEventListener('touchstart', () => {
-                    sidebar.classList.remove('active');
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar) sidebar.classList.remove('active');
                     sidebarOverlay.classList.remove('active');
                 }, { passive: true });
             }
@@ -4101,17 +4201,21 @@ Möchten Sie detaillierte Empfehlungen?`;
             const logoutBtn = document.getElementById('logoutBtn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
-                    const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
-                    
-                    if (settings.logoutConfirmation !== false) {
-                        if (!confirm('Möchten Sie sich wirklich abmelden?')) {
-                            return;
+                    try {
+                        const settings = JSON.parse(localStorage.getItem('appSettings')) || {};
+                        
+                        if (settings.logoutConfirmation !== false) {
+                            if (!confirm('Möchten Sie sich wirklich abmelden?')) {
+                                return;
+                            }
                         }
+                        
+                        sessionStorage.removeItem('validTokens');
+                        localStorage.removeItem('authToken');
+                        window.location.reload();
+                    } catch (e) {
+                        console.error('Error during logout:', e);
                     }
-                    
-                    sessionStorage.removeItem('validTokens');
-                    localStorage.removeItem('authToken');
-                    window.location.reload();
                 });
                 
                 // Add touch feedback for mobile
@@ -4135,9 +4239,12 @@ Möchten Sie detaillierte Empfehlungen?`;
             
             if (revenueWeekBtn) {
                 revenueWeekBtn.addEventListener('click', function() {
-                    document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
+                    const parent = document.querySelector('#revenue-chart').closest('.dashboard-card');
+                    if (parent) {
+                        parent.querySelectorAll('.card-action-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                    }
                     this.classList.add('active');
                     chartManager.changeChartPeriod(7, 'week');
                     
@@ -4157,13 +4264,22 @@ Möchten Sie detaillierte Empfehlungen?`;
                         this.style.transform = 'scale(0.95)';
                     }
                 }, { passive: true });
+                
+                revenueWeekBtn.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = '';
+                    }
+                }, { passive: true });
             }
             
             if (revenueMonthBtn) {
                 revenueMonthBtn.addEventListener('click', function() {
-                    document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
+                    const parent = document.querySelector('#revenue-chart').closest('.dashboard-card');
+                    if (parent) {
+                        parent.querySelectorAll('.card-action-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                    }
                     this.classList.add('active');
                     chartManager.changeChartPeriod(30, 'month');
                     
@@ -4183,13 +4299,22 @@ Möchten Sie detaillierte Empfehlungen?`;
                         this.style.transform = 'scale(0.95)';
                     }
                 }, { passive: true });
+                
+                revenueMonthBtn.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = '';
+                    }
+                }, { passive: true });
             }
             
             if (revenueYearBtn) {
                 revenueYearBtn.addEventListener('click', function() {
-                    document.querySelectorAll('#revenue-chart').parentElement.parentElement.querySelectorAll('.card-action-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
+                    const parent = document.querySelector('#revenue-chart').closest('.dashboard-card');
+                    if (parent) {
+                        parent.querySelectorAll('.card-action-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                    }
                     this.classList.add('active');
                     chartManager.changeChartPeriod(365, 'year');
                     
@@ -4207,6 +4332,12 @@ Möchten Sie detaillierte Empfehlungen?`;
                 revenueYearBtn.addEventListener('touchstart', function() {
                     if (window.innerWidth <= 768) {
                         this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+                
+                revenueYearBtn.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = '';
                     }
                 }, { passive: true });
             }
@@ -4232,6 +4363,12 @@ Möchten Sie detaillierte Empfehlungen?`;
                         this.style.backgroundColor = 'var(--color-bg-secondary)';
                     }
                 }, { passive: true });
+                
+                refreshActivitiesBtn.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.backgroundColor = '';
+                    }
+                }, { passive: true });
             }
             
             // Refresh alerts
@@ -4255,6 +4392,12 @@ Möchten Sie detaillierte Empfehlungen?`;
                         this.style.backgroundColor = 'var(--color-bg-secondary)';
                     }
                 }, { passive: true });
+                
+                refreshAlertsBtn.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.backgroundColor = '';
+                    }
+                }, { passive: true });
             }
             
             // Mobile refresh button
@@ -4269,8 +4412,10 @@ Möchten Sie detaillierte Empfehlungen?`;
             const aiHelpBtn = document.getElementById('ai-help-btn');
             if (aiHelpBtn) {
                 aiHelpBtn.addEventListener('click', function() {
-                    document.getElementById('ai-assistant').classList.add('active');
-                    document.getElementById('ai-input').focus();
+                    const aiAssistant = document.getElementById('ai-assistant');
+                    if (aiAssistant) aiAssistant.classList.add('active');
+                    const aiInput = document.getElementById('ai-input');
+                    if (aiInput) aiInput.focus();
                 });
             }
             
@@ -4278,14 +4423,19 @@ Möchten Sie detaillierte Empfehlungen?`;
             const aiQuickHelpBtn = document.getElementById('ai-quick-help');
             if (aiQuickHelpBtn) {
                 aiQuickHelpBtn.addEventListener('click', function() {
-                    document.getElementById('ai-assistant').classList.add('active');
-                    document.getElementById('ai-input').focus();
+                    const aiAssistant = document.getElementById('ai-assistant');
+                    if (aiAssistant) aiAssistant.classList.add('active');
+                    const aiInput = document.getElementById('ai-input');
+                    if (aiInput) aiInput.focus();
                     
                     // Add a quick help question
                     setTimeout(() => {
                         const input = document.getElementById('ai-input');
-                        input.value = 'Was sind meine Top-Produkte?';
-                        document.getElementById('ai-send').click();
+                        if (input) {
+                            input.value = 'Was sind meine Top-Produkte?';
+                            const sendBtn = document.getElementById('ai-send');
+                            if (sendBtn) sendBtn.click();
+                        }
                     }, 100);
                 });
             }
@@ -4358,26 +4508,40 @@ Möchten Sie detaillierte Empfehlungen?`;
             const addGoalBtn = document.getElementById('add-goal-btn');
             if (addGoalBtn) {
                 addGoalBtn.addEventListener('click', function() {
-                    document.getElementById('goal-modal-title').textContent = 'Ziel hinzufügen';
-                    document.getElementById('goal-title').value = '';
-                    document.getElementById('goal-type').value = 'revenue';
-                    document.getElementById('goal-target').value = '';
+                    const modalTitle = document.getElementById('goal-modal-title');
+                    const goalTitle = document.getElementById('goal-title');
+                    const goalType = document.getElementById('goal-type');
+                    const goalTarget = document.getElementById('goal-target');
+                    const goalDeadline = document.getElementById('goal-deadline');
+                    const saveGoal = document.getElementById('save-goal');
+                    
+                    if (modalTitle) modalTitle.textContent = 'Ziel hinzufügen';
+                    if (goalTitle) goalTitle.value = '';
+                    if (goalType) goalType.value = 'revenue';
+                    if (goalTarget) goalTarget.value = '';
                     
                     // Remove any existing goal ID from save button
-                    document.getElementById('save-goal').removeAttribute('data-goal-id');
+                    if (saveGoal) saveGoal.removeAttribute('data-goal-id');
                     
                     // Set default deadline to end of current month
                     const currentDate = new Date();
                     const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-                    document.getElementById('goal-deadline').value = lastDay.toISOString().split('T')[0];
+                    if (goalDeadline) goalDeadline.value = lastDay.toISOString().split('T')[0];
                     
-                    document.getElementById('goal-modal').classList.add('active');
+                    const goalModal = document.getElementById('goal-modal');
+                    if (goalModal) goalModal.classList.add('active');
                 });
                 
                 // Touch feedback
                 addGoalBtn.addEventListener('touchstart', function() {
                     if (window.innerWidth <= 768) {
                         this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+                
+                addGoalBtn.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = '';
                     }
                 }, { passive: true });
             }
@@ -4387,12 +4551,12 @@ Möchten Sie detaillierte Empfehlungen?`;
             if (saveGoalBtn) {
                 saveGoalBtn.addEventListener('click', function() {
                     const goalId = this.getAttribute('data-goal-id');
-                    const title = document.getElementById('goal-title').value.trim();
-                    const type = document.getElementById('goal-type').value;
-                    const target = parseFloat(document.getElementById('goal-target').value);
-                    const deadline = document.getElementById('goal-deadline').value;
+                    const title = document.getElementById('goal-title')?.value.trim();
+                    const type = document.getElementById('goal-type')?.value;
+                    const target = parseFloat(document.getElementById('goal-target')?.value);
+                    const deadline = document.getElementById('goal-deadline')?.value;
                     
-                    if (!title || !target || !deadline || target <= 0) {
+                    if (!title || !target || !deadline || target <= 0 || isNaN(target)) {
                         showNotification('Bitte füllen Sie alle Felder korrekt aus.', 'error');
                         return;
                     }
@@ -4402,9 +4566,12 @@ Möchten Sie detaillierte Empfehlungen?`;
                         const success = dashboardManager.updateGoal(goalId, { title, type, target, deadline });
                         if (success) {
                             uiManager.updateAll();
-                            document.getElementById('goal-modal').classList.remove('active');
+                            const goalModal = document.getElementById('goal-modal');
+                            if (goalModal) goalModal.classList.remove('active');
                             showNotification('Ziel erfolgreich aktualisiert', 'success');
                             this.removeAttribute('data-goal-id');
+                        } else {
+                            showNotification('Fehler beim Aktualisieren des Ziels', 'error');
                         }
                     } else {
                         // Add new goal
@@ -4417,7 +4584,8 @@ Möchten Sie detaillierte Empfehlungen?`;
                         
                         dashboardManager.addGoal(goal);
                         uiManager.updateAll();
-                        document.getElementById('goal-modal').classList.remove('active');
+                        const goalModal = document.getElementById('goal-modal');
+                        if (goalModal) goalModal.classList.remove('active');
                         showNotification('Ziel erfolgreich hinzugefügt', 'success');
                     }
                 });
@@ -4427,7 +4595,8 @@ Möchten Sie detaillierte Empfehlungen?`;
             const cancelGoalBtn = document.getElementById('cancel-goal');
             if (cancelGoalBtn) {
                 cancelGoalBtn.addEventListener('click', function() {
-                    document.getElementById('goal-modal').classList.remove('active');
+                    const goalModal = document.getElementById('goal-modal');
+                    if (goalModal) goalModal.classList.remove('active');
                 });
             }
             
@@ -4435,7 +4604,8 @@ Möchten Sie detaillierte Empfehlungen?`;
             const closeGoalModalBtn = document.getElementById('close-goal-modal');
             if (closeGoalModalBtn) {
                 closeGoalModalBtn.addEventListener('click', function() {
-                    document.getElementById('goal-modal').classList.remove('active');
+                    const goalModal = document.getElementById('goal-modal');
+                    if (goalModal) goalModal.classList.remove('active');
                 });
             }
             
@@ -4447,16 +4617,24 @@ Möchten Sie detaillierte Empfehlungen?`;
                     const goal = goals.find(g => g.id === goalId);
                     
                     if (goal) {
-                        document.getElementById('goal-modal-title').textContent = 'Ziel bearbeiten';
-                        document.getElementById('goal-title').value = goal.title;
-                        document.getElementById('goal-type').value = goal.type;
-                        document.getElementById('goal-target').value = goal.target;
-                        document.getElementById('goal-deadline').value = goal.deadline.split('T')[0];
+                        const modalTitle = document.getElementById('goal-modal-title');
+                        const goalTitle = document.getElementById('goal-title');
+                        const goalType = document.getElementById('goal-type');
+                        const goalTarget = document.getElementById('goal-target');
+                        const goalDeadline = document.getElementById('goal-deadline');
+                        const saveGoal = document.getElementById('save-goal');
+                        
+                        if (modalTitle) modalTitle.textContent = 'Ziel bearbeiten';
+                        if (goalTitle) goalTitle.value = goal.title;
+                        if (goalType) goalType.value = goal.type;
+                        if (goalTarget) goalTarget.value = goal.target;
+                        if (goalDeadline) goalDeadline.value = goal.deadline.split('T')[0];
                         
                         // Store the goal ID for updating
-                        document.getElementById('save-goal').setAttribute('data-goal-id', goalId);
+                        if (saveGoal) saveGoal.setAttribute('data-goal-id', goalId);
                         
-                        document.getElementById('goal-modal').classList.add('active');
+                        const goalModal = document.getElementById('goal-modal');
+                        if (goalModal) goalModal.classList.add('active');
                     }
                 }
                 
@@ -4477,10 +4655,16 @@ Möchten Sie detaillierte Empfehlungen?`;
             const applyAnalysisBtn = document.getElementById('apply-analysis-btn');
             if (applyAnalysisBtn) {
                 applyAnalysisBtn.addEventListener('click', function() {
-                    // This would apply AI suggestions
-                    // For now, just show a message
+                    // Apply AI suggestions by adding them as goals
+                    const suggestions = dashboardManager.generateAISuggestedGoals();
+                    suggestions.forEach(suggestion => {
+                        dashboardManager.addGoal(suggestion);
+                    });
+                    
+                    uiManager.updateAll();
                     showNotification('KI-Vorschläge wurden übernommen', 'success');
-                    document.getElementById('ai-analysis-modal').classList.remove('active');
+                    const aiAnalysisModal = document.getElementById('ai-analysis-modal');
+                    if (aiAnalysisModal) aiAnalysisModal.classList.remove('active');
                 });
             }
             
@@ -4490,13 +4674,15 @@ Möchten Sie detaillierte Empfehlungen?`;
             
             if (closeAnalysisBtn) {
                 closeAnalysisBtn.addEventListener('click', function() {
-                    document.getElementById('ai-analysis-modal').classList.remove('active');
+                    const aiAnalysisModal = document.getElementById('ai-analysis-modal');
+                    if (aiAnalysisModal) aiAnalysisModal.classList.remove('active');
                 });
             }
             
             if (closeAiAnalysisModalBtn) {
                 closeAiAnalysisModalBtn.addEventListener('click', function() {
-                    document.getElementById('ai-analysis-modal').classList.remove('active');
+                    const aiAnalysisModal = document.getElementById('ai-analysis-modal');
+                    if (aiAnalysisModal) aiAnalysisModal.classList.remove('active');
                 });
             }
             
@@ -4504,11 +4690,17 @@ Möchten Sie detaillierte Empfehlungen?`;
             const quickSaleBtn = document.getElementById('quick-sale-btn');
             if (quickSaleBtn) {
                 quickSaleBtn.addEventListener('click', function() {
-                    document.getElementById('quick-sale-modal').classList.add('active');
-                    // Focus on first input
-                    setTimeout(() => {
-                        document.getElementById('sale-product').focus();
-                    }, 100);
+                    const quickSaleModal = document.getElementById('quick-sale-modal');
+                    if (quickSaleModal) {
+                        quickSaleModal.classList.add('active');
+                        // Update product dropdown
+                        uiManager.updateProductDropdown();
+                        // Focus on first input
+                        setTimeout(() => {
+                            const saleProduct = document.getElementById('sale-product');
+                            if (saleProduct) saleProduct.focus();
+                        }, 100);
+                    }
                 });
             }
             
@@ -4516,12 +4708,12 @@ Möchten Sie detaillierte Empfehlungen?`;
             const completeQuickSaleBtn = document.getElementById('complete-quick-sale');
             if (completeQuickSaleBtn) {
                 completeQuickSaleBtn.addEventListener('click', function() {
-                    const productId = document.getElementById('sale-product').value;
-                    const quantity = parseInt(document.getElementById('sale-quantity').value);
-                    const price = parseFloat(document.getElementById('sale-price').value);
-                    const customer = document.getElementById('sale-customer').value.trim();
+                    const productId = document.getElementById('sale-product')?.value;
+                    const quantity = parseInt(document.getElementById('sale-quantity')?.value);
+                    const price = parseFloat(document.getElementById('sale-price')?.value);
+                    const customer = document.getElementById('sale-customer')?.value.trim();
                     
-                    if (!productId || !quantity || !price || quantity <= 0 || price <= 0) {
+                    if (!productId || !quantity || !price || quantity <= 0 || price <= 0 || isNaN(quantity) || isNaN(price)) {
                         showNotification('Bitte füllen Sie alle erforderlichen Felder korrekt aus.', 'error');
                         return;
                     }
@@ -4535,12 +4727,15 @@ Möchten Sie detaillierte Empfehlungen?`;
                     
                     if (result.success) {
                         uiManager.updateAll();
-                        document.getElementById('quick-sale-modal').classList.remove('active');
+                        const quickSaleModal = document.getElementById('quick-sale-modal');
+                        if (quickSaleModal) quickSaleModal.classList.remove('active');
                         showNotification(result.message, 'success');
                         
                         // Reset form
-                        document.getElementById('sale-quantity').value = 1;
-                        document.getElementById('sale-customer').value = '';
+                        const saleQuantity = document.getElementById('sale-quantity');
+                        const saleCustomer = document.getElementById('sale-customer');
+                        if (saleQuantity) saleQuantity.value = 1;
+                        if (saleCustomer) saleCustomer.value = '';
                     } else {
                         showNotification(result.message, 'error');
                     }
@@ -4551,7 +4746,8 @@ Möchten Sie detaillierte Empfehlungen?`;
             const cancelQuickSaleBtn = document.getElementById('cancel-quick-sale');
             if (cancelQuickSaleBtn) {
                 cancelQuickSaleBtn.addEventListener('click', function() {
-                    document.getElementById('quick-sale-modal').classList.remove('active');
+                    const quickSaleModal = document.getElementById('quick-sale-modal');
+                    if (quickSaleModal) quickSaleModal.classList.remove('active');
                 });
             }
             
@@ -4559,7 +4755,8 @@ Möchten Sie detaillierte Empfehlungen?`;
             const closeQuickSaleModalBtn = document.getElementById('close-quick-sale-modal');
             if (closeQuickSaleModalBtn) {
                 closeQuickSaleModalBtn.addEventListener('click', function() {
-                    document.getElementById('quick-sale-modal').classList.remove('active');
+                    const quickSaleModal = document.getElementById('quick-sale-modal');
+                    if (quickSaleModal) quickSaleModal.classList.remove('active');
                 });
             }
             
@@ -4567,46 +4764,57 @@ Möchten Sie detaillierte Empfehlungen?`;
             const backupDataBtn = document.getElementById('backup-data-btn');
             if (backupDataBtn) {
                 backupDataBtn.addEventListener('click', function() {
-                    // Create a backup of important data
-                    const receipts = dashboardManager.getReceipts();
-                    const products = dashboardManager.getProducts();
-                    const goals = dashboardManager.getGoals();
-                    const activities = dashboardManager.getActivities();
-                    
-                    const backupData = {
-                        receipts,
-                        products: Object.values(products),
-                        goals,
-                        activities,
-                        backupDate: new Date().toISOString(),
-                        version: '1.0'
-                    };
-                    
-                    const dataStr = JSON.stringify(backupData, null, 2);
-                    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-                    
-                    const exportFileDefaultName = `gittertier_backup_${new Date().toISOString().split('T')[0]}.json`;
-                    
-                    const linkElement = document.createElement('a');
-                    linkElement.setAttribute('href', dataUri);
-                    linkElement.setAttribute('download', exportFileDefaultName);
-                    linkElement.click();
-                    
-                    // Add activity
-                    dashboardManager.addActivity({
-                        type: 'success',
-                        title: 'Backup erstellt',
-                        description: 'Ein Backup Ihrer Daten wurde erstellt.'
-                    });
-                    
-                    uiManager.updateAll();
-                    showNotification('Backup erfolgreich erstellt', 'success');
+                    try {
+                        // Create a backup of important data
+                        const receipts = dashboardManager.getReceipts();
+                        const products = dashboardManager.getProducts();
+                        const goals = dashboardManager.getGoals();
+                        const activities = dashboardManager.getActivities();
+                        
+                        const backupData = {
+                            receipts: receipts || [],
+                            products: Object.values(products || {}),
+                            goals: goals || [],
+                            activities: activities || [],
+                            backupDate: new Date().toISOString(),
+                            version: '1.0'
+                        };
+                        
+                        const dataStr = JSON.stringify(backupData, null, 2);
+                        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                        
+                        const exportFileDefaultName = `gittertier_backup_${new Date().toISOString().split('T')[0]}.json`;
+                        
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', exportFileDefaultName);
+                        linkElement.click();
+                        
+                        // Add activity
+                        dashboardManager.addActivity({
+                            type: 'success',
+                            title: 'Backup erstellt',
+                            description: 'Ein Backup Ihrer Daten wurde erstellt.'
+                        });
+                        
+                        uiManager.updateAll();
+                        showNotification('Backup erfolgreich erstellt', 'success');
+                    } catch (e) {
+                        console.error('Error creating backup:', e);
+                        showNotification('Fehler beim Erstellen des Backups', 'error');
+                    }
                 });
                 
                 // Touch feedback
                 backupDataBtn.addEventListener('touchstart', function() {
                     if (window.innerWidth <= 768) {
                         this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+                
+                backupDataBtn.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = '';
                     }
                 }, { passive: true });
             }
@@ -4616,10 +4824,11 @@ Möchten Sie detaillierte Empfehlungen?`;
             if (aiToggle) {
                 aiToggle.addEventListener('click', function() {
                     const aiAssistant = document.getElementById('ai-assistant');
-                    aiAssistant.classList.toggle('active');
+                    if (aiAssistant) aiAssistant.classList.toggle('active');
                     
-                    if (aiAssistant.classList.contains('active')) {
-                        document.getElementById('ai-input').focus();
+                    if (aiAssistant && aiAssistant.classList.contains('active')) {
+                        const aiInput = document.getElementById('ai-input');
+                        if (aiInput) aiInput.focus();
                     }
                 });
                 
@@ -4627,19 +4836,30 @@ Möchten Sie detaillierte Empfehlungen?`;
                 aiToggle.addEventListener('touchstart', function() {
                     this.style.transform = 'scale(0.95)';
                 }, { passive: true });
+                
+                aiToggle.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                }, { passive: true });
             }
             
             // AI Assistant close
             const aiClose = document.getElementById('ai-close');
             if (aiClose) {
                 aiClose.addEventListener('click', function() {
-                    document.getElementById('ai-assistant').classList.remove('active');
+                    const aiAssistant = document.getElementById('ai-assistant');
+                    if (aiAssistant) aiAssistant.classList.remove('active');
                 });
                 
                 // Touch feedback
                 aiClose.addEventListener('touchstart', function() {
                     if (window.innerWidth <= 768) {
                         this.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                    }
+                }, { passive: true });
+                
+                aiClose.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.backgroundColor = '';
                     }
                 }, { passive: true });
             }
@@ -4655,6 +4875,12 @@ Möchten Sie detaillierte Empfehlungen?`;
                 aiSend.addEventListener('touchstart', function() {
                     if (window.innerWidth <= 768) {
                         this.style.transform = 'scale(0.95)';
+                    }
+                }, { passive: true });
+                
+                aiSend.addEventListener('touchend', function() {
+                    if (window.innerWidth <= 768) {
+                        this.style.transform = '';
                     }
                 }, { passive: true });
             }
@@ -4702,19 +4928,19 @@ Möchten Sie detaillierte Empfehlungen?`;
                 if (e.target.closest('.alert-action')) {
                     const productId = e.target.closest('.alert-action').getAttribute('data-product-id');
                     const products = dashboardManager.getProducts();
-                    const product = products[productId];
+                    const product = Object.values(products).find(p => (p.barcode === productId) || (p.name === productId));
                     
                     if (product) {
                         // In a real app, this would trigger an order process
                         // For now, show a confirmation
-                        if (confirm(`Möchten Sie ${product.name} nachbestellen?`)) {
-                            showNotification(`Nachbestellung für ${product.name} wurde ausgelöst`, 'success');
+                        if (confirm(`Möchten Sie ${product.name || 'dieses Produkt'} nachbestellen?`)) {
+                            showNotification(`Nachbestellung für ${product.name || 'Produkt'} wurde ausgelöst`, 'success');
                             
                             // Add activity
                             dashboardManager.addActivity({
                                 type: 'info',
                                 title: 'Nachbestellung ausgelöst',
-                                description: `${product.name} wurde zur Nachbestellung markiert.`
+                                description: `${product.name || 'Produkt'} wurde zur Nachbestellung markiert.`
                             });
                             
                             uiManager.updateAll();
@@ -4742,16 +4968,21 @@ Möchten Sie detaillierte Empfehlungen?`;
             const exportProductsBtn = document.getElementById('export-products');
             if (exportProductsBtn) {
                 exportProductsBtn.addEventListener('click', function() {
-                    const products = dashboardManager.getProductPerformance();
-                    const dataStr = JSON.stringify(products, null, 2);
-                    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-                    
-                    const linkElement = document.createElement('a');
-                    linkElement.setAttribute('href', dataUri);
-                    linkElement.setAttribute('download', `produkt_performance_${new Date().toISOString().split('T')[0]}.json`);
-                    linkElement.click();
-                    
-                    showNotification('Produktdaten exportiert', 'success');
+                    try {
+                        const products = dashboardManager.getProductPerformance();
+                        const dataStr = JSON.stringify(products, null, 2);
+                        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+                        
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', `produkt_performance_${new Date().toISOString().split('T')[0]}.json`);
+                        linkElement.click();
+                        
+                        showNotification('Produktdaten exportiert', 'success');
+                    } catch (e) {
+                        console.error('Error exporting products:', e);
+                        showNotification('Fehler beim Exportieren der Produktdaten', 'error');
+                    }
                 });
             }
             
@@ -4780,9 +5011,9 @@ Möchten Sie detaillierte Empfehlungen?`;
         function sendAIMessage() {
             const input = document.getElementById('ai-input');
             const sendBtn = document.getElementById('ai-send');
-            const message = input.value.trim();
+            const message = input?.value.trim();
             
-            if (message && !sendBtn.disabled) {
+            if (message && sendBtn && !sendBtn.disabled) {
                 // Disable send button while processing
                 sendBtn.disabled = true;
                 
@@ -4797,9 +5028,15 @@ Möchten Sie detaillierte Empfehlungen?`;
                 
                 // Get AI response after a short delay
                 setTimeout(() => {
-                    const response = dashboardManager.getAIResponse(message);
-                    uiManager.hideTypingIndicator();
-                    uiManager.addAIMessage(response);
+                    try {
+                        const response = dashboardManager.getAIResponse(message);
+                        uiManager.hideTypingIndicator();
+                        uiManager.addAIMessage(response);
+                    } catch (e) {
+                        console.error('Error getting AI response:', e);
+                        uiManager.hideTypingIndicator();
+                        uiManager.addAIMessage('Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
+                    }
                     
                     // Re-enable send button
                     sendBtn.disabled = false;
@@ -4831,7 +5068,7 @@ Möchten Sie detaillierte Empfehlungen?`;
             }
         }
 
-        // Show notification function
+        // Show notification function (already implemented in CSS)
         function showNotification(message, type = 'success') {
             // Create notification element if it doesn't exist
             let notification = document.querySelector('.notification-toast');
@@ -4839,55 +5076,6 @@ Möchten Sie detaillierte Empfehlungen?`;
                 notification = document.createElement('div');
                 notification.className = 'notification-toast';
                 document.body.appendChild(notification);
-                
-                // Add styles for notification
-                const style = document.createElement('style');
-                style.textContent = `
-                    .notification-toast {
-                        position: fixed;
-                        top: 20px;
-                        right: 20px;
-                        padding: 12px 20px;
-                        border-radius: 6px;
-                        color: white;
-                        font-weight: 500;
-                        z-index: 10000;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                        transform: translateX(calc(100% + 20px));
-                        transition: transform 0.3s ease;
-                        max-width: calc(100vw - 40px);
-                        word-break: break-word;
-                        line-height: 1.4;
-                    }
-                    .notification-toast.success {
-                        background-color: var(--color-success);
-                    }
-                    .notification-toast.error {
-                        background-color: var(--color-error);
-                    }
-                    .notification-toast.info {
-                        background-color: var(--color-info);
-                    }
-                    .notification-toast.warning {
-                        background-color: var(--color-warning);
-                    }
-                    .notification-toast.show {
-                        transform: translateX(0);
-                    }
-                    @media (max-width: 768px) {
-                        .notification-toast {
-                            top: 10px;
-                            right: 10px;
-                            left: 10px;
-                            max-width: none;
-                            transform: translateY(-100px);
-                        }
-                        .notification-toast.show {
-                            transform: translateY(0);
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
             }
             
             notification.textContent = message;
@@ -4914,21 +5102,27 @@ Möchten Sie detaillierte Empfehlungen?`;
             }, 3000);
         }
 
-        // Token verification
+        // Token verification - enhanced with error handling
         (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlToken = decodeURIComponent(urlParams.get('token') || '');
-            const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
-            const tokenIndex = validTokens.indexOf(urlToken);
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlToken = decodeURIComponent(urlParams.get('token') || '');
+                const validTokens = JSON.parse(sessionStorage.getItem('validTokens') || '[]');
+                const tokenIndex = validTokens.indexOf(urlToken);
 
-            if(tokenIndex === -1) {
-                const redirect = encodeURIComponent(window.location.href);
-                window.location.href = `login?redirect=${redirect}`;
-            } else {
-                // Remove used token and clean URL
-                validTokens.splice(tokenIndex, 1);
-                sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
-                history.replaceState(null, null, window.location.pathname);
+                if(tokenIndex === -1) {
+                    const redirect = encodeURIComponent(window.location.href);
+                    window.location.href = `login?redirect=${redirect}`;
+                } else {
+                    // Remove used token and clean URL
+                    validTokens.splice(tokenIndex, 1);
+                    sessionStorage.setItem('validTokens', JSON.stringify(validTokens));
+                    history.replaceState(null, null, window.location.pathname);
+                }
+            } catch (e) {
+                console.error('Token verification error:', e);
+                // Redirect to login on error
+                window.location.href = 'login';
             }
         })();
     </script>
