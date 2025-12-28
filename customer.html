@@ -1770,6 +1770,10 @@
             <span>Gittertier Pro</span>
         </div>
         <div class="header-controls">
+            <button class="control-btn" onclick="window.location.href='loyalty'">
+                <i class="fas fa-crown"></i>
+                <span>Premium</span>
+            </button>
             <button class="control-btn" id="edit-details-btn" style="display: none;">
                 <i class="fas fa-edit"></i>
                 <span>Bearbeiten</span>
@@ -2543,6 +2547,7 @@ function initPayment() {
     try {
         // Check if we have payment data in localStorage first
         const storedPaymentData = getStoredPaymentData();
+
         
         // Try to get payment data from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -2616,6 +2621,11 @@ function initPayment() {
         storePaymentData(paymentData, 'pending');
         clearURLParameters();
         
+        if (paymentData) {
+            const multiplier = localStorage.getItem('gittertier_point_multiplier') || '1.0';
+            loyaltyPointsEarned = Math.floor(paymentData.total * LOYALTY_CONFIG.pointsPerEuro * parseFloat(multiplier));
+        }
+
         // Load user preferences
         loadUserPreferences();
         
@@ -2652,13 +2662,90 @@ function initPayment() {
     }
 }
 
+// Add this function to apply loyalty visual effects
+function applyLoyaltyPaymentEffects() {
+    try {
+        const unlockedFeatures = JSON.parse(localStorage.getItem('gittertier_unlocked_features') || '{}');
+        const theme = localStorage.getItem('gittertier_theme');
+        
+        // Apply priority processing effects
+        if (unlockedFeatures.priority_processing?.active) {
+            const style = document.createElement('style');
+            style.textContent = `
+                .status.confirmed {
+                    animation: priorityBounce 0.5s ease !important;
+                }
+                @keyframes priorityBounce {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-10px); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Apply transaction effects
+        if (unlockedFeatures.transaction_effects?.active) {
+            const style = document.createElement('style');
+            style.textContent = `
+                .payment-success {
+                    animation: celebrate 1s ease !important;
+                }
+                @keyframes celebrate {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Apply theme
+        if (theme === 'night') {
+            document.documentElement.style.setProperty('--color-bg', '#111827');
+            document.documentElement.style.setProperty('--color-text', '#f3f4f6');
+            document.documentElement.style.setProperty('--color-border', '#374151');
+        } else if (theme === 'gradient') {
+            document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)';
+        }
+        
+        // Apply profile badge
+        if (unlockedFeatures.profile_badges?.active) {
+            const header = document.querySelector('header');
+            if (header) {
+                const badge = document.createElement('div');
+                badge.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: linear-gradient(135deg, #ffd700, #ffed4e);
+                    color: #000;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    font-weight: bold;
+                    z-index: 100;
+                `;
+                badge.innerHTML = '<i class="fas fa-crown"></i> Premium';
+                header.style.position = 'relative';
+                header.appendChild(badge);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error applying loyalty payment effects:', error);
+    }
+}
+
 // Helper function to compare two payment objects
 function arePaymentsEqual(payment1, payment2) {
+    // If either payment is undefined/null, they are not equal
+    if (!payment1 || !payment2) return false;
+    
     // Compare total amount
     if (payment1.total !== payment2.total) return false;
     
     // Compare number of items
-    if (payment1.items.length !== payment2.items.length) return false;
+    if (!payment1.items || !payment2.items || payment1.items.length !== payment2.items.length) return false;
     
     // Compare each item
     for (let i = 0; i < payment1.items.length; i++) {
@@ -3866,6 +3953,7 @@ function arePaymentsEqual(payment1, payment2) {
         
         // Update loyalty points
         const newPoints = loyaltyPoints - loyaltyPointsToRedeem + loyaltyPointsEarned;
+            awardPaymentPoints();
         
         // Save updated points to preferences
         if (userPreferences) {
@@ -5156,6 +5244,32 @@ function arePaymentsEqual(payment1, payment2) {
         doc.save(`Gittertier_Beleg_${shortPaymentId}.pdf`);
     }  
 
+    function awardPaymentPoints() {
+    try {
+        const loyaltyData = JSON.parse(localStorage.getItem('gittertier_loyalty_data') || '{}');
+        const multiplier = localStorage.getItem('gittertier_point_multiplier') || '1.0';
+        
+        if (loyaltyData.isLoyaltyMember && paymentData) {
+            const basePoints = Math.floor(paymentData.total * LOYALTY_CONFIG.pointsPerEuro);
+            const bonusPoints = Math.floor(basePoints * parseFloat(multiplier)) - basePoints;
+            
+            // Add transaction effects if unlocked
+            const unlockedFeatures = JSON.parse(localStorage.getItem('gittertier_unlocked_features') || '{}');
+            if (unlockedFeatures.transaction_effects?.active) {
+                // Add visual celebration
+                const statusEl = document.getElementById('status');
+                statusEl.classList.add('payment-success');
+            }
+            
+            if (bonusPoints > 0) {
+                console.log(`Premium: ${bonusPoints} Bonus-Punkte erhalten (${multiplier}x Multiplikator)`);
+            }
+        }
+    } catch (error) {
+        console.error('Error awarding payment points:', error);
+    }
+}
+
     // Initialize on page load
     window.onload = function() {
         // Add event listener for edit button
@@ -5173,6 +5287,7 @@ function arePaymentsEqual(payment1, payment2) {
         });
         
         // Initialize payment
+        applyLoyaltyPaymentEffects();
         initPayment();
     };
 </script>

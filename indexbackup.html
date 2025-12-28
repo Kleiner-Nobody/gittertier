@@ -1558,14 +1558,14 @@
             <button class="control-btn" onclick="window.location.href='user'">
                 <i class="fas fa-cog"></i>
             </button>
+            <button class="control-btn" onclick="window.location.href='loyalty'">
+                <i class="fas fa-crown"></i>
+            </button>
             <button class="control-btn" onclick="showWelcomeModal()">
                 <i class="fas fa-question-circle"></i> 
             </button>
             <button class="control-btn" onclick="window.location.href='support'">
                 <i class="fas fa-headset"></i> 
-            </button>
-           <button class="control-btn" onclick="window.location.href='about'">
-                <i class="fas fa-info-circle"></i> 
             </button>
         </div>
     </header>
@@ -3037,6 +3037,8 @@
         function handleBarcode(barcode) {
             currentBarcode = barcode;
             playSound('scan');
+          // Award points for scanning
+            awardPointsForAction('scan', 1);
             
             if (products[barcode]) {
                 // Check if auto add to cart is enabled
@@ -3058,6 +3060,31 @@
                 } else {
                     showProductModal(barcode);
                 }
+            }
+        }
+
+        function awardPointsForAction(action, basePoints = 1) {
+            try {
+                const loyaltyData = JSON.parse(localStorage.getItem('gittertier_loyalty_data') || '{}');
+                const multiplier = localStorage.getItem('gittertier_point_multiplier') || '1.0';
+                
+                if (loyaltyData.isLoyaltyMember) {
+                    const points = Math.floor(basePoints * parseFloat(multiplier));
+                    
+                    // Update loyalty data
+                    loyaltyData.currentPoints = (loyaltyData.currentPoints || 0) + points;
+                    loyaltyData.lifetimePoints = (loyaltyData.lifetimePoints || 0) + points;
+                    localStorage.setItem('gittertier_loyalty_data', JSON.stringify(loyaltyData));
+                    
+                    console.log(`Premium: ${points} Punkte für ${action} erhalten`);
+                    
+                    // Show notification for significant point gains
+                    if (points >= 5) {
+                        showNotification(`+${points} Premium Punkte erhalten!`, 'success');
+                    }
+                }
+            } catch (error) {
+                console.error('Error awarding points:', error);
             }
         }
 
@@ -4022,6 +4049,122 @@
                 searchProducts(e.target.value);
             }
         });
+        // ==================== LOYALTY INTEGRATION ====================
+function applyLoyaltyFeatures() {
+    try {
+        // Load loyalty data
+        const loyaltyData = JSON.parse(localStorage.getItem('gittertier_loyalty_data') || '{}');
+        const unlockedFeatures = JSON.parse(localStorage.getItem('gittertier_unlocked_features') || '{}');
+        
+        // Apply point multiplier if unlocked
+        const pointMultiplier = localStorage.getItem('gittertier_point_multiplier') || '1.0';
+        if (pointMultiplier !== '1.0') {
+            // Modify addToCart function to apply multiplier
+            const originalAddToCart = window.addToCart;
+            window.addToCart = function(product) {
+                // Call original function
+                originalAddToCart.call(this, product);
+                
+                // Calculate extra points with multiplier
+                if (loyaltyData.isLoyaltyMember) {
+                    const pointsEarned = Math.floor(product.price * parseFloat(pointMultiplier));
+                    // You can add these points to loyalty system here
+                    console.log(`Premium: Earned ${pointsEarned} points (${pointMultiplier}x multiplier)`);
+                }
+            };
+        }
+        
+        // Apply scanner effects if unlocked
+        if (unlockedFeatures.scanner_effects?.active) {
+            // Enhanced scanner visuals
+            const style = document.createElement('style');
+            style.textContent = `
+                #barcode-box {
+                    border-color: #8b5cf6 !important;
+                    box-shadow: 0 0 15px #8b5cf6 !important;
+                }
+                .scan-line {
+                    background: linear-gradient(90deg, transparent, #8b5cf6, transparent) !important;
+                    animation: scan 1.5s infinite linear !important;
+                }
+                #scanner-container {
+                    border: 2px solid rgba(139, 92, 246, 0.3) !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Apply scanner animation if unlocked
+        if (unlockedFeatures.scanner_animation?.active) {
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes scannerPulse {
+                    0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+                    70% { box-shadow: 0 0 0 20px rgba(139, 92, 246, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+                }
+                #scanner-container {
+                    animation: scannerPulse 2s infinite !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Apply fast checkout if unlocked
+        if (unlockedFeatures.fast_checkout?.active) {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(() => {
+                    const payBtn = document.querySelector('.pay-btn');
+                    if (payBtn) {
+                        payBtn.innerHTML = '<i class="fas fa-bolt"></i> Schnellbezahlen';
+                        payBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    }
+                }, 1000);
+            });
+        }
+        
+        // Apply profile badge if unlocked
+        if (unlockedFeatures.profile_badges?.active) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const header = document.querySelector('header');
+                if (header) {
+                    const badge = document.createElement('div');
+                    badge.style.cssText = `
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        background: linear-gradient(135deg, #ffd700, #ffed4e);
+                        color: #000;
+                        padding: 4px 8px;
+                        border-radius: 12px;
+                        font-size: 12px;
+                        font-weight: bold;
+                        z-index: 100;
+                    `;
+                    badge.innerHTML = '<i class="fas fa-crown"></i> Premium';
+                    header.style.position = 'relative';
+                    header.appendChild(badge);
+                }
+            });
+        }
+        
+        // Apply theme if unlocked
+        const theme = localStorage.getItem('gittertier_theme');
+        if (theme === 'night') {
+            document.documentElement.style.setProperty('--color-bg', '#111827');
+            document.documentElement.style.setProperty('--color-text', '#f3f4f6');
+            document.documentElement.style.setProperty('--color-border', '#374151');
+        } else if (theme === 'gradient') {
+            document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)';
+        }
+        
+    } catch (error) {
+        console.error('Error applying loyalty features:', error);
+    }
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', applyLoyaltyFeatures);
     </script>
 </body>
 </html>
