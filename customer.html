@@ -2708,28 +2708,30 @@ function applyLoyaltyPaymentEffects() {
             document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)';
         }
         
-        // Apply profile badge
-        if (unlockedFeatures.profile_badges?.active) {
-            const header = document.querySelector('header');
-            if (header) {
-                const badge = document.createElement('div');
-                badge.style.cssText = `
-                    position: absolute;
-                    top: 10px;
-                    right: 10px;
-                    background: linear-gradient(135deg, #ffd700, #ffed4e);
-                    color: #000;
-                    padding: 4px 8px;
-                    border-radius: 12px;
-                    font-size: 12px;
-                    font-weight: bold;
-                    z-index: 100;
-                `;
-                badge.innerHTML = '<i class="fas fa-crown"></i> Premium';
-                header.style.position = 'relative';
-                header.appendChild(badge);
-            }
-        }
+                        // Check for profile badges
+                if (localStorage.getItem('gittertier_profile_badges') === 'true') {
+                    const header = document.querySelector('header');
+                    if (header) {
+                        const badge = document.createElement('div');
+
+                        badge.style.cssText = `
+                            position: absolute;
+                            top: 75px;
+                            right: 10px;
+                            background: linear-gradient(135deg, #ffd700, #ffed4e);
+                            color: #000;
+                            padding: 12px 24px;
+                            border-radius: 67px;
+                            font-size: 12px;
+                            font-weight: bold;
+                            z-index: 100;
+                        `;
+                        badge.innerHTML = '<i class="fas fa-crown"></i> Premium';
+                        badge.onclick = function() { window.location.href = 'loyalty';};
+                        header.style.position = 'relative';
+                        header.appendChild(badge);
+                    }
+                }
         
     } catch (error) {
         console.error('Error applying loyalty payment effects:', error);
@@ -3950,6 +3952,10 @@ function arePaymentsEqual(payment1, payment2) {
         const statusEl = document.getElementById('status');
         statusEl.className = 'status confirmed';
         statusEl.innerHTML = '<i class="fas fa-check-circle"></i><span>Zahlung bestätigt!</span>';
+         // Award loyalty points for the purchase
+        const totalAmount = paymentData.finalTotal || paymentData.total || 0;
+        const multiplier = localStorage.getItem('gittertier_point_multiplier') || '1.0';
+        const pointsEarned = Math.floor(totalAmount * parseFloat(multiplier));
         
         // Update loyalty points
         const newPoints = loyaltyPoints - loyaltyPointsToRedeem + loyaltyPointsEarned;
@@ -3960,6 +3966,25 @@ function arePaymentsEqual(payment1, payment2) {
             userPreferences.loyaltyPoints = newPoints;
             localStorage.setItem('gittertier_payment_preferences', JSON.stringify(userPreferences));
         }
+           if (pointsEarned > 0) {
+        // Update loyalty points
+        const loyaltyData = JSON.parse(localStorage.getItem('gittertier_payment_preferences') || '{}');
+        const currentPoints = loyaltyData.loyaltyPoints || 0;
+        loyaltyData.loyaltyPoints = currentPoints + pointsEarned;
+        localStorage.setItem('gittertier_payment_preferences', JSON.stringify(loyaltyData));
+        
+        // Also update separate storage
+        const loyaltyStorage = JSON.parse(localStorage.getItem('gittertier_loyalty_data') || '{}');
+        loyaltyStorage.currentPoints = loyaltyData.loyaltyPoints;
+        loyaltyStorage.lifetimePoints = (loyaltyStorage.lifetimePoints || 0) + pointsEarned;
+        localStorage.setItem('gittertier_loyalty_data', JSON.stringify(loyaltyStorage));
+        
+        // Show notification if multiplier is active
+        if (multiplier !== '1.0') {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML += `<br><small>🎉 ${pointsEarned} Premium-Punkte erhalten! (${multiplier}x)</small>`;
+        }
+    }
         
         // Update stored payment data
         storePaymentData(paymentData, 'confirmed');
@@ -5290,6 +5315,52 @@ function arePaymentsEqual(payment1, payment2) {
         applyLoyaltyPaymentEffects();
         initPayment();
     };
+    // Add this to the existing customer.html script to sync loyalty points
+function syncLoyaltyPoints(pointsToAdd) {
+    try {
+        const loyaltyData = JSON.parse(localStorage.getItem('gittertier_payment_preferences') || '{}');
+        const currentPoints = loyaltyData.loyaltyPoints || 0;
+        loyaltyData.loyaltyPoints = currentPoints + pointsToAdd;
+        
+        // Update tier
+        const tiers = { 0: 'bronze', 500: 'silver', 1500: 'gold', 3000: 'platinum', 5000: 'diamond' };
+        let newTier = 'bronze';
+        for (const [points, tier] of Object.entries(tiers)) {
+            if (loyaltyData.loyaltyPoints >= parseInt(points)) {
+                newTier = tier;
+            }
+        }
+        
+        loyaltyData.currentTier = newTier;
+        localStorage.setItem('gittertier_payment_preferences', JSON.stringify(loyaltyData));
+        
+        // Also update the separate loyalty data storage
+        const loyaltyStorage = JSON.parse(localStorage.getItem('gittertier_loyalty_data') || '{}');
+        loyaltyStorage.currentPoints = loyaltyData.loyaltyPoints;
+        loyaltyStorage.lifetimePoints = (loyaltyStorage.lifetimePoints || 0) + pointsToAdd;
+        loyaltyStorage.currentTier = newTier;
+        localStorage.setItem('gittertier_loyalty_data', JSON.stringify(loyaltyStorage));
+        
+        return true;
+    } catch (error) {
+        console.error('Error syncing loyalty points:', error);
+        return false;
+    }
+}
+
+// Call this when payment is confirmed
+function awardLoyaltyPoints(totalAmount) {
+    const multiplier = localStorage.getItem('gittertier_point_multiplier') || '1.0';
+    const points = Math.floor(totalAmount * parseFloat(multiplier));
+    if (points > 0) {
+        syncLoyaltyPoints(points);
+        
+        // Show notification if multiplier is active
+        if (multiplier !== '1.0') {
+            showNotification(`🎉 ${points} Premium-Punkte erhalten! (${multiplier}x Multiplikator)`, 'success');
+        }
+    }
+}
 </script>
 </body>
 </html>
