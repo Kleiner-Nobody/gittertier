@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
+    <style>
     /* ==================== APPLE LIQUID GLAS DESIGN ==================== */
     :root {
         /* Light Mode - Apple Design System */
@@ -289,30 +289,6 @@
         background: var(--gradient-gray-hover);
         transform: translateY(-1px);
         box-shadow: var(--glass-shadow-lg);
-    }
-
-    .hamburger {
-        display: block;
-        background: var(--gradient-glass);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border: var(--glass-border);
-        font-size: var(--text-lg);
-        color: var(--color-text);
-        cursor: pointer;
-        transition: var(--transition);
-        width: var(--touch-target);
-        height: var(--touch-target);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--glass-shadow);
-    }
-
-    .hamburger:hover, .hamburger:active, .hamburger:focus {
-        background: var(--gradient-gray-hover);
-        transform: scale(1.02);
     }
 
     /* ==================== SIDEBAR - GLASS EFFECT ==================== */
@@ -1666,7 +1642,6 @@
         .join-button,
         .tutorial-btn,
         .logout-btn,
-        .hamburger,
         .close-modal {
             min-height: 48px;
             padding: var(--spacing-md);
@@ -1755,7 +1730,7 @@
         font-size: var(--text-sm);
         line-height: 1.4;
     }
-</style>
+    </style>
 </head>
 <body>
     <div class="admin-header">
@@ -1773,7 +1748,7 @@
     </div>
 
     <div class="admin-container">
-       <!-- <aside class="admin-sidebar" id="sidebar">
+        <!-- <aside class="admin-sidebar" id="sidebar">
             <div class="nav-container">
                 <a href="index" class="nav-link">
                     <i class="fas fa-barcode"></i>
@@ -2049,8 +2024,9 @@
         // ==================== PREMIUM CLUB MANAGER ====================
         class PremiumClubManager {
             constructor() {
-                this.storageKey = 'gittertier_premium_club';
+                this.storageKey = 'gittertier_loyalty_data';
                 this.featuresKey = 'gittertier_unlocked_features';
+                this.paymentPrefsKey = 'gittertier_payment_preferences';
                 this.tierHistoryKey = 'gittertier_tier_history';
                 this.tutorialKey = 'gittertier_premium_tutorial';
                 this.settingsKey = 'appSettings';
@@ -2084,6 +2060,7 @@
             }
 
             loadData() {
+                // First try to load from loyalty data (shared with customer.html)
                 const saved = localStorage.getItem(this.storageKey);
                 if (saved) {
                     const data = JSON.parse(saved);
@@ -2091,28 +2068,29 @@
                         currentPoints: data.currentPoints || 0,
                         lifetimePoints: data.lifetimePoints || 0,
                         currentTier: data.currentTier || 'bronze',
-                        isPremiumMember: data.isPremiumMember || false,
+                        isPremiumMember: data.isPremiumMember || data.isLoyaltyMember || false,
                         joinDate: data.joinDate || new Date().toISOString(),
                         lastPurchase: data.lastPurchase || null,
                         purchasedItems: data.purchasedItems || []
                     };
                 }
                 
-                // Check for existing loyalty data
-                const loyaltyData = localStorage.getItem('gittertier_loyalty_data');
-                if (loyaltyData) {
-                    const data = JSON.parse(loyaltyData);
+                // If no loyalty data, check payment preferences (from customer.html)
+                const paymentPrefs = localStorage.getItem(this.paymentPrefsKey);
+                if (paymentPrefs) {
+                    const data = JSON.parse(paymentPrefs);
                     return {
-                        currentPoints: data.currentPoints || 0,
-                        lifetimePoints: data.lifetimePoints || 0,
+                        currentPoints: data.loyaltyPoints || 0,
+                        lifetimePoints: data.loyaltyPoints || 0,
                         currentTier: data.currentTier || 'bronze',
                         isPremiumMember: data.isLoyaltyMember || false,
-                        joinDate: data.joinDate || new Date().toISOString(),
+                        joinDate: new Date().toISOString(),
                         lastPurchase: null,
                         purchasedItems: []
                     };
                 }
                 
+                // Default data
                 return {
                     currentPoints: 0,
                     lifetimePoints: 0,
@@ -2153,24 +2131,24 @@
             }
 
             saveData() {
+                // Save to loyalty data (shared with customer.html)
                 localStorage.setItem(this.storageKey, JSON.stringify(this.data));
                 localStorage.setItem(this.featuresKey, JSON.stringify(this.features));
                 localStorage.setItem(this.tierHistoryKey, JSON.stringify(this.tierHistory));
                 
-                // Sync with loyalty data for other pages
-                localStorage.setItem('gittertier_loyalty_data', JSON.stringify({
-                    currentPoints: this.data.currentPoints,
-                    lifetimePoints: this.data.lifetimePoints,
-                    currentTier: this.data.currentTier,
-                    isLoyaltyMember: this.data.isPremiumMember,
-                    joinDate: this.data.joinDate
-                }));
+                // Also sync with payment preferences for customer.html
+                const paymentPrefs = localStorage.getItem(this.paymentPrefsKey);
+                let prefs = paymentPrefs ? JSON.parse(paymentPrefs) : {};
+                prefs.loyaltyPoints = this.data.currentPoints;
+                prefs.isLoyaltyMember = this.data.isPremiumMember;
+                localStorage.setItem(this.paymentPrefsKey, JSON.stringify(prefs));
             }
 
             applyDarkMode() {
-                if (this.settings.darkMode === true) {
+                const theme = localStorage.getItem('gittertier_theme');
+                if (theme === 'night' || theme === 'dark') {
                     document.body.classList.add('dark-mode');
-                } else if (this.settings.darkMode === false) {
+                } else if (theme === 'light') {
                     document.body.classList.remove('dark-mode');
                 } else {
                     // Auto detect from system
@@ -2180,7 +2158,7 @@
                 }
             }
 
-            // Tier System
+            // Tier System - MATCHES CUSTOMER.HHTML EXACTLY
             getTierInfo(tier) {
                 const tiers = {
                     bronze: { 
@@ -2191,10 +2169,12 @@
                         multiplier: 1.0,
                         minPoints: 0,
                         nextPoints: 500,
+                        discount: 0,
                         benefits: [
                             'Grundlegende Funktionen',
                             'Punktesammeln',
-                            'E-Mail Support'
+                            'Willkommensgeschenk',
+                            '5% Rabatt auf ausgewählte Artikel'
                         ]
                     },
                     silver: { 
@@ -2205,10 +2185,12 @@
                         multiplier: 1.2,
                         minPoints: 500,
                         nextPoints: 1500,
+                        discount: 5,
                         benefits: [
                             'Alle Bronze Vorteile',
-                            '20% mehr Punkte',
-                            'Prioritäts-Support'
+                            '5% Rabatt auf alle Einkäufe',
+                            'Exklusive Angebote',
+                            'Premium Belegdesign'
                         ]
                     },
                     gold: { 
@@ -2219,11 +2201,13 @@
                         multiplier: 1.5,
                         minPoints: 1500,
                         nextPoints: 3000,
+                        discount: 10,
                         benefits: [
                             'Alle Silber Vorteile',
-                            '50% mehr Punkte',
-                            'Exklusive Features',
-                            'Dedizierter Support'
+                            '10% Rabatt auf alle Einkäufe',
+                            'Kostenlose Produktproben',
+                            'Prioritärer Support',
+                            'Gold Belegdesign'
                         ]
                     },
                     platinum: { 
@@ -2234,11 +2218,13 @@
                         multiplier: 2.0,
                         minPoints: 3000,
                         nextPoints: 5000,
+                        discount: 15,
                         benefits: [
                             'Alle Gold Vorteile',
-                            '100% mehr Punkte',
-                            'Alle Premium Features',
-                            'VIP Support'
+                            '15% Rabatt auf alle Einkäufe',
+                            'Früher Zugang zu neuen Produkten',
+                            'Persönlicher Shopping-Assistent',
+                            'Platinum Belegdesign'
                         ]
                     },
                     diamond: { 
@@ -2249,11 +2235,13 @@
                         multiplier: 3.0,
                         minPoints: 5000,
                         nextPoints: null,
+                        discount: 20,
                         benefits: [
                             'Alle Platin Vorteile',
-                            '200% mehr Punkte',
-                            'Early Access Features',
-                            'Persönlicher Account Manager'
+                            '20% Rabatt auf alle Einkäufe',
+                            'Kostenlose Lieferung',
+                            'VIP-Events',
+                            'Persönlicher Einkaufsberater'
                         ]
                     }
                 };
@@ -2305,7 +2293,7 @@
                 return true;
             }
 
-            // Feature Management
+            // Feature Management - SYNC WITH CUSTOMER.HTML
             unlockFeature(featureId) {
                 const feature = FEATURES.find(f => f.id === featureId);
                 if (!feature) return false;
@@ -2317,7 +2305,7 @@
                         active: true
                     };
                     
-                    // Apply feature effect
+                    // Apply feature effect (sync with customer.html)
                     this.applyFeature(featureId);
                     
                     this.saveData();
@@ -2345,7 +2333,7 @@
                 const feature = FEATURES.find(f => f.id === featureId);
                 if (!feature) return;
 
-                // Apply feature to localStorage for other pages
+                // Apply feature to localStorage for other pages (same as customer.html)
                 switch(featureId) {
                     case 'scanner_animation':
                         localStorage.setItem('gittertier_scanner_animation', 'true');
@@ -2381,7 +2369,7 @@
             }
 
             removeFeature(featureId) {
-                // Remove feature from localStorage
+                // Remove feature from localStorage (same as customer.html)
                 switch(featureId) {
                     case 'scanner_animation':
                         localStorage.removeItem('gittertier_scanner_animation');
@@ -2424,13 +2412,13 @@
                 return this.features[featureId]?.active || false;
             }
 
-            // Membership
+            // Membership - SYNC WITH CUSTOMER.HTML
             joinPremiumClub() {
                 if (!this.data.isPremiumMember) {
                     this.data.isPremiumMember = true;
                     this.data.joinDate = new Date().toISOString();
                     
-                    // Add welcome bonus
+                    // Add welcome bonus (same as customer.html)
                     this.addPoints(100, 'Willkommensbonus');
                     
                     this.saveData();
@@ -2454,7 +2442,7 @@
                 document.getElementById('current-tier').textContent = tierInfo.name;
                 document.getElementById('tier-level').textContent = tierInfo.name;
                 
-                // Update progress bar
+                // Update progress bar (matches customer.html tier system)
                 const nextTierPoints = tierInfo.nextPoints;
                 if (nextTierPoints) {
                     const progress = ((this.data.currentPoints - tierInfo.minPoints) / (nextTierPoints - tierInfo.minPoints)) * 100;
@@ -2787,6 +2775,39 @@
                 
                 this.updateUI();
             }
+            
+            // Sync points from customer.html purchases
+            syncFromCustomer() {
+                // Check for any new points added in customer.html
+                const loyaltyData = JSON.parse(localStorage.getItem('gittertier_loyalty_data') || '{}');
+                const paymentPrefs = JSON.parse(localStorage.getItem('gittertier_payment_preferences') || '{}');
+                
+                if (loyaltyData.currentPoints !== undefined && loyaltyData.currentPoints > this.data.currentPoints) {
+                    const diff = loyaltyData.currentPoints - this.data.currentPoints;
+                    this.data.currentPoints = loyaltyData.currentPoints;
+                    this.data.lifetimePoints = loyaltyData.lifetimePoints || this.data.lifetimePoints + diff;
+                    this.data.currentTier = this.calculateTier(this.data.currentPoints);
+                    this.data.isPremiumMember = loyaltyData.isPremiumMember || loyaltyData.isLoyaltyMember || this.data.isPremiumMember;
+                    
+                    this.saveData();
+                    this.updateUI();
+                    return true;
+                }
+                
+                if (paymentPrefs.loyaltyPoints !== undefined && paymentPrefs.loyaltyPoints > this.data.currentPoints) {
+                    const diff = paymentPrefs.loyaltyPoints - this.data.currentPoints;
+                    this.data.currentPoints = paymentPrefs.loyaltyPoints;
+                    this.data.lifetimePoints += diff;
+                    this.data.currentTier = this.calculateTier(this.data.currentPoints);
+                    this.data.isPremiumMember = paymentPrefs.isLoyaltyMember || this.data.isPremiumMember;
+                    
+                    this.saveData();
+                    this.updateUI();
+                    return true;
+                }
+                
+                return false;
+            }
         }
 
         // ==================== FEATURES DEFINITION ====================
@@ -2821,16 +2842,6 @@
                 premium: true,
                 category: 'points'
             },
-            /*{
-                id: 'fast_checkout',
-                title: 'Schnellbezahlung',
-                icon: 'fas fa-running',
-                description: 'Reduzierte Klickzahlen beim Bezahlvorgang',
-                benefit: 'Bis zu 50% schnellere Bezahlung',
-                cost: 180,
-                premium: true,
-                category: 'payment'
-            },*/
             {
                 id: 'transaction_effects',
                 title: 'Transaktions-Effekte',
@@ -2860,37 +2871,7 @@
                 cost: 220,
                 premium: true,
                 category: 'scanner'
-            },
-            /*{
-                id: 'advanced_analytics',
-                title: 'Erweiterte Analysen',
-                icon: 'fas fa-chart-line',
-                description: 'Detaillierte Umsatz- und Verkaufsanalysen',
-                benefit: 'Tiefgehende Geschäftseinblicke',
-                cost: 350,
-                premium: true,
-                category: 'analytics'
-            },
-            {
-                id: 'dark_mode_plus',
-                title: 'Dark Mode Plus',
-                icon: 'fas fa-moon',
-                description: 'Erweiterter Dark Mode mit mehr Farbprofilen',
-                benefit: 'Bessere Augenentlastung bei Nacht',
-                cost: 150,
-                premium: true,
-                category: 'ui'
-            },
-            {
-                id: 'export_pdf',
-                title: 'PDF Export',
-                icon: 'fas fa-file-pdf',
-                description: 'Exportieren Sie Berichte als PDF',
-                benefit: 'Professionelle Berichte erstellen',
-                cost: 250,
-                premium: true,
-                category: 'export'
-            }*/
+            }
         ];
 
         // ==================== INITIALIZATION ====================
@@ -2899,6 +2880,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize manager
             premiumClubManager = new PremiumClubManager();
+            
+            // Sync data from customer.html first
+            premiumClubManager.syncFromCustomer();
             
             // Update UI
             premiumClubManager.updateUI();
@@ -2914,7 +2898,8 @@
             if (window.matchMedia) {
                 const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
                 darkModeMediaQuery.addListener((e) => {
-                    if (premiumClubManager.settings.darkMode === undefined) {
+                    const theme = localStorage.getItem('gittertier_theme');
+                    if (!theme) {
                         if (e.matches) {
                             document.body.classList.add('dark-mode');
                         } else {
@@ -2923,6 +2908,11 @@
                     }
                 });
             }
+            
+            // Periodically sync with customer.html data
+            setInterval(() => {
+                premiumClubManager.syncFromCustomer();
+            }, 5000);
         });
 
         function setupEventListeners() {
@@ -3139,6 +3129,15 @@
         // Expose to global scope for integration with other pages
         window.premiumClubManager = premiumClubManager;
         window.FEATURES = FEATURES;
+        
+        // Helper function to sync points from customer.html
+        window.syncLoyaltyPoints = function(pointsToAdd) {
+            if (premiumClubManager) {
+                premiumClubManager.addPoints(pointsToAdd, 'Einkauf abgeschlossen');
+                return true;
+            }
+            return false;
+        };
     </script>
 </body>
 </html>
