@@ -1,65 +1,71 @@
-// --- EMPFÄNGER CODE (Arduino UNO R4 WiFi) ---
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
 
-// Pin Definitionen laut deiner CSV 
+// PIN-KONFIGURATION UNO R4
 const int r_csn = 10;
-const int r_gdo0 = 2; // GDO0 an Pin 2 ist perfekt für Interrupts
+const int r_gdo0 = 2; // GDO0 an Pin 2
 
 void setup() {
   Serial.begin(115200);
-  delay(2000); // Kurz warten, damit der Serial Monitor bereit ist
-  Serial.println("\n--- GITTERTIER: UNO R4 EMPFAENGER START ---");
+  delay(2000);
+  Serial.println("\n--- 2. EMPFAENGER DEBUG (UNO R4) ---");
 
-  // SPI Pins sind beim R4 auf dem ICSP Header bzw. 11/12/13 gemappt.
-  // Wir nutzen die Standard-Belegung, setzen aber CSN und GDO explizit.
+  // SPI Fix für R4
+  ELECHOUSE_cc1101.setSpiPin(13, 12, 11, r_csn);
+  
+  // Wir konfigurieren Pin 2 als Eingang, um ihn zu überwachen
+  pinMode(r_gdo0, INPUT);
+
   if (ELECHOUSE_cc1101.getCC1101()) {
-    Serial.println("STATUS: CC1101 am UNO R4 gefunden.");
+    Serial.println("Hardware: OK");
   } else {
-    Serial.println("ALARM: CC1101 nicht gefunden! Verkabelung prüfen.");
-    while (1);
+    Serial.println("Hardware: FEHLER");
+    while(1);
   }
 
-  // Initialisierung
+  // --- HARD CONFIG (Identisch zum Sender!) ---
   ELECHOUSE_cc1101.Init();
+  ELECHOUSE_cc1101.setMHZ(433.92);
+  ELECHOUSE_cc1101.setSyncMode(2);
+  ELECHOUSE_cc1101.setCrc(1); // CRC Check an (filtert kaputte Pakete)
   
-  // Frequenz: Wir nutzen 433.92 MHz als Standard. 
-  // Dein Sender Code nutzte 432.80[cite: 7], wir gleichen beide hier auf Standard an.
-  ELECHOUSE_cc1101.setMHZ(433.92); 
-  
-  // Sync Mode für saubere Pakete
-  ELECHOUSE_cc1101.setSyncMode(2); 
-  
-  // GDO0 auf Pin 2 konfigurieren
-  ELECHOUSE_cc1101.setGDO(r_gdo0, 0);
-  
-  // Deaktiviert CRC Check nicht, wir wollen saubere Daten
-  ELECHOUSE_cc1101.setCrc(1);
+  // GDO0 Konfiguration: Das Modul soll Pin 2 auf HIGH ziehen, wenn ein Paket da ist
+  ELECHOUSE_cc1101.setGDO(r_gdo0, 0); 
 
-  Serial.println("Warte auf Daten...");
+  Serial.println("Warte auf Signale... (Beobachte RSSI)");
+  
+  // Empfangsmodus aktivieren
+  ELECHOUSE_cc1101.SpiStrobe(CC1101_SRX);
 }
 
 void loop() {
-  // Prüfen, ob Daten empfangen wurden
+  // 1. Prüfen ob Daten da sind (via Library)
   if (ELECHOUSE_cc1101.CheckReceiveFlag()) {
-    
-    // Daten abrufen
-    byte buffer[64] = {0};
+    byte buffer[100] = {0};
     byte len = ELECHOUSE_cc1101.ReceiveData(buffer);
 
     if (len > 0) {
-      Serial.print("EMPFANGEN: ");
-      // Wir erwarten Text oder Zahlen. Hier geben wir es als Text aus:
+      Serial.print(">>> PAKET EMPFANGEN: ");
       Serial.print((char*)buffer);
-      
-      // RSSI (Signalstärke) und LQI (Qualität) ausgeben - WICHTIG für deine Triangulation
       Serial.print(" | RSSI: ");
-      Serial.print(ELECHOUSE_cc1101.getRssi());
-      Serial.print(" dBm | LQI: ");
-      Serial.println(ELECHOUSE_cc1101.getLqi());
+      Serial.println(ELECHOUSE_cc1101.getRssi());
     }
-    
-    // Empfangsflag zurücksetzen
-    ELECHOUSE_cc1101.SpiStrobe(CC1101_SIDLE);
+    // Nach Empfang sofort wieder lauschen
     ELECHOUSE_cc1101.SpiStrobe(CC1101_SRX);
+  }
+
+  // 2. DEBUG-Monitor (Alle 500ms): Zeigt, ob der Äther "lebt"
+  static unsigned long lastCheck = 0;
+  if (millis() - lastCheck > 500) {
+    lastCheck = millis();
+    
+    int rssi = ELECHOUSE_cc1101.getRssi();
+    int gdoState = digitalRead(r_gdo0);
+    
+    // Wir geben nur Status aus, wenn KEIN Paket kam, damit der Monitor nicht flutet
+    // RSSI Werte um -100 sind "Stille". Werte um -50 sind "Laut".
+    Serial.print("[Monitor] RSSI: ");
+    Serial.print(rssi);
+    Serial.print(" dBm | GDO0-Pin Zustand: ");
+    Serial.println(gdoState);
   }
 }
