@@ -2,972 +2,708 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>DPSG · Pfadfinderpass Designer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gittertier Pro | Scout Pass Creator</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* ---------- Gittertier-Design (basierend auf 404.html) ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    /* ========================================
+       1. CORE SYSTEM & VARIABLES (Gittertier Style)
+       ======================================== */
+    :root {
+        /* UI Colors */
+        --c-bg: #ffffff;
+        --c-bg-sub: #f3f4f6;
+        --c-text: #111827;
+        --c-text-muted: #6b7280;
+        --c-border: #e5e7eb;
+        --c-accent: #2563eb;
+        --c-accent-hover: #1d4ed8;
+        --c-danger: #ef4444;
+        --c-success: #22c55e;
+        
+        /* Pass Design Variables (The "Paper" Look) */
+        --pass-bg: #dcb482; /* Wärmeres Packpapier-Braun */
+        --pass-texture: #ce9f6a;
+        --pass-ink: #1f1f1f;
+        --pass-line: #4b3b2f;
+        
+        /* Stufen-Farben (DPSG) */
+        --level-woelfling: #ff6b00;
+        --level-juffi: #2563eb;
+        --level-pfadi: #16a34a;
+        --level-rover: #dc2626;
+        --level-leiter: #fbbf24;
 
-        :root {
-            --color-bg: #ffffff;
-            --color-text: #111111;
-            --color-accent: #2563eb;          /* kräftiges Blau für Buttons */
-            --color-accent-hover: #1d4ed8;
-            --color-border: #e5e7eb;
-            --color-card-bg: #ffffff;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
-            --radius: 12px;
-            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            --font-serif: Georgia, 'Times New Roman', serif;
-            --pass-orange: #d69e6b;            /* Karton-Orange */
-            --pass-light: #f5e6d3;
-            --task-circle-size: 24px;
-        }
+        /* Metrics */
+        --radius: 12px;
+        --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        --header-h: 64px;
+        --font-ui: 'Inter', sans-serif;
+        --font-serif: 'Merriweather', serif;
+        --font-hand: 'Caveat', cursive;
+    }
 
-        body {
-            background-color: var(--color-bg);
-            color: var(--color-text);
-            font-family: var(--font-sans);
-            line-height: 1.5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+    
+    body {
+        font-family: var(--font-ui);
+        background: var(--c-bg-sub);
+        color: var(--c-text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-        /* Header */
-        .app-header {
-            background: var(--color-card-bg);
-            border-bottom: 1px solid var(--color-border);
-            padding: 1rem 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
+    /* ========================================
+       2. UI COMPONENTS
+       ======================================== */
+    /* Header */
+    header {
+        height: var(--header-h);
+        background: var(--c-bg);
+        border-bottom: 1px solid var(--c-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        position: sticky;
+        top: 0; z-index: 50;
+    }
+    .brand { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; color: var(--c-text); text-decoration: none; }
+    .brand i { color: var(--c-accent); }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+    /* Main Container */
+    main {
+        flex: 1;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
 
-        .logo-area h1 {
-            font-size: 1.6rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            background: linear-gradient(145deg, #2d3748, #1a202c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    /* Hero Card */
+    .hero {
+        background: var(--c-bg);
+        border-radius: var(--radius);
+        padding: 40px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--c-border);
+    }
+    .hero h1 { font-size: 2.5rem; margin-bottom: 10px; letter-spacing: -0.03em; }
+    .hero p { color: var(--c-text-muted); max-width: 600px; margin: 0 auto 30px; line-height: 1.6; }
+    
+    /* Buttons */
+    .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;
+        transition: all 0.2s; border: none; font-size: 1rem;
+    }
+    .btn-primary { background: var(--c-accent); color: white; }
+    .btn-primary:hover { background: var(--c-accent-hover); transform: translateY(-1px); }
+    .btn-secondary { background: white; border: 1px solid var(--c-border); color: var(--c-text); }
+    .btn-secondary:hover { background: var(--c-bg-sub); border-color: var(--c-text-muted); }
+    .btn-danger { background: white; border: 1px solid var(--c-border); color: var(--c-danger); padding: 8px; }
+    .btn-danger:hover { background: #fef2f2; border-color: var(--c-danger); }
 
-        .badge-icon {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-        }
+    /* ========================================
+       3. WIZARD MODAL SYSTEM
+       ======================================== */
+    .modal {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+        z-index: 100; display: none; opacity: 0; transition: opacity 0.3s;
+        justify-content: center; align-items: center; padding: 20px;
+    }
+    .modal.active { display: flex; opacity: 1; }
 
-        .btn-primary {
-            background-color: var(--color-accent);
-            color: white;
-            border: none;
-            padding: 0.7rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
+    .wizard {
+        width: 100%; max-width: 1400px; height: 90vh;
+        background: var(--c-bg); border-radius: var(--radius);
+        display: flex; flex-direction: column; overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
 
-        .btn-primary:hover {
-            background-color: var(--color-accent-hover);
-        }
+    .wizard-header {
+        padding: 20px 30px; border-bottom: 1px solid var(--c-border);
+        display: flex; justify-content: space-between; align-items: center;
+    }
 
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
+    .wizard-body {
+        flex: 1; display: flex; overflow: hidden;
+    }
 
-        .btn-secondary {
-            background-color: white;
-            color: var(--color-text);
-            border: 1px solid var(--color-border);
-            padding: 0.6rem 1.2rem;
-            border-radius: 9999px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
+    /* Left Side: Controls */
+    .controls {
+        width: 400px; background: var(--c-bg-sub);
+        border-right: 1px solid var(--c-border);
+        padding: 30px; overflow-y: auto; display: flex; flex-direction: column;
+    }
 
-        .btn-secondary:hover {
-            background-color: #f9fafb;
-        }
+    .step-content { display: none; animation: fadeIn 0.4s ease; }
+    .step-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Hauptbereich – Vorschau & Schnelleinstiege */
-        .main-preview {
-            flex: 1;
-            padding: 2rem 1.5rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
+    .form-group { margin-bottom: 20px; }
+    .label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--c-text); }
+    .input {
+        width: 100%; padding: 10px 12px; border-radius: 6px;
+        border: 1px solid var(--c-border); background: white;
+        font-family: var(--font-ui); transition: 0.2s;
+    }
+    .input:focus { border-color: var(--c-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 
-        .preview-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
+    /* File Upload */
+    .dropzone {
+        border: 2px dashed var(--c-border); border-radius: 8px; padding: 30px;
+        text-align: center; cursor: pointer; transition: 0.2s; background: white;
+    }
+    .dropzone:hover { border-color: var(--c-accent); background: #eff6ff; }
 
-        .pass-showcase {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            justify-content: center;
-            align-items: flex-start;
-        }
+    /* Task List */
+    .task-list { display: flex; flex-direction: column; gap: 10px; }
+    .task-item { display: flex; gap: 8px; align-items: center; }
 
-        /* Der Pass – echte Kartenoptik */
-        .pass-card {
-            background: var(--pass-orange);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            padding: 1.8rem 1.5rem;
-            font-family: var(--font-serif);
-            width: min(100%, 500px);
-            border: 1px solid #b47d54;
-            transition: all 0.2s;
-            position: relative;
+    /* Right Side: Preview */
+    .preview-area {
+        flex: 1; background: #333; 
+        background-image: radial-gradient(#444 1px, transparent 1px); background-size: 20px 20px;
+        padding: 40px; overflow-y: auto;
+        display: flex; justify-content: center; align-items: flex-start;
+    }
+
+    /* Footer */
+    .wizard-footer {
+        padding: 20px 30px; border-top: 1px solid var(--c-border);
+        display: flex; justify-content: space-between; align-items: center; background: white;
+    }
+    .progress-dots { display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-border); transition: 0.3s; }
+    .dot.active { background: var(--c-accent); transform: scale(1.3); }
+    .dot.done { background: var(--c-success); }
+
+    /* ========================================
+       4. THE PASS DESIGN (A4 LAYOUT)
+       ======================================== */
+    /* DIN A4 Landscape: 297mm x 210mm
+       Screen Simulation: Scale it to fit preview
+    */
+    .a4-sheet {
+        width: 297mm;
+        height: 210mm;
+        background-color: var(--pass-bg);
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* Paper Texture */
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Split precisely in half */
+        overflow: hidden;
+        transform-origin: top center;
+    }
+
+    /* Shared Styles for Left/Right Panels */
+    .pass-panel {
+        padding: 20mm;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    /* Vertical Separator Line for Folding/Cutting */
+    .pass-panel:first-child { border-right: 1px dashed rgba(0,0,0,0.2); }
+
+    /* Typography inside Pass */
+    .pass-h1 {
+        font-family: var(--font-serif); font-weight: 900; font-size: 24pt;
+        color: rgba(255,255,255,0.7); text-transform: uppercase;
+        margin-bottom: 20px; line-height: 1;
+    }
+    .pass-h2 {
+        font-family: var(--font-serif); font-weight: 700; font-size: 14pt;
+        color: var(--pass-ink); margin-bottom: 15px; border-bottom: 2px solid var(--pass-ink); padding-bottom: 5px;
+    }
+
+    /* Handwriting Fields */
+    .field-row { margin-bottom: 12px; display: flex; align-items: baseline; }
+    .field-label { font-family: var(--font-serif); font-weight: 700; font-size: 10pt; width: 60px; color: var(--pass-ink); }
+    .field-val {
+        flex: 1; border-bottom: 1px solid var(--pass-line); height: 24px;
+        font-family: var(--font-hand); font-size: 18pt; color: #00008b; /* Blue Ink */
+        padding-left: 10px; white-space: nowrap;
+    }
+
+    /* DPSG Lilie Background */
+    .bg-lilie {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 80%; opacity: 0.15; pointer-events: none; mix-blend-mode: multiply;
+    }
+
+    /* Logos */
+    .logo-stamp {
+        position: absolute; top: 15mm; right: 15mm; width: 25mm; height: 25mm;
+        background: white; border-radius: 50%; padding: 2px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .logo-stamp img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+
+    /* Photo Frame */
+    .photo-area {
+        width: 35mm; height: 45mm; border: 2px solid var(--pass-line);
+        background: rgba(255,255,255,0.2); margin: 20px 0;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden; align-self: flex-start;
+    }
+    .photo-area img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Tasks Grid */
+    .tasks-container { display: flex; flex-direction: column; gap: 8px; }
+    .task-entry { display: flex; justify-content: space-between; align-items: center; padding-right: 10px; }
+    .task-txt { font-family: var(--font-serif); font-size: 11pt; color: var(--pass-ink); }
+    .task-check {
+        width: 6mm; height: 6mm; border: 1px solid var(--pass-line); background: white;
+        border-radius: 50%; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Color Bars (Stufe) */
+    .color-bar { height: 10px; width: 100%; position: absolute; bottom: 0; left: 0; }
+
+    /* ========================================
+       5. RESPONSIVE & MOBILE
+       ======================================== */
+    @media (max-width: 1000px) {
+        .wizard-body { flex-direction: column-reverse; }
+        .controls { width: 100%; height: 50%; border-right: none; border-top: 1px solid var(--c-border); }
+        .preview-area { height: 50%; padding: 20px; }
+        /* Scale down the A4 sheet for mobile preview */
+        .a4-sheet { transform: scale(0.45); transform-origin: top center; margin-bottom: -100px; }
+    }
+
+    /* ========================================
+       6. PRINT STYLES (CRITICAL)
+       ======================================== */
+    @media print {
+        @page { size: A4 landscape; margin: 0; }
+        body { margin: 0; padding: 0; background: white; }
+        
+        /* Hide UI */
+        header, .hero, .wizard, .modal-backdrop, .wizard-footer, .controls, .preview-area { display: none !important; }
+        
+        /* Show Print Container */
+        #print-root { display: block !important; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        /* Ensure Colors Print */
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        
+        /* Render Sheet Exactly */
+        .a4-sheet {
+            width: 297mm; height: 210mm;
+            margin: 0; border: none; box-shadow: none;
+            transform: none !important; /* No scaling in print */
+            page-break-after: avoid;
             page-break-inside: avoid;
-            break-inside: avoid;
         }
-
-        .pass-card.front {
-            background: var(--pass-orange) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><path fill="%233b2c1e" d="M50 15L70 40H55L50 60L45 40H30L50 15Z"/></svg>') repeat;
-            background-blend-mode: overlay;
-        }
-
-        .pass-card.back {
-            background: var(--pass-orange);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .pass-two-column {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.2rem;
-            margin-top: 0.8rem;
-        }
-
-        /* Linke Spalte (Personalien) */
-        .personal-area {
-            position: relative;
-            padding-right: 0.5rem;
-        }
-
-        .dpsg-watermark {
-            position: absolute;
-            top: 10px;
-            left: 0;
-            width: 80px;
-            height: auto;
-            opacity: 0.15;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .personal-field {
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 2;
-        }
-
-        .personal-field label {
-            display: block;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #5a3e2b;
-            font-weight: 600;
-        }
-
-        .personal-field .field-value {
-            border-bottom: 2px solid #8b6f50;
-            padding: 0.2rem 0 0.1rem;
-            min-height: 1.8rem;
-            font-size: 1rem;
-            word-break: break-word;
-        }
-
-        .photo-placeholder {
-            width: 100%;
-            aspect-ratio: 1/1;
-            background: #e7cfb5;
-            border-radius: 8px;
-            border: 2px dashed #8b6f50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #5a3e2b;
-            font-size: 0.9rem;
-            margin: 1rem 0;
-            overflow: hidden;
-        }
-
-        .photo-placeholder img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Rechte Spalte (Aufgaben) */
-        .tasks-area {
-            background: rgba(255,240,220,0.3);
-            padding: 0.6rem 0.8rem;
-            border-radius: 12px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .task-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.7rem;
-            font-size: 0.95rem;
-        }
-
-        .task-circle {
-            width: var(--task-circle-size);
-            height: var(--task-circle-size);
-            background: white;
-            border-radius: 50%;
-            border: 2px solid #8b6f50;
-            box-shadow: inset 0 2px 3px rgba(0,0,0,0.1);
-            flex-shrink: 0;
-        }
-
-        .task-text {
-            line-height: 1.3;
-            border-bottom: 1px dotted #8b6f50;
-            flex: 1;
-            padding-bottom: 2px;
-        }
-
-        /* Stamm-Logo (Brombach) */
-        .stamm-logo {
-            position: absolute;
-            top: 0.8rem;
-            right: 0.8rem;
-            width: 65px;
-            height: auto;
-            background: white;
-            border-radius: 30px;
-            padding: 4px 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            z-index: 5;
-        }
-
-        /* Rückseite – Badge-Sammlung */
-        .badges-section {
-            margin-top: 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-            align-items: center;
-            border-top: 2px solid #b47d54;
-            padding-top: 1.5rem;
-        }
-
-        .badge-item {
-            background: #f5e6d3;
-            border-radius: 50%;
-            width: 70px;
-            height: 70px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border: 2px solid #b47d54;
-            font-size: 0.7rem;
-            text-align: center;
-            font-weight: bold;
-            padding: 0.2rem;
-            color: #4a3726;
-        }
-
-        .badge-item img {
-            max-width: 40px;
-            max-height: 40px;
-            margin-bottom: 2px;
-        }
-
-        /* Druckansicht */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            .pass-card, .pass-card * {
-                visibility: visible;
-            }
-            .pass-card {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                box-shadow: none;
-                border: 1px solid #aaa;
-                background: #d69e6b !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            .app-header, .btn-primary, .btn-secondary, .modal-overlay, .quick-actions {
-                display: none !important;
-            }
-        }
-
-        /* Quick Actions (unter Vorschau) */
-        .quick-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-
-        /* ---------- Modal / Wizard ---------- */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-wizard {
-            background: white;
-            border-radius: var(--radius);
-            max-width: 700px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .wizard-header {
-            padding: 1.5rem 2rem;
-            border-bottom: 2px solid var(--color-border);
-            background: #fafafa;
-        }
-
-        .wizard-header h2 {
-            font-size: 1.6rem;
-            font-weight: 600;
-        }
-
-        .step-indicator {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .step-dot {
-            width: 30px;
-            height: 8px;
-            border-radius: 20px;
-            background: #d1d5db;
-            transition: 0.2s;
-        }
-        .step-dot.active {
-            background: var(--color-accent);
-            width: 50px;
-        }
-
-        .wizard-content {
-            padding: 2rem;
-            flex: 1;
-        }
-
-        .wizard-step {
-            display: none;
-        }
-        .wizard-step.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-        }
-        .form-control {
-            width: 100%;
-            padding: 0.7rem 1rem;
-            border: 1px solid var(--color-border);
-            border-radius: 30px;
-            font-size: 1rem;
-        }
-
-        .task-list-editor {
-            display: flex;
-            flex-direction: column;
-            gap: 0.7rem;
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 0.3rem;
-        }
-
-        .task-editor-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #f9fafb;
-            padding: 0.5rem 1rem;
-            border-radius: 40px;
-        }
-        .task-editor-item input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 0.3rem;
-            border-bottom: 1px solid #ccc;
-        }
-        .task-editor-item input:focus {
-            outline: none;
-            border-bottom-color: var(--color-accent);
-        }
-        .remove-task {
-            background: none;
-            border: none;
-            font-size: 1.4rem;
-            color: #9ca3af;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-        .remove-task:hover {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .badge-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        .badge-option {
-            border: 2px solid var(--color-border);
-            border-radius: 40px;
-            padding: 0.6rem 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .badge-option.selected {
-            border-color: var(--color-accent);
-            background: #dbeafe;
-        }
-        .badge-option img {
-            width: 30px;
-            height: 30px;
-        }
-
-        .wizard-footer {
-            padding: 1.5rem 2rem;
-            border-top: 1px solid var(--color-border);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Responsive */
-        @media (max-width: 640px) {
-            .app-header {
-                flex-direction: column;
-                align-items: start;
-            }
-            .pass-showcase {
-                flex-direction: column;
-                align-items: center;
-            }
-            .pass-card {
-                width: 100%;
-            }
-            .pass-two-column {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-            .stamm-logo {
-                width: 50px;
-            }
-            .wizard-content {
-                padding: 1rem;
-            }
-        }
+    }
+    
+    #print-root { display: none; } /* Hidden normally */
     </style>
 </head>
 <body>
-    <header class="app-header">
-        <div class="logo-area">
-            <img src="https://dpsg.de/sites/default/files/2021-08/dpsg-lilie_schwarz.png" alt="DPSG Lilie" class="badge-icon">
-            <h1>pfadfinderpass.design</h1>
-        </div>
-        <button class="btn-primary" id="openWizardBtn">✧ Pass gestalten</button>
+
+    <header>
+        <a href="#" class="brand"><i class="fa-solid fa-compass"></i> Gittertier Pro <span style="font-weight:300; opacity:0.6;">| Scout</span></a>
     </header>
 
-    <main class="main-preview">
-        <div class="preview-container">
-            <!-- Live-Vorschau: zwei Seiten nebeneinander / untereinander -->
-            <div class="pass-showcase" id="livePreview">
-                <!-- wird dynamisch per JS gerendert -->
-            </div>
-
-            <div class="quick-actions">
-                <button class="btn-secondary" id="printBtn">🖨️ Drucken / PDF</button>
-                <button class="btn-secondary" id="resetBtn">↺ Zurücksetzen</button>
-            </div>
+    <main>
+        <div class="hero">
+            <h1>Pfadfinder-Pass Generator</h1>
+            <p>
+                Erstelle professionelle, DPSG-konforme Pässe. Optimiert für DIN A4 Druck (1 Seite, Vorder- & Rückseite nebeneinander). 
+                Komplett anpassbar für Wölflinge, Juffis, Pfadis und Rover.
+            </p>
+            <button class="btn btn-primary" onclick="app.openWizard()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Jetzt designen
+            </button>
         </div>
     </main>
 
-    <!-- Wizard Modal -->
-    <div class="modal-overlay" id="wizardModal">
-        <div class="modal-wizard">
+    <div class="modal" id="wizardModal">
+        <div class="wizard">
             <div class="wizard-header">
-                <h2>Pass-Konfigurator</h2>
-                <div class="step-indicator" id="stepIndicator">
-                    <span class="step-dot active"></span>
-                    <span class="step-dot"></span>
-                    <span class="step-dot"></span>
-                    <span class="step-dot"></span>
+                <h3>Pass konfigurieren</h3>
+                <button class="btn btn-secondary" onclick="app.closeWizard()" style="padding: 6px 12px;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="wizard-body">
+                <div class="controls" id="controlsArea">
+                    
+                    <div class="step-content" data-step="1">
+                        <h4>1. Persönliche Daten</h4>
+                        <div class="form-group">
+                            <label class="label">Name</label>
+                            <input type="text" class="input" id="inpName" value="" placeholder="Max Mustermann" oninput="app.update()">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Alter</label>
+                            <input type="text" class="input" id="inpAge" placeholder="10 Jahre" oninput="app.update()">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Stamm</label>
+                            <input type="text" class="input" id="inpTribe" value="St. Josef Brombach" oninput="app.update()">
+                        </div>
+                    </div>
+
+                    <div class="step-content" data-step="2">
+                        <h4>2. Stufe & Design</h4>
+                        <div class="form-group">
+                            <label class="label">Stufe (Farbe)</label>
+                            <select class="input" id="inpLevel" onchange="app.update()">
+                                <option value="woelfling">Wölfling (Orange)</option>
+                                <option value="juffi">Jungpfadfinder (Blau)</option>
+                                <option value="pfadi">Pfadfinder (Grün)</option>
+                                <option value="rover">Rover (Rot)</option>
+                                <option value="leiter">Leiter (Gelb)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Foto hochladen (Optional)</label>
+                            <div class="dropzone" onclick="document.getElementById('fileIn').click()">
+                                <i class="fa-solid fa-camera"></i> Bild wählen
+                                <input type="file" id="fileIn" hidden accept="image/*" onchange="app.handleImage(this)">
+                            </div>
+                            <button onclick="app.clearImage()" class="btn btn-danger" style="width:100%; margin-top:10px; display:none;" id="btnDelImg">Foto entfernen</button>
+                        </div>
+                    </div>
+
+                    <div class="step-content" data-step="3">
+                        <h4>3. Aufgaben (Vorderseite)</h4>
+                        <p style="font-size:0.8rem; color:var(--c-text-muted); margin-bottom:15px;">Die wichtigsten Skills.</p>
+                        <div id="taskListFront" class="task-list"></div>
+                        <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="app.addTask('front')">+ Aufgabe</button>
+                    </div>
+
+                    <div class="step-content" data-step="4">
+                        <h4>4. Aufgaben (Rückseite)</h4>
+                        <p style="font-size:0.8rem; color:var(--c-text-muted); margin-bottom:15px;">Erweiterte Prüfungen.</p>
+                        <div id="taskListBack" class="task-list"></div>
+                        <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="app.addTask('back')">+ Aufgabe</button>
+                    </div>
+
+                    <div class="step-content" data-step="5">
+                        <h4>5. Logos & Details</h4>
+                        <div class="form-group">
+                            <label class="label">Hintergrund-Logo (Lilie)</label>
+                            <select class="input" id="inpLogoStyle" onchange="app.update()">
+                                <option value="black">Schwarz (Klassisch)</option>
+                                <option value="outline">Outline (Dezent)</option>
+                                <option value="none">Keines</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Pass-Titel</label>
+                            <input type="text" class="input" id="inpTitle" value="Pfadfinderpass" oninput="app.update()">
+                        </div>
+                    </div>
+
+                    <div class="step-content" data-step="6">
+                        <h4>6. Fertigstellung</h4>
+                        <p>Dein Pass ist bereit für den Druck. Überprüfe die Vorschau rechts.</p>
+                        <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; color: #1e40af; font-size: 0.9rem; margin-top: 20px;">
+                            <i class="fa-solid fa-circle-info"></i> <strong>Druck-Hinweis:</strong><br>
+                            Nutze "A4 Querformat". Stelle sicher, dass im Druckdialog "Hintergrundgrafiken" aktiviert ist.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="preview-area">
+                    <div id="previewSheet" class="a4-sheet">
+                        
+                        <div class="pass-panel">
+                            <div class="bg-lilie" id="bgLilie1"><img src="" style="width:100%;"></div>
+                            <div class="pass-h2">Weitere Prüfungen</div>
+                            
+                            <div class="tasks-container" id="renderTasksBack"></div>
+
+                            <div style="margin-top: auto;">
+                                <div class="field-row">
+                                    <div class="field-label" style="width:auto; margin-right:10px;">Ort/Datum:</div>
+                                    <div class="field-val"></div>
+                                </div>
+                                <div class="field-row">
+                                    <div class="field-label" style="width:auto; margin-right:10px;">Unterschrift:</div>
+                                    <div class="field-val"></div>
+                                </div>
+                            </div>
+                            <div class="color-bar" id="bar1"></div>
+                        </div>
+
+                        <div class="pass-panel">
+                            <div class="logo-stamp">
+                                <img src="http://www.dpsg-brombach.de/images/Logo_Stamm/DPSG_Stamm_St_Josef_Brombach.gif" onerror="this.style.display='none'">
+                            </div>
+                            <div class="bg-lilie" id="bgLilie2"><img src="" style="width:100%;"></div>
+
+                            <div class="pass-h1" id="outTitle">Pfadfinderpass</div>
+
+                            <div style="display: flex; gap: 20px;">
+                                <div style="flex: 1;">
+                                    <div class="field-row">
+                                        <span class="field-label">Name:</span>
+                                        <div class="field-val" id="outName"></div>
+                                    </div>
+                                    <div class="field-row">
+                                        <span class="field-label">Alter:</span>
+                                        <div class="field-val" id="outAge"></div>
+                                    </div>
+                                    <div class="field-row">
+                                        <span class="field-label">Stufe:</span>
+                                        <div class="field-val" id="outLevel"></div>
+                                    </div>
+                                    <div class="field-row">
+                                        <span class="field-label">Stamm:</span>
+                                        <div class="field-val" id="outTribe"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="photo-area">
+                                    <img id="outPhoto" src="" style="display:none;">
+                                    <span id="outPhotoPlaceholder" style="font-family: var(--font-serif); font-size: 0.8rem; color:var(--pass-ink); text-align:center;">Foto<br>hier</span>
+                                </div>
+                            </div>
+
+                            <div class="pass-h2" style="margin-top: 20px;">Grundaufgaben</div>
+                            <div class="tasks-container" id="renderTasksFront"></div>
+
+                            <div class="color-bar" id="bar2"></div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
-            <div class="wizard-content">
-                <!-- Schritt 1: Persönliche Daten -->
-                <div class="wizard-step active" id="step1">
-                    <h3>📋 Persönliche Daten</h3>
-                    <div class="form-group">
-                        <label>Name / Pfadfindername</label>
-                        <input type="text" class="form-control" id="inputName" placeholder="z.B. Max Mustermann" value="Lukas Feuerfuchs">
-                    </div>
-                    <div class="form-group">
-                        <label>Stufe</label>
-                        <input type="text" class="form-control" id="inputStufe" placeholder="z.B. Wölflinge, Jungpfadfinder..." value="Jungpfadfinder">
-                    </div>
-                    <div class="form-group">
-                        <label>Stamm</label>
-                        <input type="text" class="form-control" id="inputStamm" placeholder="Stamm St. Josef Brombach" value="St. Josef Brombach">
-                    </div>
-                    <div class="form-group">
-                        <label>Foto (optional)</label>
-                        <input type="file" class="form-control" id="inputPhoto" accept="image/*">
-                        <small style="color: #666;">Wenn kein Foto, erscheint Platzhalter</small>
-                    </div>
-                </div>
-                <!-- Schritt 2: Aufgaben verwalten -->
-                <div class="wizard-step" id="step2">
-                    <h3>✅ Aufgaben / Fertigkeiten</h3>
-                    <p>Füge Aufgaben hinzu oder entferne sie:</p>
-                    <div id="taskEditorContainer" class="task-list-editor">
-                        <!-- dynamisch per JS -->
-                    </div>
-                    <button class="btn-secondary" id="addTaskBtn" style="margin-top:1rem;">+ Aufgabe hinzufügen</button>
-                </div>
-                <!-- Schritt 3: Abzeichen & Logos (Rückseite) -->
-                <div class="wizard-step" id="step3">
-                    <h3>🏅 Rückseite – Abzeichen</h3>
-                    <p>Wähle Abzeichen für die Rückseite aus:</p>
-                    <div class="badge-selector" id="badgeSelector">
-                        <!-- dynamisch JS -->
-                    </div>
-                    <div class="form-group" style="margin-top:1rem;">
-                        <label>Zusätzlicher Text / Motto</label>
-                        <input type="text" class="form-control" id="backMotto" placeholder="z.B. 'Gut Pfadfinden'" value="Immer bereit!">
-                    </div>
-                </div>
-                <!-- Schritt 4: Design & Abschluss -->
-                <div class="wizard-step" id="step4">
-                    <h3>🎨 Design & Druck</h3>
-                    <div class="form-group">
-                        <label>Pass-Grundfarbe</label>
-                        <input type="color" class="form-control" id="passColor" value="#d69e6b" style="height:50px;">
-                    </div>
-                    <div class="form-group">
-                        <label>Schriftfarbe (Innenseite)</label>
-                        <input type="color" class="form-control" id="textColor" value="#2d2d2d">
-                    </div>
-                    <p style="margin-top:1rem;">Alle Einstellungen werden live übernommen. Du kannst das Modal jederzeit schließen.</p>
-                </div>
-            </div>
+
             <div class="wizard-footer">
-                <button class="btn-secondary" id="prevStepBtn" disabled>← Zurück</button>
-                <div>
-                    <button class="btn-secondary" id="closeWizardBtn">Schließen</button>
-                    <button class="btn-primary" id="nextStepBtn">Weiter →</button>
+                <div class="progress-dots" id="dots"></div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-secondary" id="btnPrev" onclick="app.step(-1)">Zurück</button>
+                    <button class="btn btn-primary" id="btnNext" onclick="app.step(1)">Weiter</button>
+                    <button class="btn btn-success" id="btnPrint" onclick="window.print()" style="background:var(--c-success); color:white; display:none;">
+                        <i class="fa-solid fa-print"></i> Drucken
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <div id="print-root"></div>
+
     <script>
-        (function() {
-            // ------------- Zentraler State -------------
-            const state = {
-                personal: {
-                    name: 'Lukas Feuerfuchs',
-                    stufe: 'Jungpfadfinder',
-                    stamm: 'St. Josef Brombach',
-                    photoDataURL: null
-                },
-                tasks: [
-                    'Feuer machen',
-                    'Messerführerschein',
-                    'Zelt aufbauen',
-                    'Rucksack packen',
-                    'Knoten (Achtknoten, Mastwurf)',
-                    'Wegzeichen lesen',
-                    'Erste Hilfe Koffer',
-                    'Navi ohne Akku'
-                ],
-                backBadges: ['dpsg-schwarz', 'dpsg-outline', 'brombach', 'feuer'], // IDs der aktivierten Badges
-                backMotto: 'Immer bereit!',
-                design: {
-                    passColor: '#d69e6b',
-                    textColor: '#2d2d2d'
-                }
+    const LOGO_BLACK = "https://dpsg.de/sites/default/files/2021-08/dpsg-lilie_schwarz.png";
+    const LOGO_OUTLINE = "https://dpsg.de/sites/default/files/2021-08/dpsg-lilie_outline.png";
+
+    const app = {
+        currentStep: 1,
+        totalSteps: 6,
+        data: {
+            tasksFront: ["Feuer machen", "Knotenkunde", "Zelt aufbauen", "Erste Hilfe", "Rucksack packen"],
+            tasksBack: ["Lagerlied singen", "Spüldienst", "Nachtwache", "Gute Tat", "Wegzeichen"],
+            imgData: null
+        },
+
+        init() {
+            this.renderDots();
+            this.renderTasksDOM();
+            this.update();
+        },
+
+        openWizard() {
+            document.getElementById('wizardModal').classList.add('active');
+            this.update();
+        },
+
+        closeWizard() {
+            if(confirm('Wirklich schließen? Ungespeicherte Daten gehen verloren.')) {
+                document.getElementById('wizardModal').classList.remove('active');
+            }
+        },
+
+        // --- Wizard Navigation ---
+        step(dir) {
+            const newStep = this.currentStep + dir;
+            if(newStep < 1 || newStep > this.totalSteps) return;
+            this.currentStep = newStep;
+            this.updateUI();
+        },
+
+        updateUI() {
+            // Show/Hide Steps
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+                if(parseInt(el.dataset.step) === this.currentStep) el.classList.add('active');
+            });
+
+            // Dots
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.classList.remove('active', 'done');
+                if(i + 1 === this.currentStep) d.classList.add('active');
+                if(i + 1 < this.currentStep) d.classList.add('done');
+            });
+
+            // Buttons
+            document.getElementById('btnPrev').disabled = (this.currentStep === 1);
+            if(this.currentStep === this.totalSteps) {
+                document.getElementById('btnNext').style.display = 'none';
+                document.getElementById('btnPrint').style.display = 'inline-flex';
+            } else {
+                document.getElementById('btnNext').style.display = 'inline-flex';
+                document.getElementById('btnPrint').style.display = 'none';
+            }
+        },
+
+        renderDots() {
+            const c = document.getElementById('dots');
+            c.innerHTML = '';
+            for(let i=1; i<=this.totalSteps; i++) {
+                const d = document.createElement('div');
+                d.className = 'dot ' + (i===1?'active':'');
+                c.appendChild(d);
+            }
+        },
+
+        // --- Data & Rendering ---
+        update() {
+            // Text Inputs
+            document.getElementById('outName').innerText = document.getElementById('inpName').value;
+            document.getElementById('outAge').innerText = document.getElementById('inpAge').value;
+            document.getElementById('outTribe').innerText = document.getElementById('inpTribe').value;
+            document.getElementById('outTitle').innerText = document.getElementById('inpTitle').value;
+
+            // Level / Color
+            const lvl = document.getElementById('inpLevel').value;
+            const lvlMap = {
+                'woelfling': 'Wölfling',
+                'juffi': 'Jungpfadfinder',
+                'pfadi': 'Pfadfinder',
+                'rover': 'Rover',
+                'leiter': 'Leiter'
             };
+            const colorMap = {
+                'woelfling': 'var(--level-woelfling)',
+                'juffi': 'var(--level-juffi)',
+                'pfadi': 'var(--level-pfadi)',
+                'rover': 'var(--level-rover)',
+                'leiter': 'var(--level-leiter)'
+            };
+            document.getElementById('outLevel').innerText = lvlMap[lvl];
+            const color = colorMap[lvl];
+            document.getElementById('bar1').style.backgroundColor = color;
+            document.getElementById('bar2').style.backgroundColor = color;
 
-            // Alle verfügbaren Badges (für Rückseite)
-            const availableBadges = [
-                { id: 'dpsg-schwarz', label: 'DPSG Lilie', img: 'https://dpsg.de/sites/default/files/2021-08/dpsg-lilie_schwarz.png' },
-                { id: 'dpsg-outline', label: 'DPSG Outline', img: 'https://dpsg.de/sites/default/files/2021-08/dpsg-lilie_outline.png' },
-                { id: 'brombach', label: 'Brombach', img: 'http://www.dpsg-brombach.de/images/Logo_Stamm/DPSG_Stamm_St_Josef_Brombach.gif' },
-                { id: 'feuer', label: 'Feuer', emoji: '🔥' },
-                { id: 'knoten', label: 'Knoten', emoji: '🪢' },
-                { id: 'kompass', label: 'Kompass', emoji: '🧭' },
-                { id: 'zelt', label: 'Zelt', emoji: '⛺' }
-            ];
+            // Logo Style
+            const ls = document.getElementById('inpLogoStyle').value;
+            const lilieSrc = ls === 'black' ? LOGO_BLACK : (ls === 'outline' ? LOGO_OUTLINE : '');
+            
+            const updateLilie = (id) => {
+                const el = document.getElementById(id);
+                el.innerHTML = '';
+                if(lilieSrc) el.innerHTML = `<img src="${lilieSrc}" style="width:100%;">`;
+            };
+            updateLilie('bgLilie1');
+            updateLilie('bgLilie2');
 
-            // ------------- DOM-Elemente -------------
-            const previewContainer = document.getElementById('livePreview');
-            const openWizardBtn = document.getElementById('openWizardBtn');
-            const modal = document.getElementById('wizardModal');
-            const closeWizardBtn = document.getElementById('closeWizardBtn');
-            const prevBtn = document.getElementById('prevStepBtn');
-            const nextBtn = document.getElementById('nextStepBtn');
-            const stepDots = document.querySelectorAll('.step-dot');
-            const steps = document.querySelectorAll('.wizard-step');
-            const printBtn = document.getElementById('printBtn');
-            const resetBtn = document.getElementById('resetBtn');
+            // Tasks
+            this.renderPreviewTasks('front', this.data.tasksFront, 'renderTasksFront');
+            this.renderPreviewTasks('back', this.data.tasksBack, 'renderTasksBack');
 
-            // Schrittverwaltung
-            let currentStep = 1;
-            const totalSteps = 4;
+            // Sync for Print
+            document.getElementById('print-root').innerHTML = document.getElementById('previewSheet').outerHTML;
+        },
 
-            // Inputs Schritt 1
-            const inputName = document.getElementById('inputName');
-            const inputStufe = document.getElementById('inputStufe');
-            const inputStamm = document.getElementById('inputStamm');
-            const inputPhoto = document.getElementById('inputPhoto');
-
-            // Schritt 2 Task Container
-            const taskEditorContainer = document.getElementById('taskEditorContainer');
-            const addTaskBtn = document.getElementById('addTaskBtn');
-
-            // Schritt 3
-            const badgeSelector = document.getElementById('badgeSelector');
-            const backMotto = document.getElementById('backMotto');
-
-            // Schritt 4
-            const passColor = document.getElementById('passColor');
-            const textColor = document.getElementById('textColor');
-
-            // ------------- Render-Funktionen -------------
-            function renderPreview() {
-                const passColorVal = state.design.passColor;
-                const textColorVal = state.design.textColor;
-
-                let photoHtml = '<div class="photo-placeholder">📷 Foto</div>';
-                if (state.personal.photoDataURL) {
-                    photoHtml = `<div class="photo-placeholder"><img src="${state.personal.photoDataURL}" alt="Passfoto"></div>`;
-                }
-
-                // Vorderseite HTML
-                const frontHtml = `
-                    <div class="pass-card front" style="background-color:${passColorVal}; color:${textColorVal};">
-                        <img src="https://dpsg.de/sites/default/files/2021-08/dpsg-lilie_schwarz.png" class="dpsg-watermark" alt="Lilie">
-                        <img src="http://www.dpsg-brombach.de/images/Logo_Stamm/DPSG_Stamm_St_Josef_Brombach.gif" class="stamm-logo" alt="Brombach">
-                        <div class="pass-two-column">
-                            <!-- linke Spalte -->
-                            <div class="personal-area">
-                                <div class="personal-field">
-                                    <label>Name</label>
-                                    <div class="field-value">${escapeHtml(state.personal.name)}</div>
-                                </div>
-                                <div class="personal-field">
-                                    <label>Stufe</label>
-                                    <div class="field-value">${escapeHtml(state.personal.stufe)}</div>
-                                </div>
-                                <div class="personal-field">
-                                    <label>Stamm</label>
-                                    <div class="field-value">${escapeHtml(state.personal.stamm)}</div>
-                                </div>
-                                ${photoHtml}
-                            </div>
-                            <!-- rechte Spalte: Aufgaben -->
-                            <div class="tasks-area">
-                                ${state.tasks.map(task => `
-                                    <div class="task-item">
-                                        <span class="task-circle"></span>
-                                        <span class="task-text">${escapeHtml(task)}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                // Rückseite mit Badges
-                const activeBadges = availableBadges.filter(b => state.backBadges.includes(b.id));
-                const badgesHtml = activeBadges.map(b => {
-                    if (b.img) {
-                        return `<div class="badge-item"><img src="${b.img}" alt="${b.label}"><span>${b.label}</span></div>`;
-                    } else {
-                        return `<div class="badge-item"><span style="font-size:2rem;">${b.emoji}</span><span>${b.label}</span></div>`;
-                    }
-                }).join('');
-
-                const backHtml = `
-                    <div class="pass-card back" style="background-color:${passColorVal}; color:${textColorVal};">
-                        <img src="http://www.dpsg-brombach.de/images/Logo_Stamm/DPSG_Stamm_St_Josef_Brombach.gif" class="stamm-logo" alt="Brombach">
-                        <div style="margin-top: 1rem; min-height: 150px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                            <p style="font-size: 1.5rem; font-style: italic; border-bottom: 2px solid #b47d54;">${escapeHtml(state.backMotto)}</p>
-                        </div>
-                        <div class="badges-section">
-                            ${badgesHtml || '<p>Keine Abzeichen ausgewählt</p>'}
-                        </div>
-                        <div style="margin-top: auto; text-align: center; font-size:0.8rem;">DPSG · Pfadfinderpass</div>
-                    </div>
-                `;
-
-                previewContainer.innerHTML = frontHtml + backHtml;
-            }
-
-            // Hilfsfunktion gegen XSS
-            function escapeHtml(unsafe) {
-                return unsafe.replace(/[&<>"']/g, function(m) {
-                    if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;';
-                    if(m === '"') return '&quot;'; return '&#039;';
-                });
-            }
-
-            // Task-Editor rendern (Schritt 2)
-            function renderTaskEditor() {
-                taskEditorContainer.innerHTML = '';
-                state.tasks.forEach((task, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'task-editor-item';
-                    div.innerHTML = `
-                        <input type="text" value="${escapeHtml(task)}" data-index="${index}" class="task-input">
-                        <button class="remove-task" data-index="${index}">✕</button>
+        // --- Task Logic ---
+        renderTasksDOM() {
+            const buildList = (arr, id, side) => {
+                const con = document.getElementById(id);
+                con.innerHTML = '';
+                arr.forEach((t, i) => {
+                    const row = document.createElement('div');
+                    row.className = 'task-item';
+                    row.innerHTML = `
+                        <input type="text" class="input" value="${t}" oninput="app.editTask('${side}', ${i}, this.value)">
+                        <button class="btn btn-danger" onclick="app.delTask('${side}', ${i})"><i class="fa-solid fa-trash"></i></button>
                     `;
-                    taskEditorContainer.appendChild(div);
+                    con.appendChild(row);
                 });
-                // Eventlistener für Inputs
-                document.querySelectorAll('.task-input').forEach(inp => {
-                    inp.addEventListener('input', function(e) {
-                        const idx = this.dataset.index;
-                        state.tasks[idx] = this.value;
-                        renderPreview();
-                    });
-                });
-                document.querySelectorAll('.remove-task').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        const idx = this.dataset.index;
-                        state.tasks.splice(idx, 1);
-                        renderTaskEditor();
-                        renderPreview();
-                    });
-                });
+            };
+            buildList(this.data.tasksFront, 'taskListFront', 'front');
+            buildList(this.data.tasksBack, 'taskListBack', 'back');
+        },
+
+        renderPreviewTasks(side, arr, targetId) {
+            const con = document.getElementById(targetId);
+            con.innerHTML = '';
+            arr.forEach(t => {
+                con.innerHTML += `
+                    <div class="task-entry">
+                        <span class="task-txt">${t}</span>
+                        <div class="task-check"></div>
+                    </div>
+                `;
+            });
+        },
+
+        editTask(side, idx, val) {
+            if(side==='front') this.data.tasksFront[idx] = val;
+            else this.data.tasksBack[idx] = val;
+            this.update();
+        },
+        delTask(side, idx) {
+            if(side==='front') this.data.tasksFront.splice(idx, 1);
+            else this.data.tasksBack.splice(idx, 1);
+            this.renderTasksDOM();
+            this.update();
+        },
+        addTask(side) {
+            if(side==='front') this.data.tasksFront.push('Neue Aufgabe');
+            else this.data.tasksBack.push('Neue Aufgabe');
+            this.renderTasksDOM();
+            this.update();
+        },
+
+        // --- Image Logic ---
+        handleImage(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.data.imgData = e.target.result;
+                    document.getElementById('outPhoto').src = e.target.result;
+                    document.getElementById('outPhoto').style.display = 'block';
+                    document.getElementById('outPhotoPlaceholder').style.display = 'none';
+                    document.getElementById('btnDelImg').style.display = 'block';
+                    this.update();
+                };
+                reader.readAsDataURL(input.files[0]);
             }
+        },
+        clearImage() {
+            this.data.imgData = null;
+            document.getElementById('fileIn').value = '';
+            document.getElementById('outPhoto').style.display = 'none';
+            document.getElementById('outPhotoPlaceholder').style.display = 'block';
+            document.getElementById('btnDelImg').style.display = 'none';
+            this.update();
+        }
+    };
 
-            // Badge-Auswahl rendern (Schritt 3)
-            function renderBadgeSelector() {
-                badgeSelector.innerHTML = '';
-                availableBadges.forEach(badge => {
-                    const selected = state.backBadges.includes(badge.id);
-                    const div = document.createElement('div');
-                    div.className = `badge-option ${selected ? 'selected' : ''}`;
-                    div.dataset.id = badge.id;
-                    if (badge.img) {
-                        div.innerHTML = `<img src="${badge.img}" style="width:30px;"> <span>${badge.label}</span>`;
-                    } else {
-                        div.innerHTML = `<span style="font-size:1.8rem;">${badge.emoji}</span> <span>${badge.label}</span>`;
-                    }
-                    div.addEventListener('click', () => {
-                        const id = badge.id;
-                        if (state.backBadges.includes(id)) {
-                            state.backBadges = state.backBadges.filter(b => b !== id);
-                        } else {
-                            state.backBadges.push(id);
-                        }
-                        renderBadgeSelector();
-                        renderPreview();
-                    });
-                    badgeSelector.appendChild(div);
-                });
-            }
-
-            // ------------- Wizard Navigation -------------
-            function showStep(step) {
-                currentStep = step;
-                steps.forEach((s, i) => {
-                    s.classList.toggle('active', i === step-1);
-                });
-                stepDots.forEach((dot, i) => {
-                    dot.classList.toggle('active', i < step); // bis zum aktuellen Schritt aktiv
-                });
-                prevBtn.disabled = (step === 1);
-                if (step === totalSteps) {
-                    nextBtn.textContent = 'Fertig';
-                } else {
-                    nextBtn.textContent = 'Weiter →';
-                }
-            }
-
-            // ------------- Event-Listener für Wizard Inputs (Live) -------------
-            function bindWizardInputs() {
-                inputName.addEventListener('input', (e) => { state.personal.name = e.target.value; renderPreview(); });
-                inputStufe.addEventListener('input', (e) => { state.personal.stufe = e.target.value; renderPreview(); });
-                inputStamm.addEventListener('input', (e) => { state.personal.stamm = e.target.value; renderPreview(); });
-                inputPhoto.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            state.personal.photoDataURL = event.target.result;
-                            renderPreview();
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        state.personal.photoDataURL = null;
-                        renderPreview();
-                    }
-                });
-
-                backMotto.addEventListener('input', (e) => { state.backMotto = e.target.value; renderPreview(); });
-
-                passColor.addEventListener('input', (e) => { state.design.passColor = e.target.value; renderPreview(); });
-                textColor.addEventListener('input', (e) => { state.design.textColor = e.target.value; renderPreview(); });
-            }
-
-            // ------------- Initialisierung + Buttons -------------
-            function init() {
-                renderPreview();
-                renderTaskEditor();
-                renderBadgeSelector();
-                bindWizardInputs();
-
-                // Modal öffnen
-                openWizardBtn.addEventListener('click', () => {
-                    modal.classList.add('active');
-                    // synchronisiere Wizard-Felder mit aktuellem State
-                    inputName.value = state.personal.name;
-                    inputStufe.value = state.personal.stufe;
-                    inputStamm.value = state.personal.stamm;
-                    backMotto.value = state.backMotto;
-                    passColor.value = state.design.passColor;
-                    textColor.value = state.design.textColor;
-                    renderTaskEditor();
-                    renderBadgeSelector();
-                    showStep(1);
-                });
-
-                closeWizardBtn.addEventListener('click', () => {
-                    modal.classList.remove('active');
-                });
-
-                // Navigation
-                nextBtn.addEventListener('click', () => {
-                    if (currentStep < totalSteps) {
-                        showStep(currentStep + 1);
-                    } else {
-                        // Fertig = Modal schließen
-                        modal.classList.remove('active');
-                    }
-                });
-                prevBtn.addEventListener('click', () => {
-                    if (currentStep > 1) showStep(currentStep - 1);
-                });
-
-                // Aufgabe hinzufügen
-                addTaskBtn.addEventListener('click', () => {
-                    state.tasks.push('Neue Aufgabe');
-                    renderTaskEditor();
-                    renderPreview();
-                });
-
-                // Drucken
-                printBtn.addEventListener('click', () => {
-                    window.print();
-                });
-
-                // Reset auf Beispiel
-                resetBtn.addEventListener('click', () => {
-                    state.personal = { name: 'Lukas Feuerfuchs', stufe: 'Jungpfadfinder', stamm: 'St. Josef Brombach', photoDataURL: null };
-                    state.tasks = ['Feuer machen','Messerführerschein','Zelt aufbauen','Rucksack packen','Knoten (Achtknoten, Mastwurf)','Wegzeichen lesen','Erste Hilfe Koffer','Navi ohne Akku'];
-                    state.backBadges = ['dpsg-schwarz', 'dpsg-outline', 'brombach', 'feuer'];
-                    state.backMotto = 'Immer bereit!';
-                    state.design = { passColor: '#d69e6b', textColor: '#2d2d2d' };
-                    renderPreview();
-                    renderTaskEditor();
-                    renderBadgeSelector();
-                    // Inputs im Wizard zurücksetzen, falls offen
-                    inputName.value = state.personal.name;
-                    inputStufe.value = state.personal.stufe;
-                    inputStamm.value = state.personal.stamm;
-                    backMotto.value = state.backMotto;
-                    passColor.value = state.design.passColor;
-                    textColor.value = state.design.textColor;
-                });
-
-                // Modal-Klick außen schließen
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) modal.classList.remove('active');
-                });
-            }
-
-            // Start
-            init();
-        })();
+    // Start
+    app.init();
     </script>
-
-    <!-- Sicherstellen, dass die Bilder laden (falls http blockiert, dann Ersatz) -->
-    <noscript>JavaScript wird benötigt</noscript>
 </body>
 </html>
