@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Einsatzplaner - SC Brombach</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Einsatzplaner v3 - SC Brombach</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -11,282 +11,335 @@
 
     <style>
         :root {
-            --color-bg: #ffffff;
-            --color-surface: #f3f4f6;
-            --color-text: #1f2937;
-            --color-text-muted: #6b7280;
-            --color-border: #e5e7eb;
-            --color-primary: #1e3a8a; /* Schachblau */
-            --color-primary-hover: #1e40af;
-            --color-accent: #2563eb;
-            --color-danger: #dc2626;
-            --color-success: #16a34a;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --accent: #2563eb;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg: #f9fafb;
+            --white: #ffffff;
             --radius: 12px;
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: var(--font-family);
-            background-color: var(--color-surface);
-            color: var(--color-text);
-            padding-bottom: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 80px; /* Platz für Mobile Buttons unten falls nötig */
         }
 
         /* --- Header --- */
         header {
-            background: white;
-            border-bottom: 1px solid var(--color-border);
-            padding: 1rem 2rem;
+            background: var(--white);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 10px;
             font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--color-primary);
+            color: var(--primary);
             text-decoration: none;
+            font-size: 1.1rem;
         }
+        .brand img { height: 35px; }
 
-        .brand img {
-            height: 40px;
-            width: auto;
-        }
-
-        /* --- Layout --- */
+        /* --- Main Layout --- */
         main {
             max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            margin: 0 auto;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
 
         .card {
-            background: white;
+            background: var(--white);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            border: 1px solid var(--color-border);
-            padding: 1.5rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
         }
 
-        h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--color-text); display: flex; align-items: center; gap: 0.5rem; }
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        /* --- Eingabe Bereich --- */
+        .card-body { padding: 1rem; }
+
+        /* --- Tabs --- */
         .tabs {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            font-weight: 500;
-            color: var(--color-text-muted);
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            color: var(--color-primary);
-            border-bottom-color: var(--color-primary);
-        }
-
-        .input-group {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        .input-group.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .manual-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 2fr auto;
-            gap: 1rem;
-            align-items: end;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 0.6rem;
-            border: 1px solid var(--color-border);
-            border-radius: 6px;
-            font-size: 0.95rem;
+            background: var(--white);
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border);
         }
         
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        .tab-btn {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: var(--primary-light);
         }
 
+        .tab-content { display: none; padding: 1rem; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- Forms --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .full-width { grid-column: 1 / -1; }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fff;
+        }
+
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+        /* --- Buttons --- */
         .btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .btn-primary { background: var(--color-primary); color: white; }
-        .btn-primary:hover { background: var(--color-primary-hover); }
-
-        .btn-outline { background: white; border: 1px solid var(--color-border); color: var(--color-text); }
-        .btn-outline:hover { background: var(--color-surface); }
-
-        .btn-danger { color: var(--color-danger); background: #fef2f2; }
-        .btn-danger:hover { background: #fee2e2; }
-
-        /* --- Upload Zone --- */
-        .drop-zone {
-            border: 2px dashed var(--color-border);
-            border-radius: var(--radius);
-            padding: 2rem;
-            text-align: center;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
             cursor: pointer;
             transition: 0.2s;
+            width: 100%; /* Mobile friendly default */
         }
-        .drop-zone:hover { border-color: var(--color-primary); background: #eff6ff; }
-        .drop-zone p { color: var(--color-text-muted); margin-top: 0.5rem; }
+        
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--accent); }
+        .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text); }
+        .btn-danger { background: #fee2e2; color: #dc2626; }
 
-        /* --- Tabelle --- */
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid var(--color-border);
-        }
-
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th { text-align: left; padding: 1rem; background: #f9fafb; font-size: 0.8rem; text-transform: uppercase; color: var(--color-text-muted); border-bottom: 1px solid var(--color-border); }
-        td { padding: 1rem; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-
-        .badge {
-            background: #e0e7ff;
-            color: var(--color-primary);
-            padding: 2px 8px;
-            border-radius: 99px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        /* --- Toolbar --- */
-        .toolbar { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
-
-        /* --- Loading Overlay --- */
-        #loader {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.9);
-            z-index: 100;
-            display: none;
+        /* --- Generator Tools --- */
+        .pool-list {
+            display: flex;
             flex-direction: column;
+            gap: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .pool-item {
+            display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #f3f4f6;
+            border-radius: 6px;
+        }
+
+        .pool-item select {
+            width: auto;
+            padding: 0.3rem;
+            font-size: 0.85rem;
+            margin-left: auto;
+        }
+
+        /* --- Table --- */
+        .table-container {
+            overflow-x: auto; /* Wichtig für Mobile */
+            border-top: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Damit Tabelle auf Handy scrollbar wird */
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th { background: #f9fafb; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); }
+        
+        .action-btn {
+            background: none; border: none; cursor: pointer; padding: 5px; font-size: 1.1rem;
+        }
+        .btn-edit { color: var(--accent); }
+        .btn-del { color: #dc2626; }
+
+        /* --- Responsive Tweaks --- */
+        @media (min-width: 768px) {
+            .form-grid { grid-template-columns: repeat(2, 1fr); }
+            .btn { width: auto; } /* Buttons nebeneinander auf Desktop */
+            .controls { display: flex; gap: 1rem; }
+        }
+
+        /* --- Loader --- */
+        #loader {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 999;
+            display: none; align-items: center; justify-content: center; flex-direction: column;
         }
         .spinner {
-            width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--color-primary);
+            width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--primary);
             border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <div class="spinner"></div>
-        <p id="loaderText">Analysiere Bild...</p>
-    </div>
+    <div id="loader"><div class="spinner"></div><p id="loaderText">Arbeite...</p></div>
 
     <header>
         <a href="#" class="brand">
-            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="SC Brombach Logo">
-            SC Brombach Planer
+            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="Logo">
+            <span>SC Brombach</span>
         </a>
-        <div style="font-size: 0.85rem; color: var(--color-text-muted);">
-            Jugendtraining
-        </div>
     </header>
 
     <main>
         <div class="card">
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('manual')">Manuell</button>
-                <button class="tab-btn" onclick="switchTab('upload')"><i class="fa-solid fa-camera"></i> Bild Scan (Beta)</button>
-                <button class="tab-btn" onclick="switchTab('csv')">CSV Import</button>
+                <button class="tab-btn" onclick="switchTab('generator')">⚡ Smart Generator</button>
+                <button class="tab-btn" onclick="switchTab('upload')">Foto Scan</button>
             </div>
 
-            <div id="tab-manual" class="input-group active">
-                <div class="manual-grid">
+            <div id="tab-manual" class="tab-content active">
+                <div class="form-grid">
                     <div>
-                        <input type="text" id="inpDate" placeholder="Datum (z.B. 21.02.)">
+                        <label>Datum</label>
+                        <input type="text" id="inpDate" placeholder="TT.MM.">
                     </div>
                     <div>
-                        <input type="text" id="inpTime" placeholder="Uhrzeit" value="17:00 - 18:30">
+                        <label>Uhrzeit (Standard wählbar)</label>
+                        <select id="inpTimeSelect" onchange="updateTimeInput()">
+                            <option value="17:00 - 18:30">Schicht 1 (17:00 - 18:30)</option>
+                            <option value="18:15 - 19:45">Schicht 2 (18:15 - 19:45)</option>
+                            <option value="custom">-- Eigene Zeit --</option>
+                        </select>
+                        <input type="text" id="inpTime" value="17:00 - 18:30" style="display:none; margin-top:5px;">
                     </div>
-                    <div>
-                        <input type="text" id="inpNames" placeholder="Namen (z.B. Kaspar, Nico)">
+                    <div class="full-width">
+                        <label>Team (Namen durch Komma getrennt)</label>
+                        <input type="text" id="inpNames" placeholder="Kaspar, Nico...">
                     </div>
-                    <button class="btn btn-primary" onclick="addManualRow()">
-                        <i class="fa-solid fa-plus"></i>
+                </div>
+                
+                <div class="controls">
+                    <button id="btnAdd" class="btn btn-primary" onclick="addOrUpdateRow()">
+                        <i class="fa-solid fa-plus"></i> Hinzufügen
+                    </button>
+                    <button id="btnCancelEdit" class="btn btn-secondary" onclick="cancelEdit()" style="display:none;">
+                        Abbrechen
                     </button>
                 </div>
             </div>
 
-            <div id="tab-upload" class="input-group">
-                <div class="drop-zone" onclick="document.getElementById('fileUpload').click()">
-                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: var(--color-primary);"></i>
-                    <h3>Screenshot hochladen</h3>
-                    <p>Klicke hier, um ein Bild des Plans hochzuladen.<br>Die KI versucht, die Daten auszulesen.</p>
-                    <input type="file" id="fileUpload" style="display: none;" accept="image/*" onchange="handleImageUpload(this)">
+            <div id="tab-generator" class="tab-content">
+                <div class="form-grid">
+                    <div>
+                        <label>Startdatum (Freitag)</label>
+                        <input type="date" id="genStartDate">
+                    </div>
+                    <div>
+                        <label>Anzahl Wochen</label>
+                        <input type="number" id="genWeeks" value="4" min="1" max="12">
+                    </div>
                 </div>
-                <div style="margin-top: 10px; font-size: 0.8rem; color: #888;">
-                    *Hinweis: Bilderkennung ist experimentell. Bitte Ergebnisse kontrollieren.
+
+                <label><strong>Team-Pool & Präferenzen</strong></label>
+                <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">Lege fest, wer fest gesetzt ist. Der Rest wird aufgefüllt.</p>
+                
+                <div class="pool-list" id="poolContainer">
+                    </div>
+
+                <div class="form-grid" style="margin-top:10px;">
+                   <input type="text" id="newMemberName" placeholder="Neuer Name..." style="grid-column: 1;">
+                   <button class="btn btn-secondary" onclick="addMemberToPool()">+ Hinzufügen</button>
                 </div>
+
+                <button class="btn btn-primary" onclick="runSmartGenerator()" style="width:100%; margin-top:15px;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Plan generieren
+                </button>
             </div>
 
-            <div id="tab-csv" class="input-group">
-                <textarea id="csvInput" rows="5" placeholder="Datum; Uhrzeit; Namen&#10;09.01.; 17:00-18:30; Kaspar, Uwe"></textarea>
-                <button class="btn btn-primary" onclick="importCSV()" style="margin-top: 10px;">Importieren</button>
+            <div id="tab-upload" class="tab-content">
+                <div style="border: 2px dashed var(--border); padding: 2rem; text-align: center; border-radius: 8px;" onclick="document.getElementById('fileUpload').click()">
+                    <i class="fa-solid fa-camera" style="font-size: 2rem; color: var(--text-muted); margin-bottom:10px;"></i>
+                    <p>Tippe hier, um ein Bild hochzuladen</p>
+                    <input type="file" id="fileUpload" style="display: none;" accept="image/*" onchange="handleImageUpload(this)">
+                </div>
             </div>
         </div>
 
         <div class="card">
-            <h2><i class="fa-solid fa-list-check"></i> Aktueller Plan</h2>
+            <div class="card-header">
+                <span><i class="fa-solid fa-calendar-days"></i> Aktueller Plan</span>
+                <span id="rowCountBadge" style="background:var(--primary); color:white; padding:2px 8px; border-radius:10px; font-size:0.8rem;">0</span>
+            </div>
             
-            <div class="table-wrapper">
+            <div class="table-container">
                 <table id="planTable">
                     <thead>
                         <tr>
-                            <th width="15%">Datum</th>
-                            <th width="20%">Uhrzeit</th>
-                            <th width="50%">Trainer / Betreuer</th>
-                            <th width="10%">Anzahl</th>
-                            <th width="5%"></th>
+                            <th>Datum</th>
+                            <th>Uhrzeit</th>
+                            <th>Team</th>
+                            <th style="text-align:right;">Aktion</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -294,101 +347,158 @@
                 </table>
             </div>
 
-            <div class="toolbar">
+            <div class="card-body controls" style="border-top: 1px solid var(--border);">
                 <button class="btn btn-primary" onclick="generatePDF()">
-                    <i class="fa-solid fa-file-pdf"></i> PDF Speichern
+                    <i class="fa-solid fa-file-pdf"></i> PDF
                 </button>
-                
-                <button class="btn btn-outline" onclick="downloadCSV()">
-                    <i class="fa-solid fa-file-csv"></i> CSV Export
+                <button class="btn btn-secondary" onclick="downloadCSV()">
+                    <i class="fa-solid fa-file-csv"></i> CSV
                 </button>
-
-                <button class="btn btn-danger" onclick="clearAll()" style="margin-left: auto;">
-                    <i class="fa-solid fa-trash"></i> Reset
+                <button class="btn btn-danger" onclick="clearAll()">
+                    Reset
                 </button>
-            </div>
-            
-            <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
-                <label style="font-size: 0.9rem; color: #666;">PDF Design:</label>
-                <select id="pdfDesign" style="width: auto; padding: 0.4rem;">
-                    <option value="standard">Standard (Blau)</option>
-                    <option value="chess">Schachclub (S/W Kontrast)</option>
-                    <option value="minimal">Minimalistisch</option>
-                    <option value="compact">Kompakt (Kleine Schrift)</option>
-                </select>
             </div>
         </div>
     </main>
 
     <script>
-        // State
-        let scheduleData = JSON.parse(localStorage.getItem('scSchedule')) || [];
+        // --- Daten & State ---
+        let scheduleData = JSON.parse(localStorage.getItem('scSchedule_v3')) || [];
+        let editIndex = -1; // -1 heißt kein Edit Mode
+
+        // Standard-Team Pool
+        let teamPool = JSON.parse(localStorage.getItem('scPool_v3')) || [
+            { name: "Kaspar", pref: "fix1" }, // fix1 = Immer 17:00
+            { name: "Uwe", pref: "fix2" },    // fix2 = Immer 18:15
+            { name: "Dmitry", pref: "flex" },
+            { name: "Nico", pref: "flex" },
+            { name: "Gento", pref: "flex" },
+            { name: "Stephan", pref: "flex" }
+        ];
 
         // Init
         renderTable();
-
-        // --- Tabs ---
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.input-group').forEach(g => g.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById('tab-' + tabName).classList.add('active');
+        renderPool();
+        
+        // --- Tab Logic ---
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            // Button active state logic needs event target, simplifying for now:
+            const buttons = document.querySelectorAll('.tab-btn');
+            if(tab === 'manual') buttons[0].classList.add('active');
+            if(tab === 'generator') buttons[1].classList.add('active');
+            if(tab === 'upload') buttons[2].classList.add('active');
         }
 
-        // --- Core Functions ---
-        function addEntry(date, time, namesRaw) {
-            if(!namesRaw) return;
-            
-            // "Du" -> "Kaspar" Auto-Fix
-            let namesFixed = namesRaw.replace(/\bDu\b/g, "Kaspar").replace(/\bIch\b/g, "Kaspar");
-            let namesArray = namesFixed.split(/,|&|\+/).map(n => n.trim()).filter(n => n);
+        // --- Uhrzeit Input Logic ---
+        function updateTimeInput() {
+            const val = document.getElementById('inpTimeSelect').value;
+            const textInp = document.getElementById('inpTime');
+            if(val === 'custom') {
+                textInp.style.display = 'block';
+                textInp.focus();
+            } else {
+                textInp.style.display = 'none';
+                textInp.value = val;
+            }
+        }
 
-            scheduleData.push({
-                date: date,
-                time: time,
+        // --- CRUD Logic (Create, Read, Update, Delete) ---
+        function addOrUpdateRow() {
+            const date = document.getElementById('inpDate').value.trim();
+            const time = document.getElementById('inpTime').value.trim();
+            const namesRaw = document.getElementById('inpNames').value.trim();
+
+            if(!date || !namesRaw) return alert("Bitte Datum und Namen eingeben.");
+
+            // Namen säubern
+            const namesArray = namesRaw.split(',').map(n => n.trim()).filter(n => n);
+
+            const entry = {
+                date, time, 
                 names: namesArray.join(', '),
                 count: namesArray.length
-            });
+            };
+
+            if(editIndex === -1) {
+                // Neu hinzufügen
+                scheduleData.push(entry);
+            } else {
+                // Update existierend
+                scheduleData[editIndex] = entry;
+                editIndex = -1; // Reset Edit Mode
+                document.getElementById('btnAdd').innerHTML = '<i class="fa-solid fa-plus"></i> Hinzufügen';
+                document.getElementById('btnCancelEdit').style.display = 'none';
+            }
+
+            // Form leeren
+            document.getElementById('inpNames').value = '';
+            // Datum lassen wir stehen für Komfort
+            
             saveAndRender();
         }
 
-        function addManualRow() {
-            const d = document.getElementById('inpDate').value;
-            const t = document.getElementById('inpTime').value;
-            const n = document.getElementById('inpNames').value;
-            if(d && n) {
-                addEntry(d, t, n);
-                document.getElementById('inpNames').value = '';
+        function editRow(index) {
+            const row = scheduleData[index];
+            document.getElementById('inpDate').value = row.date;
+            
+            // Zeit Dropdown Check
+            const select = document.getElementById('inpTimeSelect');
+            if(row.time === "17:00 - 18:30" || row.time === "18:15 - 19:45") {
+                select.value = row.time;
+                document.getElementById('inpTime').style.display = 'none';
+                document.getElementById('inpTime').value = row.time;
             } else {
-                alert('Bitte Datum und Namen eingeben.');
+                select.value = "custom";
+                document.getElementById('inpTime').style.display = 'block';
+                document.getElementById('inpTime').value = row.time;
             }
+
+            document.getElementById('inpNames').value = row.names;
+
+            // UI in Edit Mode schalten
+            editIndex = index;
+            document.getElementById('btnAdd').innerHTML = '<i class="fa-solid fa-check"></i> Speichern';
+            document.getElementById('btnCancelEdit').style.display = 'inline-block';
+            switchTab('manual');
+            window.scrollTo(0,0);
+        }
+
+        function cancelEdit() {
+            editIndex = -1;
+            document.getElementById('inpNames').value = '';
+            document.getElementById('btnAdd').innerHTML = '<i class="fa-solid fa-plus"></i> Hinzufügen';
+            document.getElementById('btnCancelEdit').style.display = 'none';
         }
 
         function deleteRow(index) {
             if(confirm('Eintrag löschen?')) {
                 scheduleData.splice(index, 1);
+                if(editIndex === index) cancelEdit();
                 saveAndRender();
             }
         }
 
         function clearAll() {
-            if(confirm('Wirklich ALLES löschen?')) {
+            if(confirm('Alles löschen?')) {
                 scheduleData = [];
                 saveAndRender();
             }
         }
 
         function saveAndRender() {
-            // Sort by Date (Simple String comparison works for DD.MM format usually, but let's be safe)
-            // Sorting omitted to keep manual order preference, user can rely on insertion order.
+            // Sortierung nach Datum (Simpel: Tag.Monat string compare reicht meistens, besser wäre Date Object parsing)
+            // Hier lassen wir es so, wie es eingegeben wird, damit der User die Kontrolle behält.
+            localStorage.setItem('scSchedule_v3', JSON.stringify(scheduleData));
             
-            localStorage.setItem('scSchedule', JSON.stringify(scheduleData));
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
+            document.getElementById('rowCountBadge').innerText = scheduleData.length;
 
             if(scheduleData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem; color: #999;">Keine Einträge vorhanden</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem; color:#999;">Liste leer</td></tr>';
                 return;
             }
 
@@ -396,169 +506,204 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${row.date}</strong></td>
-                    <td>${row.time}</td>
-                    <td>${row.names}</td>
-                    <td><span class="badge">${row.count}</span></td>
-                    <td><button onclick="deleteRow(${i})" class="btn-danger" style="border:none; padding: 5px; background:none; cursor:pointer;"><i class="fa-solid fa-times"></i></button></td>
+                    <td><small style="color:#666;">${row.time}</small></td>
+                    <td>${row.names} <span style="background:#eff6ff; color:#1e3a8a; font-size:0.7em; padding:1px 5px; border-radius:4px; margin-left:5px;">${row.count}</span></td>
+                    <td style="text-align:right; white-space:nowrap;">
+                        <button class="action-btn btn-edit" onclick="editRow(${i})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn btn-del" onclick="deleteRow(${i})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // --- CSV Functions ---
-        function importCSV() {
-            const text = document.getElementById('csvInput').value;
-            const lines = text.split('\n');
-            let count = 0;
-            lines.forEach(line => {
-                const parts = line.split(';');
-                if(parts.length >= 2) {
-                    addEntry(parts[0].trim(), parts[1].trim(), parts[2] || "");
-                    count++;
-                }
+        // --- SMART GENERATOR LOGIC ---
+
+        function renderPool() {
+            const container = document.getElementById('poolContainer');
+            container.innerHTML = '';
+            teamPool.forEach((member, idx) => {
+                const div = document.createElement('div');
+                div.className = 'pool-item';
+                div.innerHTML = `
+                    <i class="fa-solid fa-user"></i>
+                    <span>${member.name}</span>
+                    <select onchange="updateMemberPref(${idx}, this.value)">
+                        <option value="flex" ${member.pref==='flex'?'selected':''}>Flexibel</option>
+                        <option value="fix1" ${member.pref==='fix1'?'selected':''}>Immer Schicht 1</option>
+                        <option value="fix2" ${member.pref==='fix2'?'selected':''}>Immer Schicht 2</option>
+                        <option value="off" ${member.pref==='off'?'selected':''}>Pausiert</option>
+                    </select>
+                    <i class="fa-solid fa-times" style="color:#dc2626; cursor:pointer; margin-left:10px;" onclick="removeMember(${idx})"></i>
+                `;
+                container.appendChild(div);
             });
-            alert(`${count} Einträge importiert.`);
-            document.getElementById('csvInput').value = '';
+            localStorage.setItem('scPool_v3', JSON.stringify(teamPool));
         }
 
-        function downloadCSV() {
-            let csvContent = "Datum;Uhrzeit;Namen;Anzahl\n";
-            scheduleData.forEach(row => {
-                csvContent += `${row.date};${row.time};${row.names};${row.count}\n`;
-            });
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "einsatzplan_scb.csv";
-            link.click();
-        }
-
-        // --- Image OCR Logic (Tesseract) ---
-        async function handleImageUpload(input) {
-            if (!input.files || !input.files[0]) return;
-            const file = input.files[0];
-            
-            const loader = document.getElementById('loader');
-            const loaderText = document.getElementById('loaderText');
-            loader.style.display = 'flex';
-            
-            try {
-                loaderText.innerText = "Lade OCR Engine...";
-                
-                // OCR Process
-                const worker = await Tesseract.createWorker('deu');
-                
-                loaderText.innerText = "Erkenne Text...";
-                const ret = await worker.recognize(file);
-                console.log(ret.data.text);
-                
-                loaderText.innerText = "Verarbeite Daten...";
-                parseOCRText(ret.data.text);
-                
-                await worker.terminate();
-                alert("Scan abgeschlossen! Bitte Daten in der Tabelle prüfen.");
-            } catch (err) {
-                console.error(err);
-                alert("Fehler bei der Bilderkennung. Bitte versuche es erneut oder nutze die manuelle Eingabe.");
-            } finally {
-                loader.style.display = 'none';
-                input.value = ''; // Reset input
+        function addMemberToPool() {
+            const name = document.getElementById('newMemberName').value.trim();
+            if(name) {
+                teamPool.push({ name: name, pref: 'flex' });
+                document.getElementById('newMemberName').value = '';
+                renderPool();
             }
         }
 
-        function parseOCRText(text) {
-            // Simple parsing logic tailored to the list format seen in screenshots
-            const lines = text.split('\n');
-            let lastDate = "??.??.";
-            
-            // Regex to find dates like 09.01. or 23.01
-            const dateRegex = /(\d{2}\.\d{2}\.?)/; 
-
-            lines.forEach(line => {
-                line = line.trim();
-                if(line.length < 5) return; // Skip garbage
-
-                // Check for Date
-                const dateMatch = line.match(dateRegex);
-                if(dateMatch) {
-                    lastDate = dateMatch[1];
-                }
-
-                // Try to find names. Usually lines with names don't have many numbers, 
-                // but might contain "Kaspar", "Dmitry" etc.
-                // This is a rough heuristic.
-                if(line.includes("Kaspar") || line.includes("Dmitry") || line.includes("Nico") || line.includes("Uwe") || line.includes("Gento")) {
-                    // Clean up the line
-                    let cleanNames = line.replace(dateRegex, '').replace(/[|\[\]{}]/g, '').trim();
-                    // Remove times if present to just get names
-                    cleanNames = cleanNames.replace(/\d{2}:\d{2}.*?\d{2}:\d{2}/, ''); 
-                    
-                    // Add entry
-                    addEntry(lastDate, "17:00 - 18:30", cleanNames); 
-                }
-            });
+        function removeMember(index) {
+            teamPool.splice(index, 1);
+            renderPool();
         }
 
-        // --- PDF Generation ---
+        function updateMemberPref(index, val) {
+            teamPool[index].pref = val;
+            localStorage.setItem('scPool_v3', JSON.stringify(teamPool));
+        }
+
+        function runSmartGenerator() {
+            const startStr = document.getElementById('genStartDate').value;
+            const weeks = parseInt(document.getElementById('genWeeks').value);
+            
+            if(!startStr) return alert("Bitte Startdatum wählen");
+
+            let currentDate = new Date(startStr);
+            let generated = [];
+
+            // Pools vorbereiten
+            const fix1 = teamPool.filter(m => m.pref === 'fix1').map(m => m.name);
+            const fix2 = teamPool.filter(m => m.pref === 'fix2').map(m => m.name);
+            const flex = teamPool.filter(m => m.pref === 'flex').map(m => m.name);
+
+            for(let w=0; w<weeks; w++) {
+                // Formatiere Datum TT.MM.
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const dateStr = `${day}.${month}.`;
+
+                // --- Schicht 1 (17:00) ---
+                let s1Names = [...fix1]; // Zuerst die Fixen
+                // Auffüllen aus Flex Pool (Ziel: mind 3 Leute)
+                let flexShuffled = [...flex].sort(() => 0.5 - Math.random()); // Mischen
+                
+                // Simples Auffüllen (jeder Flex kommt pro Woche ca 1x dran, wir nehmen hier einfach die ersten X)
+                // Für bessere Logik müsste man tracken wer wie oft dran war.
+                // Wir nehmen hier einfach 2 Zufällige dazu.
+                let needed1 = 3 - s1Names.length;
+                if(needed1 > 0) s1Names.push(...flexShuffled.slice(0, needed1));
+                
+                generated.push({
+                    date: dateStr,
+                    time: "17:00 - 18:30",
+                    names: s1Names.join(', '),
+                    count: s1Names.length
+                });
+
+                // --- Schicht 2 (18:15) ---
+                let s2Names = [...fix2];
+                // Wir rotieren den Flex Pool für die 2. Schicht weiter
+                let flexForS2 = flexShuffled.slice(needed1).concat(flexShuffled.slice(0, needed1)); // Rest der Leute
+                let needed2 = 3 - s2Names.length;
+                 if(needed2 > 0) s2Names.push(...flexForS2.slice(0, needed2));
+
+                generated.push({
+                    date: dateStr,
+                    time: "18:15 - 19:45",
+                    names: s2Names.join(', '),
+                    count: s2Names.length
+                });
+
+                // Nächste Woche (+7 Tage)
+                currentDate.setDate(currentDate.getDate() + 7);
+            }
+
+            // An bestehende Liste anhängen
+            if(confirm(`${generated.length} Schichten generiert. Anhängen?`)) {
+                scheduleData = scheduleData.concat(generated);
+                saveAndRender();
+                switchTab('manual'); // Zur Liste springen
+            }
+        }
+
+        // --- PDF Logic ---
+        function calculateDateRange() {
+            if(scheduleData.length === 0) return "";
+            // Da wir strings haben ("09.01."), ist min/max schwer ohne Jahr.
+            // Wir nehmen einfach den ersten und letzten Eintrag der Liste, 
+            // vorausgesetzt die Liste ist chronologisch (was sie meistens ist).
+            const first = scheduleData[0].date;
+            const last = scheduleData[scheduleData.length-1].date;
+            
+            // Falls Jahr benötigt, müsste man es raten, aber TT.MM. reicht meistens
+            // Versuchen wir ein aktuelles Jahr anzuhängen
+            const year = new Date().getFullYear();
+            return `${first}${year} - ${last}${year}`;
+        }
+
         function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const design = document.getElementById('pdfDesign').value;
-
-            // Logo Header
-            // Note: Images in jsPDF need base64 usually. Since we have a URL, we might run into CORS issues.
-            // Simplified: Just Text Header for robustness in this static file.
             
-            // Design Config
-            let headColor = [30, 58, 138]; // Blue Default
-            let textColor = [0,0,0];
-            let theme = 'grid';
-            let title = "Einsatzplan Jugendtraining";
+            const range = calculateDateRange();
 
-            if(design === 'chess') {
-                headColor = [0, 0, 0];
-                theme = 'grid'; // Sharp borders
-            } else if (design === 'minimal') {
-                headColor = [255, 255, 255];
-                theme = 'plain';
-            }
-
-            doc.setFontSize(20);
-            if(design === 'chess') doc.setFont('helvetica', 'bold');
-            doc.text("SC Brombach - Jugendtraining", 14, 20);
+            // Header SC Brombach Blau
+            doc.setFillColor(30, 58, 138); 
+            doc.rect(0, 0, 210, 40, 'F');
             
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Stand: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
+            doc.text("Einsatzplan Jugendtraining", 14, 20);
+            
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Zeitraum: ${range}`, 14, 30);
 
-            const tableBody = scheduleData.map(row => [row.date, row.time, row.names, row.count]);
+            // Tabelle
+            const body = scheduleData.map(r => [r.date, r.time, r.names, r.count]);
 
             doc.autoTable({
-                startY: 35,
+                startY: 45,
                 head: [['Datum', 'Uhrzeit', 'Team', 'Anz.']],
-                body: tableBody,
-                theme: (design === 'minimal' ? 'plain' : 'grid'),
-                headStyles: { 
-                    fillColor: (design === 'minimal' ? [255,255,255] : headColor), 
-                    textColor: (design === 'minimal' ? [0,0,0] : [255,255,255]),
-                    lineColor: [0,0,0],
-                    lineWidth: (design === 'chess' ? 0.5 : 0)
-                },
-                styles: { 
-                    fontSize: (design === 'compact' ? 8 : 10),
-                    cellPadding: 4,
-                    lineColor: [200,200,200]
-                },
+                body: body,
+                theme: 'grid',
+                headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+                styles: { fontSize: 10, cellPadding: 4 },
                 columnStyles: {
                     0: { fontStyle: 'bold', cellWidth: 25 },
                     1: { cellWidth: 35 },
-                    3: { halign: 'center' }
+                    3: { halign: 'center', cellWidth: 15 }
                 }
             });
 
-            doc.save('Einsatzplan_SCB.pdf');
+            doc.save(`Einsatzplan_SCB.pdf`);
         }
+        
+        // --- OCR & CSV --- (Minified versions from previous requests logic)
+        async function handleImageUpload(inp){
+            const f=inp.files[0]; if(!f)return;
+            document.getElementById('loader').style.display='flex';
+            try{
+                const w=await Tesseract.createWorker('deu');
+                const r=await w.recognize(f);
+                let lines=r.data.text.split('\n'), lastD="??.??.";
+                lines.forEach(l=>{
+                    let m=l.match(/(\d{2}\.\d{2}\.?)/); if(m) lastD=m[1];
+                    if(/Kaspar|Dmitry|Nico|Uwe|Gento/i.test(l)){
+                        let names=l.replace(/(\d{2}\.\d{2}\.?)/,'').replace(/\d{2}:\d{2}.*?\d{2}:\d{2}/,'').replace(/[|\[\]]/g,'').trim();
+                        scheduleData.push({date:lastD, time:"17:00 - 18:30", names:names, count:names.split(',').length});
+                    }
+                });
+                await w.terminate(); saveAndRender(); switchTab('manual');
+            }catch(e){alert('Fehler: '+e);}
+            document.getElementById('loader').style.display='none';
+        }
+
+        function downloadCSV() {
+            let c="Datum;Uhrzeit;Namen;Anzahl\n"+scheduleData.map(r=>`${r.date};${r.time};${r.names};${r.count}`).join("\n");
+            let link=document.createElement("a"); link.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));
+            link.download="plan.csv"; link.click();
+        }
+
     </script>
 </body>
 </html>
