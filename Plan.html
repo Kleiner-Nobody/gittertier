@@ -3,359 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Einsatzplaner - SC Brombach Edition</title>
+    <title>Schachclub Einsatzplaner Pro</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 
     <style>
-        /* --- Gittertier Pro Design System --- */
+        /* --- Design-System (Gittertier Pro) --- */
         :root {
             --color-bg: #f3f4f6;
             --color-card: #ffffff;
-            --color-text: #1f2937;
+            --color-text: #111827;
             --color-text-muted: #6b7280;
             --color-border: #e5e7eb;
-            
-            /* SC Brombach Blau als Akzent */
-            --color-accent: #0056b3; 
-            --color-accent-hover: #004494;
-            --color-accent-light: #e0f2fe;
-
-            --color-success: #10b981;
-            --color-warning: #f59e0b;
-            --color-error: #ef4444;
-            --color-overlay: rgba(0, 0, 0, 0.6);
-            
+            --color-accent: #2563eb;       /* Modern Blue */
+            --color-accent-hover: #1d4ed8;
+            --color-brand: #000000;        /* Schachclub Schwarz/Weiß */
             --radius: 12px;
-            --radius-sm: 6px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
-            --header-height: 70px;
-            --transition: all 0.2s ease-in-out;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: var(--font-main);
+            font-family: var(--font-family);
             background-color: var(--color-bg);
             color: var(--color-text);
-            line-height: 1.5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            padding-bottom: 40px;
         }
 
         /* --- Header --- */
         header {
-            height: var(--header-height);
             background: var(--color-card);
             border-bottom: 1px solid var(--color-border);
+            padding: 15px 30px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 2rem;
             position: sticky;
             top: 0;
             z-index: 50;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            text-decoration: none;
-            color: var(--color-text);
+            gap: 15px;
             font-weight: 700;
             font-size: 1.2rem;
+            color: var(--color-text);
+            text-decoration: none;
         }
 
         .brand img {
             height: 45px;
             width: auto;
-            object-fit: contain;
         }
 
-        .brand span {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.1;
-        }
-        .brand small {
-            font-size: 0.75rem;
-            color: var(--color-text-muted);
-            font-weight: 400;
-        }
-
-        /* --- Layout --- */
-        main {
-            max-width: 1100px;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
-            width: 100%;
-            flex-grow: 1;
+        /* --- Container & Layout --- */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
             display: grid;
-            gap: 2rem;
+            gap: 25px;
         }
 
-        /* --- Cards --- */
         .card {
             background: var(--color-card);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
+            padding: 25px;
             border: 1px solid var(--color-border);
-            overflow: hidden;
         }
 
-        .card-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--color-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        h2 { margin-bottom: 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        
+        /* --- Upload Zone (OCR) --- */
+        .upload-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
             background: #f9fafb;
         }
 
-        .card-header h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--color-text);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        /* --- Drag & Drop Zone --- */
-        .drop-zone {
-            border: 2px dashed var(--color-border);
-            border-radius: var(--radius);
-            padding: 2.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            background: #fafafa;
-            position: relative;
-        }
-
-        .drop-zone:hover, .drop-zone.dragover {
+        .upload-zone:hover, .upload-zone.dragover {
             border-color: var(--color-accent);
-            background: var(--color-accent-light);
-            color: var(--color-accent);
+            background: #eff6ff;
         }
 
-        .drop-zone i {
-            font-size: 2.5rem;
-            color: var(--color-text-muted);
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .ocr-loading {
+        .upload-icon { font-size: 2rem; color: var(--color-text-muted); margin-bottom: 10px; }
+        
+        #ocrProgress {
             display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9);
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 10;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--color-accent);
+            font-weight: 600;
         }
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--color-accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- Manual Input Grid --- */
-        .input-grid {
+        /* --- Inputs --- */
+        .input-group {
             display: grid;
             grid-template-columns: 1fr 1fr 2fr auto;
-            gap: 1rem;
+            gap: 15px;
             align-items: end;
         }
 
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--color-text-muted);
-        }
-
+        label { display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 5px; font-weight: 600; }
+        
         input {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 10px;
             border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
+            border-radius: 6px;
             font-size: 0.95rem;
-            transition: var(--transition);
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15);
         }
 
         /* --- Buttons --- */
         .btn {
+            background: var(--color-text);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.25rem;
-            border-radius: var(--radius-sm);
-            font-weight: 500;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-            text-decoration: none;
+            gap: 8px;
+            transition: transform 0.1s;
         }
-
-        .btn-primary { background: var(--color-accent); color: white; }
-        .btn-primary:hover { background: var(--color-accent-hover); box-shadow: var(--shadow); }
-
-        .btn-secondary { background: white; border: 1px solid var(--color-border); color: var(--color-text); }
-        .btn-secondary:hover { background: #f9fafb; border-color: var(--color-text-muted); }
-
-        .btn-danger-ghost { background: transparent; color: var(--color-text-muted); padding: 0.5rem; }
-        .btn-danger-ghost:hover { color: var(--color-error); background: #fef2f2; }
-
-        .toolbar {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
+        
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-accent { background: var(--color-accent); }
+        .btn-outline { background: white; border: 1px solid var(--color-border); color: var(--color-text); }
+        .btn-outline:hover { background: #f3f4f6; }
+        .btn-danger { background: #fee2e2; color: #ef4444; }
+        .btn-danger:hover { background: #fecaca; }
 
         /* --- Table --- */
-        .table-responsive {
-            overflow-x: auto;
+        .table-wrapper {
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
         }
-        
-        table { width: 100%; border-collapse: collapse; }
-        
-        th {
-            text-align: left;
-            padding: 1rem 1.5rem;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--color-text-muted);
-            background: #f9fafb;
-            border-bottom: 1px solid var(--color-border);
-            font-weight: 600;
-        }
-        
-        td {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--color-border);
-            font-size: 0.95rem;
-        }
-        
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #f9fafb; padding: 12px 15px; font-size: 0.85rem; text-transform: uppercase; color: var(--color-text-muted); }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--color-border); font-size: 0.95rem; }
         tr:last-child td { border-bottom: none; }
         
         .badge {
-            background: var(--color-accent-light);
-            color: var(--color-accent);
-            padding: 0.25rem 0.75rem;
-            border-radius: 99px;
-            font-weight: 600;
-            font-size: 0.85rem;
+            background: #e0f2fe; color: #0369a1;
+            padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: 700;
         }
 
         /* --- Modals --- */
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--color-overlay);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
-            backdrop-filter: blur(4px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: 0.2s; z-index: 100;
         }
-        
-        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
         
         .modal {
-            background: white;
-            width: 90%;
-            max-width: 600px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            transform: scale(0.95);
-            transition: var(--transition);
-            overflow: hidden;
+            background: white; width: 90%; max-width: 500px;
+            padding: 30px; border-radius: var(--radius);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
-        
-        .modal-overlay.active .modal { transform: scale(1); }
 
         .design-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
-            padding: 1.5rem;
-        }
-
-        .design-option {
-            border: 2px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            padding: 1rem;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .design-option:hover { border-color: var(--color-accent); background: var(--color-accent-light); }
-        .design-option.selected { border-color: var(--color-accent); background: var(--color-accent-light); ring: 2px solid var(--color-accent); }
-
-        .design-preview {
-            height: 60px;
-            background: #ddd;
-            margin-bottom: 0.5rem;
-            border-radius: 4px;
-            position: relative;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;
         }
         
-        /* Previews CSS Tricks */
-        .preview-brombach { background: linear-gradient(to bottom, #0056b3 30%, #fff 30%); }
-        .preview-clean { background: white; border: 1px solid #eee; }
-        .preview-dark { background: #333; }
-
-        textarea.csv-area {
-            width: 100%;
-            height: 200px;
-            padding: 1rem;
-            font-family: monospace;
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            resize: vertical;
+        .design-option {
+            border: 2px solid var(--color-border); border-radius: 8px; padding: 15px;
+            text-align: center; cursor: pointer;
         }
+        .design-option:hover { border-color: var(--color-accent); background: #eff6ff; }
+        .design-option.selected { border-color: var(--color-accent); background: #eff6ff; ring: 2px solid var(--color-accent); }
+        
+        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid var(--color-border); border-radius: 6px; font-family: monospace; }
 
-        @media (max-width: 768px) {
-            .input-grid { grid-template-columns: 1fr; }
-            .toolbar { flex-direction: column; }
-            .btn { width: 100%; }
+        @media (max-width: 700px) {
+            .input-group { grid-template-columns: 1fr; }
+            header { padding: 15px; }
+            .brand span { display: none; } /* Nur Logo auf Handy */
         }
     </style>
 </head>
@@ -363,429 +205,346 @@
 
     <header>
         <a href="#" class="brand">
-            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="SC Brombach Logo">
-            <span>
-                SC Brombach
-                <small>Einsatzplaner Tool</small>
-            </span>
+            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="Schachclub Brombach Logo" id="clubLogo">
+            <span>Schachclub Planer</span>
         </a>
-        <div style="font-size: 0.8rem; color: #888;">Powered by Gittertier Pro</div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-outline" onclick="openModal('csvModal')"><i class="fa-solid fa-file-csv"></i> CSV</button>
+            <button class="btn btn-accent" onclick="openModal('pdfModal')"><i class="fa-solid fa-file-pdf"></i> Export</button>
+        </div>
     </header>
 
-    <main>
+    <div class="container">
+
         <div class="card">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-camera"></i> Automatische Erkennung (Beta)</h2>
-            </div>
-            <div class="card-body">
-                <div class="drop-zone" id="dropZone">
-                    <div class="ocr-loading" id="ocrLoading">
-                        <div class="spinner"></div>
-                        <p>Analysiere Bild... <br><small>Texterkennung läuft (Tesseract.js)</small></p>
-                    </div>
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <p><strong>Bild hier ablegen</strong> oder klicken zum Hochladen</p>
-                    <p style="font-size: 0.85rem; color: #999; margin-top: 5px;">Unterstützt Screenshots von Umfragen & Listen.</p>
-                    <input type="file" id="fileInput" accept="image/*" style="display:none">
-                </div>
+            <h2><i class="fa-solid fa-robot"></i> Automatische Erkennung</h2>
+            <div class="upload-zone" id="dropZone">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <p><strong>Screenshot hier ablegen</strong> oder klicken zum Hochladen</p>
+                <p style="font-size: 0.8rem; color: #999;">Erkennt WhatsApp-Umfragen und Listen</p>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                <div id="ocrProgress"><i class="fa-solid fa-spinner fa-spin"></i> Analysiere Bild... Bitte warten.</div>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-pen-to-square"></i> Datenerfassung</h2>
-            </div>
-            <div class="card-body">
-                <div class="input-grid">
-                    <div>
-                        <label>Datum</label>
-                        <input type="text" id="inpDate" placeholder="z.B. 21.02.">
-                    </div>
-                    <div>
-                        <label>Uhrzeit</label>
-                        <input type="text" id="inpTime" placeholder="z.B. 18:00 - 20:00">
-                    </div>
-                    <div>
-                        <label>Personal (Kommagetrennt)</label>
-                        <input type="text" id="inpNames" placeholder="Kaspar, Nico, ...">
-                    </div>
-                    <button class="btn btn-primary" onclick="addRow()">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
+            <h2><i class="fa-solid fa-pen-to-square"></i> Eintrag bearbeiten</h2>
+            <div class="input-group">
+                <div>
+                    <label>Datum</label>
+                    <input type="text" id="inpDate" placeholder="05.12.">
                 </div>
+                <div>
+                    <label>Uhrzeit</label>
+                    <input type="text" id="inpTime" placeholder="17:00 - 18:30">
+                </div>
+                <div>
+                    <label>Trainer / Team</label>
+                    <input type="text" id="inpNames" placeholder="Kaspar, Dmitry...">
+                </div>
+                <button class="btn btn-accent" onclick="addEntry()"><i class="fa-solid fa-plus"></i></button>
             </div>
         </div>
 
-        <div>
-            <div class="toolbar">
-                <button class="btn btn-secondary" onclick="openModal('csvModal'); updateCSVPreview();">
-                    <i class="fa-solid fa-file-csv"></i> CSV Bearbeiten
-                </button>
-                <div style="flex-grow: 1;"></div>
-                <button class="btn btn-secondary" onclick="downloadCSV()">
-                    <i class="fa-solid fa-download"></i> CSV Export
-                </button>
-                <button class="btn btn-primary" onclick="openModal('pdfModal')">
-                    <i class="fa-solid fa-file-pdf"></i> PDF Erstellen
-                </button>
-            </div>
-
-            <div class="card" style="padding:0;">
-                <div class="table-responsive">
-                    <table id="scheduleTable">
-                        <thead>
-                            <tr>
-                                <th width="15%">Datum</th>
-                                <th width="20%">Uhrzeit</th>
-                                <th width="50%">Eingeteiltes Team</th>
-                                <th width="10%">Anzahl</th>
-                                <th width="5%"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            </tbody>
-                    </table>
-                </div>
-                <div id="emptyState" style="padding: 3rem; text-align: center; color: var(--color-text-muted);">
-                    <i class="fa-regular fa-calendar-xmark" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                    <p>Noch keine Schichten eingetragen.</p>
-                </div>
+        <div class="table-wrapper">
+            <table id="scheduleTable">
+                <thead>
+                    <tr>
+                        <th width="15%">Datum</th>
+                        <th width="20%">Uhrzeit</th>
+                        <th width="50%">Team</th>
+                        <th width="10%">Anz.</th>
+                        <th width="5%"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+            <div id="emptyState" style="padding: 40px; text-align: center; color: #9ca3af;">
+                Noch keine Einträge. Lade ein Bild hoch oder erstelle einen Eintrag.
             </div>
         </div>
-    </main>
+
+    </div>
 
     <div id="pdfModal" class="modal-overlay">
         <div class="modal">
-            <div class="card-header">
-                <h2>PDF Design wählen</h2>
-                <button class="btn-danger-ghost" onclick="closeModal('pdfModal')"><i class="fa-solid fa-times"></i></button>
-            </div>
+            <h2>PDF Design wählen</h2>
             <div class="design-grid">
-                <div class="design-option selected" onclick="selectDesign(this, 'brombach')">
-                    <div class="design-preview preview-brombach"></div>
-                    <strong>SC Brombach</strong>
-                    <div style="font-size: 0.75rem;">Offizieller Look</div>
+                <div class="design-option selected" onclick="selectDesign(this, 'clean')">
+                    <i class="fa-regular fa-file-lines" style="font-size: 2rem; margin-bottom: 5px;"></i><br>
+                    Clean (Weiß)
                 </div>
-                <div class="design-option" onclick="selectDesign(this, 'clean')">
-                    <div class="design-preview preview-clean"></div>
-                    <strong>Clean</strong>
-                    <div style="font-size: 0.75rem;">Minimalistisch</div>
+                <div class="design-option" onclick="selectDesign(this, 'branded')">
+                    <i class="fa-solid fa-chess-knight" style="font-size: 2rem; margin-bottom: 5px; color: #000;"></i><br>
+                    Schachclub
                 </div>
-                <div class="design-option" onclick="selectDesign(this, 'dark')">
-                    <div class="design-preview preview-dark"></div>
-                    <strong>Dark Mode</strong>
-                    <div style="font-size: 0.75rem;">Digital Only</div>
+                <div class="design-option" onclick="selectDesign(this, 'modern')">
+                    <i class="fa-solid fa-layer-group" style="font-size: 2rem; margin-bottom: 5px; color: #2563eb;"></i><br>
+                    Modern Blue
+                </div>
+                <div class="design-option" onclick="selectDesign(this, 'list')">
+                    <i class="fa-solid fa-list" style="font-size: 2rem; margin-bottom: 5px;"></i><br>
+                    Kompakte Liste
                 </div>
             </div>
-            <div class="card-body">
-                <button class="btn btn-primary" style="width: 100%;" onclick="generatePDF()">PDF Herunterladen</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-outline" style="flex:1" onclick="closeModal('pdfModal')">Abbrechen</button>
+                <button class="btn btn-accent" style="flex:1" onclick="generatePDF()">PDF Erstellen</button>
             </div>
         </div>
     </div>
 
     <div id="csvModal" class="modal-overlay">
         <div class="modal">
-            <div class="card-header">
-                <h2>CSV Daten (Bearbeiten)</h2>
-                <button class="btn-danger-ghost" onclick="closeModal('csvModal')"><i class="fa-solid fa-times"></i></button>
+            <h2>CSV Daten</h2>
+            <p style="font-size: 0.9rem; margin-bottom: 10px; color: #666;">Format: Datum; Uhrzeit; Namen</p>
+            <textarea id="csvInput"></textarea>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn btn-outline" style="flex:1" onclick="downloadCSV()"><i class="fa-solid fa-download"></i> Herunterladen</button>
+                <button class="btn btn-accent" style="flex:1" onclick="importCSV()"><i class="fa-solid fa-upload"></i> Importieren</button>
             </div>
-            <div class="card-body">
-                <p style="font-size: 0.85rem; color: #666; margin-bottom: 0.5rem;">Format: <code>Datum; Uhrzeit; Namen</code></p>
-                <textarea id="csvArea" class="csv-area"></textarea>
-                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-                    <button class="btn btn-primary" style="width: 100%;" onclick="importCSV()">Daten übernehmen</button>
-                </div>
-            </div>
+            <button class="btn btn-outline" style="width:100%; margin-top:10px; border:none;" onclick="closeModal('csvModal')">Schließen</button>
         </div>
     </div>
 
     <script>
-        // --- State ---
         let scheduleData = [];
-        let currentDesign = 'brombach';
+        let currentDesign = 'clean';
 
-        // --- Init ---
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTable();
-            setupDragAndDrop();
-        });
-
-        // --- Logic: Table Management ---
-        function addRow() {
-            const date = document.getElementById('inpDate').value.trim();
-            const time = document.getElementById('inpTime').value.trim();
-            const namesInput = document.getElementById('inpNames').value.trim();
-
-            if (!date && !namesInput) return alert("Bitte mindestens Datum oder Namen eingeben.");
-
-            const namesArray = namesInput.split(',').map(n => n.trim()).filter(n => n);
-            
-            scheduleData.push({
-                date,
-                time,
-                names: namesArray.join(', '),
-                count: namesArray.length
-            });
-
-            // Reset Names but keep Date/Time for easier entry of next shift
-            document.getElementById('inpNames').value = ''; 
-            renderTable();
-        }
-
-        function deleteRow(index) {
-            scheduleData.splice(index, 1);
-            renderTable();
-        }
-
+        /* --- UI Logic --- */
         function renderTable() {
             const tbody = document.getElementById('tableBody');
-            const emptyState = document.getElementById('emptyState');
+            const empty = document.getElementById('emptyState');
             tbody.innerHTML = '';
 
             if (scheduleData.length === 0) {
-                emptyState.style.display = 'block';
-            } else {
-                emptyState.style.display = 'none';
-                scheduleData.forEach((row, index) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>${row.date}</strong></td>
-                        <td>${row.time}</td>
-                        <td>${row.names}</td>
-                        <td><span class="badge">${row.count}</span></td>
-                        <td>
-                            <button class="btn-danger-ghost" onclick="deleteRow(${index})">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                empty.style.display = 'block';
+                return;
             }
+            empty.style.display = 'none';
+
+            // Sortieren nach Datum (Simpel)
+            // scheduleData.sort((a, b) => a.date.localeCompare(b.date)); 
+
+            scheduleData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${row.date}</strong></td>
+                    <td>${row.time}</td>
+                    <td>${row.names}</td>
+                    <td><span class="badge">${row.names.split(',').filter(n=>n.trim()).length}</span></td>
+                    <td><button class="btn-danger" style="padding:4px 8px; border-radius:4px; border:none; cursor:pointer;" onclick="deleteRow(${index})">×</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        // --- Logic: Drag & Drop + OCR ---
-        function setupDragAndDrop() {
-            const dz = document.getElementById('dropZone');
-            const inp = document.getElementById('fileInput');
+        function addEntry() {
+            const date = document.getElementById('inpDate').value.trim();
+            const time = document.getElementById('inpTime').value.trim();
+            let names = document.getElementById('inpNames').value.trim();
 
-            dz.onclick = () => inp.click();
-            inp.onchange = (e) => processImage(e.target.files[0]);
+            if (!date) return alert("Datum fehlt!");
 
-            dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('dragover'); };
-            dz.ondragleave = () => dz.classList.remove('dragover');
-            dz.ondrop = (e) => {
-                e.preventDefault();
-                dz.classList.remove('dragover');
-                if (e.dataTransfer.files[0]) processImage(e.dataTransfer.files[0]);
-            };
+            // Auto-Correct Name
+            names = names.replace(/\bDu\b/g, "Kaspar");
+
+            scheduleData.push({ date, time, names });
+            renderTable();
+            
+            document.getElementById('inpNames').value = '';
+            // Datum/Zeit lassen wir stehen für schnelles Eintragen
         }
+
+        function deleteRow(idx) {
+            scheduleData.splice(idx, 1);
+            renderTable();
+        }
+
+        /* --- OCR Logic (Tesseract) --- */
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => processImage(e.target.files[0]);
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            processImage(e.dataTransfer.files[0]);
+        });
 
         async function processImage(file) {
             if (!file) return;
-            
-            document.getElementById('ocrLoading').style.display = 'flex';
-            
+            document.getElementById('ocrProgress').style.display = 'block';
+
             try {
-                // Tesseract Execution
                 const worker = await Tesseract.createWorker('deu'); // Deutsch laden
-                const ret = await worker.recognize(file);
-                await worker.terminate();
-                
-                const text = ret.data.text;
+                const { data: { text } } = await worker.recognize(file);
                 console.log("Raw OCR:", text);
-                parseOCRText(text);
                 
+                parseOCRText(text);
+                await worker.terminate();
             } catch (err) {
-                alert("Fehler bei der Bilderkennung: " + err.message);
+                alert("Fehler bei der Erkennung: " + err);
             } finally {
-                document.getElementById('ocrLoading').style.display = 'none';
+                document.getElementById('ocrProgress').style.display = 'none';
             }
         }
 
         function parseOCRText(text) {
-            // Primitive KI-Logik: Versucht Zeilen in Datum/Zeit/Namen zu zerlegen
             const lines = text.split('\n');
-            let foundCount = 0;
+            let currentDate = "";
+            let currentTime = "";
+            let currentNames = [];
 
-            // Regex Patterns
-            const dateRegex = /(\d{1,2}\.\d{1,2}\.?)/; 
-            const timeRegex = /(\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2})/;
-            
-            let lastDate = ""; // Merken für Folgezeilen
-            let lastTime = "";
+            // Regex für Datum (DD.MM.) und Zeit (HH:MM)
+            const dateRegex = /(\d{1,2}\.\d{2}\.?)/;
+            const timeRegex = /(\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2})/;
 
             lines.forEach(line => {
-                if (line.length < 5) return; // Zu kurz
+                line = line.trim();
+                if (!line) return;
 
-                // Datum suchen
+                // Prüfen ob Datum oder Zeit in der Zeile ist
                 const dateMatch = line.match(dateRegex);
-                if (dateMatch) lastDate = dateMatch[0];
-
-                // Zeit suchen
                 const timeMatch = line.match(timeRegex);
-                if (timeMatch) lastTime = timeMatch[0];
 
-                // Bereinigen für Namen
-                let cleanLine = line
-                    .replace(dateRegex, '')
-                    .replace(timeRegex, '')
-                    .replace(/\|/g, '') // Pipe Symbole entfernen (oft Tabellenränder)
-                    .replace(/[^a-zA-ZäöüÄÖÜ, ]/g, ' ') // Sonderzeichen weg
-                    .trim();
-
-                const potentialNames = cleanLine.split(/\s{2,}|,/).map(n => n.trim()).filter(n => n.length > 2);
-
-                if (potentialNames.length > 0) {
-                    // Wenn wir Namen haben, und ein Datum existiert (oder gerade gefunden wurde), hinzufügen
-                    if (lastDate) {
-                        scheduleData.push({
-                            date: lastDate,
-                            time: lastTime || "???",
-                            names: potentialNames.join(', '),
-                            count: potentialNames.length
-                        });
-                        foundCount++;
+                if (dateMatch) {
+                    // Wenn wir schon Daten gesammelt haben, speichern
+                    if (currentDate && currentNames.length > 0) {
+                        saveExtracted(currentDate, currentTime, currentNames);
+                        currentNames = [];
+                    }
+                    currentDate = dateMatch[1];
+                    // Wenn Zeit in gleicher Zeile
+                    if (timeMatch) currentTime = timeMatch[1];
+                } 
+                else if (timeMatch) {
+                    // Falls Zeit auf neuer Zeile steht
+                    if (currentDate && currentNames.length > 0) {
+                        // Neuer Zeitblock am selben Tag? Oder Abschluss des alten?
+                        // Wir speichern den alten Block ab
+                        saveExtracted(currentDate, currentTime, currentNames);
+                        currentNames = [];
+                    }
+                    currentTime = timeMatch[1];
+                } 
+                else {
+                    // Wahrscheinlich ein Name
+                    // Ignoriere typische WhatsApp Wörter
+                    if (!line.includes("Stimmen") && !line.includes("Option hinzufügen") && line.length > 2) {
+                        currentNames.push(line);
                     }
                 }
             });
 
-            if (foundCount > 0) {
-                renderTable();
-                alert(`${foundCount} Einträge erkannt! Bitte Tabelle prüfen.`);
-            } else {
-                alert("Konnte keine klare Struktur erkennen. Bitte manuell eingeben.");
+            // Letzten Eintrag speichern
+            if (currentDate && currentNames.length > 0) {
+                saveExtracted(currentDate, currentTime, currentNames);
             }
-        }
-
-
-        // --- Logic: CSV ---
-        function updateCSVPreview() {
-            const csvContent = scheduleData.map(row => `${row.date}; ${row.time}; ${row.names}`).join('\n');
-            document.getElementById('csvArea').value = csvContent;
-        }
-
-        function importCSV() {
-            const raw = document.getElementById('csvArea').value;
-            const lines = raw.split('\n');
-            scheduleData = []; // Reset or Append? Let's reset for clarity
-            
-            lines.forEach(line => {
-                const parts = line.split(';');
-                if (parts.length >= 2) {
-                    const namesRaw = parts[2] || "";
-                    const namesArr = namesRaw.split(',').map(n => n.trim()).filter(n => n);
-                    scheduleData.push({
-                        date: parts[0].trim(),
-                        time: parts[1].trim(),
-                        names: namesArr.join(', '),
-                        count: namesArr.length
-                    });
-                }
-            });
             renderTable();
-            closeModal('csvModal');
         }
 
-        function downloadCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,Datum;Uhrzeit;Namen;Anzahl\n";
-            scheduleData.forEach(row => {
-                csvContent += `${row.date};${row.time};${row.names};${row.count}\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "einsatzplan_brombach.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        function saveExtracted(d, t, nArr) {
+            // Bereinigen
+            const namesStr = nArr.join(', ').replace(/\bDu\b/g, "Kaspar");
+            scheduleData.push({ date: d, time: t || "??:??", names: namesStr });
         }
 
-
-        // --- Logic: PDF Generation ---
-        function selectDesign(el, design) {
-            document.querySelectorAll('.design-option').forEach(d => d.classList.remove('selected'));
+        /* --- PDF Export --- */
+        function selectDesign(el, id) {
+            document.querySelectorAll('.design-option').forEach(e => e.classList.remove('selected'));
             el.classList.add('selected');
-            currentDesign = design;
+            currentDesign = id;
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        function generatePDF() {
+        async function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            const logoUrl = document.getElementById('clubLogo').src;
 
-            // Configs
-            const designs = {
-                brombach: {
-                    headColor: [0, 86, 179], // #0056b3
-                    textColor: [255, 255, 255],
-                    titleColor: [0, 0, 0],
-                    theme: 'grid',
-                    font: 'helvetica'
-                },
-                clean: {
-                    headColor: [255, 255, 255],
-                    textColor: [0, 0, 0], // Black text on white
-                    titleColor: [50, 50, 50],
-                    theme: 'plain',
-                    font: 'times'
-                },
-                dark: {
-                    headColor: [40, 40, 40],
-                    textColor: [200, 200, 200],
-                    titleColor: [0, 0, 0], // Title still black on paper usually
-                    theme: 'grid',
-                    font: 'courier'
-                }
-            };
-
-            const cfg = designs[currentDesign];
-
-            // Header (Logo simulation via text/shape for stability without CORS issues)
-            doc.setFont(cfg.font, 'bold');
-            doc.setFontSize(22);
-            doc.setTextColor(...cfg.titleColor);
-            doc.text("Einsatzplan Jugendtraining", 14, 20);
+            // Header Logik
+            let startY = 30;
             
-            doc.setFontSize(10);
-            doc.setFont(cfg.font, 'normal');
-            doc.setTextColor(100);
-            doc.text(`Schachclub Brombach e.V. | Stand: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
-
-            // Table
-            const bodyData = scheduleData.map(r => [r.date, r.time, r.names, r.count]);
-
-            let headStyleOpts = { fillColor: cfg.headColor, textColor: cfg.textColor };
-            if(currentDesign === 'clean') {
-                headStyleOpts = { fillColor: 255, textColor: 0, fontStyle: 'bold', lineWidth: {bottom: 0.5}, lineColor: 200 };
+            // Logo laden (wenn nicht 'clean' Modus ohne Logo gewünscht)
+            if (currentDesign === 'branded') {
+                // Logo Bild abrufen und als Base64 einfügen (komplex im Browser wg CORS)
+                // Fallback: Wir nutzen den Canvas Hack oder lassen es simpel.
+                // Text Header:
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(22);
+                doc.text("Schachclub Brombach", 14, 20);
+                doc.setFontSize(14);
+                doc.text("Jugendtraining Einsatzplan", 14, 28);
+                startY = 40;
+            } else {
+                doc.setFontSize(18);
+                doc.text("Einsatzplan Jugendtraining", 14, 20);
             }
 
+            // Design Styles
+            let styles = {};
+            let headStyles = {};
+
+            if (currentDesign === 'clean') {
+                headStyles = { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' };
+            } else if (currentDesign === 'branded') {
+                headStyles = { fillColor: [0, 0, 0], textColor: [255, 255, 255] }; // Schwarz/Weiß
+            } else if (currentDesign === 'modern') {
+                headStyles = { fillColor: [37, 99, 235], textColor: 255 }; // Blau
+            }
+
+            const body = scheduleData.map(row => [row.date, row.time, row.names, row.names.split(',').length]);
+
             doc.autoTable({
-                startY: 35,
-                head: [['Datum', 'Uhrzeit', 'Eingeteiltes Team', 'Anz.']],
-                body: bodyData,
-                theme: cfg.theme,
-                styles: { font: cfg.font, fontSize: 10, cellPadding: 3 },
-                headStyles: headStyleOpts,
-                columnStyles: {
-                    0: { fontStyle: 'bold', cellWidth: 25 },
-                    1: { cellWidth: 35 },
-                    3: { halign: 'center' }
-                }
+                startY: startY,
+                head: [['Datum', 'Uhrzeit', 'Trainer / Team', 'Anz.']],
+                body: body,
+                theme: currentDesign === 'list' ? 'plain' : 'grid',
+                headStyles: headStyles,
+                styles: { fontSize: 11, cellPadding: 4 },
+                columnStyles: { 0: { fontStyle: 'bold' } }
             });
 
             doc.save(`Einsatzplan_${currentDesign}.pdf`);
             closeModal('pdfModal');
         }
 
-        // Close on outside click
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal-overlay')) {
-                document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-            }
+        /* --- CSV --- */
+        function downloadCSV() {
+            let csv = "Datum;Uhrzeit;Namen\n";
+            scheduleData.forEach(row => {
+                csv += `${row.date};${row.time};${row.names}\n`;
+            });
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "einsatzplan.csv";
+            link.click();
         }
+
+        function importCSV() {
+            const txt = document.getElementById('csvInput').value;
+            const lines = txt.split('\n');
+            lines.forEach(l => {
+                const p = l.split(';');
+                if (p.length >= 2) {
+                    scheduleData.push({ date: p[0], time: p[1], names: p[2] || "" });
+                }
+            });
+            renderTable();
+            closeModal('csvModal');
+        }
+
+        /* --- Helper --- */
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        window.onclick = (e) => { if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id); }
+
     </script>
 </body>
 </html>
