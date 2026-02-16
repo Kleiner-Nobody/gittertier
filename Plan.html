@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gittertier Pro - Smart Planer</title>
+    <title>Gittertier Planer Ultimate</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style>
-        /* --- DESIGN SYSTEM (Basiert auf 404.html) --- */
+
+    <style>
+        /* --- Gittertier Pro Design System --- */
         :root {
-            --color-bg: #ffffff;
-            --color-surface: #f9fafb;
-            --color-card: #ffffff;
+            --color-bg: #f9fafb; /* Heller Background wie 404 */
+            --color-surface: #ffffff;
             --color-text: #111111;
             --color-text-muted: #6b7280;
             --color-border: #e5e7eb;
@@ -27,247 +27,184 @@
             --radius: 12px;
             --radius-sm: 6px;
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
-            --header-height: 70px;
+            --nav-height: 65px;
+            --header-height: 60px;
         }
 
-        /* Dark Mode Support */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --color-bg: #111827;
-                --color-surface: #1f2937;
-                --color-card: #1f2937;
-                --color-text: #f3f4f6;
-                --color-text-muted: #9ca3af;
-                --color-border: #374151;
-                --shadow: 0 1px 3px rgba(0,0,0,0.3);
-            }
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
         body {
-            font-family: var(--font-main);
-            background-color: var(--color-surface);
+            background-color: var(--color-bg);
             color: var(--color-text);
-            padding-bottom: 80px; /* Platz für Mobile Buttons */
+            margin: 0;
+            padding-bottom: calc(var(--nav-height) + 20px); /* Platz für Bottom Nav */
+            padding-top: var(--header-height);
         }
 
-        /* --- LAYOUT --- */
+        /* --- Header --- */
         header {
+            position: fixed; top: 0; left: 0; right: 0;
             height: var(--header-height);
-            background: var(--color-card);
+            background: var(--color-surface);
             border-bottom: 1px solid var(--color-border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            position: sticky;
-            top: 0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px;
             z-index: 50;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow);
         }
 
         .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--color-text);
-            text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 1.1rem; color: #1e3a8a; text-decoration: none;
         }
-        .brand img { height: 38px; width: auto; }
+        .brand img { height: 32px; }
 
-        .container {
-            max-width: 1200px;
+        /* --- Main Layout --- */
+        main {
+            max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
+            animation: fadeIn 0.3s ease;
         }
 
-        /* --- CARDS & GRID --- */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* --- Cards --- */
         .card {
-            background: var(--color-card);
-            border: 1px solid var(--color-border);
+            background: var(--color-surface);
             border-radius: var(--radius);
+            border: 1px solid var(--color-border);
             box-shadow: var(--shadow);
-            padding: 24px;
-            transition: transform 0.2s;
+            padding: 20px;
+            margin-bottom: 16px;
             position: relative;
         }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
         
-        h2 { font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        h3 { font-size: 1rem; font-weight: 600; margin-bottom: 10px; color: var(--color-text-muted); }
+        h2 { margin-top: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; color: var(--color-text); }
+        h3 { font-size: 0.95rem; margin-bottom: 8px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* --- UI ELEMENTS --- */
+        /* --- Buttons --- */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 18px;
-            border-radius: var(--radius-sm);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-            font-size: 0.95rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 10px 16px; border-radius: var(--radius-sm); border: none;
+            font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s;
+            width: 100%; text-decoration: none;
         }
         .btn-primary { background: var(--color-accent); color: white; }
-        .btn-primary:hover { background: var(--color-accent-hover); box-shadow: var(--shadow-md); transform: translateY(-1px); }
-        .btn-secondary { background: var(--color-card); border-color: var(--color-border); color: var(--color-text); }
-        .btn-secondary:hover { background: var(--color-surface); }
-        .btn-ghost { background: transparent; color: var(--color-text-muted); padding: 6px; }
-        .btn-ghost:hover { color: var(--color-accent); background: rgba(37, 99, 235, 0.1); }
-        .btn-block { width: 100%; }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            background: var(--color-card);
-            color: var(--color-text);
-            font-size: 1rem;
-            margin-bottom: 10px;
-            transition: border 0.2s;
-        }
-        input:focus { outline: none; border-color: var(--color-accent); ring: 2px solid rgba(37,99,235,0.2); }
-
-        /* --- TEAM LIST (Modern) --- */
-        .team-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
-        .member-row {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: var(--color-surface);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--color-border);
-            gap: 10px;
-        }
-        .avatar {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            background: var(--color-accent);
-            color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 0.8rem;
-        }
-        .member-info { flex: 1; }
-        .member-name { font-weight: 600; font-size: 0.95rem; }
-        .member-details { font-size: 0.8rem; color: var(--color-text-muted); display: flex; gap: 8px; }
+        .btn-primary:active { background: var(--color-accent-hover); transform: scale(0.98); }
+        .btn-secondary { background: white; border: 1px solid var(--color-border); color: var(--color-text); }
+        .btn-success { background: var(--color-success); color: white; }
+        .btn-danger { background: #fee2e2; color: var(--color-error); }
         
-        .tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 700; }
-        .tag-stamm { background: #dbeafe; color: #1e40af; }
-        .tag-springer { background: #f3f4f6; color: #4b5563; }
-        .tag-notfall { background: #fee2e2; color: #991b1b; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
 
-        /* --- SCHEDULE TABLE --- */
-        .schedule-container {
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            background: var(--color-card);
+        /* --- Inputs --- */
+        input, select, textarea {
+            width: 100%; padding: 10px; border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm); font-size: 16px; background: white;
+            margin-bottom: 10px; transition: border 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        /* --- Table --- */
+        .table-container {
+            border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden;
+            background: white;
         }
         .schedule-row {
-            display: grid;
-            grid-template-columns: 100px 1fr 1fr auto;
-            border-bottom: 1px solid var(--color-border);
-            padding: 15px;
-            align-items: center;
-            transition: background 0.1s;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border-bottom: 1px solid var(--color-border);
+            cursor: pointer; transition: background 0.1s;
         }
         .schedule-row:last-child { border-bottom: none; }
-        .schedule-row:hover { background: var(--color-surface); }
+        .schedule-row:active { background: #f3f4f6; }
         
-        .date-cell { font-weight: 700; display: flex; flex-direction: column; }
-        .date-day { font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; }
+        .row-date { font-weight: 700; width: 60px; font-size: 0.9rem; }
+        .row-time { font-size: 0.8rem; color: var(--color-text-muted); width: 90px; }
+        .row-names { flex: 1; font-size: 0.95rem; display: flex; flex-wrap: wrap; gap: 4px; }
         
-        .shift-block { display: flex; flex-direction: column; gap: 4px; padding: 0 10px; }
-        .shift-label { font-size: 0.75rem; color: var(--color-text-muted); font-weight: 600; margin-bottom: 2px; }
-        .person-pill { 
-            display: inline-block; padding: 4px 8px; 
-            background: var(--color-surface); border: 1px solid var(--color-border); 
-            border-radius: 100px; font-size: 0.85rem; margin-right: 4px; margin-bottom: 4px;
-        }
-        
-        /* Mobile Schedule View */
-        @media (max-width: 768px) {
-            .schedule-row { grid-template-columns: 1fr; gap: 10px; }
-            .date-cell { flex-direction: row; gap: 10px; align-items: baseline; border-bottom: 1px dashed var(--color-border); padding-bottom: 8px; margin-bottom: 4px; }
+        .name-tag {
+            background: #eff6ff; color: var(--color-accent); 
+            padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: 500;
         }
 
-        /* --- MODALS & WIZARD --- */
-        .modal-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--color-overlay);
-            z-index: 100;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
-            backdrop-filter: blur(4px);
+        /* --- Team List --- */
+        .team-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+            margin-bottom: 8px; background: white;
         }
-        .modal-backdrop.active { opacity: 1; pointer-events: auto; }
+        .role-badge {
+            font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 700;
+            margin-left: 6px;
+        }
+        .role-fixed { background: #dbeafe; color: var(--color-accent); }
+        .role-springer { background: #f3f4f6; color: var(--color-text-muted); }
+        .role-notfall { background: #fee2e2; color: var(--color-error); }
+
+        /* --- Bottom Nav (Mobile) --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: var(--nav-height); background: white;
+            border-top: 1px solid var(--color-border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--color-text-muted); font-size: 0.75rem; gap: 4px;
+            width: 100%; height: 100%; text-decoration: none; cursor: pointer;
+        }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 2px; }
+        .nav-item.active { color: var(--color-accent); }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--color-overlay); z-index: 200;
+            display: flex; align-items: flex-end; /* Bottom sheet on mobile */
+            opacity: 0; pointer-events: none; transition: 0.2s;
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
         
         .modal {
-            background: var(--color-card);
-            width: 90%; max-width: 550px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            padding: 30px;
-            transform: translateY(20px); transition: transform 0.3s;
+            background: white; width: 100%; max-width: 600px;
+            margin: 0 auto;
+            border-top-left-radius: 20px; border-top-right-radius: 20px;
+            padding: 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            transform: translateY(100%); transition: 0.3s cubic-bezier(0.2, 0, 0, 1);
             max-height: 90vh; overflow-y: auto;
         }
-        .modal-backdrop.active .modal { transform: translateY(0); }
+        @media(min-width: 600px) {
+            .modal-overlay { align-items: center; }
+            .modal { border-radius: var(--radius); transform: translateY(20px); opacity: 0; }
+            .modal-overlay.open .modal { transform: translateY(0); opacity: 1; }
+        }
+        .modal-overlay.open .modal { transform: translateY(0); }
 
-        .wizard-steps { display: flex; gap: 5px; margin-bottom: 20px; }
-        .step-dot { flex: 1; height: 4px; background: var(--color-border); border-radius: 2px; }
-        .step-dot.active { background: var(--color-accent); }
-        
-        .wizard-content { display: none; animation: fadeIn 0.3s; }
-        .wizard-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* --- Stats Bar --- */
+        .stat-bar-container { width: 100%; background: #f3f4f6; height: 8px; border-radius: 4px; margin-top: 5px; overflow: hidden;}
+        .stat-bar { height: 100%; background: var(--color-accent); width: 0%; transition: width 0.5s; }
 
-        /* --- FLOATING ACTION BUTTON (Mobile) --- */
+        /* --- Wizard Styles --- */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; animation: fadeIn 0.3s; }
+
+        /* --- Utils --- */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
         .fab {
-            position: fixed; bottom: 20px; right: 20px;
-            width: 56px; height: 56px;
-            border-radius: 50%;
-            background: var(--color-accent);
-            color: white;
+            position: fixed; bottom: 80px; right: 20px;
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--color-accent); color: white;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: var(--shadow-lg);
-            z-index: 90;
-            cursor: pointer;
-            transition: transform 0.2s;
+            box-shadow: var(--shadow-lg); cursor: pointer; z-index: 90;
+            font-size: 1.2rem; transition: 0.2s;
         }
-        .fab:hover { transform: scale(1.1); }
         .fab:active { transform: scale(0.9); }
-
-        /* --- NOTIFICATIONS --- */
-        .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #333; color: white; padding: 12px 24px;
-            border-radius: 50px; font-size: 0.9rem;
-            opacity: 0; transition: 0.3s; pointer-events: none; z-index: 200;
-        }
-        .toast.show { opacity: 1; bottom: 40px; }
 
     </style>
 </head>
@@ -275,646 +212,652 @@
 
     <header>
         <a href="#" class="brand">
-            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="Logo">
-            Gittertier Pro <span style="font-size: 0.7rem; background: var(--color-accent); color: white; padding: 2px 6px; border-radius: 4px;">ULTRA</span>
+            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="SCB Logo">
+            SCB Planer
         </a>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-ghost" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
-            <button class="btn btn-primary" onclick="openWizard()"><i class="fa-solid fa-wand-magic-sparkles"></i> <span class="desktop-only">Generator</span></button>
+        <div style="font-size: 0.8rem; color: #666; font-weight: 500;">
+            Ultimate Edition
         </div>
     </header>
 
-    <div class="container">
+    <main>
         
-        <div class="grid">
-            
-            <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 20px;">
-                
-                <div class="card" style="padding: 15px; display: flex; gap: 10px; overflow-x: auto;">
-                    <button class="btn btn-secondary" onclick="exportPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-                    <button class="btn btn-secondary" onclick="exportWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-                    <button class="btn btn-secondary" onclick="exportICAL()"><i class="fa-solid fa-calendar-plus"></i> iCal</button>
-                    <button class="btn btn-secondary" onclick="openCSVModal()"><i class="fa-solid fa-file-csv"></i> Import</button>
-                    <div style="flex:1"></div>
-                    <button class="btn btn-ghost" style="color:var(--color-error)" onclick="resetAll()"><i class="fa-solid fa-trash"></i> Reset</button>
-                </div>
-
-                <div class="card" style="padding: 0; overflow: hidden;">
-                    <div class="card-header" style="padding: 20px; border-bottom: 1px solid var(--color-border); margin-bottom: 0;">
-                        <h2>📅 Einsatzplan <span id="planRange" style="font-size: 0.9rem; color: var(--color-text-muted); font-weight: 400; margin-left: 10px;"></span></h2>
-                        <div id="ai-alert" style="display:none; font-size: 0.8rem; background: #fee2e2; color: #dc2626; padding: 5px 10px; border-radius: 20px;">
-                            <i class="fa-solid fa-triangle-exclamation"></i> Unterbesetzung erkannt!
-                        </div>
+        <div id="view-home" class="view-section">
+            <div class="card">
+                <h2><i class="fa-solid fa-chart-pie"></i> Fairness Check</h2>
+                <div id="statsContainer" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
                     </div>
-                    
-                    <div class="schedule-container" id="scheduleList" style="border: none; border-radius: 0;">
-                        <div style="padding: 40px; text-align: center; color: var(--color-text-muted);">
-                            <i class="fa-solid fa-robot" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                            <p>Kein Plan vorhanden.<br>Starte den Generator oder importiere eine CSV.</p>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="margin:0;"><i class="fa-solid fa-calendar-days"></i> Aktueller Plan</h2>
+                    <button class="btn btn-secondary" onclick="shareWhatsApp()" style="width: auto; padding: 5px 10px; font-size: 0.8rem;">
+                        <i class="fa-brands fa-whatsapp"></i> Teilen
+                    </button>
+                </div>
                 
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fa-solid fa-chart-pie"></i> Fairness Check</h2>
+                <div id="planList" style="min-height: 100px;">
                     </div>
-                    <canvas id="statsChart" style="max-height: 200px;"></canvas>
+                <div id="emptyState" class="text-center" style="padding: 40px; color: #999; display: none;">
+                    <i class="fa-solid fa-clipboard-list" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;"></i>
+                    <p>Kein Plan vorhanden.</p>
                 </div>
+            </div>
+            
+            <div style="height: 60px;"></div> </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fa-solid fa-users"></i> Das Team</h2>
-                        <button class="btn btn-ghost" onclick="openTeamModal()"><i class="fa-solid fa-pen"></i></button>
-                    </div>
-                    <div id="teamDisplay" class="team-list">
-                        </div>
-                </div>
-
+        <div id="view-team" class="view-section hidden">
+            <div class="card">
+                <h2><i class="fa-solid fa-users"></i> Teilnehmer</h2>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                    Verwalte Rollen und Vorlieben. Der Generator nutzt diese Daten.
+                </p>
+                <div id="teamListContainer"></div>
+                <button class="btn btn-secondary" onclick="openMemberModal()" style="margin-top: 15px;">
+                    <i class="fa-solid fa-user-plus"></i> Person hinzufügen
+                </button>
             </div>
         </div>
 
-    </div>
+        <div id="view-wizard" class="view-section hidden">
+            <div class="card">
+                <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Plan Generator</h2>
+                
+                <div id="wizStep1" class="wizard-step active">
+                    <label>Startdatum (Freitag)</label>
+                    <input type="date" id="genDate">
+                    
+                    <label>Dauer</label>
+                    <select id="genDuration">
+                        <option value="4">4 Wochen</option>
+                        <option value="8" selected>8 Wochen</option>
+                        <option value="12">12 Wochen</option>
+                    </select>
 
-    <div class="fab" onclick="openWizard()">
+                    <div style="margin: 15px 0; padding: 10px; background: #eff6ff; border-radius: 8px; font-size: 0.9rem; color: #1e40af;">
+                        <i class="fa-solid fa-info-circle"></i> <strong>Smarte Logik:</strong>
+                        <ul style="margin: 5px 0 0 20px; padding:0;">
+                            <li>Doppelschichten bleiben zusammen.</li>
+                            <li>"Stammspieler" werden zuerst gesetzt.</li>
+                            <li>"Springer" rotieren fair.</li>
+                            <li>"Notfall" nur wenn leer.</li>
+                        </ul>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runGeneratorWizard()">Plan Generieren</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fa-solid fa-file-import"></i> CSV Import "Smart"</h2>
+                <textarea id="csvInputSmart" rows="4" placeholder="Einfach Text reinkopieren...&#10;09.01.; Kaspar, Uwe&#10;16.01.; Nico"></textarea>
+                <button class="btn btn-secondary" onclick="processSmartCSV()">
+                    <i class="fa-solid fa-brain"></i> Verschlaubisieren & Importieren
+                </button>
+            </div>
+        </div>
+
+        <div id="view-settings" class="view-section hidden">
+            <div class="card">
+                <h2><i class="fa-solid fa-download"></i> Export</h2>
+                <div class="btn-group" style="flex-direction: column;">
+                    <button class="btn btn-primary" onclick="generatePDF()">
+                        <i class="fa-solid fa-file-pdf"></i> Als PDF speichern
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportICal()">
+                        <i class="fa-solid fa-calendar-plus"></i> Für Kalender (iCal)
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportBackup()">
+                        <i class="fa-solid fa-floppy-disk"></i> Backup Datei (JSON)
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fa-solid fa-upload"></i> Restore</h2>
+                <input type="file" id="backupFile" onchange="importBackup(this)">
+                <button class="btn btn-danger" onclick="hardReset()" style="margin-top: 20px;">
+                    <i class="fa-solid fa-trash-can"></i> Alles löschen
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <div class="fab" onclick="openEditModal(null)">
         <i class="fa-solid fa-plus"></i>
     </div>
 
-    <div id="wizardModal" class="modal-backdrop">
+    <nav class="bottom-nav">
+        <a class="nav-item active" onclick="switchTab('home')">
+            <i class="fa-solid fa-table-list"></i>
+            <span>Plan</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('team')">
+            <i class="fa-solid fa-users-gear"></i>
+            <span>Team</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('wizard')">
+            <i class="fa-solid fa-wand-magic"></i>
+            <span>Wizard</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('settings')">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Tools</span>
+        </a>
+    </nav>
+
+    <div id="modalEdit" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <h2>⚡ Smart Generator</h2>
-                <button class="btn btn-ghost" onclick="closeModal('wizardModal')">&times;</button>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
+                <h2 style="margin:0;">Eintrag bearbeiten</h2>
+                <button onclick="closeModals()" style="background:none; border:none; font-size:1.5rem;">&times;</button>
             </div>
             
-            <div class="wizard-steps">
-                <div class="step-dot active" id="dot1"></div>
-                <div class="step-dot" id="dot2"></div>
-                <div class="step-dot" id="dot3"></div>
-            </div>
-
-            <div id="step1" class="wizard-content active">
-                <h3>Zeitraum wählen</h3>
-                <label>Startdatum (Freitag)</label>
-                <input type="date" id="wizStartDate">
-                <label>Anzahl Wochen</label>
-                <select id="wizWeeks">
-                    <option value="4">4 Wochen</option>
-                    <option value="8" selected>8 Wochen</option>
-                    <option value="12">12 Wochen</option>
-                </select>
-                <div style="margin-top: 20px; text-align: right;">
-                    <button class="btn btn-primary btn-block" onclick="wizNext(2)">Weiter zu Team</button>
-                </div>
-            </div>
-
-            <div id="step2" class="wizard-content">
-                <h3>Wer ist verfügbar?</h3>
-                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Deaktiviere Personen, die im Urlaub sind.</p>
-                <div id="wizTeamList" class="team-list" style="max-height: 300px; margin-bottom: 20px;"></div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="wizNext(1)">Zurück</button>
-                    <button class="btn btn-primary" style="flex:1" onclick="wizNext(3)">Weiter</button>
-                </div>
-            </div>
-
-            <div id="step3" class="wizard-content">
-                <h3><i class="fa-solid fa-microchip"></i> KI-Berechnung</h3>
-                <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px solid #bae6fd; margin-bottom: 20px;">
-                    <ul style="font-size: 0.9rem; padding-left: 20px; color: #0c4a6e;">
-                        <li>Stammspieler werden gesetzt.</li>
-                        <li>Doppelschicht-Wünsche werden respektiert.</li>
-                        <li>Springer werden fair verteilt.</li>
-                        <li>Notfall-Reserven werden geschont.</li>
-                    </ul>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="wizNext(2)">Zurück</button>
-                    <button class="btn btn-primary" style="flex:1" onclick="runGenerator()">🚀 Plan erstellen</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="editModal" class="modal-backdrop">
-        <div class="modal">
-            <h3>Eintrag bearbeiten</h3>
-            <input type="hidden" id="editIndex">
+            <input type="hidden" id="editId">
+            
             <label>Datum</label>
-            <input type="text" id="editDate" disabled style="background: #eee;">
+            <input type="text" id="editDate" placeholder="TT.MM.">
             
-            <div style="margin: 15px 0;">
-                <label>Frühschicht (17:00 - 18:30)</label>
-                <div id="editEarlyContainer" style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;"></div>
-                <select id="addEarlySelect" onchange="addPersonToShift('early')" style="font-size: 0.9rem;">
-                    <option value="">+ Person hinzufügen</option>
-                </select>
-            </div>
+            <label>Uhrzeit</label>
+            <select id="editTime">
+                <option value="17:00 - 18:30">Früh (17:00 - 18:30)</option>
+                <option value="18:15 - 19:45">Spät (18:15 - 19:45)</option>
+            </select>
 
-            <div style="margin: 15px 0;">
-                <label>Spätschicht (18:15 - 19:45)</label>
-                <div id="editLateContainer" style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;"></div>
-                <select id="addLateSelect" onchange="addPersonToShift('late')" style="font-size: 0.9rem;">
-                    <option value="">+ Person hinzufügen</option>
-                </select>
-            </div>
+            <label>Personal (Auswahl)</label>
+            <div id="modalMemberSelect" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                </div>
 
-            <button class="btn btn-primary btn-block" onclick="saveEdit()">Speichern</button>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="deleteCurrentEntry()" id="btnDeleteEntry">Löschen</button>
+                <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+            </div>
         </div>
     </div>
 
-    <div id="teamModal" class="modal-backdrop">
+    <div id="modalMember" class="modal-overlay">
         <div class="modal">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Team verwalten</h3>
-                <button class="btn btn-ghost" onclick="closeModal('teamModal')">&times;</button>
-            </div>
+            <h2 style="margin-top:0;">Mitglied verwalten</h2>
+            <input type="hidden" id="memId">
             
-            <div class="input-group" style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                <label>Neues Mitglied</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <input type="text" id="newMemberName" placeholder="Name">
-                    <select id="newMemberRole">
-                        <option value="stamm">Stamm (Immer)</option>
-                        <option value="springer" selected>Springer (Rotation)</option>
-                        <option value="notfall">Notfall (Reserve)</option>
-                    </select>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px;">
-                    <select id="newMemberPref">
-                        <option value="both">Egal / Beides</option>
-                        <option value="early">Nur Früh</option>
-                        <option value="late">Nur Spät</option>
-                    </select>
-                    <button class="btn btn-primary" onclick="addTeamMember()">Hinzufügen</button>
-                </div>
-            </div>
+            <label>Name</label>
+            <input type="text" id="memName">
+            
+            <label>Rolle</label>
+            <select id="memRole">
+                <option value="fixed">Stammspieler (Immer dabei)</option>
+                <option value="springer" selected>Springer (Rotation)</option>
+                <option value="notfall">Notfall (Nur wenn nötig)</option>
+            </select>
+            
+            <label>Bevorzugte Zeit</label>
+            <select id="memShift">
+                <option value="both">Egal (Beides)</option>
+                <option value="early">Nur Früh (17:00)</option>
+                <option value="late">Nur Spät (18:15)</option>
+            </select>
 
-            <div id="teamManagerList" class="team-list"></div>
+            <button class="btn btn-primary" onclick="saveMember()" style="margin-top: 20px;">Speichern</button>
         </div>
     </div>
-
-    <div id="csvModal" class="modal-backdrop">
-        <div class="modal">
-            <h3>CSV Verschlaubisieren</h3>
-            <p style="font-size: 0.9rem; color: #666;">Füge deine "dumme" Excel/CSV Liste ein. Die AI versucht, das Team zu erkennen und einen smarten Plan daraus zu bauen.</p>
-            <textarea id="csvInput" rows="6" placeholder="09.01.; Kaspar, Uwe&#10;16.01.; Nico, Gento"></textarea>
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="btn btn-secondary" onclick="closeModal('csvModal')">Abbrechen</button>
-                <button class="btn btn-primary" style="flex:1" onclick="processSmartCSV()">Analysieren & Importieren</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast" class="toast">Nachricht</div>
 
     <script>
-        // --- STATUS & DATEN ---
-        let schedule = JSON.parse(localStorage.getItem('gp_schedule')) || [];
-        
-        let team = JSON.parse(localStorage.getItem('gp_team')) || [
-            { id: 1, name: "Kaspar", role: "stamm", pref: "both", active: true },
-            { id: 2, name: "Uwe", role: "springer", pref: "late", active: true },
-            { id: 3, name: "Nico", role: "springer", pref: "both", active: true },
-            { id: 4, name: "Dmitry", role: "springer", pref: "both", active: true },
-            { id: 5, name: "Gento", role: "springer", pref: "early", active: true },
-            { id: 6, name: "Stephan", role: "notfall", pref: "early", active: true }
-        ];
+        /* --- STATE MANAGEMENT --- */
+        const APP_KEY = 'gittertier_ultimate_v1';
+        let state = {
+            schedule: [],
+            team: [
+                { id: 1, name: 'Kaspar', role: 'fixed', shift: 'both' },
+                { id: 2, name: 'Uwe', role: 'springer', shift: 'late' },
+                { id: 3, name: 'Nico', role: 'springer', shift: 'both' },
+                { id: 4, name: 'Dmitry', role: 'springer', shift: 'both' },
+                { id: 5, name: 'Gento', role: 'springer', shift: 'early' },
+                { id: 6, name: 'Stephan', role: 'springer', shift: 'early' },
+                { id: 7, name: 'Bastian', role: 'notfall', shift: 'both' }
+            ]
+        };
 
-        // Temp Variables for Editing
-        let currentEditIndex = -1;
-        let tempEditData = { early: [], late: [] };
+        // Load Data
+        const stored = localStorage.getItem(APP_KEY);
+        if(stored) state = JSON.parse(stored);
 
-        // --- INIT ---
+        /* --- INIT --- */
         document.addEventListener('DOMContentLoaded', () => {
-            renderSchedule();
-            renderTeamDisplay();
-            updateStats();
-            
-            // Set Generator Date to next Friday
-            const d = new Date();
-            d.setDate(d.getDate() + (5 + 7 - d.getDay()) % 7);
-            document.getElementById('wizStartDate').valueAsDate = d;
+            renderPlan();
+            renderStats();
+            renderTeam();
+            // Set Default Generator Date to next Friday
+            document.getElementById('genDate').valueAsDate = getNextDayOfWeek(new Date(), 5);
         });
 
-        // --- CORE FUNCTIONS ---
-        function saveData() {
-            localStorage.setItem('gp_schedule', JSON.stringify(schedule));
-            localStorage.setItem('gp_team', JSON.stringify(team));
-            renderSchedule();
-            renderTeamDisplay();
-            updateStats();
+        function saveState() {
+            localStorage.setItem(APP_KEY, JSON.stringify(state));
+            renderPlan();
+            renderStats();
         }
 
-        function renderSchedule() {
-            const container = document.getElementById('scheduleList');
+        /* --- NAVIGATION --- */
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Toggle FAB visibility
+            const fab = document.querySelector('.fab');
+            if(tabId === 'home') fab.classList.remove('hidden');
+            else fab.classList.add('hidden');
+        }
+
+        /* --- RENDERING --- */
+        function renderPlan() {
+            const container = document.getElementById('planList');
             container.innerHTML = '';
             
-            if(schedule.length === 0) {
-                container.innerHTML = `<div style="padding: 40px; text-align: center; color: var(--color-text-muted);"><i class="fa-solid fa-robot" style="font-size: 2rem; margin-bottom: 10px;"></i><p>Kein Plan vorhanden.</p></div>`;
-                document.getElementById('planRange').innerText = "";
+            if(state.schedule.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
                 return;
             }
+            document.getElementById('emptyState').style.display = 'none';
 
-            // Sortierung
-            schedule.sort((a,b) => new Date(a.date.split('.').reverse().join('-')) - new Date(b.date.split('.').reverse().join('-')));
+            // Sort logic could go here
             
-            // Range Anzeige
-            document.getElementById('planRange').innerText = `${schedule[0].date} - ${schedule[schedule.length-1].date}`;
-
-            // AI Check
-            let warning = false;
-
-            schedule.forEach((day, index) => {
-                // Check Understaffing (min 2 per shift)
-                const problem = (day.early.length < 2 || day.late.length < 2);
-                if(problem) warning = true;
-
+            state.schedule.forEach((entry, idx) => {
                 const div = document.createElement('div');
                 div.className = 'schedule-row';
+                div.onclick = () => openEditModal(idx);
+                
+                // Alert icon if count < 2
+                const namesCount = entry.names.length;
+                const alertHtml = namesCount < 2 ? `<i class="fa-solid fa-triangle-exclamation" style="color:var(--color-warning); margin-right:5px;"></i>` : '';
+
+                let namesHtml = entry.names.map(n => `<span class="name-tag">${n}</span>`).join('');
+
                 div.innerHTML = `
-                    <div class="date-cell">
-                        <span>${day.date}</span>
-                        <span class="date-day">Freitag</span>
+                    <div style="display:flex; align-items:center;">
+                        <div class="row-date">${entry.date}</div>
+                        <div class="row-time">${entry.time.split(' ')[0]}</div>
                     </div>
-                    
-                    <div class="shift-block">
-                        <div class="shift-label">FRÜH (17:00 - 18:30) ${day.early.length < 2 ? '<i class="fa-solid fa-triangle-exclamation" style="color:#dc2626"></i>' : ''}</div>
-                        <div>${day.early.map(p => `<span class="person-pill">${p}</span>`).join('')}</div>
+                    <div class="row-names">
+                        ${alertHtml}
+                        ${namesHtml}
                     </div>
+                    <i class="fa-solid fa-chevron-right" style="color:#ddd; font-size: 0.8rem;"></i>
+                `;
+                container.appendChild(div);
+            });
+        }
 
-                    <div class="shift-block">
-                        <div class="shift-label">SPÄT (18:15 - 19:45) ${day.late.length < 2 ? '<i class="fa-solid fa-triangle-exclamation" style="color:#dc2626"></i>' : ''}</div>
-                        <div>${day.late.map(p => `<span class="person-pill">${p}</span>`).join('')}</div>
-                    </div>
+        function renderStats() {
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = '';
+            
+            // Count assignments
+            const counts = {};
+            state.team.forEach(m => counts[m.name] = 0);
+            
+            let max = 0;
+            state.schedule.forEach(row => {
+                row.names.forEach(n => {
+                    if(counts[n] !== undefined) counts[n]++;
+                    else counts[n] = 1; // Für manuelle Namen
+                });
+            });
+            
+            Object.values(counts).forEach(c => { if(c > max) max = c; });
 
-                    <div style="text-align: right;">
-                        <button class="btn btn-ghost" onclick="openEditModal(${index})"><i class="fa-solid fa-pen-to-square"></i></button>
+            // Sort by count descending
+            const sortedNames = Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
+
+            sortedNames.forEach(name => {
+                if(counts[name] === 0 && !state.team.find(t=>t.name===name)) return; // Skip unused non-team members
+
+                const percent = max > 0 ? (counts[name] / max) * 100 : 0;
+                const row = document.createElement('div');
+                row.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:2px;">
+                        <span>${name}</span>
+                        <strong>${counts[name]}x</strong>
+                    </div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar" style="width:${percent}%"></div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function renderTeam() {
+            const container = document.getElementById('teamListContainer');
+            container.innerHTML = '';
+            
+            state.team.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'team-item';
+                
+                let roleLabel = '';
+                if(m.role === 'fixed') roleLabel = '<span class="role-badge role-fixed">Stamm</span>';
+                if(m.role === 'springer') roleLabel = '<span class="role-badge role-springer">Springer</span>';
+                if(m.role === 'notfall') roleLabel = '<span class="role-badge role-notfall">Notfall</span>';
+
+                let shiftIcon = '';
+                if(m.shift === 'early') shiftIcon = '<i class="fa-regular fa-sun" title="Früh"></i>';
+                if(m.shift === 'late') shiftIcon = '<i class="fa-solid fa-moon" title="Spät"></i>';
+                if(m.shift === 'both') shiftIcon = '<i class="fa-solid fa-arrows-left-right" title="Beides"></i>';
+
+                div.innerHTML = `
+                    <div>
+                        <strong>${m.name}</strong>
+                        ${roleLabel}
+                    </div>
+                    <div style="color:#666; display:flex; gap:15px; align-items:center;">
+                        ${shiftIcon}
+                        <button onclick="editMember(${m.id})" style="border:none; background:none; color:var(--color-accent); font-size:1rem;"><i class="fa-solid fa-pen"></i></button>
                     </div>
                 `;
                 container.appendChild(div);
             });
-
-            document.getElementById('ai-alert').style.display = warning ? 'inline-block' : 'none';
         }
 
-        // --- GENERATOR LOGIC (THE BRAIN) ---
-        function runGenerator() {
-            const weeks = parseInt(document.getElementById('wizWeeks').value);
-            let currentDate = document.getElementById('wizStartDate').valueAsDate;
-            
-            // Backup old schedule if exists? Nah, overwrite based on user intent usually.
-            schedule = []; 
-            
-            // Fairness Counter
-            let shiftsCount = {};
-            team.forEach(p => shiftsCount[p.name] = 0);
+        /* --- MODALS --- */
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('open'));
+        }
 
-            for (let i = 0; i < weeks; i++) {
+        function openEditModal(index) {
+            const modal = document.getElementById('modalEdit');
+            const container = document.getElementById('modalMemberSelect');
+            container.innerHTML = '';
+            
+            let currentNames = [];
+            
+            if(index !== null) {
+                // Edit existing
+                const entry = state.schedule[index];
+                document.getElementById('editId').value = index;
+                document.getElementById('editDate').value = entry.date;
+                document.getElementById('editTime').value = entry.time;
+                document.getElementById('btnDeleteEntry').style.display = 'block';
+                currentNames = entry.names;
+            } else {
+                // New
+                document.getElementById('editId').value = 'new';
+                document.getElementById('editDate').value = '';
+                document.getElementById('btnDeleteEntry').style.display = 'none';
+            }
+
+            // Create Checkboxes for Team
+            state.team.forEach(m => {
+                const isChecked = currentNames.includes(m.name) ? 'checked' : '';
+                const label = document.createElement('label');
+                label.style.display = 'flex'; label.style.alignItems = 'center'; label.style.gap = '8px';
+                label.innerHTML = `<input type="checkbox" value="${m.name}" ${isChecked} class="chk-member"> ${m.name}`;
+                container.appendChild(label);
+            });
+
+            modal.classList.add('open');
+        }
+
+        function saveEntry() {
+            const index = document.getElementById('editId').value;
+            const date = document.getElementById('editDate').value;
+            const time = document.getElementById('editTime').value;
+            
+            // Get checked names
+            const selected = [];
+            document.querySelectorAll('.chk-member:checked').forEach(c => selected.push(c.value));
+
+            if(!date) return alert("Datum fehlt");
+
+            const entry = { date, time, names: selected };
+
+            if(index === 'new') {
+                state.schedule.push(entry);
+            } else {
+                state.schedule[parseInt(index)] = entry;
+            }
+            
+            saveState();
+            closeModals();
+        }
+
+        function deleteCurrentEntry() {
+            const index = document.getElementById('editId').value;
+            if(index !== 'new' && confirm("Eintrag löschen?")) {
+                state.schedule.splice(parseInt(index), 1);
+                saveState();
+                closeModals();
+            }
+        }
+
+        /* --- MEMBER MANAGEMENT --- */
+        function openMemberModal() {
+            document.getElementById('memId').value = 'new';
+            document.getElementById('memName').value = '';
+            document.getElementById('modalMember').classList.add('open');
+        }
+        
+        function editMember(id) {
+            const m = state.team.find(x => x.id === id);
+            document.getElementById('memId').value = id;
+            document.getElementById('memName').value = m.name;
+            document.getElementById('memRole').value = m.role;
+            document.getElementById('memShift').value = m.shift;
+            document.getElementById('modalMember').classList.add('open');
+        }
+
+        function saveMember() {
+            const id = document.getElementById('memId').value;
+            const name = document.getElementById('memName').value;
+            const role = document.getElementById('memRole').value;
+            const shift = document.getElementById('memShift').value;
+
+            if(!name) return;
+
+            if(id === 'new') {
+                state.team.push({ id: Date.now(), name, role, shift });
+            } else {
+                const idx = state.team.findIndex(x => x.id == id);
+                state.team[idx] = { ...state.team[idx], name, role, shift };
+            }
+            saveState();
+            renderTeam();
+            closeModals();
+        }
+
+        /* --- THE SMART GENERATOR v2 --- */
+        function runGeneratorWizard() {
+            const weeks = parseInt(document.getElementById('genDuration').value);
+            let currentDate = document.getElementById('genDate').valueAsDate;
+            if(!currentDate) return alert("Datum fehlt");
+
+            if(state.schedule.length > 0 && !confirm("Bestehenden Plan überschreiben?")) return;
+            
+            const newSchedule = [];
+            
+            // Stats tracker for fairness in this run
+            let shiftCounts = {};
+            state.team.forEach(t => shiftCounts[t.name] = 0);
+
+            for(let i=0; i<weeks; i++) {
                 const dateStr = formatDate(currentDate);
-                let dayPlan = { date: dateStr, early: [], late: [] };
                 
-                // 1. Stammspieler setzen (Fixed)
-                team.filter(p => p.active && p.role === 'stamm').forEach(p => {
-                    if(p.pref === 'early' || p.pref === 'both') { dayPlan.early.push(p.name); shiftsCount[p.name]++; }
-                    if(p.pref === 'late' || p.pref === 'both') { dayPlan.late.push(p.name); shiftsCount[p.name]++; }
+                // --- SLOT 1: EARLY (17:00) ---
+                let earlyWorkers = getWorkersForSlot('early', [], shiftCounts);
+                
+                // Update counts
+                earlyWorkers.forEach(w => shiftCounts[w]++);
+
+                newSchedule.push({
+                    date: dateStr,
+                    time: "17:00 - 18:30",
+                    names: earlyWorkers
                 });
 
-                // 2. Doppelschicht-Logik & Springer
-                // Wir füllen auf mind. 3 Leute auf (Idealerweise)
-                const fillShift = (shiftName, timePref) => {
-                    while(dayPlan[shiftName].length < 3) {
-                        // Kandidaten: Springer, Aktiv, noch nicht in dieser Schicht
-                        let candidates = team.filter(p => 
-                            p.active && 
-                            p.role !== 'stamm' && // Stamm schon drin
-                            p.role !== 'notfall' && // Notfall erst später
-                            (p.pref === timePref || p.pref === 'both') &&
-                            !dayPlan[shiftName].includes(p.name)
-                        );
+                // --- SLOT 2: LATE (18:15) ---
+                // Doppelschicht-Logik: Check if any early worker WANTS to work late too
+                let potentialDoubleShifters = earlyWorkers.filter(name => {
+                    const member = state.team.find(t => t.name === name);
+                    // If member exists and accepts 'late' or 'both'
+                    return member && (member.shift === 'both' || member.shift === 'late');
+                });
+                
+                let lateWorkers = getWorkersForSlot('late', potentialDoubleShifters, shiftCounts);
+                lateWorkers.forEach(w => shiftCounts[w]++);
 
-                        // Wenn Doppelschicht-Logik greifen soll: 
-                        // Wenn jemand "Both" präferiert und schon in der anderen Schicht ist -> Priorisieren!
-                        // Hier vereinfacht: Wir sortieren nach Einsätzen.
-                        
-                        candidates.sort((a,b) => shiftsCount[a.name] - shiftsCount[b.name]); // Fairness
+                newSchedule.push({
+                    date: dateStr,
+                    time: "18:15 - 19:45",
+                    names: lateWorkers
+                });
 
-                        if(candidates.length > 0) {
-                            const chosen = candidates[0];
-                            dayPlan[shiftName].push(chosen.name);
-                            shiftsCount[chosen.name]++;
-                            
-                            // SMART LOGIC: Wenn Preference "Both", pack ihn auch in die andere Schicht wenn Platz!
-                            if(chosen.pref === 'both') {
-                                const otherShift = shiftName === 'early' ? 'late' : 'early';
-                                if(!dayPlan[otherShift].includes(chosen.name)) {
-                                    dayPlan[otherShift].push(chosen.name);
-                                    shiftsCount[chosen.name]++;
-                                }
-                            }
-                        } else {
-                            break; // Keine Springer mehr
-                        }
-                    }
-                };
-
-                fillShift('early', 'early');
-                fillShift('late', 'late');
-
-                // 3. Notfall (Wenn immer noch < 2)
-                const emergencyFill = (shiftName) => {
-                    if(dayPlan[shiftName].length < 2) {
-                        const notfall = team.find(p => p.active && p.role === 'notfall' && !dayPlan[shiftName].includes(p.name));
-                        if(notfall) {
-                             dayPlan[shiftName].push(notfall.name);
-                             shiftsCount[notfall.name]++;
-                        }
-                    }
-                };
-                emergencyFill('early');
-                emergencyFill('late');
-
-                schedule.push(dayPlan);
+                // Next Week
                 currentDate.setDate(currentDate.getDate() + 7);
             }
 
-            closeModal('wizardModal');
-            saveData();
-            showToast("Plan erfolgreich generiert!");
+            state.schedule = newSchedule;
+            saveState();
+            switchTab('home');
+            alert("Plan erfolgreich generiert!");
         }
 
-        // --- EDITING ---
-        function openEditModal(index) {
-            currentEditIndex = index;
-            const entry = schedule[index];
-            tempEditData = { early: [...entry.early], late: [...entry.late] };
+        function getWorkersForSlot(slotType, preferredCandidates, currentCounts) {
+            let assigned = [];
             
-            document.getElementById('editDate').value = entry.date;
-            renderEditLists();
+            // 1. Force preferred candidates (Doppelschichtler) if they fit the slot
+            // Actually, we should treat them as "Fixed" for this moment logic
             
-            // Populate Dropdowns
-            const fillSelect = (id) => {
-                const sel = document.getElementById(id);
-                sel.innerHTML = '<option value="">+ Person hinzufügen</option>';
-                team.forEach(p => {
-                    sel.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+            // 2. Add FIXED roles valid for this slot
+            const fixed = state.team.filter(m => m.role === 'fixed' && (m.shift === 'both' || m.shift === slotType));
+            fixed.forEach(m => {
+                if(!assigned.includes(m.name)) assigned.push(m.name);
+            });
+
+            // 3. If slot needs more people (Target: 3)
+            // Priority: PreferredCandidates (Double shift) > Springer (Rotation) > Notfall
+            
+            // Add Preferred Candidates first (if not already Fixed)
+            preferredCandidates.forEach(name => {
+                if(assigned.length < 3 && !assigned.includes(name)) {
+                    assigned.push(name);
+                }
+            });
+
+            // Add Springers (Fair Rotation)
+            const springers = state.team.filter(m => 
+                m.role === 'springer' && 
+                (m.shift === 'both' || m.shift === slotType) &&
+                !assigned.includes(m.name)
+            );
+
+            // Sort by usage count (ascending) + Random
+            springers.sort((a,b) => (currentCounts[a.name] - currentCounts[b.name]) || (0.5 - Math.random()));
+
+            for(let s of springers) {
+                if(assigned.length >= 3) break;
+                assigned.push(s.name);
+            }
+
+            // 4. Emergency Fallback
+            if(assigned.length < 2) {
+                const notfall = state.team.filter(m => m.role === 'notfall');
+                notfall.forEach(n => {
+                    if(assigned.length < 3 && !assigned.includes(n.name)) assigned.push(n.name);
                 });
-            };
-            fillSelect('addEarlySelect');
-            fillSelect('addLateSelect');
-
-            document.getElementById('editModal').classList.add('active');
-        }
-
-        function renderEditLists() {
-            const render = (arr, containerId, type) => {
-                const c = document.getElementById(containerId);
-                c.innerHTML = arr.map((name, i) => `
-                    <div class="person-pill" style="background: #e5e7eb; cursor:pointer;" onclick="removePersonFromEdit('${type}', ${i})">
-                        ${name} <i class="fa-solid fa-times" style="font-size:0.7rem; margin-left:4px;"></i>
-                    </div>
-                `).join('');
-            };
-            render(tempEditData.early, 'editEarlyContainer', 'early');
-            render(tempEditData.late, 'editLateContainer', 'late');
-        }
-
-        function addPersonToShift(type) {
-            const sel = document.getElementById(type === 'early' ? 'addEarlySelect' : 'addLateSelect');
-            const name = sel.value;
-            if(name && !tempEditData[type].includes(name)) {
-                tempEditData[type].push(name);
-                renderEditLists();
             }
-            sel.value = "";
+
+            return assigned;
         }
 
-        function removePersonFromEdit(type, index) {
-            tempEditData[type].splice(index, 1);
-            renderEditLists();
-        }
-
-        function saveEdit() {
-            schedule[currentEditIndex].early = tempEditData.early;
-            schedule[currentEditIndex].late = tempEditData.late;
-            saveData();
-            closeModal('editModal');
-        }
-
-        // --- WIZARD & MODAL UTILS ---
-        function openWizard() {
-            document.getElementById('wizardModal').classList.add('active');
-            wizNext(1); // Reset
-            renderWizTeam();
-        }
-
-        function renderWizTeam() {
-            const c = document.getElementById('wizTeamList');
-            c.innerHTML = team.map((p, i) => `
-                <div class="member-row">
-                    <input type="checkbox" ${p.active ? 'checked' : ''} onchange="toggleTeamActive(${i})">
-                    <span>${p.name}</span>
-                    <span class="tag tag-${p.role}">${p.role}</span>
-                </div>
-            `).join('');
-        }
-        
-        function toggleTeamActive(index) {
-            team[index].active = !team[index].active;
-            localStorage.setItem('gp_team', JSON.stringify(team)); // Save state immediately
-        }
-
-        function wizNext(step) {
-            document.querySelectorAll('.wizard-content').forEach(el => el.classList.remove('active'));
-            document.getElementById('step'+step).classList.add('active');
-            
-            document.querySelectorAll('.step-dot').forEach((el, i) => {
-                if(i < step) el.classList.add('active'); else el.classList.remove('active');
-            });
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
-
-        // --- TEAM MANAGEMENT ---
-        function openTeamModal() {
-            renderTeamManager();
-            document.getElementById('teamModal').classList.add('active');
-        }
-
-        function renderTeamManager() {
-            const c = document.getElementById('teamManagerList');
-            c.innerHTML = team.map((p, i) => `
-                <div class="member-row">
-                    <div class="avatar">${p.name.substring(0,1)}</div>
-                    <div class="member-info">
-                        <div class="member-name">${p.name}</div>
-                        <div class="member-details">
-                            <span class="tag tag-${p.role}">${p.role}</span>
-                            <span><i class="fa-regular fa-clock"></i> ${p.pref}</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-ghost" onclick="deleteTeamMember(${i})" style="color:var(--color-error)"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function renderTeamDisplay() {
-            const c = document.getElementById('teamDisplay');
-            c.innerHTML = team.map(p => `
-                <div class="member-row">
-                    <div class="avatar">${p.name.substring(0,1)}</div>
-                    <div class="member-info">
-                        <div class="member-name">${p.name}</div>
-                        <div class="member-details">
-                            <span class="tag tag-${p.role}">${p.role}</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function addTeamMember() {
-            const name = document.getElementById('newMemberName').value.trim();
-            if(!name) return;
-            team.push({
-                id: Date.now(),
-                name: name,
-                role: document.getElementById('newMemberRole').value,
-                pref: document.getElementById('newMemberPref').value,
-                active: true
-            });
-            document.getElementById('newMemberName').value = '';
-            renderTeamManager();
-            saveData();
-        }
-
-        function deleteTeamMember(i) {
-            if(confirm('Löschen?')) {
-                team.splice(i, 1);
-                renderTeamManager();
-                saveData();
-            }
-        }
-
-        // --- CSV SMART IMPORT ---
-        function openCSVModal() { document.getElementById('csvModal').classList.add('active'); }
-        
+        /* --- SMART CSV IMPORT --- */
         function processSmartCSV() {
-            const txt = document.getElementById('csvInput').value;
+            const txt = document.getElementById('csvInputSmart').value;
             const lines = txt.split('\n');
-            
-            schedule = []; // Reset or Append? Reset for clean start logic.
-            
+            let addedCount = 0;
+
             lines.forEach(line => {
-                // Simple parser: Datum; Names (comma separated)
-                // Assume 17:00 is first half names, 18:15 logic is hard from dumb CSV.
-                // We'll put all names in Early and Late for now or try to split if quantity > 3
-                const parts = line.split(';');
-                if(parts.length >= 2) {
-                    const date = parts[0].trim();
-                    const namesStr = parts[1] || "";
-                    const names = namesStr.split(',').map(n => n.trim()).filter(n => n);
+                // Heuristic Parsing: Search for Date pattern
+                const dateMatch = line.match(/(\d{1,2}\.\d{2}\.?)/);
+                if(dateMatch) {
+                    const date = dateMatch[1];
+                    // Remove date from line to find names
+                    let rest = line.replace(date, '');
                     
-                    // Dumb logic: First 2 early, rest late? Or duplicate?
-                    // Let's assume if it's imported, we add all to both to be safe, user edits later
-                    // Or improved:
-                    const mid = Math.ceil(names.length / 2);
-                    const early = names.slice(0, mid + 1); // overlap slightly
-                    const late = names.slice(mid - 1); // overlap slightly
+                    // Simple name extraction: split by common separators
+                    let potentialNames = rest.split(/[,;&+]/).map(s => s.trim()).filter(s => s.length > 2);
                     
-                    schedule.push({ date: date, early: names, late: names }); // Duplicate for safety
+                    // Filter names that look like time (e.g. 17:00)
+                    potentialNames = potentialNames.filter(n => !n.match(/\d:\d/));
+
+                    // Auto-Add unknown people to Team
+                    potentialNames.forEach(name => {
+                        const exists = state.team.find(t => t.name.toLowerCase() === name.toLowerCase());
+                        if(!exists) {
+                            state.team.push({ id: Date.now() + Math.random(), name: name, role: 'springer', shift: 'both' });
+                        }
+                    });
+
+                    // Add to schedule
+                    // Guess time based on line position or previous entry? 
+                    // Fallback: Default to Early if not specified, user can edit.
+                    // Or check if "Spät" or "18" is in text.
+                    let time = "17:00 - 18:30";
+                    if(line.includes("18:15") || line.includes("Spät")) time = "18:15 - 19:45";
+
+                    state.schedule.push({ date, time, names: potentialNames });
+                    addedCount++;
                 }
             });
-            
-            closeModal('csvModal');
-            saveData();
-            showToast("CSV importiert (Bitte prüfen!)");
+
+            saveState();
+            document.getElementById('csvInputSmart').value = '';
+            alert(`${addedCount} Einträge importiert & Team aktualisiert.`);
+            switchTab('home');
         }
 
-        // --- EXTRA FEATURES ---
-        function updateStats() {
-            const counts = {};
-            team.forEach(p => counts[p.name] = 0);
-            
-            schedule.forEach(day => {
-                [...new Set([...day.early, ...day.late])].forEach(name => {
-                    if(counts[name] !== undefined) counts[name]++;
-                });
+        /* --- EXPORT TOOLS --- */
+        function shareWhatsApp() {
+            let text = "*Einsatzplan SC Brombach*\n\n";
+            state.schedule.forEach(e => {
+                text += `📅 ${e.date} (${e.time})\n👤 ${e.names.join(', ')}\n\n`;
             });
-
-            // Chart.js
-            const ctx = document.getElementById('statsChart');
-            if(window.myChart) window.myChart.destroy();
-            
-            window.myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        label: 'Einsätze',
-                        data: Object.values(counts),
-                        backgroundColor: '#2563eb',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                }
-            });
+            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
         }
 
-        function exportWhatsApp() {
-            let text = "*📅 Einsatzplan Jugendtraining*\n\n";
-            schedule.forEach(day => {
-                text += `*${day.date} (Fr)*\n`;
-                text += `🕔 17:00: ${day.early.join(', ')}\n`;
-                text += `🕕 18:15: ${day.late.join(', ')}\n\n`;
-            });
-            navigator.clipboard.writeText(text).then(() => showToast("Für WhatsApp kopiert!"));
-        }
-
-        function exportICAL() {
-            let ical = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//GittertierPro//DE\n";
+        function exportICal() {
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//SCB//Planer//DE\n";
+            const year = new Date().getFullYear(); // Assumption
             
-            schedule.forEach(day => {
-                const [d, m] = day.date.split('.');
-                const year = new Date().getFullYear(); // Assume current year or logic needed
-                // Simple Logic: 2026 if month < current month etc. 
-                // Let's assume passed date format
-                const yyyy = (parseInt(m) < new Date().getMonth()+1) ? year+1 : year;
+            state.schedule.forEach(e => {
+                const [d, m] = e.date.split('.');
+                const [hStart, mStart] = e.time.split(' - ')[0].split(':');
+                const [hEnd, mEnd] = e.time.split(' - ')[1].split(':');
                 
-                const formatTime = (time) => `${yyyy}${m}${d}T${time.replace(':','')}00`;
+                // Simple ISO string creation (Requires correct Year handling in real app)
+                const startStr = `${year}${m}${d}T${hStart}${mStart}00`;
+                const endStr = `${year}${m}${d}T${hEnd}${mEnd}00`;
                 
-                // Shift 1
-                ical += "BEGIN:VEVENT\n";
-                ical += `SUMMARY:Training Früh (${day.early.join(', ')})\n`;
-                ical += `DTSTART:${formatTime('1700')}\nDTEND:${formatTime('1830')}\n`;
-                ical += "END:VEVENT\n";
-                
-                // Shift 2
-                ical += "BEGIN:VEVENT\n";
-                ical += `SUMMARY:Training Spät (${day.late.join(', ')})\n`;
-                ical += `DTSTART:${formatTime('1815')}\nDTEND:${formatTime('1945')}\n`;
-                ical += "END:VEVENT\n";
+                icsContent += "BEGIN:VEVENT\n";
+                icsContent += `SUMMARY:Jugendtraining (${e.names.join(', ')})\n`;
+                icsContent += `DTSTART:${startStr}\n`;
+                icsContent += `DTEND:${endStr}\n`;
+                icsContent += "DESCRIPTION:Einsatz SC Brombach\n";
+                icsContent += "END:VEVENT\n";
             });
-            ical += "END:VCALENDAR";
+            icsContent += "END:VCALENDAR";
             
-            const blob = new Blob([ical], { type: 'text/calendar' });
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'training.ics';
+            link.download = "training.ics";
             link.click();
         }
 
-        function exportPDF() {
+        function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
@@ -922,55 +865,62 @@
             doc.rect(0, 0, 210, 40, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(22);
-            doc.text("Einsatzplan Jugendtraining", 14, 20);
-            doc.setFontSize(12);
-            doc.text("SC Brombach", 14, 28);
+            doc.text("Einsatzplan Jugend", 14, 25);
             
-            const body = schedule.map(day => [
-                day.date, 
-                day.early.join(', '), 
-                day.late.join(', ')
-            ]);
+            const body = state.schedule.map(r => [r.date, r.time, r.names.join(', ')]);
             
             doc.autoTable({
                 startY: 50,
-                head: [['Datum', 'Frühschicht (17:00)', 'Spätschicht (18:15)']],
+                head: [['Datum', 'Uhrzeit', 'Team']],
                 body: body,
                 theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] },
-                styles: { fontSize: 10, cellPadding: 5 }
+                styles: { fontSize: 11, cellPadding: 6 },
+                headStyles: { fillColor: [30, 58, 138] }
             });
             
-            doc.save('einsatzplan.pdf');
+            doc.save("Plan_SCB.pdf");
         }
 
-        function resetAll() {
-            if(confirm("Wirklich alles löschen?")) {
-                schedule = [];
-                saveData();
+        function exportBackup() {
+            const blob = new Blob([JSON.stringify(state)], {type: 'application/json'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `backup_scb_${Date.now()}.json`;
+            link.click();
+        }
+
+        function importBackup(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    state = JSON.parse(e.target.result);
+                    saveState();
+                    alert("Backup wiederhergestellt!");
+                    location.reload();
+                } catch(err) { alert("Fehlerhafte Datei"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function hardReset() {
+            if(confirm("ACHTUNG: Alle Daten werden unwiderruflich gelöscht.")) {
+                localStorage.removeItem(APP_KEY);
+                location.reload();
             }
         }
 
-        function toggleTheme() {
-            const body = document.body;
-            // Simple Dark Mode Toggle logic (better via class)
-            // Here we rely on CSS media query, but manual toggle:
-            // Just swapping root vars via JS is cleaner but verbose. 
-            // For now, let's just alert (or implement class toggle)
-            alert("Dark Mode ist automatisch basierend auf deiner Systemeinstellung aktiv!");
+        // Helper
+        function getNextDayOfWeek(date, dayOfWeek) {
+            const resultDate = new Date(date.getTime());
+            resultDate.setDate(date.getDate() + (7 + dayOfWeek - date.getDay()) % 7);
+            return resultDate;
         }
-
-        // --- HELPERS ---
-        function formatDate(d) {
-            let da = d.getDate(); let mo = d.getMonth()+1;
-            return (da<10?'0':'')+da + '.' + (mo<10?'0':'')+mo + '.';
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+        function formatDate(date) {
+            let d = date.getDate();
+            let m = date.getMonth() + 1;
+            return (d < 10 ? '0'+d : d) + '.' + (m < 10 ? '0'+m : m) + '.';
         }
 
     </script>
