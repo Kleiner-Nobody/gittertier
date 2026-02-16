@@ -3,120 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Einsatzplaner Pro - SC Brombach</title>
+    <title>Einsatzplaner - SC Brombach</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    
+
     <style>
-        /* --- Design System (basiert auf 404.html) --- */
+        /* --- Design-System aus 404.html --- */
         :root {
-            --color-bg: #f9fafb;
-            --color-surface: #ffffff;
+            --color-bg: #ffffff;
             --color-text: #111111;
             --color-text-muted: #6b7280;
             --color-border: #e5e7eb;
-            --color-accent: #2563eb;       /* Gittertier Blau */
+            --color-accent: #2563eb;
             --color-accent-hover: #1d4ed8;
             --color-success: #16a34a;
             --color-error: #dc2626;
-            --color-overlay: rgba(0, 0, 0, 0.6);
+            --color-overlay: rgba(0, 0, 0, 0.5);
+            --color-surface: #f9fafb; /* Leichtes Grau für den Body-Hintergrund */
             
             --radius: 12px;
             --radius-sm: 6px;
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
             --header-height: 64px;
+            --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: var(--font-family);
-            background-color: var(--color-bg);
+            background-color: var(--color-surface);
             color: var(--color-text);
-            margin: 0;
-            padding-bottom: 80px; /* Platz für FAB oder Footer auf Mobile */
+            padding-bottom: 80px; /* Platz für Mobile Buttons */
         }
 
         /* --- Header --- */
         header {
             height: var(--header-height);
-            background: var(--color-surface);
+            background: var(--color-bg);
             border-bottom: 1px solid var(--color-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 1.5rem;
+            padding: 0 20px;
             position: sticky;
             top: 0;
             z-index: 50;
+            box-shadow: var(--shadow-sm);
         }
 
-        .brand {
+        .logo {
             display: flex;
             align-items: center;
             gap: 12px;
+            text-decoration: none;
+            color: var(--color-text);
             font-weight: 700;
             font-size: 1.1rem;
-            color: var(--color-text);
-            text-decoration: none;
-        }
-        .brand i { color: var(--color-accent); font-size: 1.2rem; }
-        .brand img { height: 32px; width: auto; }
-
-        /* --- Navigation (Tabs) --- */
-        .nav-tabs {
-            display: flex;
-            background: var(--color-surface);
-            padding: 0 1rem;
-            border-bottom: 1px solid var(--color-border);
-            overflow-x: auto;
-        }
-        
-        .nav-item {
-            padding: 1rem;
-            cursor: pointer;
-            font-weight: 500;
-            color: var(--color-text-muted);
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        
-        .nav-item:hover { color: var(--color-accent); }
-        .nav-item.active {
-            color: var(--color-accent);
-            border-bottom-color: var(--color-accent);
         }
 
-        /* --- Main Content --- */
+        .logo img { height: 32px; width: auto; }
+
+        /* --- Main Layout --- */
         main {
             max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            margin: 24px auto;
+            padding: 0 16px;
         }
 
-        .view-section { display: none; animation: fadeIn 0.3s ease; }
-        .view-section.active { display: block; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
         /* --- Cards --- */
         .card {
-            background: var(--color-surface);
-            border-radius: var(--radius);
+            background: var(--color-bg);
             border: 1px solid var(--color-border);
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: var(--transition);
         }
 
-        h2 { margin-top: 0; font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
-        h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .card:hover { box-shadow: var(--shadow-md); }
 
         /* --- Buttons --- */
         .btn {
@@ -127,663 +108,711 @@
             padding: 10px 16px;
             border-radius: var(--radius-sm);
             font-weight: 500;
+            font-size: 0.95rem;
             cursor: pointer;
             border: 1px solid transparent;
-            font-size: 0.95rem;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
-        
-        .btn-primary { background: var(--color-accent); color: white; }
-        .btn-primary:hover { background: var(--color-accent-hover); box-shadow: var(--shadow-md); }
-        
-        .btn-secondary { background: white; border-color: var(--color-border); color: var(--color-text); }
-        .btn-secondary:hover { background: #f9fafb; border-color: var(--color-text-muted); }
 
-        .btn-danger { background: #fee2e2; color: var(--color-error); border-color: #fecaca; }
+        .btn-primary { background: var(--color-accent); color: white; }
+        .btn-primary:hover { background: var(--color-accent-hover); box-shadow: var(--shadow); }
+
+        .btn-secondary { background: white; border-color: var(--color-border); color: var(--color-text); }
+        .btn-secondary:hover { background: var(--color-surface); border-color: var(--color-text-muted); }
+
+        .btn-danger { background: #fee2e2; color: var(--color-error); border-color: transparent; }
         .btn-danger:hover { background: #fecaca; }
 
-        .btn-sm { padding: 6px 10px; font-size: 0.85rem; }
-        .btn-full { width: 100%; }
-
-        /* --- Form Elements --- */
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 6px; }
-        
-        input, select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            font-size: 1rem;
-            background: white;
-            color: var(--color-text);
-        }
-        input:focus, select:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .btn-icon { padding: 8px; font-size: 1.1rem; background: transparent; color: var(--color-text-muted); }
+        .btn-icon:hover { color: var(--color-accent); background: #eff6ff; border-radius: 50%; }
 
         /* --- Table --- */
         .table-container {
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            overflow: hidden;
+            width: 100%;
             overflow-x: auto;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
         }
-        
+
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        thead { background: #f9fafb; border-bottom: 1px solid var(--color-border); }
-        th { padding: 12px 16px; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: var(--color-text-muted); font-weight: 600; }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--color-border); font-size: 0.95rem; }
-        tr:last-child td { border-bottom: none; }
         
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 99px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-blue { background: #eff6ff; color: var(--color-accent); }
-        .badge-gray { background: #f3f4f6; color: var(--color-text-muted); }
+        thead { background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+        th { text-align: left; padding: 12px 16px; font-size: 0.85rem; text-transform: uppercase; color: var(--color-text-muted); font-weight: 600; }
+        
+        tbody tr { border-bottom: 1px solid var(--color-border); background: white; transition: background 0.1s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #f9fafb; cursor: pointer; }
+        
+        td { padding: 14px 16px; font-size: 0.95rem; vertical-align: middle; }
 
         /* --- Team Grid --- */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
         }
-        
+
         .team-card {
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            padding: 1rem;
             background: white;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
         }
+
+        .team-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
         
-        .team-info strong { display: block; font-size: 1rem; }
-        .team-info span { font-size: 0.85rem; color: var(--color-text-muted); }
+        .toggle-group {
+            display: flex;
+            background: var(--color-surface);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        .toggle-option {
+            flex: 1;
+            text-align: center;
+            padding: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 6px;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+        .toggle-option.active { background: white; color: var(--color-accent); box-shadow: var(--shadow-sm); font-weight: 600; }
 
         /* --- Modals --- */
         .modal-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--color-overlay);
             z-index: 100;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
-        .modal-backdrop.active { opacity: 1; pointer-events: auto; }
-        
+        .modal-backdrop.visible { opacity: 1; }
+
         .modal {
-            background: white; width: 90%; max-width: 500px;
-            border-radius: var(--radius); padding: 1.5rem;
-            box-shadow: var(--shadow-md);
-            transform: scale(0.95); transition: transform 0.2s;
-            max-height: 90vh; overflow-y: auto;
+            background: white;
+            width: 90%; max-width: 500px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 24px;
+            transform: scale(0.95);
+            transition: transform 0.2s;
+            max-height: 90vh;
+            overflow-y: auto;
         }
-        .modal-backdrop.active .modal { transform: scale(1); }
+        .modal-backdrop.visible .modal { transform: scale(1); }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-title { font-size: 1.25rem; font-weight: 700; margin: 0; }
-        .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--color-text-muted); cursor: pointer; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 1.2rem; font-weight: 600; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 6px; }
+        
+        input, select, textarea {
+            width: 100%; padding: 10px; border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm); font-size: 1rem; outline: none; transition: border 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
-        /* --- Responsive --- */
+        /* --- Tabs --- */
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; }
+        .nav-item {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .nav-item.active { background: var(--color-text); color: white; border-color: var(--color-text); }
+
+        /* --- Helper Classes --- */
+        .hidden { display: none !important; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        .badge-blue { background: #eff6ff; color: var(--color-accent); }
+        .badge-gray { background: #f3f4f6; color: #4b5563; }
+
         @media (max-width: 600px) {
-            .team-grid { grid-template-columns: 1fr; }
-            .btn-responsive { width: 100%; justify-content: center; }
-            .modal { width: 95%; padding: 1rem; }
+            .logo span { display: none; } /* Nur Logo Icon auf Handy */
+            .btn span { display: inline; }
+            th:nth-child(4), td:nth-child(4) { display: none; } /* Hide count on mobile */
         }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="#" class="brand">
-            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="Logo">
-            Gittertier Planer
+        <a href="#" class="logo">
+            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="SCB Logo">
+            <span>SC Brombach Planer</span>
         </a>
-        <button class="btn btn-primary btn-sm" onclick="openModal('pdfModal')">
-            <i class="fa-solid fa-file-pdf"></i> Export
-        </button>
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-secondary" onclick="openModal('exportModal')">
+                <i class="fa-solid fa-download"></i> <span style="display:none; @media(min-width:600px){display:inline;}">Export</span>
+            </button>
+            <button class="btn btn-primary" onclick="openModal('generateModal')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Auto-Plan</span>
+            </button>
+        </div>
     </header>
 
-    <nav class="nav-tabs">
-        <div class="nav-item active" onclick="switchTab('plan', this)">
-            <i class="fa-solid fa-calendar-days"></i> Einsatzplan
-        </div>
-        <div class="nav-item" onclick="switchTab('team', this)">
-            <i class="fa-solid fa-users"></i> Teilnehmer
-        </div>
-        <div class="nav-item" onclick="switchTab('generator', this)">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Generator
-        </div>
-    </nav>
-
     <main>
-        
-        <div id="view-plan" class="view-section active">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                    <h2>Aktueller Plan</h2>
-                    <button class="btn btn-secondary btn-sm" onclick="openModal('addEntryModal')">
-                        <i class="fa-solid fa-plus"></i> Manuell
-                    </button>
-                </div>
-                
-                <div class="table-container">
+        <div class="nav-tabs">
+            <div class="nav-item active" onclick="switchTab('plan')" id="tab-plan">
+                <i class="fa-regular fa-calendar"></i> Einsatzplan
+            </div>
+            <div class="nav-item" onclick="switchTab('team')" id="tab-team">
+                <i class="fa-solid fa-users"></i> Teilnehmer & Regeln
+            </div>
+            <div class="nav-item" onclick="switchTab('data')" id="tab-data">
+                <i class="fa-solid fa-database"></i> Daten
+            </div>
+        </div>
+
+        <div id="view-plan">
+            <div class="card" style="padding:0; overflow:hidden;">
+                <div class="table-container" style="border:none;">
                     <table id="scheduleTable">
                         <thead>
                             <tr>
-                                <th width="20%">Datum</th>
+                                <th width="15%">Datum</th>
                                 <th width="25%">Uhrzeit</th>
-                                <th>Eingeteiltes Team</th>
-                                <th width="10%"></th>
+                                <th>Team</th>
+                                <th width="10%">Anz.</th>
                             </tr>
                         </thead>
-                        <tbody id="scheduleBody">
+                        <tbody id="tableBody">
                             </tbody>
                     </table>
                 </div>
-                <div id="emptyState" style="text-align:center; padding: 2rem; color: var(--color-text-muted); display:none;">
-                    <i class="fa-solid fa-clipboard" style="font-size:2rem; margin-bottom:10px; opacity:0.5;"></i>
-                    <p>Keine Einträge vorhanden.</p>
+                <div id="emptyState" style="text-align:center; padding:40px; color:var(--color-text-muted);">
+                    <i class="fa-solid fa-clipboard-list" style="font-size:2rem; margin-bottom:10px; opacity:0.5;"></i>
+                    <p>Keine Einträge. Nutze "Auto-Plan" oben rechts oder füge unten etwas hinzu.</p>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" style="width:100%; padding:15px; border-style:dashed;" onclick="openEditModal(null)">
+                <i class="fa-solid fa-plus"></i> Einzelnen Termin manuell hinzufügen
+            </button>
+        </div>
+
+        <div id="view-team" class="hidden">
+            <div class="section-title">
+                Teilnehmerverwaltung
+                <button class="btn btn-sm btn-primary" onclick="addMemberPrompt()">
+                    <i class="fa-solid fa-plus"></i> Neu
+                </button>
+            </div>
+            <p style="color:var(--color-text-muted); margin-bottom:20px; font-size:0.9rem;">
+                Definiere hier, wer Stammspieler ("Immer") und wer Springer ("Rotation") ist. Der Auto-Planer nutzt diese Regeln.
+            </p>
+            
+            <div class="team-grid" id="teamContainer">
+                </div>
+        </div>
+
+        <div id="view-data" class="hidden">
+            <div class="card">
+                <h3>CSV Import / Export</h3>
+                <p style="font-size:0.9rem; color:var(--color-text-muted); margin-bottom:15px;">
+                    Kopiere Daten aus Excel hier rein oder exportiere sie. Format: <code>Datum; Uhrzeit; Namen</code>
+                </p>
+                <textarea id="csvArea" rows="6" placeholder="09.01.; 17:00-18:30; Kaspar, Uwe"></textarea>
+                <div style="margin-top:10px; display:flex; gap:10px;">
+                    <button class="btn btn-primary" onclick="importCSV()">Importieren</button>
+                    <button class="btn btn-secondary" onclick="exportCSVToText()">In CSV umwandeln</button>
                 </div>
             </div>
             
-            <div style="display:flex; justify-content: center;">
-                <button class="btn btn-danger btn-sm" onclick="resetAll()">
-                    <i class="fa-solid fa-trash"></i> Alles zurücksetzen
-                </button>
+            <div class="card" style="border-color:var(--color-error);">
+                <h3 style="color:var(--color-error);">Gefahrenzone</h3>
+                <p style="font-size:0.9rem; margin-bottom:15px;">Löscht alle Termine und Team-Einstellungen.</p>
+                <button class="btn btn-danger" onclick="hardReset()">Alles zurücksetzen</button>
             </div>
         </div>
-
-        <div id="view-team" class="view-section">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                    <h2>Teilnehmer Verwaltung</h2>
-                    <button class="btn btn-primary btn-sm" onclick="openModal('addPersonModal')">
-                        <i class="fa-solid fa-user-plus"></i> Neu
-                    </button>
-                </div>
-                <p style="color:var(--color-text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
-                    Definiere hier, wer "Stammspieler" (immer eingeteilt) ist und wer rotiert.
-                </p>
-
-                <div id="teamGrid" class="team-grid">
-                    </div>
-            </div>
-        </div>
-
-        <div id="view-generator" class="view-section">
-            <div class="card">
-                <h2><i class="fa-solid fa-robot"></i> Smart Generator</h2>
-                <p style="color:var(--color-text-muted); margin-bottom:1.5rem;">
-                    Der Algorithmus erstellt einen fairen Plan. Stammspieler werden zuerst gesetzt, danach werden die Plätze mit Rotationsspielern aufgefüllt, sodass jeder mal dran kommt.
-                </p>
-
-                <div class="form-group">
-                    <label>Startdatum (nächster Freitag)</label>
-                    <input type="date" id="genStartDate">
-                </div>
-
-                <div class="form-group">
-                    <label>Zeitraum</label>
-                    <select id="genWeeks">
-                        <option value="4">4 Wochen</option>
-                        <option value="8" selected>8 Wochen</option>
-                        <option value="12">12 Wochen</option>
-                    </select>
-                </div>
-                
-                <div style="background:#eff6ff; padding:1rem; border-radius:var(--radius-sm); border:1px solid #dbeafe; margin-bottom:1.5rem;">
-                    <h4 style="margin:0 0 5px 0; color:#1e40af;">Regeln:</h4>
-                    <ul style="margin:0; padding-left:20px; font-size:0.9rem; color:#1e3a8a;">
-                        <li>Erzeugt Slots: <strong>17:00 - 18:30</strong> & <strong>18:15 - 19:45</strong></li>
-                        <li>Füllt Stammspieler bevorzugt auf.</li>
-                        <li>Verteilt Springer gleichmäßig.</li>
-                    </ul>
-                </div>
-
-                <button class="btn btn-primary btn-full" onclick="runGenerator()">
-                    Plan Generieren
-                </button>
-            </div>
-        </div>
-
     </main>
 
-    <div id="editEntryModal" class="modal-backdrop">
+    <div id="editModal" class="modal-backdrop">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Eintrag bearbeiten</h3>
-                <button class="close-btn" onclick="closeModal('editEntryModal')">&times;</button>
+                <div class="modal-title" id="modalTitle">Termin bearbeiten</div>
+                <button class="btn-icon" onclick="closeModal('editModal')">&times;</button>
             </div>
-            <input type="hidden" id="editId">
+            
+            <input type="hidden" id="editIndex">
+
             <div class="form-group">
                 <label>Datum</label>
-                <input type="text" id="editDate">
+                <input type="text" id="inpDate" placeholder="TT.MM.">
             </div>
-            <div class="form-group">
-                <label>Uhrzeit</label>
-                <input type="text" id="editTime">
-            </div>
-            <div class="form-group">
-                <label>Namen (Kommagetrennt)</label>
-                <input type="text" id="editNames">
-            </div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn btn-secondary" style="flex:1" onclick="closeModal('editEntryModal')">Abbrechen</button>
-                <button class="btn btn-primary" style="flex:1" onclick="saveEntryEdit()">Speichern</button>
-            </div>
-        </div>
-    </div>
 
-    <div id="addEntryModal" class="modal-backdrop">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Neuer Eintrag</h3>
-                <button class="close-btn" onclick="closeModal('addEntryModal')">&times;</button>
-            </div>
-            <div class="form-group">
-                <label>Datum (z.B. 25.02.)</label>
-                <input type="text" id="addDate">
-            </div>
             <div class="form-group">
                 <label>Uhrzeit</label>
-                <select id="addTimeSelect" onchange="toggleCustomTime(this)">
+                <select id="inpTime">
                     <option value="17:00 - 18:30">Früh (17:00 - 18:30)</option>
                     <option value="18:15 - 19:45">Spät (18:15 - 19:45)</option>
-                    <option value="custom">Benutzerdefiniert...</option>
                 </select>
-                <input type="text" id="addTimeCustom" style="display:none; margin-top:5px;" placeholder="z.B. 16:00 - 18:00">
             </div>
+
             <div class="form-group">
-                <label>Personen</label>
-                <input type="text" id="addNames" placeholder="Namen eingeben...">
+                <label>Eingeteiltes Team</label>
+                <textarea id="inpNames" rows="3" placeholder="Namen, mit Komma getrennt"></textarea>
             </div>
-            <button class="btn btn-primary btn-full" onclick="addManualEntry()">Hinzufügen</button>
+
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <button class="btn btn-danger" id="btnDelete" onclick="deleteEntry()">Löschen</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-secondary" onclick="closeModal('editModal')">Abbrechen</button>
+                    <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="addPersonModal" class="modal-backdrop">
+    <div id="generateModal" class="modal-backdrop">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Person verwalten</h3>
-                <button class="close-btn" onclick="closeModal('addPersonModal')">&times;</button>
+                <div class="modal-title">Smarte Einteilung</div>
+                <button class="btn-icon" onclick="closeModal('generateModal')">&times;</button>
             </div>
-            <input type="hidden" id="personEditIndex" value="-1">
+            
+            <p style="font-size:0.9rem; color:var(--color-text-muted); margin-bottom:20px;">
+                Erstellt einen Plan basierend auf den Team-Regeln. "Immer"-Leute werden gesetzt, "Rotation"-Leute füllen auf (fair verteilt).
+            </p>
+
             <div class="form-group">
-                <label>Name</label>
-                <input type="text" id="pName">
+                <label>Startdatum (Der nächste Freitag)</label>
+                <input type="date" id="genStart">
             </div>
+
             <div class="form-group">
-                <label>Typ</label>
-                <select id="pType">
-                    <option value="fixed">Stammspieler (Immer da)</option>
-                    <option value="rotate">Rotation (Springer)</option>
+                <label>Zeitraum</label>
+                <select id="genWeeks">
+                    <option value="4">4 Wochen</option>
+                    <option value="8" selected>8 Wochen</option>
+                    <option value="12">12 Wochen</option>
                 </select>
             </div>
+            
             <div class="form-group">
-                <label>Verfügbarkeit Schicht</label>
-                <select id="pShift">
-                    <option value="both">Egal (Beide)</option>
-                    <option value="early">Nur Früh (17:00)</option>
-                    <option value="late">Nur Spät (18:15)</option>
+                <label>Minimale Besetzung pro Schicht</label>
+                <select id="genMinStaff">
+                    <option value="2">2 Personen</option>
+                    <option value="3" selected>3 Personen</option>
+                    <option value="4">4 Personen</option>
                 </select>
             </div>
-            <button class="btn btn-primary btn-full" onclick="savePerson()">Speichern</button>
+
+            <button class="btn btn-primary" style="width:100%;" onclick="runGenerator()">Plan Generieren</button>
         </div>
     </div>
 
-    <div id="pdfModal" class="modal-backdrop">
+    <div id="exportModal" class="modal-backdrop">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">PDF Exportieren</h3>
-                <button class="close-btn" onclick="closeModal('pdfModal')">&times;</button>
+                <div class="modal-title">Als PDF Speichern</div>
+                <button class="btn-icon" onclick="closeModal('exportModal')">&times;</button>
             </div>
-            <p>Wähle ein Design für den Aushang:</p>
-            <div style="display:grid; gap:10px; margin-bottom:20px;">
-                <button class="btn btn-secondary btn-responsive" onclick="generatePDF('standard')">
-                    <i class="fa-solid fa-table"></i> Standard (Blau)
-                </button>
-                <button class="btn btn-secondary btn-responsive" onclick="generatePDF('chess')">
-                    <i class="fa-solid fa-chess-board"></i> Schachclub (S/W)
-                </button>
-                <button class="btn btn-secondary btn-responsive" onclick="generatePDF('list')">
-                    <i class="fa-solid fa-list"></i> Kompakte Liste
-                </button>
+
+            <div class="form-group">
+                <label>Design Wählen</label>
+                <select id="pdfDesign">
+                    <option value="standard">Standard (Blau)</option>
+                    <option value="print">Druckfreundlich (S/W)</option>
+                </select>
             </div>
+
+            <button class="btn btn-primary" style="width:100%;" onclick="generatePDF()">PDF Herunterladen</button>
         </div>
     </div>
 
     <script>
-        // --- 1. DATEN MODELL & INIT ---
+        // --- INITIALISIERUNG ---
+        // Daten aus LocalStorage laden oder Defaults setzen
+        let schedule = JSON.parse(localStorage.getItem('scb_schedule')) || [];
         
-        // Initial-Daten (Falls LocalStorage leer ist)
-        const defaultTeam = [
-            { name: "Kaspar", type: "fixed", shift: "both" },
-            { name: "Uwe", type: "rotate", shift: "late" },
-            { name: "Nico", type: "rotate", shift: "both" },
-            { name: "Dmitry", type: "rotate", shift: "both" },
-            { name: "Gento", type: "rotate", shift: "early" },
-            { name: "Stephan", type: "rotate", shift: "early" }
+        // Standard Team, falls leer
+        let team = JSON.parse(localStorage.getItem('scb_team')) || [
+            { id: 1, name: "Kaspar", type: "fixed", shift: "both" }, // type: fixed/rotate, shift: early/late/both
+            { id: 2, name: "Uwe", type: "rotate", shift: "late" },
+            { id: 3, name: "Nico", type: "rotate", shift: "both" },
+            { id: 4, name: "Dmitry", type: "rotate", shift: "both" },
+            { id: 5, name: "Gento", type: "rotate", shift: "early" },
+            { id: 6, name: "Stephan", type: "rotate", shift: "early" }
         ];
 
-        let state = {
-            schedule: JSON.parse(localStorage.getItem('gp_schedule')) || [],
-            team: JSON.parse(localStorage.getItem('gp_team')) || defaultTeam
-        };
-
         document.addEventListener('DOMContentLoaded', () => {
-            renderSchedule();
+            renderTable();
             renderTeam();
             
-            // Setze Datum für Generator auf nächsten Freitag
+            // Setze Datum im Generator auf nächsten Freitag
             const nextFri = getNextDayOfWeek(new Date(), 5);
-            document.getElementById('genStartDate').valueAsDate = nextFri;
+            document.getElementById('genStart').valueAsDate = nextFri;
         });
 
-        // --- 2. NAVIGATION ---
-        function switchTab(viewId, tabElement) {
-            // Tabs aktiv setzen
+        // --- NAVIGATION ---
+        function switchTab(tabId) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            tabElement.classList.add('active');
-            
-            // Views umschalten
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-' + viewId).classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            ['view-plan', 'view-team', 'view-data'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('view-' + tabId).classList.remove('hidden');
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        // --- PLAN VIEW LOGIC ---
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
 
-        // --- 3. TEAM LOGIK ---
-        function renderTeam() {
-            const grid = document.getElementById('teamGrid');
-            grid.innerHTML = '';
-            
-            state.team.forEach((member, index) => {
-                // Labels formatieren
-                let typeLabel = member.type === 'fixed' 
-                    ? '<span class="badge badge-blue"><i class="fa-solid fa-anchor"></i> Stamm</span>' 
-                    : '<span class="badge badge-gray"><i class="fa-solid fa-arrows-rotate"></i> Rotation</span>';
-                
-                let shiftText = member.shift === 'both' ? 'Alle Schichten' : (member.shift === 'early' ? 'Nur Früh' : 'Nur Spät');
-
-                const card = document.createElement('div');
-                card.className = 'team-card';
-                card.innerHTML = `
-                    <div class="team-info">
-                        <strong>${member.name} ${typeLabel}</strong>
-                        <span><i class="fa-regular fa-clock"></i> ${shiftText}</span>
-                    </div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn btn-secondary btn-sm" onclick="editPerson(${index})"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deletePerson(${index})"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-            localStorage.setItem('gp_team', JSON.stringify(state.team));
-        }
-
-        function savePerson() {
-            const name = document.getElementById('pName').value;
-            const type = document.getElementById('pType').value;
-            const shift = document.getElementById('pShift').value;
-            const idx = parseInt(document.getElementById('personEditIndex').value);
-
-            if(!name) return alert("Name fehlt!");
-
-            const newPerson = { name, type, shift };
-
-            if(idx >= 0) {
-                state.team[idx] = newPerson;
+            if(schedule.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
             } else {
-                state.team.push(newPerson);
+                document.getElementById('emptyState').style.display = 'none';
             }
 
-            // Reset Modal
-            document.getElementById('pName').value = '';
-            document.getElementById('personEditIndex').value = '-1';
-            closeModal('addPersonModal');
+            // Sortieren (einfach nach Datum String Format TT.MM.)
+            // Für perfekte Sortierung müsste man Jahr einbeziehen, hier reicht String vergleich meist
+            
+            schedule.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.onclick = () => openEditModal(index); // Modal öffnen bei Klick
+                
+                // Badges für Namen
+                const namesHtml = row.names.split(',').map(n => 
+                    `<span style="color:#111;">${n.trim()}</span>`
+                ).join(', ');
+
+                tr.innerHTML = `
+                    <td><strong>${row.date}</strong></td>
+                    <td><span class="badge badge-gray">${row.time}</span></td>
+                    <td>${namesHtml}</td>
+                    <td><span class="badge badge-blue">${row.names.split(',').length}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            saveData();
+        }
+
+        // --- MODAL LOGIC (EDIT/ADD) ---
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('visible'), 10);
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('visible');
+            setTimeout(() => modal.style.display = 'none', 200);
+        }
+
+        function openEditModal(index) {
+            const isNew = (index === null);
+            document.getElementById('editIndex').value = isNew ? -1 : index;
+            document.getElementById('modalTitle').innerText = isNew ? 'Neuer Termin' : 'Termin bearbeiten';
+            document.getElementById('btnDelete').style.display = isNew ? 'none' : 'block';
+
+            if (isNew) {
+                document.getElementById('inpDate').value = '';
+                document.getElementById('inpNames').value = '';
+            } else {
+                const entry = schedule[index];
+                document.getElementById('inpDate').value = entry.date;
+                document.getElementById('inpTime').value = entry.time; // Muss matchen
+                document.getElementById('inpNames').value = entry.names;
+            }
+            openModal('editModal');
+        }
+
+        function saveEntry() {
+            const index = parseInt(document.getElementById('editIndex').value);
+            const date = document.getElementById('inpDate').value;
+            const time = document.getElementById('inpTime').value;
+            const names = document.getElementById('inpNames').value;
+
+            if(!date || !names) return alert("Bitte Datum und Namen ausfüllen");
+
+            const entry = { date, time, names };
+
+            if(index === -1) {
+                schedule.push(entry);
+            } else {
+                schedule[index] = entry;
+            }
+            
+            renderTable();
+            closeModal('editModal');
+        }
+
+        function deleteEntry() {
+            const index = parseInt(document.getElementById('editIndex').value);
+            if(confirm("Diesen Eintrag wirklich löschen?")) {
+                schedule.splice(index, 1);
+                renderTable();
+                closeModal('editModal');
+            }
+        }
+
+        // --- TEAM MANAGEMENT LOGIC ---
+        function renderTeam() {
+            const container = document.getElementById('teamContainer');
+            container.innerHTML = '';
+
+            team.forEach((member, index) => {
+                const div = document.createElement('div');
+                div.className = 'team-card';
+                div.innerHTML = `
+                    <div class="team-header">
+                        ${member.name}
+                        <button class="btn-icon" onclick="removeMember(${index})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    
+                    <div>
+                        <label style="font-size:0.75rem; color:#6b7280;">Häufigkeit</label>
+                        <div class="toggle-group">
+                            <div class="toggle-option ${member.type === 'fixed' ? 'active' : ''}" 
+                                 onclick="updateMember(${index}, 'type', 'fixed')">Immer</div>
+                            <div class="toggle-option ${member.type === 'rotate' ? 'active' : ''}" 
+                                 onclick="updateMember(${index}, 'type', 'rotate')">Rotation</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="font-size:0.75rem; color:#6b7280;">Bevorzugte Zeit</label>
+                        <div class="toggle-group">
+                            <div class="toggle-option ${member.shift === 'early' ? 'active' : ''}" 
+                                 onclick="updateMember(${index}, 'shift', 'early')">Früh</div>
+                            <div class="toggle-option ${member.shift === 'late' ? 'active' : ''}" 
+                                 onclick="updateMember(${index}, 'shift', 'late')">Spät</div>
+                            <div class="toggle-option ${member.shift === 'both' ? 'active' : ''}" 
+                                 onclick="updateMember(${index}, 'shift', 'both')">Egal</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            saveData();
+        }
+
+        function updateMember(index, key, val) {
+            team[index][key] = val;
             renderTeam();
         }
 
-        function editPerson(index) {
-            const p = state.team[index];
-            document.getElementById('pName').value = p.name;
-            document.getElementById('pType').value = p.type;
-            document.getElementById('pShift').value = p.shift;
-            document.getElementById('personEditIndex').value = index;
-            openModal('addPersonModal');
-        }
-
-        function deletePerson(index) {
-            if(confirm("Person wirklich löschen?")) {
-                state.team.splice(index, 1);
+        function addMemberPrompt() {
+            const name = prompt("Name des neuen Trainers:");
+            if(name) {
+                team.push({ id: Date.now(), name: name, type: 'rotate', shift: 'both' });
                 renderTeam();
             }
         }
 
-        // --- 4. PLAN & TABELLEN LOGIK ---
-        function renderSchedule() {
-            const tbody = document.getElementById('scheduleBody');
-            const empty = document.getElementById('emptyState');
-            tbody.innerHTML = '';
-
-            if(state.schedule.length === 0) {
-                empty.style.display = 'block';
-                return;
-            }
-            empty.style.display = 'none';
-
-            // Sortierung optional hier einfügen...
-            
-            state.schedule.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${row.date}</strong></td>
-                    <td>${row.time}</td>
-                    <td>${row.names}</td>
-                    <td style="text-align:right;">
-                        <button class="btn btn-secondary btn-sm" onclick="openEditEntry(${index})">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            localStorage.setItem('gp_schedule', JSON.stringify(state.schedule));
-        }
-
-        function openEditEntry(index) {
-            const entry = state.schedule[index];
-            document.getElementById('editId').value = index;
-            document.getElementById('editDate').value = entry.date;
-            document.getElementById('editTime').value = entry.time;
-            document.getElementById('editNames').value = entry.names;
-            openModal('editEntryModal');
-        }
-
-        function saveEntryEdit() {
-            const idx = document.getElementById('editId').value;
-            state.schedule[idx].date = document.getElementById('editDate').value;
-            state.schedule[idx].time = document.getElementById('editTime').value;
-            state.schedule[idx].names = document.getElementById('editNames').value;
-            closeModal('editEntryModal');
-            renderSchedule();
-        }
-
-        function toggleCustomTime(select) {
-            const custom = document.getElementById('addTimeCustom');
-            custom.style.display = select.value === 'custom' ? 'block' : 'none';
-        }
-
-        function addManualEntry() {
-            const date = document.getElementById('addDate').value;
-            let time = document.getElementById('addTimeSelect').value;
-            if(time === 'custom') time = document.getElementById('addTimeCustom').value;
-            const names = document.getElementById('addNames').value;
-
-            if(date && names) {
-                state.schedule.push({ date, time, names });
-                renderSchedule();
-                closeModal('addEntryModal');
-                // Reset inputs
-                document.getElementById('addNames').value = '';
+        function removeMember(index) {
+            if(confirm("Person entfernen?")) {
+                team.splice(index, 1);
+                renderTeam();
             }
         }
 
-        function resetAll() {
-            if(confirm("ACHTUNG: Dies löscht den gesamten Einsatzplan!")) {
-                state.schedule = [];
-                renderSchedule();
-            }
-        }
-
-        // --- 5. SMART GENERATOR LOGIK ---
+        // --- SMART GENERATOR ---
         function runGenerator() {
             const weeks = parseInt(document.getElementById('genWeeks').value);
-            let currentDate = document.getElementById('genStartDate').valueAsDate;
+            const minStaff = parseInt(document.getElementById('genMinStaff').value);
+            let currentDate = document.getElementById('genStart').valueAsDate;
             
-            if(!currentDate) return alert("Bitte Startdatum wählen");
-            if(state.team.length === 0) return alert("Kein Team vorhanden!");
+            if(!currentDate) return alert("Startdatum wählen!");
 
-            // Fairness Tracker: Zählt wie oft jemand schon eingeteilt wurde
+            // Fairness-Zähler initialisieren
             let usageCount = {};
-            state.team.forEach(p => usageCount[p.name] = 0);
+            team.forEach(m => usageCount[m.name] = 0);
 
-            // Temporärer Plan
-            let newEntries = [];
+            // Optional: bestehende löschen? Hier hängen wir einfach an.
+            // Falls man "sauber" neu machen will, müsste man schedule = [] setzen.
+            if(confirm("Bestehenden Plan überschreiben? (Abbrechen = Anhängen)")) {
+                schedule = [];
+            }
 
             for(let i=0; i<weeks; i++) {
                 const dateStr = formatDate(currentDate);
 
-                // Definition der Slots
+                // Zwei Slots definieren
                 const slots = [
-                    { time: "17:00 - 18:30", type: "early", assigned: [] },
-                    { time: "18:15 - 19:45", type: "late", assigned: [] }
+                    { time: "17:00 - 18:30", type: "early" },
+                    { time: "18:15 - 19:45", type: "late" }
                 ];
 
                 slots.forEach(slot => {
-                    // SCHRITT 1: Stammspieler (Fixed) setzen
-                    const fixedPlayers = state.team.filter(m => 
-                        m.type === 'fixed' && (m.shift === 'both' || m.shift === slot.type)
-                    );
-                    
-                    fixedPlayers.forEach(p => {
-                        slot.assigned.push(p.name);
-                        usageCount[p.name]++;
+                    let assigned = [];
+
+                    // 1. "Immer" (Fixed) Leute hinzufügen, die Zeit haben
+                    const fixedMembers = team.filter(m => m.type === 'fixed' && (m.shift === 'both' || m.shift === slot.type));
+                    fixedMembers.forEach(m => {
+                        assigned.push(m.name);
+                        usageCount[m.name]++;
                     });
 
-                    // SCHRITT 2: Auffüllen mit Rotation
-                    // Zielgröße: Mindestens 3, besser 4 Leute pro Slot
-                    const targetSize = 3; 
-                    let needed = Math.max(0, targetSize - slot.assigned.length);
+                    // 2. Auffüllen mit Rotation
+                    // Wir brauchen mindestens minStaff Leute
+                    let needed = Math.max(0, minStaff - assigned.length);
 
-                    // Kandidaten finden (Rotation + passende Zeit + noch nicht in diesem Slot)
-                    let candidates = state.team.filter(m => 
-                        m.type === 'rotate' &&
-                        (m.shift === 'both' || m.shift === slot.type) &&
-                        !slot.assigned.includes(m.name)
-                    );
+                    if(needed > 0) {
+                        // Kandidaten: Rotation, passende Zeit, noch nicht eingeteilt in diesem Slot
+                        let candidates = team.filter(m => 
+                            m.type === 'rotate' && 
+                            (m.shift === 'both' || m.shift === slot.type) &&
+                            !assigned.includes(m.name)
+                        );
 
-                    // SORTIEREN: Wer hat am wenigsten Einsätze?
-                    // Bei Gleichstand: Zufall (damit nicht immer alphabetisch)
-                    candidates.sort((a, b) => {
-                        const diff = usageCount[a.name] - usageCount[b.name];
-                        return diff !== 0 ? diff : (Math.random() - 0.5);
-                    });
+                        // Sortieren nach Fairness (wer war am wenigsten dran?) + Zufall
+                        candidates.sort((a, b) => {
+                            const diff = usageCount[a.name] - usageCount[b.name];
+                            return diff !== 0 ? diff : 0.5 - Math.random();
+                        });
 
-                    // Auffüllen
-                    for(let k=0; k < needed; k++) {
-                        if(candidates[k]) {
-                            slot.assigned.push(candidates[k].name);
-                            usageCount[candidates[k].name]++;
+                        // Die Top X nehmen
+                        for(let k=0; k<needed; k++) {
+                            if(candidates[k]) {
+                                assigned.push(candidates[k].name);
+                                usageCount[candidates[k].name]++;
+                            }
                         }
                     }
 
-                    // Eintrag speichern
-                    newEntries.push({
+                    schedule.push({
                         date: dateStr,
                         time: slot.time,
-                        names: slot.assigned.join(', ')
+                        names: assigned.join(', ')
                     });
                 });
 
-                // Woche weiter
+                // Nächste Woche
                 currentDate.setDate(currentDate.getDate() + 7);
             }
 
-            // Zusammenführen (Anhängen oder Ersetzen? Hier: Anhängen)
-            if(state.schedule.length > 0) {
-                if(confirm("Plan anhängen? (OK) oder Bestehenden ersetzen? (Abbrechen)")) {
-                    state.schedule = state.schedule.concat(newEntries);
-                } else {
-                    state.schedule = newEntries;
-                }
-            } else {
-                state.schedule = newEntries;
-            }
-
-            renderSchedule();
-            switchTab('plan', document.querySelector('.nav-item')); // Zurück zum Plan
+            renderTable();
+            closeModal('generateModal');
             alert("Plan erfolgreich generiert!");
         }
 
-        // --- 6. PDF EXPORT ---
-        function generatePDF(design) {
+        // --- PDF GENERATOR ---
+        function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            // Datum Range berechnen
-            let dateRange = "Gesamtübersicht";
-            if(state.schedule.length > 0) {
-                dateRange = `${state.schedule[0].date} - ${state.schedule[state.schedule.length-1].date}`;
-            }
+            const design = document.getElementById('pdfDesign').value;
 
-            // Header Design
-            let primaryColor = [37, 99, 235]; // Blau
-            if(design === 'chess') primaryColor = [20, 20, 20]; // Fast Schwarz
+            // Header Farbe
+            const primaryColor = design === 'print' ? [50, 50, 50] : [37, 99, 235]; 
+            const headerTextCol = [255, 255, 255];
 
+            // Header Box
             doc.setFillColor(...primaryColor);
             doc.rect(0, 0, 210, 40, 'F');
-            
-            doc.setTextColor(255, 255, 255);
+
+            // Text
+            doc.setTextColor(...headerTextCol);
             doc.setFontSize(22);
             doc.setFont('helvetica', 'bold');
             doc.text("Einsatzplan Jugendtraining", 14, 20);
             
-            doc.setFontSize(11);
+            doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            doc.text(`SC Brombach | Zeitraum: ${dateRange}`, 14, 30);
+            doc.text("SC Brombach", 14, 28);
+
+            // Zeitraum ermitteln
+            let range = "";
+            if(schedule.length > 0) {
+                range = schedule[0].date + " - " + schedule[schedule.length-1].date;
+            }
+            doc.setFontSize(10);
+            doc.text(`Zeitraum: ${range} | Stand: ${new Date().toLocaleDateString('de-DE')}`, 14, 36);
 
             // Tabelle
-            const bodyData = state.schedule.map(row => [row.date, row.time, row.names]);
+            const bodyData = schedule.map(row => [row.date, row.time, row.names, row.names.split(',').length]);
 
             doc.autoTable({
                 startY: 45,
-                head: [['Datum', 'Uhrzeit', 'Team']],
+                head: [['Datum', 'Uhrzeit', 'Team', 'Anz.']],
                 body: bodyData,
-                theme: design === 'list' ? 'plain' : 'grid',
+                theme: design === 'print' ? 'plain' : 'grid',
                 headStyles: { 
-                    fillColor: design === 'list' ? [255,255,255] : primaryColor,
-                    textColor: design === 'list' ? [0,0,0] : [255,255,255],
+                    fillColor: design === 'print' ? [220,220,220] : primaryColor,
+                    textColor: design === 'print' ? [0,0,0] : [255,255,255],
                     fontStyle: 'bold'
                 },
-                columnStyles: {
-                    0: { fontStyle: 'bold', cellWidth: 30 },
-                    1: { cellWidth: 40 }
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 4,
+                    textColor: [0,0,0]
                 },
-                styles: { fontSize: 10, cellPadding: 4 }
+                columnStyles: {
+                    0: { fontStyle: 'bold', cellWidth: 25 },
+                    1: { cellWidth: 35 },
+                    3: { halign: 'center', cellWidth: 15 }
+                },
+                alternateRowStyles: {
+                    fillColor: design === 'print' ? [255,255,255] : [245, 247, 250]
+                }
             });
 
             doc.save('Einsatzplan_SCB.pdf');
-            closeModal('pdfModal');
+            closeModal('exportModal');
         }
 
-        // Helpers
+        // --- DATA HELPERS ---
+        function saveData() {
+            localStorage.setItem('scb_schedule', JSON.stringify(schedule));
+            localStorage.setItem('scb_team', JSON.stringify(team));
+        }
+
+        function hardReset() {
+            if(confirm("WARNUNG: Dies löscht wirklich alles. Fortfahren?")) {
+                localStorage.removeItem('scb_schedule');
+                localStorage.removeItem('scb_team');
+                location.reload();
+            }
+        }
+
+        function importCSV() {
+            const txt = document.getElementById('csvArea').value;
+            const lines = txt.split('\n');
+            let added = 0;
+            lines.forEach(l => {
+                const p = l.split(';');
+                if(p.length >= 2) {
+                    schedule.push({
+                        date: p[0].trim(),
+                        time: p[1].trim(),
+                        names: p[2] ? p[2].trim() : ""
+                    });
+                    added++;
+                }
+            });
+            renderTable();
+            document.getElementById('csvArea').value = '';
+            alert(added + " Zeilen importiert.");
+            switchTab('plan');
+        }
+
+        function exportCSVToText() {
+            let txt = "";
+            schedule.forEach(r => {
+                txt += `${r.date}; ${r.time}; ${r.names}\n`;
+            });
+            document.getElementById('csvArea').value = txt;
+        }
+
         function getNextDayOfWeek(date, dayOfWeek) {
             const resultDate = new Date(date.getTime());
             resultDate.setDate(date.getDate() + (7 + dayOfWeek - date.getDay()) % 7);
