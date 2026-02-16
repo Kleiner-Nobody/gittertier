@@ -3,705 +3,888 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Einsatzplaner v3 - SC Brombach</title>
+    <title>Einsatzplaner - SC Brombach</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 
     <style>
+        /* --- Design System (Analog zu 404.html) --- */
         :root {
-            --primary: #1e3a8a;
-            --primary-light: #eff6ff;
-            --accent: #2563eb;
-            --text: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --bg: #f9fafb;
-            --white: #ffffff;
+            --color-bg: #f9fafb;
+            --color-card-bg: #ffffff;
+            --color-text: #111111;
+            --color-text-muted: #6b7280;
+            --color-border: #e5e7eb;
+            --color-accent: #2563eb;       /* Gittertier Blau */
+            --color-accent-hover: #1d4ed8;
+            --color-success: #16a34a;
+            --color-danger: #dc2626;
+            --color-overlay: rgba(0, 0, 0, 0.5);
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+            
+            --header-height: 64px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding-bottom: 80px; /* Platz für Mobile Buttons unten falls nötig */
+            font-family: var(--font-family);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            padding-bottom: 80px;
         }
 
         /* --- Header --- */
         header {
-            background: var(--white);
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            height: var(--header-height);
+            background-color: var(--color-card-bg);
+            border-bottom: 1px solid var(--color-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: var(--shadow-sm);
         }
 
-        .brand {
+        .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
             font-size: 1.1rem;
+            color: var(--color-text);
+            text-decoration: none;
         }
-        .brand img { height: 35px; }
+        .logo i { color: var(--color-accent); font-size: 1.2rem; }
+        .logo img { height: 32px; width: auto; }
 
-        /* --- Main Layout --- */
+        .header-actions { display: flex; gap: 10px; }
+
+        /* --- Layout & Cards --- */
         main {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 0 16px;
         }
 
         .card {
-            background: var(--white);
+            background: var(--color-card-bg);
             border-radius: var(--radius);
+            border: 1px solid var(--color-border);
             box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            overflow: hidden;
+            padding: 24px;
+            margin-bottom: 24px;
         }
 
-        .card-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            background: #f8fafc;
+        h2 {
+            font-size: 1.25rem;
             font-weight: 600;
+            margin: 0 0 16px 0;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 10px;
+        }
+        h2 i { color: var(--color-accent); }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 16px 0 8px 0;
+            color: var(--color-text);
         }
 
-        .card-body { padding: 1rem; }
+        p { color: var(--color-text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 16px; }
 
-        /* --- Tabs --- */
+        /* --- Tabs Navigation --- */
         .tabs {
             display: flex;
-            background: var(--white);
-            overflow-x: auto;
-            border-bottom: 1px solid var(--border);
+            background: #e5e7eb;
+            padding: 4px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
         }
         
         .tab-btn {
             flex: 1;
-            padding: 1rem;
-            text-align: center;
-            background: none;
+            padding: 10px;
             border: none;
-            border-bottom: 3px solid transparent;
+            background: transparent;
+            border-radius: 8px;
             font-weight: 500;
-            color: var(--text-muted);
+            color: var(--color-text-muted);
             cursor: pointer;
-            white-space: nowrap;
+            transition: all 0.2s;
+            font-size: 0.95rem;
         }
         
         .tab-btn.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-            background: var(--primary-light);
+            background-color: white;
+            color: var(--color-accent);
+            box-shadow: var(--shadow-sm);
         }
 
-        .tab-content { display: none; padding: 1rem; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* --- Forms --- */
+        /* --- Forms & Inputs --- */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 16px;
+            margin-bottom: 16px;
         }
-        
-        .full-width { grid-column: 1 / -1; }
 
         label {
             display: block;
             font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.4rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            margin-bottom: 6px;
         }
 
         input, select, textarea {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             font-size: 1rem;
             background: #fff;
+            transition: border-color 0.2s;
         }
 
-        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
 
         /* --- Buttons --- */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.25rem;
+            gap: 8px;
+            padding: 10px 16px;
             border-radius: 8px;
-            font-weight: 600;
-            border: none;
+            font-weight: 500;
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: 0.2s;
-            width: 100%; /* Mobile friendly default */
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
         }
-        
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--accent); }
-        .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text); }
-        .btn-danger { background: #fee2e2; color: #dc2626; }
 
-        /* --- Generator Tools --- */
-        .pool-list {
+        .btn-primary { background-color: var(--color-accent); color: white; }
+        .btn-primary:hover { background-color: var(--color-accent-hover); }
+
+        .btn-secondary { background-color: white; border: 1px solid var(--color-border); color: var(--color-text); }
+        .btn-secondary:hover { background-color: #f9fafb; border-color: var(--color-text-muted); }
+
+        .btn-danger { background-color: #fee2e2; color: var(--color-danger); }
+        .btn-icon { padding: 8px; border-radius: 6px; background: transparent; color: var(--color-text-muted); border: none; cursor: pointer; font-size: 1.1rem; }
+        .btn-icon:hover { background-color: #f3f4f6; color: var(--color-text); }
+
+        .w-full { width: 100%; }
+
+        /* --- Team Manager List --- */
+        .team-list { display: flex; flex-direction: column; gap: 12px; }
+        
+        .team-member {
+            background: #f9fafb;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 1rem;
+            gap: 10px;
         }
 
-        .pool-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            background: #f3f4f6;
-            border-radius: 6px;
-        }
-
-        .pool-item select {
-            width: auto;
-            padding: 0.3rem;
-            font-size: 0.85rem;
-            margin-left: auto;
-        }
-
-        /* --- Table --- */
-        .table-container {
-            overflow-x: auto; /* Wichtig für Mobile */
-            border-top: 1px solid var(--border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px; /* Damit Tabelle auf Handy scrollbar wird */
-        }
-
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th { background: #f9fafb; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); }
+        .member-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
         
-        .action-btn {
-            background: none; border: none; cursor: pointer; padding: 5px; font-size: 1.1rem;
+        .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        
+        .chip {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--color-border);
+            background: white;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .btn-edit { color: var(--accent); }
-        .btn-del { color: #dc2626; }
+        
+        .chip.active {
+            background: #eff6ff;
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+            font-weight: 600;
+        }
 
-        /* --- Responsive Tweaks --- */
+        /* --- Tabelle --- */
+        .table-container {
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+            overflow-x: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        
+        th {
+            background-color: #f9fafb;
+            padding: 12px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--color-text-muted);
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        td { padding: 12px 16px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #f3f4f6;
+            color: var(--color-text);
+        }
+        .badge.early { background: #dbeafe; color: #1e40af; } /* Blau */
+        .badge.late { background: #fae8ff; color: #86198f; } /* Lila */
+
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--color-overlay);
+            z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.2s;
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .modal {
+            background: white;
+            width: 90%; max-width: 500px;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            transform: scale(0.95); transition: all 0.2s;
+        }
+        .modal-overlay.active .modal { transform: scale(1); }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 1.2rem; font-weight: 700; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-muted); }
+
+        /* --- Responsive --- */
         @media (min-width: 768px) {
-            .form-grid { grid-template-columns: repeat(2, 1fr); }
-            .btn { width: auto; } /* Buttons nebeneinander auf Desktop */
-            .controls { display: flex; gap: 1rem; }
+            .team-member { flex-direction: row; align-items: center; justify-content: space-between; }
+            .member-header { width: 150px; }
         }
-
-        /* --- Loader --- */
-        #loader {
-            position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 999;
-            display: none; align-items: center; justify-content: center; flex-direction: column;
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            h2 { font-size: 1.1rem; }
         }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--primary);
-            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
     </style>
 </head>
 <body>
 
-    <div id="loader"><div class="spinner"></div><p id="loaderText">Arbeite...</p></div>
-
     <header>
-        <a href="#" class="brand">
-            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="Logo">
+        <a href="#" class="logo">
+            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="SC Logo">
             <span>SC Brombach</span>
         </a>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="openModal('pdfModal')">
+                <i class="fa-solid fa-file-pdf"></i> <span style="display:none; @media(min-width:600px){display:inline;}">Export</span>
+            </button>
+        </div>
     </header>
 
     <main>
-        <div class="card">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('manual')">Manuell</button>
-                <button class="tab-btn" onclick="switchTab('generator')">⚡ Smart Generator</button>
-                <button class="tab-btn" onclick="switchTab('upload')">Foto Scan</button>
-            </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchView('plan')">📅 Einsatzplan</button>
+            <button class="tab-btn" onclick="switchView('team')">👥 Team & Settings</button>
+            <button class="tab-btn" onclick="switchView('generator')">⚡ Smart-Generator</button>
+        </div>
 
-            <div id="tab-manual" class="tab-content active">
-                <div class="form-grid">
-                    <div>
-                        <label>Datum</label>
-                        <input type="text" id="inpDate" placeholder="TT.MM.">
-                    </div>
-                    <div>
-                        <label>Uhrzeit (Standard wählbar)</label>
-                        <select id="inpTimeSelect" onchange="updateTimeInput()">
-                            <option value="17:00 - 18:30">Schicht 1 (17:00 - 18:30)</option>
-                            <option value="18:15 - 19:45">Schicht 2 (18:15 - 19:45)</option>
-                            <option value="custom">-- Eigene Zeit --</option>
-                        </select>
-                        <input type="text" id="inpTime" value="17:00 - 18:30" style="display:none; margin-top:5px;">
-                    </div>
-                    <div class="full-width">
-                        <label>Team (Namen durch Komma getrennt)</label>
-                        <input type="text" id="inpNames" placeholder="Kaspar, Nico...">
-                    </div>
+        <div id="view-plan" class="view-section active">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h2><i class="fa-solid fa-calendar-check"></i> Aktuelle Termine</h2>
+                    <span id="entriesCount" class="badge">0 Einträge</span>
+                </div>
+
+                <div class="table-container">
+                    <table id="scheduleTable">
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Schicht</th>
+                                <th>Team</th>
+                                <th style="text-align:right">Optionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            </tbody>
+                    </table>
                 </div>
                 
-                <div class="controls">
-                    <button id="btnAdd" class="btn btn-primary" onclick="addOrUpdateRow()">
-                        <i class="fa-solid fa-plus"></i> Hinzufügen
-                    </button>
-                    <button id="btnCancelEdit" class="btn btn-secondary" onclick="cancelEdit()" style="display:none;">
-                        Abbrechen
-                    </button>
-                </div>
-            </div>
-
-            <div id="tab-generator" class="tab-content">
-                <div class="form-grid">
-                    <div>
-                        <label>Startdatum (Freitag)</label>
-                        <input type="date" id="genStartDate">
-                    </div>
-                    <div>
-                        <label>Anzahl Wochen</label>
-                        <input type="number" id="genWeeks" value="4" min="1" max="12">
-                    </div>
+                <div id="emptyState" style="text-align:center; padding: 40px; color: var(--color-text-muted);">
+                    <i class="fa-solid fa-clipboard-list" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;"></i>
+                    <p>Noch keine Einträge vorhanden.</p>
+                    <button class="btn btn-secondary" onclick="switchView('generator')">Jetzt Plan generieren</button>
                 </div>
 
-                <label><strong>Team-Pool & Präferenzen</strong></label>
-                <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">Lege fest, wer fest gesetzt ist. Der Rest wird aufgefüllt.</p>
-                
-                <div class="pool-list" id="poolContainer">
-                    </div>
-
-                <div class="form-grid" style="margin-top:10px;">
-                   <input type="text" id="newMemberName" placeholder="Neuer Name..." style="grid-column: 1;">
-                   <button class="btn btn-secondary" onclick="addMemberToPool()">+ Hinzufügen</button>
-                </div>
-
-                <button class="btn btn-primary" onclick="runSmartGenerator()" style="width:100%; margin-top:15px;">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Plan generieren
-                </button>
-            </div>
-
-            <div id="tab-upload" class="tab-content">
-                <div style="border: 2px dashed var(--border); padding: 2rem; text-align: center; border-radius: 8px;" onclick="document.getElementById('fileUpload').click()">
-                    <i class="fa-solid fa-camera" style="font-size: 2rem; color: var(--text-muted); margin-bottom:10px;"></i>
-                    <p>Tippe hier, um ein Bild hochzuladen</p>
-                    <input type="file" id="fileUpload" style="display: none;" accept="image/*" onchange="handleImageUpload(this)">
+                <div style="margin-top: 20px; display:flex; gap:10px;">
+                    <button class="btn btn-secondary w-full" onclick="openModal('manualModal')"><i class="fa-solid fa-plus"></i> Manuell</button>
+                    <button class="btn btn-secondary w-full" onclick="openModal('csvModal')"><i class="fa-solid fa-file-csv"></i> CSV</button>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <span><i class="fa-solid fa-calendar-days"></i> Aktueller Plan</span>
-                <span id="rowCountBadge" style="background:var(--primary); color:white; padding:2px 8px; border-radius:10px; font-size:0.8rem;">0</span>
+        <div id="view-team" class="view-section">
+            <div class="card">
+                <h2><i class="fa-solid fa-users-gear"></i> Teilnehmer verwalten</h2>
+                <p>Hier legst du fest, wer wie oft kommen kann. Der Generator nutzt diese Daten.</p>
+
+                <div id="teamList" class="team-list">
+                    </div>
+
+                <div style="margin-top: 20px; border-top: 1px solid var(--color-border); padding-top: 20px;">
+                    <div class="form-grid">
+                        <input type="text" id="newMemberName" placeholder="Name (z.B. Bastian)">
+                        <button class="btn btn-primary" onclick="addTeamMember()">Hinzufügen</button>
+                    </div>
+                </div>
             </div>
-            
-            <div class="table-container">
-                <table id="planTable">
-                    <thead>
-                        <tr>
-                            <th>Datum</th>
-                            <th>Uhrzeit</th>
-                            <th>Team</th>
-                            <th style="text-align:right;">Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        </tbody>
-                </table>
+        </div>
+
+        <div id="view-generator" class="view-section">
+            <div class="card">
+                <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Smarte Einteilung</h2>
+                <p>Der Algorithmus erstellt einen fairen Plan. Stammspieler werden gesetzt, Springer füllen die Lücken auf.</p>
+                
+                <div class="form-grid">
+                    <div>
+                        <label>Startdatum (Nächster Freitag)</label>
+                        <input type="date" id="genStartDate">
+                    </div>
+                    <div>
+                        <label>Zeitraum</label>
+                        <select id="genWeeks">
+                            <option value="4">4 Wochen</option>
+                            <option value="8" selected>8 Wochen</option>
+                            <option value="12">12 Wochen</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="background: #eff6ff; padding: 12px; border-radius: 8px; border: 1px solid #dbeafe; margin-bottom: 20px;">
+                    <h3 style="margin-top:0; font-size:0.9rem; color:#1e40af;"><i class="fa-solid fa-circle-info"></i> Logik</h3>
+                    <ul style="font-size: 0.85rem; color: #1e3a8a; padding-left: 20px; margin: 5px 0;">
+                        <li><strong>Frühschicht:</strong> 17:00 - 18:30</li>
+                        <li><strong>Spätschicht:</strong> 18:15 - 19:45</li>
+                        <li>Stammspieler werden bevorzugt eingeteilt.</li>
+                        <li>Springer rotieren fair (Wer wenig dran war, kommt dran).</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary w-full" onclick="runGenerator()">
+                    Plan Generieren
+                </button>
             </div>
 
-            <div class="card-body controls" style="border-top: 1px solid var(--border);">
-                <button class="btn btn-primary" onclick="generatePDF()">
-                    <i class="fa-solid fa-file-pdf"></i> PDF
-                </button>
-                <button class="btn btn-secondary" onclick="downloadCSV()">
-                    <i class="fa-solid fa-file-csv"></i> CSV
-                </button>
-                <button class="btn btn-danger" onclick="clearAll()">
-                    Reset
-                </button>
+            <div class="card">
+                <h2><i class="fa-solid fa-camera"></i> Foto-Import (Beta)</h2>
+                <p>Lade einen alten Plan hoch, um Daten zu extrahieren.</p>
+                <input type="file" id="ocrInput" accept="image/*" onchange="runOCR(this)" style="display:block; width:100%;">
+                <div id="ocrStatus" style="margin-top:10px; font-size:0.85rem; color: var(--color-accent);"></div>
             </div>
         </div>
     </main>
 
-    <script>
-        // --- Daten & State ---
-        let scheduleData = JSON.parse(localStorage.getItem('scSchedule_v3')) || [];
-        let editIndex = -1; // -1 heißt kein Edit Mode
+    <div id="manualModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Eintrag hinzufügen</div>
+                <button class="close-modal" onclick="closeModal('manualModal')">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div>
+                    <label>Datum</label>
+                    <input type="text" id="manDate" placeholder="TT.MM.">
+                </div>
+                <div>
+                    <label>Zeit</label>
+                    <input type="text" id="manTime" value="17:00 - 18:30">
+                </div>
+                <div style="grid-column: 1/-1;">
+                    <label>Namen (Kommagetrennt)</label>
+                    <input type="text" id="manNames" placeholder="Kaspar, Uwe...">
+                </div>
+            </div>
+            <button class="btn btn-primary w-full" onclick="saveManualEntry()">Speichern</button>
+        </div>
+    </div>
 
-        // Standard-Team Pool
-        let teamPool = JSON.parse(localStorage.getItem('scPool_v3')) || [
-            { name: "Kaspar", pref: "fix1" }, // fix1 = Immer 17:00
-            { name: "Uwe", pref: "fix2" },    // fix2 = Immer 18:15
-            { name: "Dmitry", pref: "flex" },
-            { name: "Nico", pref: "flex" },
-            { name: "Gento", pref: "flex" },
-            { name: "Stephan", pref: "flex" }
+    <div id="editModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Eintrag bearbeiten</div>
+                <button class="close-modal" onclick="closeModal('editModal')">&times;</button>
+            </div>
+            <input type="hidden" id="editIndex">
+            <div class="form-grid">
+                <div>
+                    <label>Datum</label>
+                    <input type="text" id="editDate">
+                </div>
+                <div>
+                    <label>Zeit</label>
+                    <input type="text" id="editTime">
+                </div>
+                <div style="grid-column: 1/-1;">
+                    <label>Namen</label>
+                    <input type="text" id="editNames">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-danger" onclick="deleteEntryFromEdit()">Löschen</button>
+                <button class="btn btn-primary w-full" onclick="saveEditEntry()">Änderungen speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pdfModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">PDF Exportieren</div>
+                <button class="close-modal" onclick="closeModal('pdfModal')">&times;</button>
+            </div>
+            <p>Wähle ein Design für den Aushang:</p>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+                <button class="btn btn-secondary" onclick="generatePDF('standard')">Standard (Blau)</button>
+                <button class="btn btn-secondary" onclick="generatePDF('bw')">Schachclub (S/W)</button>
+                <button class="btn btn-secondary" onclick="generatePDF('minimal')">Minimal</button>
+                <button class="btn btn-secondary" onclick="generatePDF('compact')">Kompakt</button>
+            </div>
+            <button class="btn btn-primary w-full" onclick="generatePDF('standard')">Standard herunterladen</button>
+        </div>
+    </div>
+
+    <div id="csvModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">CSV Import/Export</div>
+                <button class="close-modal" onclick="closeModal('csvModal')">&times;</button>
+            </div>
+            <textarea id="csvText" rows="5" placeholder="Datum;Zeit;Namen" style="width:100%; margin-bottom:10px; font-family:monospace;"></textarea>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary w-full" onclick="importCSV()">Importieren</button>
+                <button class="btn btn-secondary w-full" onclick="exportCSV()">Exportieren</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- INITIAL DATA ---
+        // Lädt Daten aus LocalStorage oder nutzt Standardwerte
+        let schedule = JSON.parse(localStorage.getItem('sc_schedule')) || [];
+        
+        // Standard-Team (Falls noch keins existiert)
+        let team = JSON.parse(localStorage.getItem('sc_team')) || [
+            { id: 1, name: "Kaspar", type: "fixed", shift: "both" },  // fixed = Stamm, rotate = Springer
+            { id: 2, name: "Uwe", type: "rotate", shift: "late" },    // early, late, both
+            { id: 3, name: "Nico", type: "rotate", shift: "both" },
+            { id: 4, name: "Dmitry", type: "rotate", shift: "both" },
+            { id: 5, name: "Gento", type: "rotate", shift: "early" },
+            { id: 6, name: "Stephan", type: "rotate", shift: "early" }
         ];
 
-        // Init
-        renderTable();
-        renderPool();
-        
-        // --- Tab Logic ---
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSchedule();
+            renderTeam();
+            
+            // Setze Datum auf nächsten Freitag
+            const nextFri = new Date();
+            nextFri.setDate(nextFri.getDate() + (5 + 7 - nextFri.getDay()) % 7);
+            document.getElementById('genStartDate').valueAsDate = nextFri;
+        });
+
+        // --- VIEW NAVIGATION ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            // Button active state logic needs event target, simplifying for now:
-            const buttons = document.querySelectorAll('.tab-btn');
-            if(tab === 'manual') buttons[0].classList.add('active');
-            if(tab === 'generator') buttons[1].classList.add('active');
-            if(tab === 'upload') buttons[2].classList.add('active');
-        }
-
-        // --- Uhrzeit Input Logic ---
-        function updateTimeInput() {
-            const val = document.getElementById('inpTimeSelect').value;
-            const textInp = document.getElementById('inpTime');
-            if(val === 'custom') {
-                textInp.style.display = 'block';
-                textInp.focus();
-            } else {
-                textInp.style.display = 'none';
-                textInp.value = val;
-            }
-        }
-
-        // --- CRUD Logic (Create, Read, Update, Delete) ---
-        function addOrUpdateRow() {
-            const date = document.getElementById('inpDate').value.trim();
-            const time = document.getElementById('inpTime').value.trim();
-            const namesRaw = document.getElementById('inpNames').value.trim();
-
-            if(!date || !namesRaw) return alert("Bitte Datum und Namen eingeben.");
-
-            // Namen säubern
-            const namesArray = namesRaw.split(',').map(n => n.trim()).filter(n => n);
-
-            const entry = {
-                date, time, 
-                names: namesArray.join(', '),
-                count: namesArray.length
-            };
-
-            if(editIndex === -1) {
-                // Neu hinzufügen
-                scheduleData.push(entry);
-            } else {
-                // Update existierend
-                scheduleData[editIndex] = entry;
-                editIndex = -1; // Reset Edit Mode
-                document.getElementById('btnAdd').innerHTML = '<i class="fa-solid fa-plus"></i> Hinzufügen';
-                document.getElementById('btnCancelEdit').style.display = 'none';
-            }
-
-            // Form leeren
-            document.getElementById('inpNames').value = '';
-            // Datum lassen wir stehen für Komfort
             
-            saveAndRender();
-        }
-
-        function editRow(index) {
-            const row = scheduleData[index];
-            document.getElementById('inpDate').value = row.date;
+            document.getElementById('view-' + viewId).classList.add('active');
             
-            // Zeit Dropdown Check
-            const select = document.getElementById('inpTimeSelect');
-            if(row.time === "17:00 - 18:30" || row.time === "18:15 - 19:45") {
-                select.value = row.time;
-                document.getElementById('inpTime').style.display = 'none';
-                document.getElementById('inpTime').value = row.time;
-            } else {
-                select.value = "custom";
-                document.getElementById('inpTime').style.display = 'block';
-                document.getElementById('inpTime').value = row.time;
-            }
-
-            document.getElementById('inpNames').value = row.names;
-
-            // UI in Edit Mode schalten
-            editIndex = index;
-            document.getElementById('btnAdd').innerHTML = '<i class="fa-solid fa-check"></i> Speichern';
-            document.getElementById('btnCancelEdit').style.display = 'inline-block';
-            switchTab('manual');
-            window.scrollTo(0,0);
+            // Tab Button Highlight Logic (Index based simple match)
+            const btns = document.querySelectorAll('.tab-btn');
+            if(viewId === 'plan') btns[0].classList.add('active');
+            if(viewId === 'team') btns[1].classList.add('active');
+            if(viewId === 'generator') btns[2].classList.add('active');
         }
 
-        function cancelEdit() {
-            editIndex = -1;
-            document.getElementById('inpNames').value = '';
-            document.getElementById('btnAdd').innerHTML = '<i class="fa-solid fa-plus"></i> Hinzufügen';
-            document.getElementById('btnCancelEdit').style.display = 'none';
-        }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        function deleteRow(index) {
-            if(confirm('Eintrag löschen?')) {
-                scheduleData.splice(index, 1);
-                if(editIndex === index) cancelEdit();
-                saveAndRender();
-            }
-        }
-
-        function clearAll() {
-            if(confirm('Alles löschen?')) {
-                scheduleData = [];
-                saveAndRender();
-            }
-        }
-
-        function saveAndRender() {
-            // Sortierung nach Datum (Simpel: Tag.Monat string compare reicht meistens, besser wäre Date Object parsing)
-            // Hier lassen wir es so, wie es eingegeben wird, damit der User die Kontrolle behält.
-            localStorage.setItem('scSchedule_v3', JSON.stringify(scheduleData));
+        // --- TEAM MANAGEMENT ---
+        function renderTeam() {
+            const list = document.getElementById('teamList');
+            list.innerHTML = '';
             
+            team.forEach((member, index) => {
+                const el = document.createElement('div');
+                el.className = 'team-member';
+                el.innerHTML = `
+                    <div class="member-header">
+                        <span>${member.name}</span>
+                        <button class="btn-icon" style="color:var(--color-danger);" onclick="deleteMember(${index})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+                        <div class="chip-group">
+                            <span class="chip ${member.type === 'fixed' ? 'active' : ''}" onclick="updateMember(${index}, 'type', 'fixed')">Stammspieler</span>
+                            <span class="chip ${member.type === 'rotate' ? 'active' : ''}" onclick="updateMember(${index}, 'type', 'rotate')">Springer</span>
+                        </div>
+                        
+                        <div class="chip-group">
+                            <span class="chip ${member.shift === 'early' ? 'active' : ''}" onclick="updateMember(${index}, 'shift', 'early')">17:00</span>
+                            <span class="chip ${member.shift === 'late' ? 'active' : ''}" onclick="updateMember(${index}, 'shift', 'late')">18:15</span>
+                            <span class="chip ${member.shift === 'both' ? 'active' : ''}" onclick="updateMember(${index}, 'shift', 'both')">Egal</span>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(el);
+            });
+            localStorage.setItem('sc_team', JSON.stringify(team));
+        }
+
+        function addTeamMember() {
+            const name = document.getElementById('newMemberName').value.trim();
+            if(!name) return;
+            team.push({ id: Date.now(), name: name, type: 'rotate', shift: 'both' });
+            document.getElementById('newMemberName').value = '';
+            renderTeam();
+        }
+
+        function updateMember(index, key, value) {
+            team[index][key] = value;
+            renderTeam();
+        }
+
+        function deleteMember(index) {
+            if(confirm('Teilnehmer wirklich löschen?')) {
+                team.splice(index, 1);
+                renderTeam();
+            }
+        }
+
+        // --- SCHEDULING LOGIC ---
+        function renderSchedule() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-            document.getElementById('rowCountBadge').innerText = scheduleData.length;
-
-            if(scheduleData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem; color:#999;">Liste leer</td></tr>';
+            
+            if(schedule.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.querySelector('.table-container').style.display = 'none';
+                document.getElementById('entriesCount').innerText = '0';
                 return;
             }
 
-            scheduleData.forEach((row, i) => {
+            document.getElementById('emptyState').style.display = 'none';
+            document.querySelector('.table-container').style.display = 'block';
+            document.getElementById('entriesCount').innerText = schedule.length;
+
+            schedule.forEach((row, index) => {
                 const tr = document.createElement('tr');
+                
+                // Badge Logic für Schichten
+                let badgeClass = 'badge';
+                if(row.time.includes('17')) badgeClass += ' early';
+                if(row.time.includes('18:15') || row.time.includes('18:00')) badgeClass += ' late';
+
                 tr.innerHTML = `
-                    <td><strong>${row.date}</strong></td>
-                    <td><small style="color:#666;">${row.time}</small></td>
-                    <td>${row.names} <span style="background:#eff6ff; color:#1e3a8a; font-size:0.7em; padding:1px 5px; border-radius:4px; margin-left:5px;">${row.count}</span></td>
-                    <td style="text-align:right; white-space:nowrap;">
-                        <button class="action-btn btn-edit" onclick="editRow(${i})"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn btn-del" onclick="deleteRow(${i})"><i class="fa-solid fa-trash"></i></button>
+                    <td style="font-weight:600;">${row.date}</td>
+                    <td><span class="${badgeClass}">${row.time}</span></td>
+                    <td>${row.names}</td>
+                    <td style="text-align:right;">
+                        <button class="btn-icon" onclick="openEdit(${index})"><i class="fa-solid fa-pen"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+            localStorage.setItem('sc_schedule', JSON.stringify(schedule));
         }
 
-        // --- SMART GENERATOR LOGIC ---
-
-        function renderPool() {
-            const container = document.getElementById('poolContainer');
-            container.innerHTML = '';
-            teamPool.forEach((member, idx) => {
-                const div = document.createElement('div');
-                div.className = 'pool-item';
-                div.innerHTML = `
-                    <i class="fa-solid fa-user"></i>
-                    <span>${member.name}</span>
-                    <select onchange="updateMemberPref(${idx}, this.value)">
-                        <option value="flex" ${member.pref==='flex'?'selected':''}>Flexibel</option>
-                        <option value="fix1" ${member.pref==='fix1'?'selected':''}>Immer Schicht 1</option>
-                        <option value="fix2" ${member.pref==='fix2'?'selected':''}>Immer Schicht 2</option>
-                        <option value="off" ${member.pref==='off'?'selected':''}>Pausiert</option>
-                    </select>
-                    <i class="fa-solid fa-times" style="color:#dc2626; cursor:pointer; margin-left:10px;" onclick="removeMember(${idx})"></i>
-                `;
-                container.appendChild(div);
-            });
-            localStorage.setItem('scPool_v3', JSON.stringify(teamPool));
-        }
-
-        function addMemberToPool() {
-            const name = document.getElementById('newMemberName').value.trim();
-            if(name) {
-                teamPool.push({ name: name, pref: 'flex' });
-                document.getElementById('newMemberName').value = '';
-                renderPool();
-            }
-        }
-
-        function removeMember(index) {
-            teamPool.splice(index, 1);
-            renderPool();
-        }
-
-        function updateMemberPref(index, val) {
-            teamPool[index].pref = val;
-            localStorage.setItem('scPool_v3', JSON.stringify(teamPool));
-        }
-
-        function runSmartGenerator() {
-            const startStr = document.getElementById('genStartDate').value;
+        function runGenerator() {
             const weeks = parseInt(document.getElementById('genWeeks').value);
-            
-            if(!startStr) return alert("Bitte Startdatum wählen");
+            let currentDate = document.getElementById('genStartDate').valueAsDate;
+            if(!currentDate) return alert("Bitte Startdatum wählen!");
 
-            let currentDate = new Date(startStr);
-            let generated = [];
+            // Fairness Tracker: Zählt wie oft jemand schon dran war
+            let usageCount = {};
+            team.forEach(m => usageCount[m.name] = 0);
 
-            // Pools vorbereiten
-            const fix1 = teamPool.filter(m => m.pref === 'fix1').map(m => m.name);
-            const fix2 = teamPool.filter(m => m.pref === 'fix2').map(m => m.name);
-            const flex = teamPool.filter(m => m.pref === 'flex').map(m => m.name);
+            let newEntries = [];
 
-            for(let w=0; w<weeks; w++) {
-                // Formatiere Datum TT.MM.
-                const day = String(currentDate.getDate()).padStart(2, '0');
-                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                const dateStr = `${day}.${month}.`;
+            for(let i=0; i<weeks; i++) {
+                // Datum formatieren
+                let d = currentDate.getDate();
+                let m = currentDate.getMonth() + 1;
+                let dateStr = (d<10?'0'+d:d) + '.' + (m<10?'0'+m:m) + '.';
 
-                // --- Schicht 1 (17:00) ---
-                let s1Names = [...fix1]; // Zuerst die Fixen
-                // Auffüllen aus Flex Pool (Ziel: mind 3 Leute)
-                let flexShuffled = [...flex].sort(() => 0.5 - Math.random()); // Mischen
-                
-                // Simples Auffüllen (jeder Flex kommt pro Woche ca 1x dran, wir nehmen hier einfach die ersten X)
-                // Für bessere Logik müsste man tracken wer wie oft dran war.
-                // Wir nehmen hier einfach 2 Zufällige dazu.
-                let needed1 = 3 - s1Names.length;
-                if(needed1 > 0) s1Names.push(...flexShuffled.slice(0, needed1));
-                
-                generated.push({
-                    date: dateStr,
-                    time: "17:00 - 18:30",
-                    names: s1Names.join(', '),
-                    count: s1Names.length
+                // Zwei Slots definieren
+                const slots = [
+                    { time: "17:00 - 18:30", type: "early" },
+                    { time: "18:15 - 19:45", type: "late" }
+                ];
+
+                slots.forEach(slot => {
+                    let assigned = [];
+
+                    // 1. Stammspieler hinzufügen (Typ Fixed)
+                    const fixed = team.filter(p => p.type === 'fixed' && (p.shift === 'both' || p.shift === slot.type));
+                    fixed.forEach(p => {
+                        assigned.push(p.name);
+                        usageCount[p.name]++;
+                    });
+
+                    // 2. Springer auffüllen (Typ Rotate)
+                    // Wir brauchen mind. 3 Leute (oder alle, wenn weniger da sind)
+                    let candidates = team.filter(p => 
+                        p.type === 'rotate' && 
+                        (p.shift === 'both' || p.shift === slot.type) &&
+                        !assigned.includes(p.name) // Nicht doppelt buchen
+                    );
+
+                    // Sortieren nach Fairness (Wer hat am wenigsten Einsätze?) + Zufall
+                    candidates.sort((a, b) => {
+                        let diff = usageCount[a.name] - usageCount[b.name];
+                        if(diff !== 0) return diff;
+                        return 0.5 - Math.random();
+                    });
+
+                    // Auffüllen bis z.B. 3 Personen (Konfigurierbar, hier hardcoded für "voll")
+                    // Wenn 1 Stamm da ist, nehmen wir noch 2 Springer dazu.
+                    let needed = Math.max(0, 3 - assigned.length);
+                    for(let k=0; k<needed; k++) {
+                        if(candidates[k]) {
+                            assigned.push(candidates[k].name);
+                            usageCount[candidates[k].name]++;
+                        }
+                    }
+
+                    newEntries.push({
+                        date: dateStr,
+                        time: slot.time,
+                        names: assigned.join(', ')
+                    });
                 });
 
-                // --- Schicht 2 (18:15) ---
-                let s2Names = [...fix2];
-                // Wir rotieren den Flex Pool für die 2. Schicht weiter
-                let flexForS2 = flexShuffled.slice(needed1).concat(flexShuffled.slice(0, needed1)); // Rest der Leute
-                let needed2 = 3 - s2Names.length;
-                 if(needed2 > 0) s2Names.push(...flexForS2.slice(0, needed2));
-
-                generated.push({
-                    date: dateStr,
-                    time: "18:15 - 19:45",
-                    names: s2Names.join(', '),
-                    count: s2Names.length
-                });
-
-                // Nächste Woche (+7 Tage)
+                // Woche weiter
                 currentDate.setDate(currentDate.getDate() + 7);
             }
 
-            // An bestehende Liste anhängen
-            if(confirm(`${generated.length} Schichten generiert. Anhängen?`)) {
-                scheduleData = scheduleData.concat(generated);
-                saveAndRender();
-                switchTab('manual'); // Zur Liste springen
+            if(confirm("Plan erstellt! Bestehende Einträge überschreiben? (Abbrechen = Anhängen)")) {
+                schedule = newEntries;
+            } else {
+                schedule = schedule.concat(newEntries);
+            }
+            
+            renderSchedule();
+            switchView('plan');
+        }
+
+        // --- EDITING & MANUAL ---
+        function saveManualEntry() {
+            const date = document.getElementById('manDate').value;
+            const time = document.getElementById('manTime').value;
+            const names = document.getElementById('manNames').value;
+            
+            if(date && names) {
+                schedule.push({ date, time, names });
+                renderSchedule();
+                closeModal('manualModal');
+                // Reset Fields
+                document.getElementById('manNames').value = '';
             }
         }
 
-        // --- PDF Logic ---
-        function calculateDateRange() {
-            if(scheduleData.length === 0) return "";
-            // Da wir strings haben ("09.01."), ist min/max schwer ohne Jahr.
-            // Wir nehmen einfach den ersten und letzten Eintrag der Liste, 
-            // vorausgesetzt die Liste ist chronologisch (was sie meistens ist).
-            const first = scheduleData[0].date;
-            const last = scheduleData[scheduleData.length-1].date;
-            
-            // Falls Jahr benötigt, müsste man es raten, aber TT.MM. reicht meistens
-            // Versuchen wir ein aktuelles Jahr anzuhängen
-            const year = new Date().getFullYear();
-            return `${first}${year} - ${last}${year}`;
+        function openEdit(index) {
+            const item = schedule[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('editDate').value = item.date;
+            document.getElementById('editTime').value = item.time;
+            document.getElementById('editNames').value = item.names;
+            openModal('editModal');
         }
 
-        function generatePDF() {
+        function saveEditEntry() {
+            const idx = document.getElementById('editIndex').value;
+            schedule[idx] = {
+                date: document.getElementById('editDate').value,
+                time: document.getElementById('editTime').value,
+                names: document.getElementById('editNames').value
+            };
+            renderSchedule();
+            closeModal('editModal');
+        }
+
+        function deleteEntryFromEdit() {
+            const idx = document.getElementById('editIndex').value;
+            schedule.splice(idx, 1);
+            renderSchedule();
+            closeModal('editModal');
+        }
+
+        // --- PDF GENERATION ---
+        function generatePDF(design) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            const range = calculateDateRange();
 
-            // Header SC Brombach Blau
-            doc.setFillColor(30, 58, 138); 
-            doc.rect(0, 0, 210, 40, 'F');
-            
-            doc.setTextColor(255, 255, 255);
+            // Zeitraum berechnen
+            let dateRange = "";
+            if(schedule.length > 0) {
+                dateRange = `${schedule[0].date} - ${schedule[schedule.length-1].date}`;
+            }
+
+            // Design Einstellungen
+            let headColor = [37, 99, 235]; // Blau
+            let textColor = 255;
+            let theme = 'grid';
+
+            if(design === 'bw') { headColor = [20, 20, 20]; theme = 'grid'; }
+            if(design === 'minimal') { headColor = [255, 255, 255]; textColor = 0; theme = 'plain'; }
+
+            // Header Box
+            if(design !== 'minimal') {
+                doc.setFillColor(...headColor);
+                doc.rect(0, 0, 210, 40, 'F');
+                doc.setTextColor(255, 255, 255);
+            } else {
+                doc.setTextColor(0,0,0);
+            }
+
             doc.setFontSize(22);
             doc.setFont("helvetica", "bold");
             doc.text("Einsatzplan Jugendtraining", 14, 20);
             
             doc.setFontSize(12);
             doc.setFont("helvetica", "normal");
-            doc.text(`Zeitraum: ${range}`, 14, 30);
+            doc.text(`SC Brombach | Zeitraum: ${dateRange}`, 14, 30);
 
-            // Tabelle
-            const body = scheduleData.map(r => [r.date, r.time, r.names, r.count]);
+            const rows = schedule.map(s => [s.date, s.time, s.names]);
 
             doc.autoTable({
                 startY: 45,
-                head: [['Datum', 'Uhrzeit', 'Team', 'Anz.']],
-                body: body,
-                theme: 'grid',
-                headStyles: { fillColor: [37, 99, 235], textColor: 255 },
-                styles: { fontSize: 10, cellPadding: 4 },
+                head: [['Datum', 'Uhrzeit', 'Team']],
+                body: rows,
+                theme: theme,
+                headStyles: { 
+                    fillColor: (design === 'minimal' ? [240,240,240] : headColor), 
+                    textColor: (design === 'minimal' ? 0 : 255),
+                    fontStyle: 'bold'
+                },
                 columnStyles: {
-                    0: { fontStyle: 'bold', cellWidth: 25 },
-                    1: { cellWidth: 35 },
-                    3: { halign: 'center', cellWidth: 15 }
-                }
+                    0: { cellWidth: 30, fontStyle: 'bold' },
+                    1: { cellWidth: 40 }
+                },
+                styles: { fontSize: (design === 'compact' ? 9 : 11), cellPadding: 4 }
             });
 
-            doc.save(`Einsatzplan_SCB.pdf`);
-        }
-        
-        // --- OCR & CSV --- (Minified versions from previous requests logic)
-        async function handleImageUpload(inp){
-            const f=inp.files[0]; if(!f)return;
-            document.getElementById('loader').style.display='flex';
-            try{
-                const w=await Tesseract.createWorker('deu');
-                const r=await w.recognize(f);
-                let lines=r.data.text.split('\n'), lastD="??.??.";
-                lines.forEach(l=>{
-                    let m=l.match(/(\d{2}\.\d{2}\.?)/); if(m) lastD=m[1];
-                    if(/Kaspar|Dmitry|Nico|Uwe|Gento/i.test(l)){
-                        let names=l.replace(/(\d{2}\.\d{2}\.?)/,'').replace(/\d{2}:\d{2}.*?\d{2}:\d{2}/,'').replace(/[|\[\]]/g,'').trim();
-                        scheduleData.push({date:lastD, time:"17:00 - 18:30", names:names, count:names.split(',').length});
-                    }
-                });
-                await w.terminate(); saveAndRender(); switchTab('manual');
-            }catch(e){alert('Fehler: '+e);}
-            document.getElementById('loader').style.display='none';
+            doc.save('Einsatzplan.pdf');
+            closeModal('pdfModal');
         }
 
-        function downloadCSV() {
-            let c="Datum;Uhrzeit;Namen;Anzahl\n"+scheduleData.map(r=>`${r.date};${r.time};${r.names};${r.count}`).join("\n");
-            let link=document.createElement("a"); link.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));
-            link.download="plan.csv"; link.click();
+        // --- CSV ---
+        function importCSV() {
+            const text = document.getElementById('csvText').value;
+            const lines = text.split('\n');
+            lines.forEach(l => {
+                const parts = l.split(';');
+                if(parts.length >= 3) {
+                    schedule.push({ date: parts[0].trim(), time: parts[1].trim(), names: parts[2].trim() });
+                }
+            });
+            renderSchedule();
+            closeModal('csvModal');
+        }
+
+        function exportCSV() {
+            let txt = "";
+            schedule.forEach(s => {
+                txt += `${s.date};${s.time};${s.names}\n`;
+            });
+            document.getElementById('csvText').value = txt;
+        }
+
+        // --- OCR (Tesseract) ---
+        async function runOCR(input) {
+            if(!input.files[0]) return;
+            const stat = document.getElementById('ocrStatus');
+            stat.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analysiere Bild...';
+            
+            try {
+                const worker = await Tesseract.createWorker('deu');
+                const ret = await worker.recognize(input.files[0]);
+                stat.innerHTML = '<i class="fa-solid fa-check"></i> Fertig! Daten werden interpretiert...';
+                
+                const lines = ret.data.text.split('\n');
+                let found = 0;
+                let lastDate = "??.??.";
+
+                lines.forEach(line => {
+                    // Simpler Parser für Datum
+                    const dateMatch = line.match(/(\d{1,2}\.\d{1,2}\.?)/);
+                    if(dateMatch) lastDate = dateMatch[1];
+                    
+                    // Suche nach Namen aus dem Team
+                    let foundNames = [];
+                    team.forEach(t => {
+                        if(line.includes(t.name)) foundNames.push(t.name);
+                    });
+
+                    if(foundNames.length > 0) {
+                        schedule.push({
+                            date: lastDate,
+                            time: "Importiert",
+                            names: foundNames.join(', ')
+                        });
+                        found++;
+                    }
+                });
+                
+                await worker.terminate();
+                renderSchedule();
+                switchView('plan');
+                alert(found + " Einträge gefunden und hinzugefügt.");
+                stat.innerHTML = "";
+
+            } catch(e) {
+                console.error(e);
+                stat.innerHTML = "Fehler bei der Erkennung.";
+            }
         }
 
     </script>
