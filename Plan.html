@@ -3,80 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Einsatzplaner Ultimate - SC Brombach</title>
+    <title>Einsatzplaner Pro v4 - SC Brombach</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <style>
         /* --- Gittertier Pro Design System --- */
         :root {
-            --color-bg: #f9fafb;
-            --color-surface: #ffffff;
-            --color-text: #111827;
-            --color-text-muted: #6b7280;
-            --color-border: #e5e7eb;
-            
-            /* SC Brombach Branding */
-            --color-primary: #1e3a8a; 
-            --color-primary-hover: #1e40af;
-            --color-accent: #2563eb;
-            --color-accent-light: #eff6ff;
-            
-            --color-success: #059669;
-            --color-warning: #d97706;
-            --color-danger: #dc2626;
-            --color-danger-bg: #fef2f2;
-            
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --header-height: 64px;
-            --bottom-nav-height: 0px; /* Nur Mobile */
+            --c-bg: #f3f4f6;
+            --c-surface: #ffffff;
+            --c-text: #111827;
+            --c-text-muted: #6b7280;
+            --c-primary: #2563eb;
+            --c-primary-hover: #1d4ed8;
+            --c-primary-light: #eff6ff;
+            --c-success: #10b981;
+            --c-warning: #f59e0b;
+            --c-danger: #ef4444;
+            --c-border: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --header-h: 64px;
+            --nav-h: 70px; /* Mobile Nav Height */
         }
 
-        /* Dark Mode Support */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --color-bg: #111827;
-                --color-surface: #1f2937;
-                --color-text: #f9fafb;
-                --color-text-muted: #9ca3af;
-                --color-border: #374151;
-                --color-accent-light: #1e3a8a;
-            }
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
         body {
-            font-family: var(--font-main);
-            background-color: var(--color-bg);
-            color: var(--color-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--c-bg);
+            color: var(--c-text);
             margin: 0;
-            padding: 0;
-            padding-bottom: var(--bottom-nav-height);
-            transition: background-color 0.3s, color 0.3s;
-            overflow-x: hidden;
+            padding-bottom: calc(var(--nav-h) + 20px); /* Space for mobile nav */
         }
+
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* --- Header --- */
         header {
-            height: var(--header-height);
-            background: var(--color-surface);
-            border-bottom: 1px solid var(--color-border);
+            height: var(--header-h);
+            background: var(--c-surface);
+            border-bottom: 1px solid var(--c-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 2rem;
+            padding: 0 20px;
             position: sticky;
             top: 0;
             z-index: 50;
@@ -87,1051 +65,1213 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            text-decoration: none;
-            color: var(--color-text);
             font-weight: 700;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
+            color: var(--c-text);
+            text-decoration: none;
         }
-        .brand img { height: 40px; width: auto; }
-        .brand span { background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand img { height: 36px; width: auto; }
+        .brand span { color: var(--c-primary); }
 
-        .header-actions { display: flex; gap: 1rem; }
-
-        /* --- Main Layout --- */
-        main {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            display: grid;
-            grid-template-columns: 280px 1fr; /* Sidebar + Content */
-            gap: 2rem;
-            min-height: calc(100vh - var(--header-height) - 4rem);
-        }
-
-        /* --- Sidebar Navigation --- */
-        .sidebar {
+        /* --- Mobile Navigation (Bottom) --- */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--c-surface);
+            border-top: 1px solid var(--c-border);
+            height: var(--nav-h);
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            position: sticky;
-            top: calc(var(--header-height) + 2rem);
-            height: fit-content;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05);
         }
 
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            color: var(--color-text-muted);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .nav-item:hover { background-color: var(--color-bg); color: var(--color-text); }
-        .nav-item.active { background-color: var(--color-accent-light); color: var(--color-accent); font-weight: 600; }
-        .nav-item i { width: 20px; text-align: center; }
-
-        /* --- Content Area --- */
-        .content-area {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
-            animation: fadeIn 0.3s ease-out;
+            align-items: center;
+            justify-content: center;
+            color: var(--c-text-muted);
+            font-size: 0.75rem;
+            gap: 4px;
+            background: none;
+            border: none;
+            height: 100%;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-item i { font-size: 1.25rem; margin-bottom: 2px; }
+        .nav-item.active { color: var(--c-primary); }
+        .nav-item.active i { transform: scale(1.1); }
 
-        .view-section { display: none; }
-        .view-section.active { display: block; }
+        /* --- Main Layout --- */
+        main {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
 
-        /* --- Cards --- */
+        .view { display: none; animation: fadeIn 0.3s ease-out; }
+        .view.active { display: block; }
+
+        /* --- Components: Cards --- */
         .card {
-            background: var(--color-surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--color-border);
+            background: var(--c-surface);
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 1.5rem;
+            border: 1px solid var(--c-border);
+            padding: 20px;
+            margin-bottom: 20px;
             position: relative;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .card:hover { box-shadow: var(--shadow-lg); }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--c-border);
         }
-        .card-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text); display: flex; align-items: center; gap: 10px; }
-        .card-subtitle { font-size: 0.875rem; color: var(--color-text-muted); margin-top: 4px; }
+        .card-header h2 { font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 8px; }
+        .card-header h2 i { color: var(--c-primary); }
 
-        /* --- Table Modern --- */
-        .table-container {
-            overflow-x: auto;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--color-border);
+        /* --- Components: Forms --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
         }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        thead { background-color: var(--color-bg); border-bottom: 1px solid var(--color-border); }
-        th { padding: 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); font-weight: 600; }
-        td { padding: 16px; border-bottom: 1px solid var(--color-border); vertical-align: middle; font-size: 0.95rem; }
-        tr:last-child td { border-bottom: none; }
-        tbody tr { transition: background-color 0.1s; cursor: pointer; }
-        tbody tr:hover { background-color: var(--color-bg); }
+        .full-width { grid-column: 1 / -1; }
 
-        /* --- Badges --- */
-        .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
-        .badge-blue { background: #dbeafe; color: #1e40af; }
-        .badge-green { background: #d1fae5; color: #065f46; }
-        .badge-yellow { background: #fef3c7; color: #92400e; }
-        .badge-red { background: #fee2e2; color: #991b1b; }
+        label { display: block; font-size: 0.85rem; color: var(--c-text-muted); margin-bottom: 6px; font-weight: 500; }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fff;
+            transition: 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--c-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
 
-        /* --- Buttons --- */
+        /* --- Components: Buttons --- */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 10px 20px;
-            border-radius: var(--radius-sm);
+            padding: 12px 20px;
+            border-radius: 8px;
             font-weight: 600;
             font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-        .btn-primary { background: var(--color-primary); color: white; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3); }
-        .btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); }
-        .btn-secondary { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text); }
-        .btn-secondary:hover { background: var(--color-bg); border-color: var(--color-text-muted); }
-        .btn-ghost { background: transparent; color: var(--color-text-muted); }
-        .btn-ghost:hover { background: var(--color-bg); color: var(--color-text); }
-        .btn-icon { padding: 8px; border-radius: 50%; width: 40px; height: 40px; }
-
-        /* --- Floating Action Button (Mobile) --- */
-        .fab {
-            position: fixed; bottom: 20px; right: 20px;
-            width: 56px; height: 56px;
-            border-radius: 50%;
-            background: var(--color-primary);
-            color: white;
-            display: none; /* Desktop hidden */
-            align-items: center; justify-content: center;
-            box-shadow: var(--shadow-xl);
-            font-size: 1.5rem;
-            z-index: 90;
             border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
         }
+        .btn-primary { background: var(--c-primary); color: white; }
+        .btn-primary:hover { background: var(--c-primary-hover); }
+        
+        .btn-secondary { background: white; border: 1px solid var(--c-border); color: var(--c-text); }
+        .btn-secondary:hover { background: var(--c-bg); }
+        
+        .btn-danger { background: #fee2e2; color: var(--c-danger); }
+        
+        .btn-ghost { background: transparent; color: var(--c-text-muted); padding: 8px; width: auto; }
+        .btn-ghost:hover { color: var(--c-primary); background: var(--c-primary-light); }
 
-        /* --- Modals (The Core Interaction) --- */
+        /* --- Wizard Styles --- */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; animation: slideIn 0.3s ease; }
+        .step-indicators { display: flex; gap: 4px; margin-bottom: 20px; }
+        .step-dot { flex: 1; height: 4px; background: var(--c-border); border-radius: 2px; }
+        .step-dot.active { background: var(--c-primary); }
+        .step-dot.completed { background: var(--c-success); }
+
+        /* --- Team List --- */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+        }
+        .member-card {
+            background: #f9fafb;
+            border: 1px solid var(--c-border);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .role-badge {
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; font-weight: 700; text-transform: uppercase;
+        }
+        .role-fixed { background: #dbeafe; color: #1e40af; }
+        .role-rotate { background: #e0e7ff; color: #4338ca; }
+        .role-emergency { background: #fee2e2; color: #991b1b; }
+
+        /* --- Table --- */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--c-border);
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background: #f9fafb; text-align: left; padding: 12px 16px; font-size: 0.8rem; text-transform: uppercase; color: var(--c-text-muted); border-bottom: 1px solid var(--c-border); }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--c-border); vertical-align: middle; }
+        tr:hover td { background: #f9fafb; }
+        
+        .conflict-row { background-color: #fef2f2 !important; border-left: 4px solid var(--c-danger); }
+        .smart-badge { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 5px; }
+
+        /* --- Modals --- */
         .modal-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200;
+            display: flex; align-items: flex-end; /* Mobile bottom sheet style */
+            opacity: 0; pointer-events: none; transition: 0.3s;
         }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
         
         .modal {
-            background: var(--color-surface);
-            width: 90%; max-width: 600px;
+            background: var(--c-surface);
+            width: 100%; max-width: 600px;
+            margin: 0 auto;
+            border-radius: 20px 20px 0 0;
+            padding: 24px;
+            transform: translateY(100%); transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             max-height: 90vh; overflow-y: auto;
-            border-radius: var(--radius-lg);
-            padding: 0;
-            box-shadow: var(--shadow-xl);
-            transform: scale(0.95); transition: transform 0.2s;
-            display: flex; flex-direction: column;
         }
-        .modal-overlay.open .modal { transform: scale(1); }
+        .modal-overlay.open .modal { transform: translateY(0); }
         
-        .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 1.5rem; overflow-y: auto; }
-        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--color-border); background: var(--color-bg); display: flex; justify-content: flex-end; gap: 10px; }
-
-        /* --- Form Elements --- */
-        .form-group { margin-bottom: 1.25rem; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; color: var(--color-text-muted); }
-        .form-control {
-            width: 100%; padding: 12px;
-            border: 1px solid var(--color-border); border-radius: var(--radius-sm);
-            background: var(--color-surface); color: var(--color-text);
-            font-size: 1rem; transition: border 0.2s;
+        @media(min-width: 640px) {
+            .modal-overlay { align-items: center; }
+            .modal { border-radius: var(--radius); transform: scale(0.95); width: 90%; }
+            .modal-overlay.open .modal { transform: scale(1); }
+            .mobile-nav { display: none; }
+            body { padding-bottom: 0; }
+            .desktop-nav { display: flex; gap: 20px; }
+            .desktop-nav a { text-decoration: none; color: var(--c-text-muted); font-weight: 500; transition: 0.2s; cursor: pointer; }
+            .desktop-nav a:hover, .desktop-nav a.active { color: var(--c-primary); }
+            .desktop-nav a.active { border-bottom: 2px solid var(--c-primary); }
         }
-        .form-control:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
-
-        /* --- Wizard Styles --- */
-        .wizard-steps { display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative; }
-        .wizard-steps::before { content: ''; position: absolute; top: 15px; left: 0; right: 0; height: 2px; background: var(--color-border); z-index: 0; }
-        .step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0.6; }
-        .step.active { opacity: 1; }
-        .step-circle { width: 32px; height: 32px; border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.3s; }
-        .step.active .step-circle { background: var(--color-primary); color: white; border-color: var(--color-primary); }
-        .step.completed .step-circle { background: var(--color-success); border-color: var(--color-success); color: white; }
-
-        /* --- Responsive Mobile --- */
-        @media (max-width: 768px) {
-            :root { --bottom-nav-height: 60px; }
-            main { grid-template-columns: 1fr; margin: 1rem auto; gap: 1rem; }
-            .sidebar { 
-                position: fixed; bottom: 0; left: 0; right: 0; top: auto;
-                background: var(--color-surface); height: var(--bottom-nav-height);
-                flex-direction: row; justify-content: space-around; padding: 0;
-                border-top: 1px solid var(--color-border); z-index: 99;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            }
-            .nav-item { flex-direction: column; gap: 4px; font-size: 0.7rem; padding: 8px; flex: 1; justify-content: center; border-radius: 0; }
-            .nav-item i { font-size: 1.2rem; }
-            .nav-text { display: block; }
-            header { padding: 0 1rem; }
-            .fab { display: flex; }
-            .hide-mobile { display: none; }
-            .wizard-steps { font-size: 0.8rem; }
-            .modal { width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
+        @media(max-width: 639px) {
+            .desktop-nav { display: none; }
+            .form-grid { grid-template-columns: 1fr; }
         }
+
+        /* --- Drag & Drop Zone --- */
+        .drop-zone {
+            border: 2px dashed var(--c-border); border-radius: var(--radius);
+            padding: 30px; text-align: center; color: var(--c-text-muted); cursor: pointer; transition: 0.2s;
+        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--c-primary); background: var(--c-primary-light); }
+
+        /* --- Loader --- */
+        .loader-overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 300;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .loader-spinner {
+            width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top: 4px solid var(--c-primary);
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px;
+        }
+
     </style>
 </head>
 <body>
 
+    <div id="loader" class="loader-overlay">
+        <div class="loader-spinner"></div>
+        <h3 id="loader-text">Arbeite...</h3>
+    </div>
+
     <header>
         <a href="#" class="brand">
-            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="SC Brombach">
-            <span>Gittertier Pro</span>
+            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="Logo">
+            <div>SC Brombach <span style="font-weight:400; font-size:0.9em;">Planer v4</span></div>
         </a>
-        <div class="header-actions">
-            <button class="btn btn-ghost btn-icon" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
-            <button class="btn btn-primary hide-mobile" onclick="openWizard()"><i class="fa-solid fa-wand-magic-sparkles"></i> Neuer Plan</button>
-        </div>
+        <nav class="desktop-nav">
+            <a onclick="App.nav('dashboard')" class="active">Übersicht</a>
+            <a onclick="App.nav('team')">Team</a>
+            <a onclick="App.nav('wizard')">Generator</a>
+            <a onclick="App.nav('stats')">Statistik</a>
+        </nav>
+        <button class="btn btn-primary" onclick="App.Modals.open('export')" style="width: auto; padding: 8px 16px; font-size: 0.8rem;">
+            <i class="fa-solid fa-download"></i> Export
+        </button>
     </header>
 
     <main>
-        <nav class="sidebar">
-            <a onclick="switchView('dashboard')" class="nav-item active" id="nav-dashboard">
-                <i class="fa-solid fa-chart-pie"></i> <span class="nav-text">Übersicht</span>
-            </a>
-            <a onclick="switchView('plan')" class="nav-item" id="nav-plan">
-                <i class="fa-solid fa-calendar-days"></i> <span class="nav-text">Einsatzplan</span>
-            </a>
-            <a onclick="switchView('team')" class="nav-item" id="nav-team">
-                <i class="fa-solid fa-users"></i> <span class="nav-text">Team</span>
-            </a>
-            <a onclick="switchView('settings')" class="nav-item" id="nav-settings">
-                <i class="fa-solid fa-gear"></i> <span class="nav-text">Optionen</span>
-            </a>
-        </nav>
-
-        <div class="content-area">
-
-            <div id="view-dashboard" class="view-section active">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Willkommen zurück!</div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <div style="background:var(--color-bg); padding:1rem; border-radius:var(--radius-sm);">
-                            <div style="font-size:0.8rem; color:var(--color-text-muted);">Offene Termine</div>
-                            <div style="font-size:2rem; font-weight:700;" id="stat-open">0</div>
-                        </div>
-                        <div style="background:var(--color-bg); padding:1rem; border-radius:var(--radius-sm);">
-                            <div style="font-size:0.8rem; color:var(--color-text-muted);">Teamgröße</div>
-                            <div style="font-size:2rem; font-weight:700;" id="stat-team">0</div>
-                        </div>
-                        <div style="background:var(--color-bg); padding:1rem; border-radius:var(--radius-sm);">
-                            <div style="font-size:0.8rem; color:var(--color-text-muted);">Einsätze diesen Monat</div>
-                            <div style="font-size:2rem; font-weight:700; color:var(--color-primary);" id="stat-month">0</div>
-                        </div>
-                    </div>
+        
+        <div id="view-dashboard" class="view active">
+            <div class="form-grid" style="margin-bottom: 20px;">
+                <div class="card" style="margin:0; padding: 15px; background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border:none;">
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Nächster Termin</div>
+                    <div id="next-shift-display" style="font-size: 1.5rem; font-weight: 700; margin-top: 5px;">--.--.</div>
+                    <div id="next-shift-team" style="font-size: 0.9rem; margin-top: 5px; opacity: 0.9;">Keine Daten</div>
                 </div>
-
-                <div class="card" style="margin-top: 1rem;">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fa-solid fa-chart-simple"></i> Verteilung</div>
+                <div class="card" style="margin:0; padding: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.9rem; color: var(--c-text-muted);">Offene Schichten</div>
+                        <div id="open-shifts-count" style="font-size: 1.8rem; font-weight: 700; color: var(--c-danger);">0</div>
                     </div>
-                    <div style="height: 250px;">
-                        <canvas id="statsChart"></canvas>
-                    </div>
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; color: #fee2e2;"></i>
                 </div>
             </div>
 
-            <div id="view-plan" class="view-section">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fa-solid fa-calendar-check"></i> Aktueller Plan</div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary btn-icon" onclick="openPDFModal()"><i class="fa-solid fa-file-pdf"></i></button>
-                            <button class="btn btn-secondary btn-icon" onclick="copyToWhatsApp()"><i class="fa-brands fa-whatsapp"></i></button>
-                            <button class="btn btn-primary hide-mobile" onclick="openEditModal()"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="text" placeholder="Suchen..." class="form-control" style="width: auto; flex: 1;" onkeyup="filterTable(this.value)">
-                        <button class="btn btn-secondary" onclick="openScanModal()"><i class="fa-solid fa-camera"></i> Foto-Scan</button>
-                        <button class="btn btn-secondary" onclick="openCSVModal()"><i class="fa-solid fa-file-csv"></i> Import</button>
-                    </div>
-
-                    <div class="table-container">
-                        <table id="planTable">
-                            <thead>
-                                <tr>
-                                    <th>Datum</th>
-                                    <th>Uhrzeit</th>
-                                    <th>Team</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="planTableBody">
-                                </tbody>
-                        </table>
-                    </div>
-                    <div id="emptyPlan" style="text-align:center; padding:3rem; color:var(--color-text-muted); display:none;">
-                        <i class="fa-solid fa-clipboard-list" style="font-size:3rem; opacity:0.3; margin-bottom:1rem;"></i>
-                        <p>Noch keine Einträge vorhanden.</p>
-                        <button class="btn btn-primary" style="margin-top:1rem;" onclick="openWizard()">Generator starten</button>
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-calendar-days"></i> Einsatzplan</h2>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-ghost" onclick="App.Modals.open('ocr')"><i class="fa-solid fa-camera"></i> Scan</button>
+                        <button class="btn btn-ghost" onclick="App.Modals.open('addEntry')"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
-            </div>
 
-            <div id="view-team" class="view-section">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fa-solid fa-users-gear"></i> Mannschaft</div>
-                        <button class="btn btn-primary" onclick="openTeamModal()"><i class="fa-solid fa-user-plus"></i> Neu</button>
-                    </div>
-                    <div id="teamGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
-                        </div>
+                <div class="table-container">
+                    <table id="main-table">
+                        <thead>
+                            <tr>
+                                <th width="15%">Datum</th>
+                                <th width="20%">Zeit</th>
+                                <th>Team</th>
+                                <th width="10%"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="empty-state" style="padding: 40px; text-align: center; color: var(--c-text-muted); display: none;">
+                    <i class="fa-solid fa-clipboard-list" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;"></i>
+                    <p>Keine Einträge vorhanden.</p>
+                    <button class="btn btn-secondary" onclick="App.nav('wizard')" style="width:auto; margin-top:10px;">Generator starten</button>
                 </div>
             </div>
-
-            <div id="view-settings" class="view-section">
-                <div class="card">
-                    <div class="card-header"><div class="card-title">Einstellungen</div></div>
-                    <div class="form-group">
-                        <label>Vollständiger Reset</label>
-                        <p style="font-size:0.8rem; color:var(--color-text-muted); margin-bottom:1rem;">Löscht alle Daten (Plan & Team).</p>
-                        <button class="btn btn-danger" onclick="hardReset()">Alles Löschen</button>
-                    </div>
-                </div>
-            </div>
-
         </div>
+
+        <div id="view-team" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-users"></i> Teilnehmer</h2>
+                    <button class="btn btn-primary" onclick="App.Modals.open('addMember')" style="width: auto;">+ Neu</button>
+                </div>
+                <p style="color: var(--c-text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                    Verwalte hier Rollen und Verfügbarkeiten. 
+                    <br><strong>Stamm:</strong> Immer geplant. <strong>Springer:</strong> Rotiert. <strong>Notfall:</strong> Nur manuell.
+                </p>
+                <div id="team-grid" class="team-grid">
+                    </div>
+            </div>
+        </div>
+
+        <div id="view-wizard" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-wand-magic-sparkles"></i> KI-Planer Wizard</h2>
+                </div>
+
+                <div class="step-indicators">
+                    <div class="step-dot active" id="dot-1"></div>
+                    <div class="step-dot" id="dot-2"></div>
+                    <div class="step-dot" id="dot-3"></div>
+                </div>
+
+                <div id="step-1" class="wizard-step active">
+                    <h3>Zeitraum & Umfang</h3>
+                    <div class="form-grid">
+                        <div>
+                            <label>Startdatum (Freitag)</label>
+                            <input type="date" id="gen-start-date">
+                        </div>
+                        <div>
+                            <label>Dauer</label>
+                            <select id="gen-duration">
+                                <option value="4">4 Wochen</option>
+                                <option value="8" selected>8 Wochen</option>
+                                <option value="12">12 Wochen</option>
+                            </select>
+                        </div>
+                        <div class="full-width">
+                            <label>Modus</label>
+                            <div class="member-card" style="margin-bottom:10px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <input type="checkbox" id="gen-pref-doubles" checked style="width:20px; height:20px;">
+                                    <span><strong>Doppelschichten bevorzugen</strong><br><small style="color:#666;">Wer 17:00 kommt, macht auch 18:15 (falls verfügbar)</small></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="App.Wizard.next(2)" style="margin-top:20px;">Weiter</button>
+                </div>
+
+                <div id="step-2" class="wizard-step">
+                    <h3>Verfügbarkeiten prüfen</h3>
+                    <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Wähle Personen ab, die im gewählten Zeitraum <strong>Urlaub</strong> haben (pauschal).</p>
+                    <div id="gen-availability-list" class="team-grid"></div>
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button class="btn btn-secondary" onclick="App.Wizard.next(1)">Zurück</button>
+                        <button class="btn btn-primary" onclick="App.Wizard.generate()">🚀 Plan Generieren</button>
+                    </div>
+                </div>
+
+                <div id="step-3" class="wizard-step">
+                    <div style="text-align:center; padding:30px;">
+                        <i class="fa-solid fa-check-circle" style="font-size:4rem; color:var(--c-success); margin-bottom:20px;"></i>
+                        <h3>Plan erstellt!</h3>
+                        <p>Der Plan wurde generiert und Konflikte geprüft.</p>
+                        <button class="btn btn-primary" onclick="App.nav('dashboard')">Zum Dashboard</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="view-stats" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Auswertung</h2>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="statsChart"></canvas>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3>Fairness-Score</h3>
+                    <p style="font-size:0.9rem; color:#666;">Standardabweichung der Einsätze (niedriger ist fairer): <strong id="fairness-score">0</strong></p>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <button class="fab" onclick="openEditModal()"><i class="fa-solid fa-plus"></i></button>
+    <nav class="mobile-nav">
+        <button class="nav-item active" onclick="App.nav('dashboard')">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="App.nav('team')">
+            <i class="fa-solid fa-users"></i>
+            <span>Team</span>
+        </button>
+        <button class="nav-item" onclick="App.nav('wizard')">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Planen</span>
+        </button>
+        <button class="nav-item" onclick="App.nav('stats')">
+            <i class="fa-solid fa-chart-simple"></i>
+            <span>Stats</span>
+        </button>
+    </nav>
 
-    <div id="modal-edit" class="modal-overlay">
+    <div id="modal-entry" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header">
-                <h3 class="card-title" id="modalTitle">Eintrag bearbeiten</h3>
-                <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-edit')"><i class="fa-solid fa-xmark"></i></button>
+            <div class="card-header" style="border:none; padding:0; margin-bottom:20px;">
+                <h3>Eintrag bearbeiten</h3>
+                <button class="btn-ghost" onclick="App.Modals.close('entry')">&times;</button>
             </div>
-            <div class="modal-body">
-                <input type="hidden" id="inpId">
-                <div class="form-group">
+            <input type="hidden" id="entry-id">
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <div>
                     <label>Datum</label>
-                    <input type="text" id="inpDate" class="form-control" placeholder="TT.MM.">
+                    <input type="text" id="entry-date" placeholder="DD.MM.">
                 </div>
-                <div class="form-group">
-                    <label>Schicht</label>
-                    <select id="inpTime" class="form-control">
+                <div>
+                    <label>Uhrzeit</label>
+                    <select id="entry-time">
                         <option value="17:00 - 18:30">Früh (17:00 - 18:30)</option>
                         <option value="18:15 - 19:45">Spät (18:15 - 19:45)</option>
-                        <option value="custom">Benutzerdefiniert...</option>
+                        <option value="custom">Benutzerdefiniert</option>
                     </select>
+                    <input type="text" id="entry-time-custom" style="display:none; margin-top:5px;" placeholder="HH:MM - HH:MM">
                 </div>
-                <div class="form-group">
-                    <label>Personal</label>
-                    <textarea id="inpNames" class="form-control" rows="3" placeholder="Namen eingeben..."></textarea>
-                    <div style="margin-top:8px; display:flex; gap:5px; flex-wrap:wrap;" id="quickAddTags">
+                <div>
+                    <label>Team (Mehrfachauswahl möglich)</label>
+                    <div id="entry-team-select" style="display:flex; flex-wrap:wrap; gap:5px; max-height:150px; overflow-y:auto; padding:10px; border:1px solid #ddd; border-radius:8px;">
                         </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger" id="btnDelete" onclick="deleteEntry()" style="margin-right:auto;">Löschen</button>
-                <button class="btn btn-secondary" onclick="closeModal('modal-edit')">Abbrechen</button>
-                <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+                <button class="btn btn-primary" onclick="App.Actions.saveEntry()">Speichern</button>
+                <button class="btn btn-danger" onclick="App.Actions.deleteEntryFromModal()" id="btn-delete-entry" style="display:none;">Löschen</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-wizard" class="modal-overlay">
+    <div id="modal-export" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header">
-                <h3 class="card-title">🤖 Auto-Planer</h3>
-                <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-wizard')"><i class="fa-solid fa-xmark"></i></button>
+            <h3>Exportieren</h3>
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <button class="btn btn-secondary" onclick="App.Export.pdf('standard')">
+                    <i class="fa-solid fa-file-pdf"></i> PDF Standard (Blau)
+                </button>
+                <button class="btn btn-secondary" onclick="App.Export.pdf('chess')">
+                    <i class="fa-solid fa-chess-knight"></i> PDF Schachclub (S/W)
+                </button>
+                <button class="btn btn-secondary" onclick="App.Export.pdf('list')">
+                    <i class="fa-solid fa-list"></i> PDF Kompakte Liste
+                </button>
+                <button class="btn btn-secondary" onclick="App.Export.csv()">
+                    <i class="fa-solid fa-file-csv"></i> CSV (Excel)
+                </button>
+                <button class="btn btn-secondary" onclick="App.Export.whatsapp()">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp Text
+                </button>
             </div>
-            <div class="modal-body">
-                <div class="wizard-steps">
-                    <div class="step active" id="step1-indicator"><div class="step-circle">1</div><span>Zeit</span></div>
-                    <div class="step" id="step2-indicator"><div class="step-circle">2</div><span>Team</span></div>
-                    <div class="step" id="step3-indicator"><div class="step-circle">3</div><span>Fertig</span></div>
-                </div>
-
-                <div id="wiz-step1">
-                    <div class="form-group">
-                        <label>Startdatum (Nächster Freitag)</label>
-                        <input type="date" id="wizStart" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Zeitraum</label>
-                        <select id="wizWeeks" class="form-control">
-                            <option value="4">4 Wochen</option>
-                            <option value="8" selected>8 Wochen</option>
-                            <option value="12">12 Wochen</option>
-                        </select>
-                    </div>
-                    <div style="background:var(--color-accent-light); padding:1rem; border-radius:8px; font-size:0.9rem;">
-                        <i class="fa-solid fa-lightbulb" style="color:var(--color-accent);"></i> 
-                        Der Algorithmus bevorzugt Personen, die "Immer" dabei sein wollen, füllt mit "Rotation" auf und nutzt "Notfall" nur wenn nötig. 
-                        Doppelschichten werden erkannt!
-                    </div>
-                </div>
-
-                <div id="wiz-step2" style="display:none;">
-                    <p style="margin-bottom:10px;">Bitte Verfügbarkeiten prüfen:</p>
-                    <div id="wizTeamList" style="max-height:300px; overflow-y:auto; border:1px solid var(--color-border); border-radius:8px;"></div>
-                </div>
-
-                <div id="wiz-step3" style="display:none; text-align:center; padding:2rem;">
-                    <i class="fa-solid fa-check-circle" style="font-size:4rem; color:var(--color-success); margin-bottom:1rem;"></i>
-                    <h3>Plan erfolgreich erstellt!</h3>
-                    <p>Du kannst die Termine nun manuell feinjustieren.</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="wiz-prev" onclick="wizPrev()" style="display:none;">Zurück</button>
-                <button class="btn btn-primary" id="wiz-next" onclick="wizNext()">Weiter</button>
+            <div style="margin-top:20px; text-align:right;">
+                <button class="btn btn-ghost" onclick="App.Modals.close('export')">Schließen</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-team" class="modal-overlay">
+    <div id="modal-ocr" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header">
-                <h3>Person verwalten</h3>
-                <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-team')"><i class="fa-solid fa-xmark"></i></button>
+            <h3>Smart Import</h3>
+            <div class="drop-zone" onclick="document.getElementById('ocr-file').click()">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem;"></i>
+                <p>Klicke hier oder ziehe ein Bild/CSV rein.<br>Erkennt WhatsApp Screenshots & Excel.</p>
+                <input type="file" id="ocr-file" hidden onchange="App.OCR.process(this)">
             </div>
-            <div class="modal-body">
-                <input type="hidden" id="tmId">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="tmName" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Rolle</label>
-                    <select id="tmRole" class="form-control">
-                        <option value="fixed">⭐ Stammspieler (Immer eingeplant)</option>
-                        <option value="rotate">🔄 Rotation (Regelmäßiger Wechsel)</option>
-                        <option value="emergency">🚨 Notfall (Nur wenn nötig)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Bevorzugte Zeit</label>
-                    <select id="tmPref" class="form-control">
-                        <option value="both">Egal (Beides möglich)</option>
-                        <option value="early">Nur Früh (17:00)</option>
-                        <option value="late">Nur Spät (18:15)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger" onclick="deleteTeamMember()" id="btnTmDelete">Löschen</button>
-                <button class="btn btn-primary" onclick="saveTeamMember()">Speichern</button>
+            <div id="ocr-preview" style="margin-top:15px; font-size:0.9rem; max-height:150px; overflow-y:auto;"></div>
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <button class="btn btn-ghost" onclick="App.Modals.close('ocr')">Abbrechen</button>
+                <button class="btn btn-primary" id="ocr-confirm" disabled onclick="App.OCR.confirm()">Daten übernehmen</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-pdf" class="modal-overlay">
+    <div id="modal-member" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header"><h3>PDF Export</h3><button class="btn btn-ghost btn-icon" onclick="closeModal('modal-pdf')">x</button></div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Design wählen</label>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-                        <div onclick="setPdfStyle('standard')" class="pdf-opt selected" style="border:2px solid var(--color-primary); padding:10px; border-radius:8px; cursor:pointer; text-align:center;">
-                            <i class="fa-solid fa-table" style="font-size:1.5rem; color:var(--color-primary);"></i><br>Standard
-                        </div>
-                        <div onclick="setPdfStyle('chess')" class="pdf-opt" style="border:1px solid var(--color-border); padding:10px; border-radius:8px; cursor:pointer; text-align:center;">
-                            <i class="fa-solid fa-chess-knight" style="font-size:1.5rem;"></i><br>Schach
-                        </div>
-                        <div onclick="setPdfStyle('minimal')" class="pdf-opt" style="border:1px solid var(--color-border); padding:10px; border-radius:8px; cursor:pointer; text-align:center;">
-                            <i class="fa-solid fa-align-left" style="font-size:1.5rem;"></i><br>Minimal
-                        </div>
-                    </div>
-                </div>
+            <h3>Mitglied verwalten</h3>
+            <input type="hidden" id="mem-id">
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <input type="text" id="mem-name" placeholder="Name (z.B. Kaspar)">
+                <select id="mem-role">
+                    <option value="fixed">Stamm (Immer)</option>
+                    <option value="rotate">Springer (Rotation)</option>
+                    <option value="emergency">Notfall (Nur Manuell)</option>
+                </select>
+                <select id="mem-shift">
+                    <option value="both">Beide Schichten</option>
+                    <option value="early">Nur Früh (17:00)</option>
+                    <option value="late">Nur Spät (18:15)</option>
+                </select>
+                <button class="btn btn-primary" onclick="App.Team.save()">Speichern</button>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" style="width:100%" onclick="generatePDF()">Herunterladen</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-scan" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header"><h3>Bilderkennung (WhatsApp)</h3><button class="btn btn-ghost btn-icon" onclick="closeModal('modal-scan')">x</button></div>
-            <div class="modal-body" style="text-align:center;">
-                <input type="file" id="scanInput" accept="image/*" class="form-control" onchange="runOCR(this)">
-                <div id="scanStatus" style="margin-top:1rem; color:var(--color-text-muted);">Lade Screenshot hoch...</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-csv" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header"><h3>CSV Import</h3><button class="btn btn-ghost btn-icon" onclick="closeModal('modal-csv')">x</button></div>
-            <div class="modal-body">
-                <textarea id="csvText" class="form-control" rows="5" placeholder="Datum; Zeit; Namen"></textarea>
-                <div style="margin-top:5px; font-size:0.8rem; color:var(--color-success);">
-                    <i class="fa-solid fa-magic"></i> Auto-Verschlaubisierung aktiv (Namen werden korrigiert)
-                </div>
-            </div>
-            <div class="modal-footer"><button class="btn btn-primary" onclick="runCSVImport()">Importieren</button></div>
+            <button class="btn btn-ghost" onclick="App.Modals.close('member')" style="margin-top:10px; width:100%;">Abbrechen</button>
         </div>
     </div>
 
     <script>
-        /* --- 1. STATE MANAGEMENT --- */
-        const Store = {
-            plan: JSON.parse(localStorage.getItem('gp_plan')) || [],
-            team: JSON.parse(localStorage.getItem('gp_team')) || [
-                { id: 1, name: 'Kaspar', role: 'fixed', pref: 'both' },
-                { id: 2, name: 'Uwe', role: 'rotate', pref: 'late' },
-                { id: 3, name: 'Nico', role: 'rotate', pref: 'both' },
-                { id: 4, name: 'Dmitry', role: 'rotate', pref: 'both' },
-                { id: 5, name: 'Gento', role: 'rotate', pref: 'early' },
-                { id: 6, name: 'Stephan', role: 'rotate', pref: 'early' },
-                { id: 99, name: 'Springer', role: 'emergency', pref: 'both' }
-            ],
-            currentPdfStyle: 'standard',
-            
-            save() {
-                localStorage.setItem('gp_plan', JSON.stringify(this.plan));
-                localStorage.setItem('gp_team', JSON.stringify(this.team));
-                updateUI();
+        /**
+         * Einsatzplaner Pro v4 Core Logic
+         * Modular Architecture: Store, UI, Generator, Export, OCR
+         */
+
+        const Utils = {
+            uid: () => Date.now().toString(36) + Math.random().toString(36).substr(2),
+            formatDate: (d) => {
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                return `${day}.${month}.`;
+            },
+            parseDateDE: (str) => {
+                // Accepts DD.MM. or DD.MM.YYYY
+                const parts = str.split('.');
+                const d = new Date();
+                d.setDate(parseInt(parts[0]));
+                d.setMonth(parseInt(parts[1]) - 1);
+                if (parts[2]) d.setFullYear(parseInt(parts[2]));
+                return d;
+            },
+            getNextFriday: (date) => {
+                const resultDate = new Date(date.getTime());
+                resultDate.setDate(date.getDate() + (7 + 5 - date.getDay()) % 7);
+                return resultDate;
             }
         };
 
-        /* --- 2. UI UPDATE LOGIC --- */
-        function init() {
-            updateUI();
-            updateStats();
-            setupCharts();
-            // Dark Mode check
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.body.classList.add('dark-theme'); // Simple toggle logic below
+        const Store = {
+            data: {
+                schedule: [],
+                team: [
+                    { id: '1', name: 'Kaspar', role: 'fixed', shift: 'both' },
+                    { id: '2', name: 'Uwe', role: 'rotate', shift: 'late' },
+                    { id: '3', name: 'Nico', role: 'rotate', shift: 'both' },
+                    { id: '4', name: 'Dmitry', role: 'rotate', shift: 'both' },
+                    { id: '5', name: 'Gento', role: 'rotate', shift: 'early' },
+                    { id: '6', name: 'Stephan', role: 'rotate', shift: 'early' },
+                    { id: '7', name: 'Markus', role: 'emergency', shift: 'both' }
+                ]
+            },
+            load() {
+                const stored = localStorage.getItem('scb_v4_data');
+                if (stored) this.data = JSON.parse(stored);
+            },
+            save() {
+                localStorage.setItem('scb_v4_data', JSON.stringify(this.data));
+                App.UI.renderAll();
+            },
+            getMember(name) {
+                return this.data.team.find(m => m.name.toLowerCase() === name.toLowerCase());
+            },
+            addMember(name) {
+                const newM = { id: Utils.uid(), name: name, role: 'rotate', shift: 'both' };
+                this.data.team.push(newM);
+                this.save();
+                return newM;
             }
-        }
+        };
 
-        function updateUI() {
-            // Render Plan
-            const tbody = document.getElementById('planTableBody');
-            tbody.innerHTML = '';
-            
-            if(Store.plan.length === 0) {
-                document.getElementById('emptyPlan').style.display = 'block';
-                document.getElementById('planTable').style.display = 'none';
-            } else {
-                document.getElementById('emptyPlan').style.display = 'none';
-                document.getElementById('planTable').style.display = 'table';
+        const App = {
+            init() {
+                Store.load();
+                this.UI.renderAll();
                 
-                // Sort date logic could be improved, currently string based
-                Store.plan.forEach((entry, idx) => {
-                    const tr = document.createElement('tr');
-                    tr.onclick = () => openEditModal(idx);
-                    
-                    // Status Badge logic
-                    let badgeClass = 'badge-blue';
-                    let statusText = entry.names.split(',').length + ' Pers.';
-                    if(entry.names.includes('Springer')) badgeClass = 'badge-red';
-                    
-                    tr.innerHTML = `
-                        <td><strong>${entry.date}</strong></td>
-                        <td>${entry.time}</td>
-                        <td>${entry.names}</td>
-                        <td><span class="badge ${badgeClass}">${statusText}</span></td>
-                    `;
-                    tbody.appendChild(tr);
+                // Set Defaults
+                document.getElementById('gen-start-date').valueAsDate = Utils.getNextFriday(new Date());
+
+                // Time Select Logic
+                document.getElementById('entry-time').addEventListener('change', (e) => {
+                    document.getElementById('entry-time-custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
                 });
-            }
-
-            // Render Team Grid
-            const tGrid = document.getElementById('teamGrid');
-            tGrid.innerHTML = '';
-            Store.team.forEach((member) => {
-                let icon = 'fa-user';
-                let color = 'var(--color-text-muted)';
-                if(member.role === 'fixed') { icon = 'fa-star'; color = '#d97706'; }
-                if(member.role === 'emergency') { icon = 'fa-kit-medical'; color = '#dc2626'; }
                 
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.style.padding = '1rem';
-                card.style.cursor = 'pointer';
-                card.onclick = () => openTeamModal(member.id);
-                card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-weight:bold; font-size:1.1rem;">${member.name}</div>
-                        <i class="fa-solid ${icon}" style="color:${color}"></i>
-                    </div>
-                    <div style="font-size:0.8rem; color:var(--color-text-muted); margin-top:5px;">
-                        ${member.role === 'fixed' ? 'Stamm' : (member.role === 'rotate' ? 'Rotation' : 'Notfall')} | ${member.pref}
-                    </div>
-                `;
-                tGrid.appendChild(card);
-            });
+                // Loader check
+                setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+            },
 
-            // Update Dashboard Counters
-            document.getElementById('stat-open').innerText = Store.plan.length;
-            document.getElementById('stat-team').innerText = Store.team.length;
-            document.getElementById('stat-month').innerText = Store.plan.length * 3; // Fake calc
-        }
-
-        /* --- 3. WIZARD & SMART GENERATOR --- */
-        let wizCurrentStep = 1;
-        
-        function openWizard() {
-            wizCurrentStep = 1;
-            updateWizUI();
-            openModal('modal-wizard');
-            // Set Default Date
-            const d = new Date();
-            d.setDate(d.getDate() + (5 + 7 - d.getDay()) % 7); // Next Friday
-            document.getElementById('wizStart').valueAsDate = d;
-        }
-
-        function updateWizUI() {
-            document.getElementById('wiz-step1').style.display = wizCurrentStep === 1 ? 'block' : 'none';
-            document.getElementById('wiz-step2').style.display = wizCurrentStep === 2 ? 'block' : 'none';
-            document.getElementById('wiz-step3').style.display = wizCurrentStep === 3 ? 'block' : 'none';
-            
-            document.getElementById('wiz-prev').style.display = wizCurrentStep > 1 ? 'inline-block' : 'none';
-            document.getElementById('wiz-next').innerText = wizCurrentStep === 3 ? 'Schließen' : (wizCurrentStep === 2 ? 'Generieren' : 'Weiter');
-            
-            document.querySelectorAll('.step').forEach((el, idx) => {
-                el.classList.remove('active', 'completed');
-                if(idx + 1 === wizCurrentStep) el.classList.add('active');
-                if(idx + 1 < wizCurrentStep) el.classList.add('completed');
-            });
-        }
-
-        function wizNext() {
-            if(wizCurrentStep === 1) {
-                // Render Team Preview
-                const list = document.getElementById('wizTeamList');
-                list.innerHTML = Store.team.map(m => `
-                    <div style="padding:8px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-                        <span>${m.name}</span>
-                        <span class="badge ${m.role==='fixed'?'badge-yellow':'badge-blue'}">${m.role}</span>
-                    </div>
-                `).join('');
-                wizCurrentStep = 2;
-            } else if (wizCurrentStep === 2) {
-                runSmartGenerator();
-                wizCurrentStep = 3;
-            } else {
-                closeModal('modal-wizard');
-                switchView('plan');
-            }
-            updateWizUI();
-        }
-        
-        function wizPrev() {
-            wizCurrentStep--;
-            updateWizUI();
-        }
-
-        function runSmartGenerator() {
-            const weeks = parseInt(document.getElementById('wizWeeks').value);
-            let date = document.getElementById('wizStart').valueAsDate;
-            if(!date) date = new Date();
-
-            const newPlan = [];
-            // Map team by ID for faster lookups
-            const fixed = Store.team.filter(t => t.role === 'fixed');
-            const rotate = Store.team.filter(t => t.role === 'rotate');
-            const emergency = Store.team.filter(t => t.role === 'emergency');
-
-            // Usage counters for fairness
-            const usage = {};
-            Store.team.forEach(t => usage[t.id] = 0);
-
-            for(let i=0; i<weeks; i++) {
-                const dateStr = date.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'});
+            nav(view) {
+                document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+                document.getElementById('view-' + view).classList.add('active');
                 
-                // Slots definitions
-                const shifts = [
-                    { time: "17:00 - 18:30", type: "early" },
-                    { time: "18:15 - 19:45", type: "late" }
-                ];
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                // Highlight logic simple
+                if(view === 'dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active');
+                if(view === 'team') document.querySelectorAll('.nav-item')[1].classList.add('active');
+                
+                if (window.innerWidth >= 640) {
+                     document.querySelectorAll('.desktop-nav a').forEach(el => el.classList.remove('active'));
+                     // simple index mapping
+                     const map = {'dashboard':0, 'team':1, 'wizard':2, 'stats':3};
+                     if(map[view] !== undefined) document.querySelectorAll('.desktop-nav a')[map[view]].classList.add('active');
+                }
 
-                let assignedToday = []; // Track IDs assigned today
+                if(view === 'stats') this.Stats.render();
+            },
 
-                shifts.forEach(shift => {
-                    let slotTeam = [];
+            UI: {
+                renderAll() {
+                    this.renderSchedule();
+                    this.renderTeam();
+                    this.updateDashboardStats();
+                },
 
-                    // 1. Add Fixed Players capable of this shift
-                    fixed.forEach(p => {
-                        if(p.pref === 'both' || p.pref === shift.type) {
-                            slotTeam.push(p);
-                            usage[p.id]++;
-                            assignedToday.push(p.id);
+                renderSchedule() {
+                    const tbody = document.getElementById('table-body');
+                    tbody.innerHTML = '';
+                    
+                    if (Store.data.schedule.length === 0) {
+                        document.getElementById('empty-state').style.display = 'block';
+                        document.getElementById('main-table').style.display = 'none';
+                        return;
+                    }
+                    
+                    document.getElementById('empty-state').style.display = 'none';
+                    document.getElementById('main-table').style.display = 'table';
+
+                    // Sort: Date, then Time
+                    const sorted = [...Store.data.schedule].sort((a, b) => {
+                        // Simple string comparison for DD.MM. works if same year context.
+                        // Better: Parse properly. 
+                        const dateA = a.date.split('.').reverse().join('');
+                        const dateB = b.date.split('.').reverse().join('');
+                        return dateA.localeCompare(dateB) || a.time.localeCompare(b.time);
+                    });
+
+                    let lastDate = '';
+
+                    sorted.forEach(entry => {
+                        const tr = document.createElement('tr');
+                        
+                        // Smart Check: Duplicate on same day for same person?
+                        // Conflict Detection logic visualization
+                        const isConflict = false; // Placeholder for complex logic
+
+                        if(isConflict) tr.classList.add('conflict-row');
+
+                        // Tags for names
+                        const namesHtml = entry.names.map(n => {
+                            const mem = Store.getMember(n);
+                            let color = '#e5e7eb'; // default
+                            if(mem) {
+                                if(mem.role === 'fixed') color = '#dbeafe';
+                                if(mem.role === 'emergency') color = '#fee2e2';
+                            }
+                            return `<span style="display:inline-block; background:${color}; padding:2px 8px; border-radius:12px; font-size:0.85rem; margin-right:4px; margin-bottom:2px;">${n}</span>`;
+                        }).join('');
+
+                        const dateDisplay = entry.date === lastDate ? '<span style="opacity:0.2">"</span>' : `<strong>${entry.date}</strong>`;
+                        lastDate = entry.date;
+
+                        tr.innerHTML = `
+                            <td>${dateDisplay}</td>
+                            <td>${entry.time.split(' ')[0]}</td>
+                            <td>${namesHtml} ${entry.aiGenerated ? '<i class="fa-solid fa-robot" style="color:#a855f7; font-size:0.7rem;" title="AI Auto-Gen"></i>' : ''}</td>
+                            <td style="text-align:right;">
+                                <button class="btn-ghost" onclick="App.Modals.openEntry('${entry.id}')"><i class="fa-solid fa-pen"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                },
+
+                renderTeam() {
+                    const grid = document.getElementById('team-grid');
+                    grid.innerHTML = '';
+                    
+                    Store.data.team.forEach(m => {
+                        const div = document.createElement('div');
+                        div.className = 'member-card';
+                        
+                        let badgeClass = 'role-rotate';
+                        let roleLabel = 'Springer';
+                        if (m.role === 'fixed') { badgeClass = 'role-fixed'; roleLabel = 'Stamm'; }
+                        if (m.role === 'emergency') { badgeClass = 'role-emergency'; roleLabel = 'Notfall'; }
+
+                        div.innerHTML = `
+                            <div>
+                                <div style="font-weight:600;">${m.name}</div>
+                                <div style="font-size:0.8rem; color:#666;">
+                                    ${m.shift === 'both' ? 'Beide' : (m.shift==='early'?'Nur 17h':'Nur 18h')}
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <span class="role-badge ${badgeClass}">${roleLabel}</span>
+                                <button class="btn-ghost" onclick="App.Modals.openMember('${m.id}')" style="margin-left:5px;"><i class="fa-solid fa-gear"></i></button>
+                            </div>
+                        `;
+                        grid.appendChild(div);
+                    });
+                },
+                
+                updateDashboardStats() {
+                    const count = Store.data.schedule.length;
+                    // Logic for open shifts could be calculated here
+                    const needed = 0; // Placeholder
+                    document.getElementById('open-shifts-count').innerText = count;
+                    
+                    if(Store.data.schedule.length > 0) {
+                        const next = Store.data.schedule[0]; // Assuming sorted
+                        document.getElementById('next-shift-display').innerText = next.date;
+                        document.getElementById('next-shift-team').innerText = next.names.join(', ');
+                    }
+                }
+            },
+
+            Wizard: {
+                tempAvailability: [], // IDs of available members
+                
+                next(step) {
+                    document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+                    document.querySelectorAll('.step-dot').forEach(el => el.classList.remove('active'));
+                    
+                    document.getElementById('step-' + step).classList.add('active');
+                    document.getElementById('dot-' + step).classList.add('active');
+                    
+                    if(step === 2) this.renderAvailabilityCheck();
+                },
+
+                renderAvailabilityCheck() {
+                    const container = document.getElementById('gen-availability-list');
+                    container.innerHTML = '';
+                    this.tempAvailability = Store.data.team.map(m => m.id); // Default all available
+
+                    Store.data.team.forEach(m => {
+                        const div = document.createElement('div');
+                        div.className = 'member-card';
+                        div.style.cursor = 'pointer';
+                        div.onclick = () => {
+                            const cb = div.querySelector('input');
+                            cb.checked = !cb.checked;
+                            if(cb.checked) App.Wizard.tempAvailability.push(m.id);
+                            else App.Wizard.tempAvailability = App.Wizard.tempAvailability.filter(id => id !== m.id);
+                            div.style.opacity = cb.checked ? '1' : '0.5';
+                        };
+
+                        div.innerHTML = `
+                            <span style="font-weight:600;">${m.name}</span>
+                            <input type="checkbox" checked style="width:20px; height:20px; pointer-events:none;">
+                        `;
+                        container.appendChild(div);
+                    });
+                },
+
+                generate() {
+                    const loader = document.getElementById('loader');
+                    loader.style.display = 'flex';
+                    document.getElementById('loader-text').innerText = "KI optimiert Plan...";
+
+                    setTimeout(() => {
+                        const startDate = document.getElementById('gen-start-date').valueAsDate;
+                        const weeks = parseInt(document.getElementById('gen-duration').value);
+                        const preferDoubles = document.getElementById('gen-pref-doubles').checked;
+
+                        // ALGORITHM
+                        let currentDate = new Date(startDate);
+                        let newEntries = [];
+                        
+                        // History tracker for fairness
+                        let history = {};
+                        Store.data.team.forEach(m => history[m.id] = 0);
+
+                        for(let i=0; i<weeks; i++) {
+                            const dateStr = Utils.formatDate(currentDate);
+                            
+                            // Slots
+                            const shifts = [
+                                { time: "17:00 - 18:30", type: "early", assigned: [] },
+                                { time: "18:15 - 19:45", type: "late", assigned: [] }
+                            ];
+
+                            // 1. Assign Fixed
+                            shifts.forEach(shift => {
+                                const fixed = Store.data.team.filter(m => 
+                                    m.role === 'fixed' && 
+                                    App.Wizard.tempAvailability.includes(m.id) &&
+                                    (m.shift === 'both' || m.shift === shift.type)
+                                );
+                                fixed.forEach(m => {
+                                    shift.assigned.push(m);
+                                    history[m.id]++;
+                                });
+                            });
+
+                            // 2. Fill Rotators
+                            shifts.forEach((shift, sIdx) => {
+                                const needed = 3; // Target per shift
+                                let currentCount = shift.assigned.length;
+                                
+                                if(currentCount < needed) {
+                                    // Candidates: Rotate role, Available, shift matches
+                                    let candidates = Store.data.team.filter(m => 
+                                        m.role === 'rotate' && 
+                                        App.Wizard.tempAvailability.includes(m.id) &&
+                                        (m.shift === 'both' || m.shift === shift.type) &&
+                                        !shift.assigned.includes(m)
+                                    );
+
+                                    // WEIGHTING LOGIC
+                                    candidates.sort((a, b) => {
+                                        let scoreA = history[a.id];
+                                        let scoreB = history[b.id];
+                                        
+                                        // Bonus: Prefer Doubles?
+                                        if(preferDoubles && sIdx === 1) {
+                                            // If A was in early shift (shifts[0]), give massive priority (negative score)
+                                            if(shifts[0].assigned.includes(a)) scoreA -= 50;
+                                            if(shifts[0].assigned.includes(b)) scoreB -= 50;
+                                        }
+
+                                        // Random noise for variation
+                                        return (scoreA - scoreB) + (Math.random() - 0.5);
+                                    });
+
+                                    // Pick
+                                    for(let k=0; k < (needed - currentCount); k++) {
+                                        if(candidates[k]) {
+                                            shift.assigned.push(candidates[k]);
+                                            history[candidates[k].id]++;
+                                        }
+                                    }
+                                }
+                            });
+
+                            // Push to result
+                            shifts.forEach(s => {
+                                newEntries.push({
+                                    id: Utils.uid(),
+                                    date: dateStr,
+                                    time: s.time,
+                                    names: s.assigned.map(m => m.name),
+                                    aiGenerated: true
+                                });
+                            });
+
+                            currentDate.setDate(currentDate.getDate() + 7);
+                        }
+
+                        // Merge logic: Append or Replace? Let's Append for safety but warn in real app.
+                        Store.data.schedule = [...Store.data.schedule, ...newEntries];
+                        Store.save();
+                        
+                        loader.style.display = 'none';
+                        App.Wizard.next(3);
+                    }, 800);
+                }
+            },
+
+            Modals: {
+                open(id) {
+                    document.getElementById('modal-' + id).classList.add('open');
+                    // Reset fields if needed
+                    if(id === 'addEntry') {
+                        this.openEntry(null); // Create new
+                    }
+                },
+                close(id) {
+                    document.getElementById('modal-' + id).classList.remove('open');
+                },
+                openEntry(entryId) {
+                    const modal = document.getElementById('modal-entry');
+                    modal.classList.add('open');
+                    
+                    const selectContainer = document.getElementById('entry-team-select');
+                    selectContainer.innerHTML = '';
+                    
+                    // Render Chips for Selection
+                    Store.data.team.forEach(m => {
+                        const chip = document.createElement('div');
+                        chip.style.padding = '5px 10px';
+                        chip.style.borderRadius = '15px';
+                        chip.style.border = '1px solid #ddd';
+                        chip.style.cursor = 'pointer';
+                        chip.innerText = m.name;
+                        chip.onclick = () => {
+                            chip.classList.toggle('selected');
+                            chip.style.background = chip.classList.contains('selected') ? 'var(--c-primary-light)' : 'white';
+                            chip.style.borderColor = chip.classList.contains('selected') ? 'var(--c-primary)' : '#ddd';
+                        };
+                        chip.dataset.name = m.name;
+                        selectContainer.appendChild(chip);
+                    });
+
+                    if (entryId) {
+                        const entry = Store.data.schedule.find(e => e.id === entryId);
+                        document.getElementById('entry-id').value = entryId;
+                        document.getElementById('entry-date').value = entry.date;
+                        
+                        const timeSelect = document.getElementById('entry-time');
+                        if (entry.time.startsWith('17:00')) timeSelect.value = '17:00 - 18:30';
+                        else if (entry.time.startsWith('18:15')) timeSelect.value = '18:15 - 19:45';
+                        else {
+                            timeSelect.value = 'custom';
+                            document.getElementById('entry-time-custom').style.display = 'block';
+                            document.getElementById('entry-time-custom').value = entry.time;
+                        }
+
+                        // Preselect names
+                        const chips = selectContainer.querySelectorAll('div');
+                        entry.names.forEach(n => {
+                            chips.forEach(c => {
+                                if(c.dataset.name === n) c.click(); // toggle on
+                            });
+                        });
+
+                        document.getElementById('btn-delete-entry').style.display = 'inline-block';
+                    } else {
+                        // New Entry
+                        document.getElementById('entry-id').value = '';
+                        document.getElementById('entry-date').value = '';
+                        document.getElementById('btn-delete-entry').style.display = 'none';
+                    }
+                },
+                openMember(id) {
+                    // Similar logic for member editing
+                    const mem = Store.data.team.find(m => m.id === id);
+                    if(mem) {
+                        document.getElementById('mem-id').value = mem.id;
+                        document.getElementById('mem-name').value = mem.name;
+                        document.getElementById('mem-role').value = mem.role;
+                        document.getElementById('mem-shift').value = mem.shift;
+                        this.open('member');
+                    }
+                }
+            },
+
+            Actions: {
+                saveEntry() {
+                    const id = document.getElementById('entry-id').value;
+                    const date = document.getElementById('entry-date').value;
+                    let time = document.getElementById('entry-time').value;
+                    if(time === 'custom') time = document.getElementById('entry-time-custom').value;
+                    
+                    const chips = document.querySelectorAll('#entry-team-select div.selected');
+                    const names = Array.from(chips).map(c => c.dataset.name);
+                    
+                    if(!date || names.length === 0) return alert('Datum und Team fehlen.');
+
+                    if(id) {
+                        const idx = Store.data.schedule.findIndex(e => e.id === id);
+                        Store.data.schedule[idx] = { ...Store.data.schedule[idx], date, time, names };
+                    } else {
+                        Store.data.schedule.push({ id: Utils.uid(), date, time, names, aiGenerated: false });
+                    }
+                    
+                    Store.save();
+                    App.Modals.close('entry');
+                },
+                deleteEntryFromModal() {
+                    const id = document.getElementById('entry-id').value;
+                    if(confirm('Löschen?')) {
+                        Store.data.schedule = Store.data.schedule.filter(e => e.id !== id);
+                        Store.save();
+                        App.Modals.close('entry');
+                    }
+                }
+            },
+
+            Team: {
+                save() {
+                    const id = document.getElementById('mem-id').value;
+                    const name = document.getElementById('mem-name').value;
+                    const role = document.getElementById('mem-role').value;
+                    const shift = document.getElementById('mem-shift').value;
+                    
+                    if(id) {
+                        const idx = Store.data.team.findIndex(m => m.id === id);
+                        Store.data.team[idx] = { id, name, role, shift };
+                    } else {
+                        Store.data.team.push({ id: Utils.uid(), name, role, shift });
+                    }
+                    Store.save();
+                    App.Modals.close('member');
+                }
+            },
+
+            OCR: {
+                async process(input) {
+                    if (!input.files[0]) return;
+                    
+                    const preview = document.getElementById('ocr-preview');
+                    preview.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analysiere...';
+                    
+                    const file = input.files[0];
+                    // Check if CSV
+                    if(file.name.endsWith('.csv')) {
+                         const reader = new FileReader();
+                         reader.onload = (e) => this.parseCSV(e.target.result);
+                         reader.readAsText(file);
+                         return;
+                    }
+
+                    // Image (Tesseract)
+                    const worker = await Tesseract.createWorker('deu');
+                    const ret = await worker.recognize(file);
+                    await worker.terminate();
+
+                    this.parseText(ret.data.text);
+                },
+
+                parseText(text) {
+                    // Complex Regex for user's screenshot format
+                    // Looking for lines like "09.01.", names, times
+                    const lines = text.split('\n');
+                    let found = [];
+                    let lastDate = '??.??.';
+
+                    lines.forEach(line => {
+                        const dateMatch = line.match(/(\d{2}\.\d{2}\.?)/);
+                        if(dateMatch) lastDate = dateMatch[1];
+                        
+                        // Heuristic: If line contains names from our team list
+                        let foundNames = [];
+                        Store.data.team.forEach(m => {
+                            if(line.toLowerCase().includes(m.name.toLowerCase())) foundNames.push(m.name);
+                        });
+                        
+                        // Also check common aliases "Du" -> Kaspar
+                        if(line.includes("Du") || line.includes("Ich")) foundNames.push("Kaspar");
+
+                        if(foundNames.length > 0) {
+                            found.push({
+                                date: lastDate,
+                                time: line.includes('18:15') || line.includes('18:00') ? '18:15 - 19:45' : '17:00 - 18:30',
+                                names: [...new Set(foundNames)] // unique
+                            });
                         }
                     });
-
-                    // 2. The "Sticky" Logic:
-                    // If someone from "rotate" was assigned to early shift today, 
-                    // and they are capable of 'late' (or 'both'), 
-                    // PREFER them for late shift to save travel, IF needed.
-                    // (Simplified implementation: Check assignedToday)
-                    // ... 
-
-                    // 3. Fill with Rotate players (Fairness sort)
-                    let candidates = rotate.filter(p => 
-                        (p.pref === 'both' || p.pref === shift.type) && 
-                        !slotTeam.includes(p) &&
-                        (!assignedToday.includes(p.id) || p.pref === 'both') // Allow double shift if both
-                    );
                     
-                    // Sort by least usage + random factor
-                    candidates.sort((a,b) => (usage[a.id] - usage[b.id]) || (0.5 - Math.random()));
-
-                    while(slotTeam.length < 3 && candidates.length > 0) {
-                        const p = candidates.shift();
-                        slotTeam.push(p);
-                        usage[p.id]++;
-                        assignedToday.push(p.id);
-                    }
-
-                    // 4. Emergency Fallback
-                    if(slotTeam.length < 2 && emergency.length > 0) {
-                        slotTeam.push(emergency[0]);
-                    }
-
-                    newPlan.push({
-                        date: dateStr,
-                        time: shift.time,
-                        names: slotTeam.map(p => p.name).join(', ')
-                    });
-                });
-
-                date.setDate(date.getDate() + 7);
-            }
-
-            // Append or Replace? Let's Append.
-            Store.plan = [...Store.plan, ...newPlan];
-            Store.save();
-        }
-
-        /* --- 4. CRUD OPERATIONS --- */
-        let editingIndex = -1;
-
-        function openEditModal(idx = -1) {
-            editingIndex = idx;
-            document.getElementById('modalTitle').innerText = idx === -1 ? 'Neuer Eintrag' : 'Bearbeiten';
-            document.getElementById('btnDelete').style.display = idx === -1 ? 'none' : 'block';
-            
-            if(idx > -1) {
-                const entry = Store.plan[idx];
-                document.getElementById('inpDate').value = entry.date;
-                document.getElementById('inpTime').value = entry.time; // Might need handling for custom values
-                document.getElementById('inpNames').value = entry.names;
-            } else {
-                document.getElementById('inpDate').value = '';
-                document.getElementById('inpNames').value = '';
-            }
-            
-            // Generate Quick Tags
-            const tags = document.getElementById('quickAddTags');
-            tags.innerHTML = Store.team.map(t => 
-                `<span class="badge badge-blue" style="cursor:pointer;" onclick="addNameToInput('${t.name}')">+ ${t.name}</span>`
-            ).join('');
-
-            openModal('modal-edit');
-        }
-
-        function addNameToInput(name) {
-            const field = document.getElementById('inpNames');
-            let val = field.value;
-            if(val) val += ', ';
-            field.value = val + name;
-        }
-
-        function saveEntry() {
-            const entry = {
-                date: document.getElementById('inpDate').value,
-                time: document.getElementById('inpTime').value,
-                names: document.getElementById('inpNames').value
-            };
-            
-            if(editingIndex > -1) Store.plan[editingIndex] = entry;
-            else Store.plan.push(entry);
-            
-            Store.save();
-            closeModal('modal-edit');
-        }
-
-        function deleteEntry() {
-            if(editingIndex > -1) {
-                Store.plan.splice(editingIndex, 1);
-                Store.save();
-                closeModal('modal-edit');
-            }
-        }
-
-        // Team CRUD
-        function openTeamModal(id = null) {
-            const modal = document.getElementById('modal-team');
-            if(id) {
-                const member = Store.team.find(t => t.id === id);
-                document.getElementById('tmId').value = member.id;
-                document.getElementById('tmName').value = member.name;
-                document.getElementById('tmRole').value = member.role;
-                document.getElementById('tmPref').value = member.pref;
-                document.getElementById('btnTmDelete').style.display = 'block';
-            } else {
-                document.getElementById('tmId').value = '';
-                document.getElementById('tmName').value = '';
-                document.getElementById('btnTmDelete').style.display = 'none';
-            }
-            openModal('modal-team');
-        }
-
-        function saveTeamMember() {
-            const id = document.getElementById('tmId').value;
-            const data = {
-                id: id ? parseInt(id) : Date.now(),
-                name: document.getElementById('tmName').value,
-                role: document.getElementById('tmRole').value,
-                pref: document.getElementById('tmPref').value
-            };
-            
-            if(id) {
-                const idx = Store.team.findIndex(t => t.id == id);
-                Store.team[idx] = data;
-            } else {
-                Store.team.push(data);
-            }
-            Store.save();
-            closeModal('modal-team');
-        }
-
-        function deleteTeamMember() {
-            const id = parseInt(document.getElementById('tmId').value);
-            Store.team = Store.team.filter(t => t.id !== id);
-            Store.save();
-            closeModal('modal-team');
-        }
-
-        /* --- 5. EXTRAS: PDF, OCR, CSV, CHART --- */
-        
-        // PDF Generation
-        function openPDFModal() { openModal('modal-pdf'); }
-        function setPdfStyle(style) { 
-            Store.currentPdfStyle = style;
-            document.querySelectorAll('.pdf-opt').forEach(e => e.style.borderColor = 'var(--color-border)');
-            event.currentTarget.style.borderColor = 'var(--color-primary)';
-        }
-
-        function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const style = Store.currentPdfStyle;
-
-            // Styles config
-            let fillColor = [30, 58, 138]; // Blue
-            let textColor = [255, 255, 255];
-            
-            if(style === 'chess') { fillColor = [0,0,0]; }
-            if(style === 'minimal') { fillColor = [255,255,255]; textColor = [0,0,0]; }
-
-            // Header
-            if(style !== 'minimal') {
-                doc.setFillColor(...fillColor);
-                doc.rect(0, 0, 210, 40, 'F');
-                doc.setTextColor(...textColor);
-            } else {
-                doc.setTextColor(0,0,0);
-            }
-            
-            doc.setFontSize(22);
-            doc.text("Einsatzplan Jugendtraining", 14, 20);
-            doc.setFontSize(12);
-            doc.text("SC Brombach", 14, 28);
-            
-            // Footer Info (Range)
-            const dates = Store.plan.map(e => e.date);
-            const range = dates.length > 0 ? `${dates[0]} - ${dates[dates.length-1]}` : 'Unbekannt';
-            doc.setFontSize(10);
-            doc.text(`Zeitraum: ${range}`, 14, 36);
-
-            const body = Store.plan.map(e => [e.date, e.time, e.names]);
-
-            doc.autoTable({
-                startY: 45,
-                head: [['Datum', 'Uhrzeit', 'Team']],
-                body: body,
-                theme: style === 'minimal' ? 'plain' : 'grid',
-                headStyles: { 
-                    fillColor: style === 'minimal' ? [255,255,255] : fillColor, 
-                    textColor: style === 'minimal' ? [0,0,0] : textColor,
-                    lineColor: [0,0,0],
-                    lineWidth: style === 'chess' ? 0.1 : 0
+                    this.renderPreview(found);
                 },
-                styles: { fontSize: 10, cellPadding: 4 },
-            });
-            
-            doc.save('einsatzplan.pdf');
-            closeModal('modal-pdf');
-        }
 
-        // WhatsApp Export
-        function copyToWhatsApp() {
-            let text = "*📅 Einsatzplan SC Brombach*\n\n";
-            Store.plan.forEach(e => {
-                text += `*${e.date}* (${e.time})\n👉 ${e.names}\n\n`;
-            });
-            navigator.clipboard.writeText(text).then(() => alert("In Zwischenablage kopiert!"));
-        }
+                parseCSV(text) {
+                    // Simple semicolon parser
+                    const lines = text.split('\n');
+                    let found = [];
+                    lines.forEach(l => {
+                        const p = l.split(';');
+                        if(p.length >= 3) {
+                            found.push({
+                                date: p[0], time: p[1], names: p[2].split(',').map(n=>n.trim())
+                            });
+                        }
+                    });
+                    this.renderPreview(found);
+                },
 
-        // CSV Import with "Verschlaubisierung"
-        function openCSVModal() { openModal('modal-csv'); }
-        function runCSVImport() {
-            const raw = document.getElementById('csvText').value;
-            const lines = raw.split('\n');
-            lines.forEach(l => {
-                let parts = l.split(';');
-                if(parts.length >= 3) {
-                    let names = parts[2].trim();
-                    // AI correction
-                    names = names.replace(/Du/g, "Kaspar").replace(/Ich/g, "Kaspar").replace(/\+/g, ",");
-                    Store.plan.push({ date: parts[0].trim(), time: parts[1].trim(), names: names });
+                renderPreview(data) {
+                    const prev = document.getElementById('ocr-preview');
+                    prev.innerHTML = '';
+                    if(data.length === 0) {
+                        prev.innerText = "Nichts erkannt."; 
+                        return;
+                    }
+                    
+                    window.tempOCRData = data;
+                    
+                    data.forEach(row => {
+                        const d = document.createElement('div');
+                        d.style.borderBottom = '1px solid #eee';
+                        d.style.padding = '5px';
+                        d.innerText = `${row.date} | ${row.time} | ${row.names.join(', ')}`;
+                        prev.appendChild(d);
+                    });
+                    
+                    document.getElementById('ocr-confirm').disabled = false;
+                },
+
+                confirm() {
+                    if(window.tempOCRData) {
+                        window.tempOCRData.forEach(row => {
+                            Store.data.schedule.push({
+                                id: Utils.uid(),
+                                date: row.date,
+                                time: row.time,
+                                names: row.names,
+                                aiGenerated: false
+                            });
+                        });
+                        Store.save();
+                        App.Modals.close('ocr');
+                    }
                 }
-            });
-            Store.save();
-            closeModal('modal-csv');
-        }
+            },
 
-        // OCR Scan (WhatsApp Screenshot optimized)
-        function openScanModal() { openModal('modal-scan'); }
-        async function runOCR(input) {
-            if(!input.files[0]) return;
-            const status = document.getElementById('scanStatus');
-            status.innerText = "⏳ Analysiere Bild...";
-            
-            const worker = await Tesseract.createWorker('deu');
-            const ret = await worker.recognize(input.files[0]);
-            
-            // Custom Parse Logic for WhatsApp
-            // WhatsApp dates often appear as headers, followed by text
-            const text = ret.data.text;
-            console.log(text);
-            status.innerText = "✅ Fertig! Daten werden verarbeitet.";
-            
-            // Regex for dates DD.MM.
-            const lines = text.split('\n');
-            let lastDate = '??.??.';
-            
-            lines.forEach(line => {
-                const dateMatch = line.match(/(\d{2}\.\d{2}\.?)/);
-                if(dateMatch) lastDate = dateMatch[1];
-                
-                // If line contains known names, add it
-                const knownNames = Store.team.map(t => t.name);
-                const hasName = knownNames.some(n => line.includes(n));
-                
-                if(hasName && line.length > 5) {
-                    Store.plan.push({
-                        date: lastDate,
-                        time: "Scan",
-                        names: line.replace(dateMatch ? dateMatch[0] : '', '').trim()
+            Stats: {
+                chartInstance: null,
+                render() {
+                    const ctx = document.getElementById('statsChart').getContext('2d');
+                    
+                    // Aggregate Data
+                    const counts = {};
+                    Store.data.team.forEach(m => counts[m.name] = 0);
+                    Store.data.schedule.forEach(e => {
+                        e.names.forEach(n => {
+                            if(counts[n] !== undefined) counts[n]++;
+                            // Handle unknown names
+                            else counts[n] = 1; 
+                        });
+                    });
+
+                    // Calculate Fairness (Std Dev)
+                    const values = Object.values(counts);
+                    const mean = values.reduce((a,b)=>a+b,0) / values.length;
+                    const variance = values.reduce((a,b)=>a + Math.pow(b-mean,2), 0) / values.length;
+                    document.getElementById('fairness-score').innerText = Math.sqrt(variance).toFixed(2);
+
+                    if(this.chartInstance) this.chartInstance.destroy();
+                    
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(counts),
+                            datasets: [{
+                                label: 'Einsätze',
+                                data: Object.values(counts),
+                                backgroundColor: '#2563eb',
+                                borderRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                        }
                     });
                 }
-            });
+            },
 
-            await worker.terminate();
-            Store.save();
-            setTimeout(() => closeModal('modal-scan'), 1000);
-        }
+            Export: {
+                pdf(design) {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    // Configs
+                    const configs = {
+                        standard: { headColor: [37, 99, 235], theme: 'grid' },
+                        chess: { headColor: [0,0,0], theme: 'grid', lineColor: [0,0,0], lineWidth: 0.1 },
+                        list: { headColor: [255,255,255], textColor: [0,0,0], theme: 'plain' }
+                    };
+                    const cfg = configs[design];
 
-        // Charts
-        function setupCharts() {
-            const ctx = document.getElementById('statsChart');
-            if(!ctx) return;
-            
-            // Calculate Stats
-            const counts = {};
-            Store.team.forEach(t => counts[t.name] = 0);
-            Store.plan.forEach(e => {
-                Store.team.forEach(t => {
-                    if(e.names.includes(t.name)) counts[t.name]++;
-                });
-            });
+                    // Header
+                    doc.setFontSize(18);
+                    if(design === 'chess') doc.setFont('helvetica', 'bold');
+                    doc.text("SC Brombach - Einsatzplan", 14, 20);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    const range = Store.data.schedule.length > 0 
+                        ? `${Store.data.schedule[0].date} - ${Store.data.schedule[Store.data.schedule.length-1].date}` 
+                        : 'Leer';
+                    doc.text(`Zeitraum: ${range}`, 14, 28);
 
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        label: 'Anzahl Einsätze',
-                        data: Object.values(counts),
-                        backgroundColor: '#2563eb',
-                        borderRadius: 4
-                    }]
+                    // Table
+                    doc.autoTable({
+                        startY: 35,
+                        head: [['Datum', 'Uhrzeit', 'Team']],
+                        body: Store.data.schedule.map(s => [s.date, s.time, s.names.join(', ')]),
+                        theme: cfg.theme,
+                        headStyles: { 
+                            fillColor: cfg.headColor || [255,255,255], 
+                            textColor: design==='list'?[0,0,0]:[255,255,255] 
+                        },
+                        styles: { fontSize: 10, cellPadding: 4 },
+                        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 25 }, 1: { cellWidth: 35 } }
+                    });
+
+                    // Footer
+                    const pageCount = doc.internal.getNumberOfPages();
+                    for(let i = 1; i <= pageCount; i++) {
+                        doc.setPage(i);
+                        doc.setFontSize(8);
+                        doc.text('Erstellt mit Einsatzplaner Pro v4', 14, doc.internal.pageSize.height - 10);
+                    }
+
+                    doc.save(`plan_${design}.pdf`);
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                csv() {
+                    // Using SheetJS if available, else simple
+                    let csv = "Datum;Uhrzeit;Namen\n";
+                    Store.data.schedule.forEach(r => {
+                        csv += `${r.date};${r.time};${r.names.join(',')}\n`;
+                    });
+                    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "plan.csv";
+                    link.click();
+                },
+                whatsapp() {
+                    let text = "*Einsatzplan SC Brombach*\n\n";
+                    Store.data.schedule.forEach(r => {
+                        text += `📅 ${r.date} (${r.time})\n👥 ${r.names.join(', ')}\n\n`;
+                    });
+                    // Copy to clipboard fallback
+                    navigator.clipboard.writeText(text).then(() => alert("Text in Zwischenablage kopiert!"));
                 }
-            });
-        }
-        function updateStats() {
-            // Chart update logic would go here in a real reactive framework
-            // For now, re-init or static load is fine
-        }
-
-        /* --- 6. UTILS --- */
-        function switchView(id) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-' + id).classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('nav-' + id).classList.add('active');
-            
-            if(id === 'dashboard') location.reload(); // Quick dirty refresh for stats
-        }
-        function openModal(id) { document.getElementById(id).classList.add('open'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-        
-        function filterTable(query) {
-            const rows = document.querySelectorAll('#planTableBody tr');
-            rows.forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
-            });
-        }
-        
-        function toggleTheme() {
-            document.body.classList.toggle('dark-theme');
-            // CSS Variables handled in media query, simpler to just invert colors manually if needed
-            // But here we rely on CSS vars.
-        }
-
-        function hardReset() {
-            if(confirm("Bist du sicher? Alles wird gelöscht.")) {
-                localStorage.clear();
-                location.reload();
             }
-        }
+        };
 
         // Start
-        init();
+        window.onload = () => App.init();
 
     </script>
 </body>
