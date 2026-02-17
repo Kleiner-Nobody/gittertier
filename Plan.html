@@ -1098,28 +1098,41 @@
                         if (step === 2) this.renderAvailability();
                     },
                     renderAvailability() {
-                        const container = document.getElementById('gen-availability-list');
-                        container.innerHTML = '';
-                        this.tempAvailability = [];
-                        Store.getTeam().forEach(m => {
-                            const div = document.createElement('div');
-                            div.className = 'member-card';
-                            div.style.cursor = 'pointer';
-                            const cb = document.createElement('input');
-                            cb.type = 'checkbox';
-                            cb.checked = true;
-                            cb.style.width='22px'; cb.style.height='22px';
-                            cb.onclick = (e) => e.stopPropagation();
-                            div.onclick = () => {
-                                cb.checked = !cb.checked;
-                                div.style.opacity = cb.checked ? '1' : '0.6';
-                            };
-                            div.innerHTML = `<span style="font-weight:600;">${m.name}</span>`;
-                            div.appendChild(cb);
-                            container.appendChild(div);
-                            this.tempAvailability.push(m.id); // default alle verfügbar
-                            cb.checked = true;
-                        });
+    const container = document.getElementById('gen-availability-list');
+    container.innerHTML = '';
+    this.tempAvailability = [];
+    Store.getTeam().forEach(m => {
+        const label = document.createElement('label');
+        label.className = 'member-card';
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '12px';
+        label.style.cursor = 'pointer';
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = true;
+        cb.style.width = '24px';
+        cb.style.height = '24px';
+        cb.style.margin = '0';
+
+        // Checkbox-Änderung direkt nutzen, kein zusätzliches onclick nötig
+        cb.addEventListener('change', (e) => {
+            // Hier kannst du später den Auswahlstatus speichern
+            console.log(m.id, e.target.checked);
+        });
+
+        const nameSpan = document.createElement('span');
+        nameSpan.style.fontWeight = '600';
+        nameSpan.innerText = m.name;
+
+        label.appendChild(cb);
+        label.appendChild(nameSpan);
+        container.appendChild(label);
+
+        // Standardmäßig alle verfügbar
+        this.tempAvailability.push({ id: m.id, checked: true });
+    });
                     },
                     generate() {
                         const loader = document.getElementById('loader');
