@@ -2,17 +2,17 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Einsatzplaner Pro v5 - SC Brombach</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SC Brombach Einsatzplaner Pro v5.1</title>
+    <!-- Fonts, Icons, Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* --- Gittertier Pro Design System (erweitert) --- */
+        /* ---------- Gittertier Pro Design System (angepasst für Mobile) ---------- */
         :root {
             --c-bg: #f3f4f6;
             --c-surface: #ffffff;
@@ -20,689 +20,1642 @@
             --c-text-muted: #6b7280;
             --c-primary: #2563eb;
             --c-primary-hover: #1d4ed8;
-            --c-danger: #ef4444;
+            --c-primary-light: #eff6ff;
             --c-success: #10b981;
+            --c-warning: #f59e0b;
+            --c-danger: #ef4444;
             --c-border: #e5e7eb;
-            --r-radius: 12px;
-            --s-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --header-h: 60px;
+            --nav-h: 65px;
+            --safe-bottom: env(safe-area-inset-bottom, 0);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: var(--font-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--c-bg);
             color: var(--c-text);
             margin: 0;
-            padding: 20px;
-            line-height: 1.5;
-        }
-
-        /* --- Layout & Container --- */
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 24px;
-            align-items: start;
-        }
-
-        @media (max-width: 1024px) {
-            .app-container { grid-template-columns: 1fr; }
-        }
-
-        /* --- Cards --- */
-        .card {
-            background: var(--c-surface);
-            border-radius: var(--r-radius);
-            box-shadow: var(--s-shadow);
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid var(--c-border);
-            transition: transform 0.2s ease;
-        }
-        
-        /* --- Typography --- */
-        h1, h2, h3 { margin-top: 0; color: var(--c-text); font-weight: 700; }
-        h1 { font-size: 1.8rem; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
-        h2 { font-size: 1.25rem; border-bottom: 2px solid var(--c-bg); padding-bottom: 0.5rem; margin-bottom: 1rem; }
-
-        /* --- Form Elements --- */
-        .form-group { margin-bottom: 16px; }
-        label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; color: var(--c-text-muted); }
-        
-        input[type="text"], input[type="date"], select, textarea {
+            padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
+            min-height: 100vh;
+            overflow-x: hidden;
             width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--c-border);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            background: #fff;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--c-primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            position: relative;
         }
 
-        /* --- MOBILE CHECKBOX FIX START --- */
-        /* Spezifische Anpassungen für bessere Klickbarkeit auf Touch-Geräten */
-        .checkbox-wrapper {
+        /* ---------- Animationen ---------- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* ---------- Header ---------- */
+        header {
+            height: var(--header-h);
+            background: var(--c-surface);
+            border-bottom: 1px solid var(--c-border);
             display: flex;
             align-items: center;
-            padding: 8px 0; /* Mehr vertikaler Platz */
-            cursor: pointer;
+            justify-content: space-between;
+            padding: 0 8px;
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
         }
 
-        input[type="checkbox"] {
-            width: 24px; /* Größere Checkbox */
-            height: 24px;
-            margin-right: 12px;
-            cursor: pointer;
-            accent-color: var(--c-primary); /* Modernes Styling */
-            transform: scale(1.1); /* Leichte Vergrößerung */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--c-text);
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
         }
-        
-        /* Optional: Wenn Label direkt nach Input kommt */
-        input[type="checkbox"] + label {
-            display: inline-block;
-            vertical-align: middle;
-            margin-bottom: 0;
-            cursor: pointer;
-            padding: 8px 0; /* Macht den Text auch klickbar mit Touch-Puffer */
-            width: calc(100% - 40px); /* Füllt den Rest der Zeile */
-        }
-        /* --- MOBILE CHECKBOX FIX END --- */
+        .brand img { height: 28px; width: auto; border-radius: 4px; }
+        .brand span { color: var(--c-primary); }
 
-        /* --- Buttons --- */
+        .plan-selector {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: var(--c-bg);
+            padding: 2px 6px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            max-width: 140px;
+        }
+        .plan-selector select {
+            background: transparent;
+            border: none;
+            font-weight: 600;
+            color: var(--c-text);
+            padding: 4px;
+            font-size: 0.75rem;
+            max-width: 90px;
+        }
+        .plan-selector button { padding: 4px; }
+
+        /* ---------- Mobile Bottom Navigation ---------- */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--c-surface);
+            border-top: 1px solid var(--c-border);
+            height: calc(var(--nav-h) + var(--safe-bottom));
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            padding-bottom: var(--safe-bottom);
+            box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--c-text-muted);
+            font-size: 0.65rem;
+            gap: 2px;
+            background: none;
+            border: none;
+            height: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 0 2px;
+        }
+        .nav-item i { font-size: 1.3rem; }
+        .nav-item.active { color: var(--c-primary); }
+        .nav-item span { font-size: 0.6rem; }
+
+        /* ---------- Desktop Navigation ---------- */
+        .desktop-nav {
+            display: none;
+            gap: 12px;
+        }
+        .desktop-nav a {
+            text-decoration: none;
+            color: var(--c-text-muted);
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 0;
+            font-size: 0.9rem;
+        }
+        .desktop-nav a:hover,
+        .desktop-nav a.active {
+            color: var(--c-primary);
+            border-bottom: 2px solid var(--c-primary);
+        }
+
+        /* ---------- Main Container ---------- */
+        main {
+            max-width: 1000px;
+            margin: 8px auto;
+            padding: 0 8px;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        .view { display: none; animation: fadeIn 0.25s ease-out; }
+        .view.active { display: block; }
+
+        /* ---------- Cards ---------- */
+        .card {
+            background: var(--c-surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--c-border);
+            padding: 12px;
+            margin-bottom: 12px;
+            width: 100%;
+            overflow-x: auto;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--c-border);
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .card-header h2 {
+            font-size: 1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ---------- Formulare ---------- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 500px) {
+            .form-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .full-width { grid-column: 1 / -1; }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--c-text-muted);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: #fff;
+            transition: 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--c-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            outline: none;
+        }
+
+        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 10px 20px;
+            gap: 4px;
+            padding: 10px 12px;
             border-radius: 8px;
             font-weight: 600;
-            cursor: pointer;
+            font-size: 0.85rem;
             border: none;
-            transition: all 0.2s;
-            gap: 8px;
-            font-size: 0.95rem;
-            text-decoration: none;
-        }
-        
-        .btn-primary { background-color: var(--c-primary); color: white; }
-        .btn-primary:hover { background-color: var(--c-primary-hover); transform: translateY(-1px); }
-        
-        .btn-danger { background-color: white; color: var(--c-danger); border: 1px solid var(--c-danger); }
-        .btn-danger:hover { background-color: #fef2f2; }
-        
-        .btn-ghost { background-color: transparent; color: var(--c-text-muted); }
-        .btn-ghost:hover { background-color: var(--c-bg); color: var(--c-text); }
-
-        .btn-block { width: 100%; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-
-        /* --- Team Grid --- */
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            margin-top: 12px;
-        }
-
-        .team-member-card {
-            background: var(--c-bg);
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            user-select: none; /* Verhindert Textmarkierung beim schnellen Tippen */
-            transition: background 0.2s;
-        }
-        
-        .team-member-card:active {
-            background: #e5e7eb;
-        }
-
-        .team-member-card label {
-            margin-bottom: 0;
             cursor: pointer;
-            flex-grow: 1;
-            font-weight: 600;
+            transition: 0.2s;
+            width: 100%;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
             color: var(--c-text);
         }
-
-        /* --- Drag & Drop Zone --- */
-        .drop-zone {
-            border: 2px dashed var(--c-border);
-            border-radius: var(--r-radius);
-            padding: 40px;
-            text-align: center;
+        .btn-primary { background: var(--c-primary); color: white; border: none; }
+        .btn-primary:active { background: var(--c-primary-hover); }
+        .btn-secondary { background: white; border: 1px solid var(--c-border); color: var(--c-text); }
+        .btn-danger { background: #fee2e2; color: var(--c-danger); border-color: #fecaca; }
+        .btn-ghost {
+            background: transparent;
             color: var(--c-text-muted);
-            transition: all 0.2s;
-            cursor: pointer;
-            background: #fafafa;
+            padding: 6px;
+            width: auto;
+            border: none;
         }
-        
-        .drop-zone.drag-over {
-            border-color: var(--c-primary);
-            background: rgba(37, 99, 235, 0.05);
-            color: var(--c-primary);
-        }
+        .btn-ghost:active { color: var(--c-primary); background: var(--c-primary-light); }
 
-        /* --- Schedule Table --- */
-        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--c-border); }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--c-border); }
-        th { background: #f9fafb; font-weight: 600; color: var(--c-text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #f9fafb; }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 99px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .names-list { display: flex; flex-wrap: wrap; gap: 4px; }
-        .name-tag { 
-            background: #dbeafe; 
-            color: #1e40af; 
-            padding: 2px 8px; 
-            border-radius: 4px; 
-            font-size: 0.85rem; 
-            display: inline-flex;
-            align-items: center;
+        /* ---------- Wizard Steps ---------- */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; animation: slideIn 0.3s ease; }
+        .step-indicators {
+            display: flex;
             gap: 4px;
+            margin-bottom: 16px;
         }
-        
-        .action-cell { text-align: right; }
-        .icon-btn { 
-            background: none; 
-            border: none; 
-            cursor: pointer; 
-            color: var(--c-text-muted); 
-            padding: 4px; 
-            transition: color 0.2s;
+        .step-dot {
+            flex: 1;
+            height: 4px;
+            background: var(--c-border);
+            border-radius: 2px;
         }
-        .icon-btn:hover { color: var(--c-primary); }
-        .icon-btn.delete:hover { color: var(--c-danger); }
+        .step-dot.active { background: var(--c-primary); }
+        .step-dot.completed { background: var(--c-success); }
 
-        /* --- Stats Chart --- */
-        .chart-container { height: 300px; width: 100%; position: relative; }
-
-        /* --- Utils --- */
-        .hidden { display: none !important; }
-        .mt-4 { margin-top: 1.5rem; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-
-        /* Toast Notification */
-        #toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #1f2937;
-            color: white;
-            padding: 12px 24px;
+        /* ---------- Team-Liste ---------- */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        .member-card {
+            background: #f9fafb;
+            border: 1px solid var(--c-border);
+            padding: 8px 10px;
             border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-            transform: translateY(150%);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+            cursor: default;
+        }
+        .member-card .info { flex: 1; min-width: 0; margin-right: 6px; }
+        .member-card .name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .member-card .details {
+            font-size: 0.7rem;
+            color: var(--c-text-muted);
+        }
+        .member-actions {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .role-badge {
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            border-radius: 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .role-fixed { background: #dbeafe; color: #1e40af; }
+        .role-rotate { background: #e0e7ff; color: #4338ca; }
+        .role-emergency { background: #fee2e2; color: #991b1b; }
+
+        /* ---------- Tabelle (horizontal scrollbar nur wenn nötig) ---------- */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--c-border);
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 450px;
+        }
+        th {
+            background: #f9fafb;
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--c-text-muted);
+            border-bottom: 1px solid var(--c-border);
+        }
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--c-border);
+            vertical-align: middle;
+            font-size: 0.85rem;
+        }
+        tr:hover td { background: #f9fafb; }
+        .conflict-row { background-color: #fef2f2 !important; border-left: 4px solid var(--c-danger); }
+
+        /* ---------- Modals ---------- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(3px);
+            z-index: 200;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            transition: opacity 0.2s;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--c-surface);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px 20px 0 0;
+            padding: 16px;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        @media (min-width: 640px) {
+            .modal-overlay { align-items: center; }
+            .modal {
+                border-radius: var(--radius);
+                width: 90%;
+                max-width: 500px;
+            }
+        }
+
+        /* ---------- Checkboxen & Custom Elements ---------- */
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 5px;
+        }
+        .checkbox-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 4px;
+            background: #f9fafb;
+            padding: 6px 10px;
+            border-radius: 30px;
+            border: 1px solid var(--c-border);
+            font-size: 0.8rem;
         }
-        #toast.show { transform: translateY(0); }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            accent-color: var(--c-primary);
+        }
+
+        .chip {
+            display: inline-block;
+            background: var(--c-primary-light);
+            color: var(--c-primary);
+            padding: 2px 8px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            margin: 2px;
+            border: 1px solid var(--c-primary);
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--c-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            color: var(--c-text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fafafa;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--c-primary);
+            background: var(--c-primary-light);
+        }
+
+        /* ---------- Loader ---------- */
+        .loader-overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 300;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .loader-spinner {
+            width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top: 4px solid var(--c-primary);
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 12px;
+        }
+
+        /* ---------- Responsive Anpassungen ---------- */
+        @media (max-width: 400px) {
+            .brand { font-size: 0.8rem; max-width: 100px; }
+            .btn { padding: 8px; font-size: 0.8rem; }
+            .member-card .name { font-size: 0.85rem; }
+            .modal { padding: 12px; }
+        }
+        @media (min-width: 640px) {
+            .mobile-nav { display: none; }
+            body { padding-bottom: 0; }
+            .desktop-nav { display: flex; }
+            .plan-selector select { max-width: 150px; }
+        }
+        .no-wrap { white-space: nowrap; }
+        .text-small { font-size: 0.7rem; }
     </style>
 </head>
 <body>
+    <div id="loader" class="loader-overlay">
+        <div class="loader-spinner"></div>
+        <div id="loader-text">Arbeite...</div>
+    </div>
 
-    <div id="toast"><i class="fas fa-info-circle"></i> <span id="toast-msg">Nachricht</span></div>
+    <header>
+        <div class="brand">
+            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="SCB">
+            <div>SC Brombach <span>v5.1</span></div>
+        </div>
+        <div class="plan-selector">
+            <i class="fa-solid fa-calendar-alt"></i>
+            <select id="plan-select" onchange="App.Plan.switch(this.value)">
+                <!-- dynamisch befüllt -->
+            </select>
+            <button class="btn-ghost" onclick="App.Modals.open('planManager')" title="Pläne verwalten"><i class="fa-solid fa-gear"></i></button>
+        </div>
+        <nav class="desktop-nav">
+            <a data-view="dashboard">Übersicht</a>
+            <a data-view="team">Team</a>
+            <a data-view="wizard">Generator</a>
+            <a data-view="stats">Statistik</a>
+        </nav>
+        <button class="btn btn-primary" onclick="App.Modals.open('export')" style="width:auto; padding:5px 10px;">
+            <i class="fa-solid fa-download"></i><span class="no-wrap">Export</span>
+        </button>
+    </header>
 
-    <div class="app-container">
-        <aside>
-            <div class="card">
-                <h2><i class="fas fa-users"></i> Team & Daten</h2>
-                
-                <div class="form-group">
-                    <label>Import (Bild, Excel, PDF)</label>
-                    <div class="drop-zone" id="drop-zone">
-                        <i class="fas fa-cloud-upload-alt fa-2x"></i>
-                        <p style="margin: 8px 0 0; font-size: 0.9rem;">Datei hier ablegen oder klicken</p>
-                        <input type="file" id="file-input" hidden accept="image/*,.pdf,.xlsx,.xls,.csv">
-                    </div>
+    <main>
+        <!-- Dashboard -->
+        <div id="view-dashboard" class="view active">
+            <div class="form-grid" style="grid-template-columns:1fr 1fr; margin-bottom:8px;">
+                <div class="card" style="padding:12px; background:linear-gradient(135deg, #2563eb, #1e40af); color:white; border:none;">
+                    <div style="font-size:0.75rem; opacity:0.9;">Nächster Termin</div>
+                    <div id="next-shift-display" style="font-size:1.2rem; font-weight:700;">--.--.</div>
+                    <div id="next-shift-team" style="font-size:0.75rem;">Keine Daten</div>
                 </div>
-
-                <div class="form-group">
-                    <div class="flex-between">
-                        <label>Team Mitglieder</label>
-                        <button class="btn btn-ghost btn-sm" onclick="App.addTeamMember()" title="Manuell hinzufügen">
-                            <i class="fas fa-plus"></i>
-                        </button>
+                <div class="card" style="padding:12px; display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <div style="font-size:0.75rem; color:var(--c-text-muted);">Schichten</div>
+                        <div id="total-shifts-count" style="font-size:1.6rem; font-weight:700;">0</div>
                     </div>
-                    <div id="team-list" class="team-grid">
-                        <div style="grid-column: 1/-1; text-align: center; color: var(--c-text-muted); padding: 20px;">
-                            Kein Team geladen.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group mt-4">
-                    <button class="btn btn-danger btn-block" onclick="App.clearData()">
-                        <i class="fas fa-trash-alt"></i> Alle Daten löschen
-                    </button>
+                    <i class="fa-solid fa-calendar-check" style="font-size:1.8rem; color:#cbd5e1;"></i>
                 </div>
             </div>
 
             <div class="card">
-                <h2><i class="fas fa-cog"></i> Planung</h2>
-                <div class="form-group">
-                    <label>Datum / Event</label>
-                    <input type="text" id="event-name" placeholder="z.B. Heimspiel vs. X">
-                </div>
-                <div class="form-group">
-                    <label>Zeitraum</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="time" id="time-start" value="10:00">
-                        <span style="align-self: center;">-</span>
-                        <input type="time" id="time-end" value="18:00">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-list"></i> Einsatzplan <span id="current-plan-name"></span></h2>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-ghost" onclick="App.Modals.open('ocr')"><i class="fa-solid fa-camera"></i> Scan</button>
+                        <button class="btn-ghost" onclick="App.Modals.open('entry')"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Schichten generieren (Intervall in Std)</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="number" id="interval" value="2" min="0.5" step="0.5">
-                        <button class="btn btn-primary" onclick="App.generateSlots()">Generieren</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h2><i class="fas fa-file-export"></i> Export</h2>
-                <div class="btn-group">
-                    <button class="btn btn-primary btn-block" onclick="App.exportPDF()">
-                        <i class="fas fa-file-pdf"></i> Als PDF speichern
-                    </button>
-                    <button class="btn btn-ghost btn-block" onclick="App.exportJSON()">
-                        <i class="fas fa-code"></i> JSON Backup
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-        <main>
-            <div class="card">
-                <div class="flex-between">
-                    <h1>Einsatzplan</h1>
-                    <div style="text-align: right;">
-                        <span style="display: block; font-size: 0.8rem; color: var(--c-text-muted);">Fairness-Score (Niedriger ist besser)</span>
-                        <span id="fairness-score" style="font-size: 1.5rem; font-weight: 700; color: var(--c-success);">0.00</span>
-                    </div>
-                </div>
-
                 <div class="table-container">
-                    <table id="schedule-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 150px;">Zeit</th>
-                                <th>Eingeteiltes Personal</th>
-                                <th style="width: 80px;">Aktion</th>
-                            </tr>
-                        </thead>
-                        <tbody id="schedule-body">
-                            <tr><td colspan="3" style="text-align:center; padding: 40px;">Noch keine Schichten generiert.</td></tr>
-                        </tbody>
+                    <table id="main-table">
+                        <thead><tr><th>Datum</th><th>Zeit</th><th>Team</th><th></th></tr></thead>
+                        <tbody id="table-body"></tbody>
                     </table>
                 </div>
-                
-                <div class="mt-4" style="background: #eef2ff; padding: 16px; border-radius: 8px; border: 1px solid #c7d2fe;">
-                    <h3 style="margin-bottom: 8px; font-size: 1rem; color: #3730a3;"><i class="fas fa-magic"></i> Auto-Fill</h3>
-                    <p style="font-size: 0.9rem; margin-bottom: 12px; color: #4338ca;">Automatische Verteilung basierend auf Fairness.</p>
-                    <button class="btn btn-primary" onclick="App.autoFill()">Automatisch verteilen</button>
+                <div id="empty-state" style="padding:30px; text-align:center; color:var(--c-text-muted); display:none;">
+                    <i class="fa-solid fa-clipboard-list" style="font-size:2.5rem; opacity:0.3;"></i>
+                    <p>Keine Einträge.</p>
+                    <button class="btn btn-secondary" onclick="App.nav('wizard')" style="width:auto;">Generator starten</button>
                 </div>
             </div>
+        </div>
 
+        <!-- Team View -->
+        <div id="view-team" class="view">
             <div class="card">
-                <h2>Statistik</h2>
-                <div class="chart-container">
-                    <canvas id="statsChart"></canvas>
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-users"></i> Teilnehmer</h2>
+                    <button class="btn btn-primary" onclick="App.Modals.open('member')" style="width:auto;">+ Neu</button>
+                </div>
+                <div id="team-grid" class="team-grid"></div>
+            </div>
+        </div>
+
+        <!-- Wizard View -->
+        <div id="view-wizard" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-wand-magic-sparkles"></i> KI-Planer</h2>
+                </div>
+                <div class="step-indicators">
+                    <div class="step-dot active" id="dot-1"></div>
+                    <div class="step-dot" id="dot-2"></div>
+                    <div class="step-dot" id="dot-3"></div>
+                </div>
+                <!-- Step 1 -->
+                <div id="step-1" class="wizard-step active">
+                    <h3 style="font-size:1rem;">Zeitraum & Einstellungen</h3>
+                    <div class="form-grid">
+                        <div><label>Start (Freitag)</label><input type="date" id="gen-start-date"></div>
+                        <div><label>Wochen</label><select id="gen-duration"><option value="4">4</option><option value="8" selected>8</option><option value="12">12</option></select></div>
+                        <div class="full-width">
+                            <label>Optionen</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item"><input type="checkbox" id="gen-pref-doubles" checked> Doppelschichten bevorzugen</label>
+                                <label class="checkbox-item"><input type="checkbox" id="gen-random-fairness" checked> Zufällig fair</label>
+                            </div>
+                        </div>
+                        <div class="full-width">
+                            <label>Personen pro Schicht (min/max)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="number" id="gen-min" min="1" max="5" value="2" style="flex:1;">
+                                <input type="number" id="gen-max" min="1" max="5" value="3" style="flex:1;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="App.Wizard.next(2)" style="margin-top:12px;">Weiter</button>
+                </div>
+                <!-- Step 2 -->
+                <div id="step-2" class="wizard-step">
+                    <h3 style="font-size:1rem;">Verfügbarkeit anpassen</h3>
+                    <p class="text-small">Wähle Personen ab, die in diesem Zeitraum NICHT können.</p>
+                    <div id="gen-availability-list" class="team-grid" style="max-height:300px; overflow-y:auto;"></div>
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <button class="btn btn-secondary" onclick="App.Wizard.next(1)">Zurück</button>
+                        <button class="btn btn-primary" onclick="App.Wizard.generate()">Plan generieren</button>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div id="step-3" class="wizard-step">
+                    <div style="text-align:center; padding:20px;">
+                        <i class="fa-solid fa-check-circle" style="font-size:3rem; color:var(--c-success);"></i>
+                        <h3 style="font-size:1.1rem;">Plan erstellt!</h3>
+                        <button class="btn btn-primary" onclick="App.nav('dashboard')">Zum Dashboard</button>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
+
+        <!-- Stats View -->
+        <div id="view-stats" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Einsätze pro Person</h2>
+                </div>
+                <div style="height:250px;"><canvas id="statsChart"></canvas></div>
+                <div class="card-header" style="margin-top:12px;"><h2>Fairness-Score</h2></div>
+                <p>Standardabweichung: <strong id="fairness-score">0</strong></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-house"></i><span>Home</span></button>
+        <button class="nav-item" data-view="team"><i class="fa-solid fa-users"></i><span>Team</span></button>
+        <button class="nav-item" data-view="wizard"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Planen</span></button>
+        <button class="nav-item" data-view="stats"><i class="fa-solid fa-chart-simple"></i><span>Stats</span></button>
+    </nav>
+
+    <!-- Modals -->
+    <!-- Modal: Eintrag bearbeiten -->
+    <div id="modal-entry" class="modal-overlay">
+        <div class="modal">
+            <div class="card-header"><h3>Eintrag</h3><button class="btn-ghost" onclick="App.Modals.close('entry')">&times;</button></div>
+            <input type="hidden" id="entry-id">
+            <div class="form-grid">
+                <div><label>Datum (DD.MM.)</label><input type="text" id="entry-date" placeholder="z.B. 09.01."></div>
+                <div><label>Zeit</label>
+                    <select id="entry-time">
+                        <option value="17:00 - 18:30">Früh (17:00 - 18:30)</option>
+                        <option value="18:15 - 19:45">Spät (18:15 - 19:45)</option>
+                        <option value="custom">Benutzerdefiniert</option>
+                    </select>
+                    <input type="text" id="entry-time-custom" style="display:none; margin-top:5px;" placeholder="z.B. 16:00 - 17:30">
+                </div>
+                <div class="full-width"><label>Teilnehmer</label><div id="entry-team-select" class="checkbox-group"></div></div>
+                <button class="btn btn-primary" onclick="App.Actions.saveEntry()">Speichern</button>
+                <button class="btn btn-danger" id="btn-delete-entry" style="display:none;" onclick="App.Actions.deleteEntryFromModal()">Löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Mitglied bearbeiten / neu -->
+    <div id="modal-member" class="modal-overlay">
+        <div class="modal">
+            <div class="card-header"><h3>Mitglied</h3><button class="btn-ghost" onclick="App.Modals.close('member')">&times;</button></div>
+            <input type="hidden" id="mem-id">
+            <div class="form-grid">
+                <input type="text" id="mem-name" placeholder="Name">
+                <select id="mem-role"><option value="fixed">Stamm</option><option value="rotate" selected>Springer</option><option value="emergency">Notfall</option></select>
+                <select id="mem-shift"><option value="both">Beide Schichten</option><option value="early">Nur Früh</option><option value="late">Nur Spät</option></select>
+                <button class="btn btn-primary" onclick="App.Team.save()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Export -->
+    <div id="modal-export" class="modal-overlay">
+        <div class="modal">
+            <h3>Exportieren</h3>
+            <div class="form-grid" style="grid-template-columns:1fr;">
+                <button class="btn btn-secondary" onclick="App.Export.pdf('standard')"><i class="fa-solid fa-file-pdf"></i> PDF Standard</button>
+                <button class="btn btn-secondary" onclick="App.Export.pdf('chess')"><i class="fa-solid fa-chess-knight"></i> PDF S/W</button>
+                <button class="btn btn-secondary" onclick="App.Export.pdf('list')"><i class="fa-solid fa-list"></i> PDF Kompakt</button>
+                <button class="btn btn-secondary" onclick="App.Export.csv()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                <button class="btn btn-secondary" onclick="App.Export.whatsapp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+                <button class="btn btn-secondary" onclick="App.Export.ics()"><i class="fa-solid fa-calendar-plus"></i> ICS (mit Auswahl)</button>
+                <button class="btn btn-secondary" onclick="App.Export.json()"><i class="fa-solid fa-database"></i> JSON Backup</button>
+            </div>
+            <button class="btn-ghost" onclick="App.Modals.close('export')" style="margin-top:12px;">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Modal: OCR Import -->
+    <div id="modal-ocr" class="modal-overlay">
+        <div class="modal">
+            <h3>Smart Import</h3>
+            <div class="drop-zone" id="ocr-dropzone">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem;"></i>
+                <p>Klick oder zieh Bild/CSV rein</p>
+                <input type="file" id="ocr-file" hidden accept="image/*,.csv">
+            </div>
+            <div id="ocr-preview" style="max-height:200px; overflow-y:auto; margin:8px 0; font-size:0.8rem;"></div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+                <button class="btn btn-secondary" onclick="App.OCR.importAsSchedule()" id="ocr-import-schedule" disabled>Als Schichten</button>
+                <button class="btn btn-secondary" onclick="App.OCR.importAsAvailability()" id="ocr-import-avail" disabled>Als Verfügbarkeit</button>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button class="btn-ghost" onclick="App.Modals.close('ocr')">Abbrechen</button>
+                <button class="btn-ghost" onclick="App.OCR.reset()">Zurücksetzen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Plan Manager (mehrere Pläne) -->
+    <div id="modal-planManager" class="modal-overlay">
+        <div class="modal">
+            <h3>Pläne verwalten</h3>
+            <div id="plan-list" style="margin:10px 0;"></div>
+            <div class="form-grid" style="grid-template-columns:2fr 1fr;">
+                <input type="text" id="new-plan-name" placeholder="Neuer Plan Name">
+                <button class="btn btn-primary" onclick="App.Plan.create()">Anlegen</button>
+            </div>
+            <button class="btn-ghost" onclick="App.Modals.close('planManager')">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Modal: ICS Personenauswahl -->
+    <div id="modal-ics-personen" class="modal-overlay">
+        <div class="modal">
+            <h3>ICS Export - Personen wählen</h3>
+            <div id="ics-personen-list" class="checkbox-group" style="max-height:250px; overflow-y:auto;"></div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button class="btn btn-primary" onclick="App.Export.generateICS()">Exportieren</button>
+                <button class="btn-ghost" onclick="App.Modals.close('ics-personen')">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: OCR Editor (für manuelle Korrektur) -->
+    <div id="modal-ocr-edit" class="modal-overlay">
+        <div class="modal" style="max-width:700px;">
+            <h3>OCR-Ergebnisse bearbeiten</h3>
+            <div id="ocr-edit-table" style="max-height:300px; overflow-y:auto;"></div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button class="btn btn-primary" onclick="App.OCR.saveEdits()">Übernehmen</button>
+                <button class="btn-ghost" onclick="App.Modals.close('ocr-edit')">Abbrechen</button>
+            </div>
+        </div>
     </div>
 
     <script>
         (function() {
-            // --- State Management ---
-            const Store = {
-                data: {
-                    team: [], // { id, name, availability: [] }
-                    schedule: [], // { id, start, end, names: [] }
-                    meta: { eventName: '' }
+            // ---------- Hilfsfunktionen ----------
+            const Utils = {
+                uid: () => Date.now().toString(36) + Math.random().toString(36).substring(2),
+                formatDate: (d) => {
+                    if (!d) return '';
+                    const day = String(d.getDate()).padStart(2,'0');
+                    const month = String(d.getMonth()+1).padStart(2,'0');
+                    return `${day}.${month}.`;
                 },
-                load() {
-                    const saved = localStorage.getItem('sc_brombach_planer_v5');
-                    if (saved) this.data = JSON.parse(saved);
+                parseDateDE: (str) => {
+                    const parts = str.split('.');
+                    if (parts.length < 2) return null;
+                    const d = new Date();
+                    d.setDate(parseInt(parts[0]));
+                    d.setMonth(parseInt(parts[1])-1);
+                    if (parts[2]) d.setFullYear(parseInt(parts[2]));
+                    return d;
                 },
-                save() {
-                    localStorage.setItem('sc_brombach_planer_v5', JSON.stringify(this.data));
-                    App.render();
+                getNextFriday: (date) => {
+                    const d = new Date(date);
+                    d.setDate(d.getDate() + ((7 + 5 - d.getDay()) % 7));
+                    return d;
                 },
-                getCurrentPlan() { return this.data; }
+                showLoader: (msg = 'Arbeite...') => {
+                    document.getElementById('loader-text').innerText = msg;
+                    document.getElementById('loader').style.display = 'flex';
+                },
+                hideLoader: () => document.getElementById('loader').style.display = 'none',
+                debounce: (fn, delay) => {
+                    let timer;
+                    return function(...args) {
+                        clearTimeout(timer);
+                        timer = setTimeout(() => fn.apply(this, args), delay);
+                    };
+                }
             };
 
-            // --- App Logic ---
-            const App = {
-                chartInstance: null,
+            // ---------- Datenstruktur: Mehrere Pläne ----------
+            const DEFAULT_PLANS = {
+                'default': {
+                    id: 'default',
+                    name: 'Hauptplan',
+                    schedule: [],
+                    settings: { minPerShift: 2, maxPerShift: 3, preferDoubles: true }
+                }
+            };
+            const DEFAULT_TEAM = [
+                { id: '1', name: 'Kaspar', role: 'fixed', shift: 'both' },
+                { id: '2', name: 'Uwe', role: 'rotate', shift: 'late' },
+                { id: '3', name: 'Nico', role: 'rotate', shift: 'both' },
+                { id: '4', name: 'Dmitry', role: 'rotate', shift: 'both' },
+                { id: '5', name: 'Gento', role: 'rotate', shift: 'early' },
+                { id: '6', name: 'Stephan', role: 'rotate', shift: 'early' },
+                { id: '7', name: 'Markus', role: 'emergency', shift: 'both' }
+            ];
 
-                init() {
-                    Store.load();
-                    this.setupEventListeners();
-                    this.render();
-                },
+            let appState = {
+                plans: {},
+                currentPlanId: 'default',
+                team: [...DEFAULT_TEAM],
+                tempAvailability: [],
+                ocrRawData: [],
+                icsSelectedPersons: []
+            };
 
-                setupEventListeners() {
-                    const dropZone = document.getElementById('drop-zone');
-                    const fileInput = document.getElementById('file-input');
+            function loadState() {
+                try {
+                    const stored = localStorage.getItem('scb_v5_data');
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        appState.plans = parsed.plans || DEFAULT_PLANS;
+                        appState.currentPlanId = parsed.currentPlanId || 'default';
+                        appState.team = parsed.team || DEFAULT_TEAM;
+                    } else {
+                        appState.plans = DEFAULT_PLANS;
+                        appState.team = DEFAULT_TEAM;
+                    }
+                } catch (e) {
+                    console.warn('Fehler beim Laden', e);
+                    appState.plans = DEFAULT_PLANS;
+                    appState.team = DEFAULT_TEAM;
+                }
+                if (!appState.plans[appState.currentPlanId]) {
+                    appState.currentPlanId = 'default';
+                    appState.plans.default = { id: 'default', name: 'Hauptplan', schedule: [], settings: { minPerShift:2, maxPerShift:3, preferDoubles:true } };
+                }
+            }
+            function saveState() {
+                const toStore = {
+                    plans: appState.plans,
+                    currentPlanId: appState.currentPlanId,
+                    team: appState.team
+                };
+                localStorage.setItem('scb_v5_data', JSON.stringify(toStore));
+            }
 
-                    dropZone.onclick = () => fileInput.click();
-                    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); };
-                    dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
-                    dropZone.ondrop = (e) => {
+            function currentPlan() {
+                return appState.plans[appState.currentPlanId] || appState.plans.default;
+            }
+
+            // ---------- Event-Delegation einrichten ----------
+            function setupEventDelegation() {
+                // Navigation
+                document.querySelectorAll('[data-view]').forEach(el => {
+                    el.addEventListener('click', (e) => {
                         e.preventDefault();
-                        dropZone.classList.remove('drag-over');
-                        if (e.dataTransfer.files.length) this.handleFile(e.dataTransfer.files[0]);
-                    };
-                    fileInput.onchange = (e) => {
-                        if (e.target.files.length) this.handleFile(e.target.files[0]);
-                    };
+                        const view = el.dataset.view;
+                        App.nav(view);
+                    });
+                });
+
+                // Team-Grid: Klick auf Bearbeiten-Button
+                document.getElementById('team-grid').addEventListener('click', (e) => {
+                    const btn = e.target.closest('.edit-member-btn');
+                    if (btn) {
+                        e.stopPropagation();
+                        const memberId = btn.dataset.id;
+                        App.Modals.openMember(memberId);
+                    }
+                });
+
+                // Tabelle: Klick auf Bearbeiten-Button
+                document.getElementById('table-body').addEventListener('click', (e) => {
+                    const btn = e.target.closest('.edit-entry-btn');
+                    if (btn) {
+                        e.stopPropagation();
+                        const entryId = btn.dataset.id;
+                        App.Modals.openEntry(entryId);
+                    }
+                });
+
+                // Verfügbarkeits-Checkboxen im Wizard (Step 2)
+                document.getElementById('gen-availability-list').addEventListener('change', (e) => {
+                    if (e.target.type === 'checkbox') {
+                        const memberId = e.target.value;
+                        if (e.target.checked) {
+                            if (!appState.tempAvailability.includes(memberId)) appState.tempAvailability.push(memberId);
+                        } else {
+                            appState.tempAvailability = appState.tempAvailability.filter(id => id !== memberId);
+                        }
+                    }
+                });
+
+                // DropZone für OCR
+                const dropZone = document.getElementById('ocr-dropzone');
+                const fileInput = document.getElementById('ocr-file');
+                dropZone.addEventListener('click', () => fileInput.click());
+                dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    if (e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                        App.OCR.process(e.dataTransfer.files[0]);
+                    }
+                });
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files[0]) App.OCR.process(e.target.files[0]);
+                });
+
+                // Modal-Overlay schließen bei Klick auf Hintergrund
+                document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                    overlay.addEventListener('click', (e) => {
+                        if (e.target === overlay) {
+                            const id = overlay.id.replace('modal-', '');
+                            App.Modals.close(id);
+                        }
+                    });
+                });
+            }
+
+            // ---------- Hauptobjekt App ----------
+            const App = {
+                init() {
+                    loadState();
+                    this.UI.updatePlanSelector();
+                    this.UI.renderAll();
+                    document.getElementById('gen-start-date').valueAsDate = Utils.getNextFriday(new Date());
+                    document.getElementById('entry-time').addEventListener('change', (e) => {
+                        document.getElementById('entry-time-custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+                    });
+                    setupEventDelegation();
+                    Utils.hideLoader();
                 },
 
-                handleFile(file) {
-                    this.showToast('Verarbeite Datei...', 2000);
-                    // Simple Mock Import for Images/PDF using OCR or just name extraction would go here
-                    // For now, let's just assume text file or simple list
-                    if (file.name.endsWith('.json')) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            Store.data = JSON.parse(e.target.result);
-                            Store.save();
-                            this.showToast('Daten importiert!');
-                        };
-                        reader.readAsText(file);
-                    } else {
-                        // Image/Excel Placeholder Logic
-                        // Tesseract logic would be here for images
-                        this.showToast('Format wird in dieser Version simuliert. Bitte JSON nutzen oder manuell eintragen.');
-                    }
+                nav(view) {
+                    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+                    document.getElementById('view-' + view).classList.add('active');
+                    document.querySelectorAll('.nav-item, .desktop-nav a').forEach(el => el.classList.remove('active'));
+                    document.querySelectorAll(`[data-view="${view}"]`).forEach(el => el.classList.add('active'));
+                    if (view === 'stats') this.Stats.render();
                 },
 
-                addTeamMember() {
-                    const name = prompt("Name des Mitglieds:");
-                    if (name) {
-                        Store.data.team.push({ id: Date.now(), name: name, availability: [] });
-                        Store.save();
-                    }
-                },
-                
-                removeTeamMember(id) {
-                    if(confirm("Wirklich löschen?")) {
-                        Store.data.team = Store.data.team.filter(m => m.id !== id);
-                        // Also remove from schedule
-                        Store.data.schedule.forEach(s => {
-                            s.names = s.names.filter(n => {
-                                // This assumes names match, ideally use IDs in schedule too, but simple strings for now
-                                // Finding name by ID first
-                                return true; // simplified
-                            }); 
+                Modals: {
+                    open(id) {
+                        const modal = document.getElementById('modal-' + id);
+                        if (modal) modal.classList.add('open');
+                        if (id === 'entry') this.prepareEntryModal(null);
+                        if (id === 'member') this.prepareMemberModal(null);
+                        if (id === 'planManager') this.renderPlanList();
+                        if (id === 'ics-personen') this.prepareICSPersonen();
+                    },
+                    close(id) {
+                        const modal = document.getElementById('modal-' + id);
+                        if (modal) modal.classList.remove('open');
+                    },
+                    openEntry(entryId) {
+                        this.prepareEntryModal(entryId);
+                        document.getElementById('modal-entry').classList.add('open');
+                    },
+                    openMember(memberId) {
+                        this.prepareMemberModal(memberId);
+                        document.getElementById('modal-member').classList.add('open');
+                    },
+                    prepareEntryModal(entryId) {
+                        const container = document.getElementById('entry-team-select');
+                        container.innerHTML = '';
+                        appState.team.forEach(m => {
+                            const label = document.createElement('label');
+                            label.className = 'checkbox-item';
+                            label.innerHTML = `<input type="checkbox" name="entry-member" value="${m.name}"> ${m.name}`;
+                            container.appendChild(label);
                         });
-                        Store.save();
-                    }
-                },
-
-                clearData() {
-                    if(confirm("Alles löschen?")) {
-                        Store.data = { team: [], schedule: [], meta: { eventName: '' } };
-                        Store.save();
-                    }
-                },
-
-                generateSlots() {
-                    const startStr = document.getElementById('time-start').value;
-                    const endStr = document.getElementById('time-end').value;
-                    const interval = parseFloat(document.getElementById('interval').value);
-                    
-                    let [h, m] = startStr.split(':').map(Number);
-                    let currentMin = h * 60 + m;
-                    let [he, me] = endStr.split(':').map(Number);
-                    let endMin = he * 60 + me;
-
-                    const newSchedule = [];
-                    
-                    while (currentMin < endMin) {
-                        let nextMin = currentMin + (interval * 60);
-                        if (nextMin > endMin) nextMin = endMin;
-
-                        const formatTime = (minutes) => {
-                            const hh = Math.floor(minutes / 60).toString().padStart(2, '0');
-                            const mm = (minutes % 60).toString().padStart(2, '0');
-                            return `${hh}:${mm}`;
-                        };
-
-                        newSchedule.push({
-                            id: Date.now() + Math.random(),
-                            start: formatTime(currentMin),
-                            end: formatTime(nextMin),
-                            names: []
-                        });
-
-                        currentMin = nextMin;
-                    }
-                    Store.data.schedule = newSchedule;
-                    Store.save();
-                },
-
-                toggleAssignment(slotId, memberName) {
-                    const slot = Store.data.schedule.find(s => s.id === slotId);
-                    if (!slot) return;
-                    
-                    if (slot.names.includes(memberName)) {
-                        slot.names = slot.names.filter(n => n !== memberName);
-                    } else {
-                        slot.names.push(memberName);
-                    }
-                    Store.save();
-                },
-
-                autoFill() {
-                    // Simple greedy fairness algorithm
-                    // Sort slots by least assigned? Or just iterate
-                    // Sort members by usage count
-                    const counts = {};
-                    Store.data.team.forEach(m => counts[m.name] = 0);
-                    Store.data.schedule.forEach(s => s.names.forEach(n => { if(counts[n] !== undefined) counts[n]++; }));
-
-                    Store.data.schedule.forEach(slot => {
-                        if (slot.names.length < 2) { // Aim for 2 per slot
-                            // Find member with lowest count
-                            const sortedMembers = Store.data.team.sort((a,b) => counts[a.name] - counts[b.name]);
-                            for (let m of sortedMembers) {
-                                if (!slot.names.includes(m.name)) {
-                                    slot.names.push(m.name);
-                                    counts[m.name]++;
-                                    if(slot.names.length >= 2) break;
+                        if (entryId) {
+                            const entry = currentPlan().schedule.find(e => e.id === entryId);
+                            if (entry) {
+                                document.getElementById('entry-id').value = entry.id;
+                                document.getElementById('entry-date').value = entry.date;
+                                const timeSelect = document.getElementById('entry-time');
+                                if (entry.time.includes('17:00')) timeSelect.value = '17:00 - 18:30';
+                                else if (entry.time.includes('18:15')) timeSelect.value = '18:15 - 19:45';
+                                else {
+                                    timeSelect.value = 'custom';
+                                    document.getElementById('entry-time-custom').style.display = 'block';
+                                    document.getElementById('entry-time-custom').value = entry.time;
                                 }
+                                container.querySelectorAll('input').forEach(cb => {
+                                    if (entry.names.includes(cb.value)) cb.checked = true;
+                                });
+                                document.getElementById('btn-delete-entry').style.display = 'inline-block';
                             }
+                        } else {
+                            document.getElementById('entry-id').value = '';
+                            document.getElementById('entry-date').value = '';
+                            document.getElementById('entry-time').value = '17:00 - 18:30';
+                            document.getElementById('entry-time-custom').style.display = 'none';
+                            container.querySelectorAll('input').forEach(cb => cb.checked = false);
+                            document.getElementById('btn-delete-entry').style.display = 'none';
                         }
-                    });
-                    Store.save();
-                    this.showToast('Automatisch aufgefüllt');
-                },
-
-                exportPDF() {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    
-                    doc.setFontSize(18);
-                    doc.text("Einsatzplan - SC Brombach", 14, 22);
-                    doc.setFontSize(11);
-                    doc.text(`Event: ${document.getElementById('event-name').value || 'Unbenannt'}`, 14, 30);
-                    
-                    const rows = Store.data.schedule.map(s => [
-                        `${s.start} - ${s.end}`,
-                        s.names.join(', ')
-                    ]);
-
-                    doc.autoTable({
-                        head: [['Zeit', 'Personal']],
-                        body: rows,
-                        startY: 40,
-                    });
-
-                    doc.save('einsatzplan.pdf');
-                },
-                
-                exportJSON() {
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(Store.data));
-                    const downloadAnchorNode = document.createElement('a');
-                    downloadAnchorNode.setAttribute("href", dataStr);
-                    downloadAnchorNode.setAttribute("download", "sc_brombach_plan_backup.json");
-                    document.body.appendChild(downloadAnchorNode);
-                    downloadAnchorNode.click();
-                    downloadAnchorNode.remove();
-                },
-
-                showToast(msg, duration=3000) {
-                    const t = document.getElementById('toast');
-                    document.getElementById('toast-msg').innerText = msg;
-                    t.classList.add('show');
-                    setTimeout(() => t.classList.remove('show'), duration);
-                },
-
-                render() {
-                    // Render Team List
-                    const teamContainer = document.getElementById('team-list');
-                    if (Store.data.team.length === 0) {
-                        teamContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--c-text-muted); padding: 20px;">Kein Team geladen.</div>';
-                    } else {
-                        teamContainer.innerHTML = Store.data.team.map(m => `
-                            <div class="team-member-card">
-                                <div style="width: 32px; height: 32px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--c-primary); font-weight: bold;">
-                                    ${m.name.substring(0,2).toUpperCase()}
-                                </div>
-                                <label>${m.name}</label>
-                                <button class="icon-btn delete" onclick="App.removeTeamMember(${m.id})"><i class="fas fa-times"></i></button>
-                            </div>
-                        `).join('');
-                    }
-
-                    // Render Schedule
-                    const schedBody = document.getElementById('schedule-body');
-                    if (Store.data.schedule.length === 0) {
-                        schedBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 40px;">Noch keine Schichten generiert.</td></tr>';
-                    } else {
-                        schedBody.innerHTML = Store.data.schedule.map(slot => {
-                            // Dropdown for selecting members
-                            const options = Store.data.team.map(m => {
-                                const isSelected = slot.names.includes(m.name);
-                                return `
-                                    <div class="checkbox-wrapper" onclick="App.toggleAssignment(${slot.id}, '${m.name}')">
-                                        <input type="checkbox" ${isSelected ? 'checked' : ''} style="pointer-events: none;"> 
-                                        <label style="pointer-events: none;">${m.name}</label>
-                                    </div>
-                                `;
-                                // Note: pointer-events: none on input/label inside wrapper allows the div onclick to handle it cleanly on mobile
-                                // Alternatively, standard checkbox behavior:
-                            }).join('');
-                            
-                            // Re-implementing correctly for click handling
-                            const memberSelection = `
-                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    ${Store.data.team.map(m => {
-                                        const checked = slot.names.includes(m.name);
-                                        return `
-                                        <label class="name-tag" style="cursor: pointer; ${checked ? 'background: var(--c-primary); color: white;' : 'background: #f3f4f6; color: var(--c-text);'}">
-                                            <input type="checkbox" ${checked ? 'checked' : ''} 
-                                                onchange="App.toggleAssignment(${slot.id}, '${m.name}')"
-                                                style="display:none;"> 
-                                            ${m.name}
-                                        </label>
-                                        `;
-                                    }).join('')}
+                    },
+                    prepareMemberModal(memberId) {
+                        if (memberId) {
+                            const member = appState.team.find(m => m.id === memberId);
+                            if (member) {
+                                document.getElementById('mem-id').value = member.id;
+                                document.getElementById('mem-name').value = member.name;
+                                document.getElementById('mem-role').value = member.role;
+                                document.getElementById('mem-shift').value = member.shift;
+                            }
+                        } else {
+                            document.getElementById('mem-id').value = '';
+                            document.getElementById('mem-name').value = '';
+                            document.getElementById('mem-role').value = 'rotate';
+                            document.getElementById('mem-shift').value = 'both';
+                        }
+                    },
+                    renderPlanList() {
+                        const container = document.getElementById('plan-list');
+                        container.innerHTML = '';
+                        Object.values(appState.plans).forEach(plan => {
+                            const div = document.createElement('div');
+                            div.className = 'member-card';
+                            div.innerHTML = `
+                                <div class="info"><strong>${plan.name}</strong> (${plan.schedule.length} Schichten)</div>
+                                <div class="member-actions">
+                                    <button class="btn-ghost" onclick="App.Plan.switch('${plan.id}')"><i class="fa-solid fa-check"></i></button>
+                                    <button class="btn-ghost" onclick="App.Plan.rename('${plan.id}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn-ghost" onclick="App.Plan.delete('${plan.id}')"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             `;
-
-                            return `
-                                <tr>
-                                    <td><strong>${slot.start} - ${slot.end}</strong></td>
-                                    <td>
-                                        ${memberSelection}
-                                    </td>
-                                    <td class="action-cell">
-                                        <button class="icon-btn delete"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('');
+                            container.appendChild(div);
+                        });
+                    },
+                    prepareICSPersonen() {
+                        const container = document.getElementById('ics-personen-list');
+                        container.innerHTML = '';
+                        appState.team.forEach(m => {
+                            const label = document.createElement('label');
+                            label.className = 'checkbox-item';
+                            label.innerHTML = `<input type="checkbox" value="${m.name}"> ${m.name}`;
+                            container.appendChild(label);
+                        });
                     }
-
-                    // Update Fairness Chart
-                    this.updateChart();
                 },
 
-                updateChart() {
-                    const ctx = document.getElementById('statsChart').getContext('2d');
-                    const plan = Store.getCurrentPlan();
-                    const counts = {};
-                    plan.team.forEach(m => counts[m.name] = 0);
-                    plan.schedule.forEach(e => e.names.forEach(n => { if (counts[n]!==undefined) counts[n]++; }));
-                    
-                    const values = Object.values(counts);
-                    let variance = 0;
-                    if (values.length > 0) {
-                        const mean = values.reduce((a,b)=>a+b,0)/values.length;
-                        variance = values.reduce((a,b)=>a+Math.pow(b-mean,2),0)/values.length;
+                Plan: {
+                    switch(planId) {
+                        if (appState.plans[planId]) {
+                            appState.currentPlanId = planId;
+                            saveState();
+                            App.UI.updatePlanSelector();
+                            App.UI.renderAll();
+                            App.Modals.close('planManager');
+                        }
+                    },
+                    create() {
+                        const name = document.getElementById('new-plan-name').value.trim();
+                        if (!name) return alert('Name eingeben');
+                        const id = 'plan_' + Utils.uid();
+                        appState.plans[id] = {
+                            id,
+                            name,
+                            schedule: [],
+                            settings: { minPerShift:2, maxPerShift:3, preferDoubles:true }
+                        };
+                        saveState();
+                        this.switch(id);
+                        document.getElementById('new-plan-name').value = '';
+                    },
+                    rename(planId) {
+                        const newName = prompt('Neuen Namen eingeben:', appState.plans[planId].name);
+                        if (newName && newName.trim()) {
+                            appState.plans[planId].name = newName.trim();
+                            saveState();
+                            App.Modals.renderPlanList();
+                            App.UI.updatePlanSelector();
+                        }
+                    },
+                    delete(planId) {
+                        if (planId === 'default') return alert('Standardplan kann nicht gelöscht werden.');
+                        if (confirm('Plan wirklich löschen?')) {
+                            delete appState.plans[planId];
+                            if (appState.currentPlanId === planId) appState.currentPlanId = 'default';
+                            saveState();
+                            App.Modals.renderPlanList();
+                            App.UI.updatePlanSelector();
+                            App.UI.renderAll();
+                        }
                     }
-                    
-                    document.getElementById('fairness-score').innerText = Math.sqrt(variance).toFixed(2);
+                },
 
-                    if (this.chartInstance) this.chartInstance.destroy();
-                    
-                    this.chartInstance = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: Object.keys(counts),
-                            datasets: [{
-                                label: 'Einsätze',
-                                data: Object.values(counts),
-                                backgroundColor: '#2563eb',
-                                borderRadius: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                UI: {
+                    updatePlanSelector() {
+                        const select = document.getElementById('plan-select');
+                        select.innerHTML = '';
+                        Object.values(appState.plans).forEach(plan => {
+                            const opt = document.createElement('option');
+                            opt.value = plan.id;
+                            opt.textContent = plan.name;
+                            if (plan.id === appState.currentPlanId) opt.selected = true;
+                            select.appendChild(opt);
+                        });
+                        document.getElementById('current-plan-name').innerText = currentPlan().name;
+                    },
+                    renderAll() {
+                        this.renderSchedule();
+                        this.renderTeam();
+                        this.updateDashboardStats();
+                    },
+                    renderSchedule() {
+                        const tbody = document.getElementById('table-body');
+                        tbody.innerHTML = '';
+                        const schedule = currentPlan().schedule;
+                        if (schedule.length === 0) {
+                            document.getElementById('empty-state').style.display = 'block';
+                            document.getElementById('main-table').style.display = 'none';
+                            return;
+                        }
+                        document.getElementById('empty-state').style.display = 'none';
+                        document.getElementById('main-table').style.display = 'table';
+                        const sorted = [...schedule].sort((a,b) => {
+                            const dateA = a.date.split('.').reverse().join('');
+                            const dateB = b.date.split('.').reverse().join('');
+                            return dateA.localeCompare(dateB) || a.time.localeCompare(b.time);
+                        });
+                        let lastDate = '';
+                        sorted.forEach(entry => {
+                            const tr = document.createElement('tr');
+                            const namesHtml = entry.names.map(n => {
+                                const mem = appState.team.find(m => m.name === n);
+                                let color = '#e5e7eb';
+                                if (mem) {
+                                    if (mem.role === 'fixed') color = '#dbeafe';
+                                    else if (mem.role === 'emergency') color = '#fee2e2';
+                                }
+                                return `<span class="chip" style="background:${color};">${n}</span>`;
+                            }).join(' ');
+                            const dateDisplay = entry.date === lastDate ? '<span style="opacity:0.3">"</span>' : `<strong>${entry.date}</strong>`;
+                            lastDate = entry.date;
+                            tr.innerHTML = `
+                                <td>${dateDisplay}</td>
+                                <td>${entry.time}</td>
+                                <td>${namesHtml}</td>
+                                <td><button class="btn-ghost edit-entry-btn" data-id="${entry.id}"><i class="fa-solid fa-pen"></i></button></td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    },
+                    renderTeam() {
+                        const grid = document.getElementById('team-grid');
+                        grid.innerHTML = '';
+                        appState.team.forEach(m => {
+                            const div = document.createElement('div');
+                            div.className = 'member-card';
+                            let badgeClass = 'role-rotate', roleLabel = 'Springer';
+                            if (m.role === 'fixed') { badgeClass = 'role-fixed'; roleLabel = 'Stamm'; }
+                            if (m.role === 'emergency') { badgeClass = 'role-emergency'; roleLabel = 'Notfall'; }
+                            div.innerHTML = `
+                                <div class="info">
+                                    <div class="name">${m.name}</div>
+                                    <div class="details">${m.shift === 'both' ? 'Beide' : (m.shift==='early'?'Nur Früh':'Nur Spät')}</div>
+                                </div>
+                                <div class="member-actions">
+                                    <span class="role-badge ${badgeClass}">${roleLabel}</span>
+                                    <button class="btn-ghost edit-member-btn" data-id="${m.id}"><i class="fa-solid fa-gear"></i></button>
+                                </div>
+                            `;
+                            grid.appendChild(div);
+                        });
+                    },
+                    updateDashboardStats() {
+                        const schedule = currentPlan().schedule;
+                        document.getElementById('total-shifts-count').innerText = schedule.length;
+                        if (schedule.length > 0) {
+                            const sorted = [...schedule].sort((a,b) => {
+                                const da = Utils.parseDateDE(a.date);
+                                const db = Utils.parseDateDE(b.date);
+                                return da - db;
+                            });
+                            const next = sorted[0];
+                            document.getElementById('next-shift-display').innerText = next.date;
+                            document.getElementById('next-shift-team').innerText = next.names.join(', ');
+                        } else {
+                            document.getElementById('next-shift-display').innerText = '--.--.';
+                            document.getElementById('next-shift-team').innerText = 'Keine Daten';
+                        }
+                    }
+                },
+
+                Actions: {
+                    saveEntry() {
+                        const id = document.getElementById('entry-id').value;
+                        const date = document.getElementById('entry-date').value.trim();
+                        let time = document.getElementById('entry-time').value;
+                        if (time === 'custom') time = document.getElementById('entry-time-custom').value.trim();
+                        const names = Array.from(document.querySelectorAll('#entry-team-select input:checked')).map(cb => cb.value);
+                        if (!date || names.length === 0) return alert('Datum und mindestens eine Person erforderlich.');
+                        const plan = currentPlan();
+                        if (id) {
+                            const idx = plan.schedule.findIndex(e => e.id === id);
+                            if (idx !== -1) plan.schedule[idx] = { ...plan.schedule[idx], date, time, names };
+                        } else {
+                            plan.schedule.push({ id: Utils.uid(), date, time, names, aiGenerated: false });
+                        }
+                        saveState();
+                        App.UI.renderAll();
+                        App.Modals.close('entry');
+                    },
+                    deleteEntryFromModal() {
+                        const id = document.getElementById('entry-id').value;
+                        if (id && confirm('Löschen?')) {
+                            const plan = currentPlan();
+                            plan.schedule = plan.schedule.filter(e => e.id !== id);
+                            saveState();
+                            App.UI.renderAll();
+                            App.Modals.close('entry');
+                        }
+                    }
+                },
+
+                Team: {
+                    save() {
+                        const id = document.getElementById('mem-id').value;
+                        const name = document.getElementById('mem-name').value.trim();
+                        const role = document.getElementById('mem-role').value;
+                        const shift = document.getElementById('mem-shift').value;
+                        if (!name) return alert('Name erforderlich');
+                        if (id) {
+                            const idx = appState.team.findIndex(m => m.id === id);
+                            if (idx !== -1) appState.team[idx] = { id, name, role, shift };
+                        } else {
+                            appState.team.push({ id: Utils.uid(), name, role, shift });
+                        }
+                        saveState();
+                        App.UI.renderTeam();
+                        App.Modals.close('member');
+                    }
+                },
+
+                Wizard: {
+                    next(step) {
+                        document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+                        document.querySelectorAll('.step-dot').forEach(el => el.classList.remove('active'));
+                        document.getElementById('step-' + step).classList.add('active');
+                        document.getElementById('dot-' + step).classList.add('active');
+                        if (step === 2) this.renderAvailability();
+                    },
+                    renderAvailability() {
+                        const container = document.getElementById('gen-availability-list');
+                        container.innerHTML = '';
+                        appState.tempAvailability = appState.team.map(m => m.id);
+                        appState.team.forEach(m => {
+                            const div = document.createElement('div');
+                            div.className = 'member-card';
+                            div.innerHTML = `
+                                <span>${m.name}</span>
+                                <input type="checkbox" value="${m.id}" checked style="width:18px; height:18px;">
+                            `;
+                            container.appendChild(div);
+                        });
+                    },
+                    generate() {
+                        Utils.showLoader('Generiere Plan...');
+                        setTimeout(() => {
+                            const startDate = document.getElementById('gen-start-date').valueAsDate;
+                            const weeks = parseInt(document.getElementById('gen-duration').value);
+                            const preferDoubles = document.getElementById('gen-pref-doubles').checked;
+                            const randomFair = document.getElementById('gen-random-fairness').checked;
+                            const min = parseInt(document.getElementById('gen-min').value) || 2;
+                            const max = parseInt(document.getElementById('gen-max').value) || 3;
+
+                            let currentDate = new Date(startDate);
+                            const newEntries = [];
+                            const history = {};
+                            appState.team.forEach(m => history[m.id] = 0);
+
+                            for (let w = 0; w < weeks; w++) {
+                                const dateStr = Utils.formatDate(currentDate);
+                                const shifts = [
+                                    { time: "17:00 - 18:30", type: "early", assigned: [] },
+                                    { time: "18:15 - 19:45", type: "late", assigned: [] }
+                                ];
+
+                                // Fixed
+                                shifts.forEach(shift => {
+                                    const fixed = appState.team.filter(m =>
+                                        m.role === 'fixed' &&
+                                        appState.tempAvailability.includes(m.id) &&
+                                        (m.shift === 'both' || m.shift === shift.type)
+                                    );
+                                    fixed.forEach(m => {
+                                        shift.assigned.push(m);
+                                        history[m.id]++;
+                                    });
+                                });
+
+                                // Springer
+                                shifts.forEach((shift, sIdx) => {
+                                    let currentCount = shift.assigned.length;
+                                    if (currentCount >= max) return;
+
+                                    let candidates = appState.team.filter(m =>
+                                        m.role === 'rotate' &&
+                                        appState.tempAvailability.includes(m.id) &&
+                                        (m.shift === 'both' || m.shift === shift.type) &&
+                                        !shift.assigned.includes(m)
+                                    );
+
+                                    candidates.sort((a, b) => {
+                                        let scoreA = history[a.id] || 0;
+                                        let scoreB = history[b.id] || 0;
+                                        if (preferDoubles && sIdx === 1) {
+                                            if (shifts[0].assigned.includes(a)) scoreA -= 2;
+                                            if (shifts[0].assigned.includes(b)) scoreB -= 2;
+                                        }
+                                        if (randomFair) {
+                                            scoreA += Math.random() * 0.5;
+                                            scoreB += Math.random() * 0.5;
+                                        }
+                                        return scoreA - scoreB;
+                                    });
+
+                                    const toAdd = Math.min(max - currentCount, candidates.length);
+                                    for (let i = 0; i < toAdd; i++) {
+                                        shift.assigned.push(candidates[i]);
+                                        history[candidates[i].id]++;
+                                    }
+                                });
+
+                                shifts.forEach(s => {
+                                    if (s.assigned.length >= min) {
+                                        newEntries.push({
+                                            id: Utils.uid(),
+                                            date: dateStr,
+                                            time: s.time,
+                                            names: s.assigned.map(m => m.name),
+                                            aiGenerated: true
+                                        });
+                                    }
+                                });
+
+                                currentDate.setDate(currentDate.getDate() + 7);
+                            }
+
+                            const plan = currentPlan();
+                            plan.schedule.push(...newEntries);
+                            saveState();
+                            Utils.hideLoader();
+                            App.Wizard.next(3);
+                            App.UI.renderAll();
+                        }, 600);
+                    }
+                },
+
+                OCR: {
+                    async process(file) {
+                        if (!file) return;
+                        Utils.showLoader('Analysiere...');
+                        const preview = document.getElementById('ocr-preview');
+                        preview.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> OCR läuft...';
+
+                        let data = [];
+                        if (file.name.endsWith('.csv')) {
+                            const text = await file.text();
+                            data = this.parseCSV(text);
+                        } else {
+                            try {
+                                const worker = await Tesseract.createWorker('deu');
+                                const ret = await worker.recognize(file);
+                                await worker.terminate();
+                                data = this.parseText(ret.data.text);
+                            } catch (e) {
+                                preview.innerHTML = '<span style="color:red;">Fehler bei OCR</span>';
+                                Utils.hideLoader();
+                                return;
                             }
                         }
-                    });
+
+                        appState.ocrRawData = data;
+                        this.renderPreview(data);
+                        Utils.hideLoader();
+                        document.getElementById('ocr-import-schedule').disabled = data.length === 0;
+                        document.getElementById('ocr-import-avail').disabled = data.length === 0;
+                    },
+
+                    parseText(text) {
+                        const lines = text.split('\n');
+                        const result = [];
+                        let currentDate = '';
+                        const teamNames = appState.team.map(m => m.name.toLowerCase());
+
+                        lines.forEach(line => {
+                            const dateMatch = line.match(/(\d{2}\.\d{2}\.?)/);
+                            if (dateMatch) {
+                                currentDate = dateMatch[1].replace(/\.$/, '');
+                            }
+                            let time = '';
+                            if (line.includes('17:00') || line.includes('17 bis')) time = '17:00 - 18:30';
+                            else if (line.includes('18:15') || line.includes('18:15 bis')) time = '18:15 - 19:45';
+
+                            const foundNames = [];
+                            appState.team.forEach(m => {
+                                if (line.toLowerCase().includes(m.name.toLowerCase())) {
+                                    foundNames.push(m.name);
+                                }
+                            });
+                            if (line.includes('Du') || line.includes('Ich')) {
+                                if (!foundNames.includes('Kaspar')) foundNames.push('Kaspar');
+                            }
+
+                            if (currentDate && time && foundNames.length > 0) {
+                                result.push({
+                                    date: currentDate,
+                                    time: time,
+                                    names: [...new Set(foundNames)]
+                                });
+                            }
+                        });
+                        return result;
+                    },
+
+                    parseCSV(text) {
+                        const lines = text.split('\n');
+                        const data = [];
+                        lines.forEach(l => {
+                            const parts = l.split(';');
+                            if (parts.length >= 3) {
+                                data.push({
+                                    date: parts[0].trim(),
+                                    time: parts[1].trim(),
+                                    names: parts[2].split(',').map(s => s.trim())
+                                });
+                            }
+                        });
+                        return data;
+                    },
+
+                    renderPreview(data) {
+                        const preview = document.getElementById('ocr-preview');
+                        preview.innerHTML = '';
+                        if (data.length === 0) {
+                            preview.innerText = 'Keine Einträge erkannt.';
+                            return;
+                        }
+                        const table = document.createElement('table');
+                        table.style.width = '100%';
+                        table.innerHTML = '<thead><tr><th>Datum</th><th>Zeit</th><th>Namen</th></tr></thead><tbody>';
+                        data.forEach((row, idx) => {
+                            table.innerHTML += `<tr>
+                                <td>${row.date}</td>
+                                <td>${row.time}</td>
+                                <td>${row.names.join(', ')}</td>
+                            </tr>`;
+                        });
+                        table.innerHTML += '</tbody>';
+                        preview.appendChild(table);
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'btn-ghost';
+                        editBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Bearbeiten';
+                        editBtn.onclick = () => App.OCR.openEditor();
+                        preview.appendChild(editBtn);
+                    },
+
+                    openEditor() {
+                        const container = document.getElementById('ocr-edit-table');
+                        container.innerHTML = '';
+                        appState.ocrRawData.forEach((row, idx) => {
+                            const div = document.createElement('div');
+                            div.className = 'member-card';
+                            div.style.flexDirection = 'column';
+                            div.style.alignItems = 'stretch';
+                            div.innerHTML = `
+                                <div style="display:flex; gap:4px;">
+                                    <input type="text" value="${row.date}" placeholder="Datum" data-idx="${idx}" class="ocr-edit-date" style="width:70px;">
+                                    <select data-idx="${idx}" class="ocr-edit-time">
+                                        <option value="17:00 - 18:30" ${row.time.includes('17:00')?'selected':''}>Früh</option>
+                                        <option value="18:15 - 19:45" ${row.time.includes('18:15')?'selected':''}>Spät</option>
+                                        <option value="custom">Andere</option>
+                                    </select>
+                                    <input type="text" value="${row.names.join(', ')}" placeholder="Namen (kommagetrennt)" data-idx="${idx}" class="ocr-edit-names" style="flex:1;">
+                                </div>
+                            `;
+                            container.appendChild(div);
+                        });
+                        App.Modals.open('ocr-edit');
+                    },
+
+                    saveEdits() {
+                        const newData = [];
+                        document.querySelectorAll('.ocr-edit-date').forEach(inp => {
+                            const idx = inp.dataset.idx;
+                            const timeSelect = document.querySelector(`.ocr-edit-time[data-idx="${idx}"]`);
+                            let time = timeSelect.value;
+                            if (time === 'custom') {
+                                time = prompt('Zeit eingeben (z.B. 16:00 - 17:30)') || '17:00 - 18:30';
+                            }
+                            const namesStr = document.querySelector(`.ocr-edit-names[data-idx="${idx}"]`).value;
+                            const names = namesStr.split(',').map(s => s.trim()).filter(s => s);
+                            newData.push({
+                                date: inp.value,
+                                time: time,
+                                names: names
+                            });
+                        });
+                        appState.ocrRawData = newData;
+                        this.renderPreview(newData);
+                        App.Modals.close('ocr-edit');
+                    },
+
+                    importAsSchedule() {
+                        const plan = currentPlan();
+                        appState.ocrRawData.forEach(row => {
+                            plan.schedule.push({
+                                id: Utils.uid(),
+                                date: row.date,
+                                time: row.time,
+                                names: row.names,
+                                aiGenerated: false
+                            });
+                        });
+                        saveState();
+                        App.UI.renderAll();
+                        App.Modals.close('ocr');
+                        appState.ocrRawData = [];
+                    },
+
+                    importAsAvailability() {
+                        alert('Die erkannten Daten werden als Grundlage für den Generator verwendet (nur Namen pro Datum). Diese Funktion ist erweitert: Im Wizard kann man dann die Personenauswahl treffen.');
+                        App.Modals.close('ocr');
+                        App.nav('wizard');
+                    },
+
+                    reset() {
+                        appState.ocrRawData = [];
+                        document.getElementById('ocr-preview').innerHTML = '';
+                        document.getElementById('ocr-import-schedule').disabled = true;
+                        document.getElementById('ocr-import-avail').disabled = true;
+                        document.getElementById('ocr-file').value = '';
+                    }
+                },
+
+                Stats: {
+                    chartInstance: null,
+                    render() {
+                        const ctx = document.getElementById('statsChart').getContext('2d');
+                        const counts = {};
+                        appState.team.forEach(m => counts[m.name] = 0);
+                        currentPlan().schedule.forEach(e => {
+                            e.names.forEach(n => { if (counts[n] !== undefined) counts[n]++; });
+                        });
+                        const values = Object.values(counts);
+                        const mean = values.reduce((a,b)=>a+b,0) / (values.length||1);
+                        const variance = values.reduce((a,b)=>a + (b-mean)**2,0) / (values.length||1);
+                        document.getElementById('fairness-score').innerText = Math.sqrt(variance).toFixed(2);
+
+                        if (this.chartInstance) this.chartInstance.destroy();
+                        this.chartInstance = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: Object.keys(counts),
+                                datasets: [{
+                                    label: 'Einsätze',
+                                    data: Object.values(counts),
+                                    backgroundColor: '#2563eb',
+                                    borderRadius: 5
+                                }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+                        });
+                    }
+                },
+
+                Export: {
+                    pdf(design) {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+                        const cfg = {
+                            standard: { headColor: [37,99,235], theme: 'grid' },
+                            chess: { headColor: [0,0,0], theme: 'grid' },
+                            list: { headColor: [255,255,255], textColor: [0,0,0], theme: 'plain' }
+                        }[design];
+                        doc.setFontSize(16);
+                        doc.text("SC Brombach - Einsatzplan", 14, 20);
+                        doc.setFontSize(9);
+                        const plan = currentPlan();
+                        const range = plan.schedule.length > 0 ? `${plan.schedule[0].date} - ${plan.schedule[plan.schedule.length-1].date}` : 'Leer';
+                        doc.text(`Zeitraum: ${range}`, 14, 28);
+                        doc.autoTable({
+                            startY: 35,
+                            head: [['Datum', 'Uhrzeit', 'Team']],
+                            body: plan.schedule.map(s => [s.date, s.time, s.names.join(', ')]),
+                            theme: cfg.theme,
+                            headStyles: { fillColor: cfg.headColor || [255,255,255], textColor: design==='list'?[0,0,0]:[255,255,255] },
+                            styles: { fontSize: 9, cellPadding: 3 }
+                        });
+                        doc.save(`plan_${design}.pdf`);
+                    },
+                    csv() {
+                        let csv = "Datum;Uhrzeit;Namen\n";
+                        currentPlan().schedule.forEach(r => csv += `${r.date};${r.time};${r.names.join(',')}\n`);
+                        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = "plan.csv";
+                        link.click();
+                    },
+                    whatsapp() {
+                        let text = "*Einsatzplan SC Brombach*\n\n";
+                        currentPlan().schedule.forEach(r => text += `📅 ${r.date} (${r.time})\n👥 ${r.names.join(', ')}\n\n`);
+                        navigator.clipboard.writeText(text).then(() => alert("Text in Zwischenablage kopiert!"));
+                    },
+                    json() {
+                        const data = {
+                            plan: currentPlan(),
+                            team: appState.team,
+                            exportDate: new Date().toISOString()
+                        };
+                        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `backup_${currentPlan().name}.json`;
+                        link.click();
+                    },
+                    ics() {
+                        App.Modals.open('ics-personen');
+                    },
+                    generateICS() {
+                        const selected = Array.from(document.querySelectorAll('#ics-personen-list input:checked')).map(cb => cb.value);
+                        if (selected.length === 0) return alert('Mindestens eine Person wählen.');
+                        let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//SC Brombach//Planer//DE\n";
+                        currentPlan().schedule.forEach(entry => {
+                            const common = entry.names.filter(n => selected.includes(n));
+                            if (common.length === 0) return;
+                            const dateParts = entry.date.split('.');
+                            if (dateParts.length < 2) return;
+                            const day = dateParts[0].padStart(2,'0');
+                            const month = dateParts[1].padStart(2,'0');
+                            const year = new Date().getFullYear();
+                            const startTime = entry.time.split(' - ')[0].replace(':', '');
+                            const endTime = entry.time.split(' - ')[1].replace(':', '');
+                            const start = `${year}${month}${day}T${startTime}00`;
+                            const end = `${year}${month}${day}T${endTime}00`;
+                            icsContent += `BEGIN:VEVENT\nUID:${Utils.uid()}@scbrombach\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTSTART:${start}\nDTEND:${end}\nSUMMARY:Einsatz (${common.join(',')})\nEND:VEVENT\n`;
+                        });
+                        icsContent += "END:VCALENDAR";
+                        const blob = new Blob([icsContent], {type: 'text/calendar;charset=utf-8'});
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `termine.ics`;
+                        link.click();
+                        App.Modals.close('ics-personen');
+                    }
                 }
             };
 
             window.App = App;
-            window.Store = Store; // für Debug
             window.onload = () => App.init();
         })();
     </script>
-    </body>
+</body>
 </html>
