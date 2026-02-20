@@ -53,12 +53,10 @@
             position: relative;
         }
 
-        /* ---------- Animationen ---------- */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* ---------- Header ---------- */
         header {
             height: var(--header-h);
             background: var(--c-surface);
@@ -111,7 +109,6 @@
         }
         .plan-selector button { padding: 4px; }
 
-        /* ---------- Mobile Bottom Navigation ---------- */
         .mobile-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -146,7 +143,6 @@
         .nav-item.active { color: var(--c-primary); }
         .nav-item span { font-size: 0.6rem; }
 
-        /* ---------- Desktop Navigation ---------- */
         .desktop-nav {
             display: none;
             gap: 12px;
@@ -165,7 +161,6 @@
             border-bottom: 2px solid var(--c-primary);
         }
 
-        /* ---------- Main Container ---------- */
         main {
             max-width: 1000px;
             margin: 8px auto;
@@ -177,7 +172,6 @@
         .view { display: none; animation: fadeIn 0.25s ease-out; }
         .view.active { display: block; }
 
-        /* ---------- Cards ---------- */
         .card {
             background: var(--c-surface);
             border-radius: var(--radius);
@@ -206,7 +200,6 @@
             gap: 4px;
         }
 
-        /* ---------- Formulare ---------- */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -239,7 +232,6 @@
             outline: none;
         }
 
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -270,7 +262,6 @@
         }
         .btn-ghost:active { color: var(--c-primary); background: var(--c-primary-light); }
 
-        /* ---------- Wizard Steps ---------- */
         .wizard-step { display: none; }
         .wizard-step.active { display: block; animation: slideIn 0.3s ease; }
         .step-indicators {
@@ -287,7 +278,6 @@
         .step-dot.active { background: var(--c-primary); }
         .step-dot.completed { background: var(--c-success); }
 
-        /* ---------- Team-Liste ---------- */
         .team-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -333,8 +323,15 @@
         .role-fixed { background: #dbeafe; color: #1e40af; }
         .role-rotate { background: #e0e7ff; color: #4338ca; }
         .role-emergency { background: #fee2e2; color: #991b1b; }
+        .turnier-pro-badge {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            border-radius: 30px;
+            margin-left: 4px;
+        }
 
-        /* ---------- Tabelle (horizontal scrollbar nur wenn nötig) ---------- */
         .table-container {
             overflow-x: auto;
             border-radius: 8px;
@@ -365,7 +362,6 @@
         tr:hover td { background: #f9fafb; }
         .conflict-row { background-color: #fef2f2 !important; border-left: 4px solid var(--c-danger); }
 
-        /* ---------- Modals ---------- */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -400,7 +396,6 @@
             }
         }
 
-        /* ---------- Checkboxen & Custom Elements ---------- */
         .checkbox-group {
             display: flex;
             flex-wrap: wrap;
@@ -450,7 +445,6 @@
             background: var(--c-primary-light);
         }
 
-        /* ---------- Loader ---------- */
         .loader-overlay {
             position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 300;
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -460,7 +454,6 @@
             border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 12px;
         }
 
-        /* ---------- Responsive Anpassungen ---------- */
         @media (max-width: 400px) {
             .brand { font-size: 0.8rem; max-width: 100px; }
             .btn { padding: 8px; font-size: 0.8rem; }
@@ -475,6 +468,19 @@
         }
         .no-wrap { white-space: nowrap; }
         .text-small { font-size: 0.7rem; }
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 2px 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+        }
+        .flex-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
@@ -499,6 +505,7 @@
             <a data-view="dashboard">Übersicht</a>
             <a data-view="team">Team</a>
             <a data-view="wizard">Generator</a>
+            <a data-view="avail">Verfügbarkeit</a>
             <a data-view="stats">Statistik</a>
         </nav>
         <button class="btn btn-primary" onclick="App.Modals.open('export')" style="width:auto; padding:5px 10px;">
@@ -557,6 +564,20 @@
             </div>
         </div>
 
+        <!-- Verfügbarkeit View (neu) -->
+        <div id="view-avail" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-calendar-check"></i> Verfügbarkeiten</h2>
+                    <button class="btn btn-primary" onclick="App.Modals.open('availImport')" style="width:auto;"><i class="fa-solid fa-upload"></i> Import</button>
+                </div>
+                <div id="avail-list" class="team-grid" style="max-height:400px; overflow-y:auto;"></div>
+                <div style="margin-top:12px;">
+                    <button class="btn btn-secondary" onclick="App.Availability.clearAll()">Alle löschen</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Wizard View -->
         <div id="view-wizard" class="view">
             <div class="card">
@@ -579,7 +600,7 @@
                             <div class="checkbox-group">
                                 <label class="checkbox-item"><input type="checkbox" id="gen-pref-doubles" checked> Doppelschichten bevorzugen</label>
                                 <label class="checkbox-item"><input type="checkbox" id="gen-random-fairness" checked> Zufällig fair</label>
-                                <label class="checkbox-item"><input type="checkbox" id="gen-require-turnier" checked> Mind. 1 Person mit Turnier-Kenntnis in Spätschicht</label>
+                                <label class="checkbox-item"><input type="checkbox" id="gen-require-turnier" checked> Spätschicht: Turnier-Profi nötig</label>
                             </div>
                         </div>
                         <div class="full-width">
@@ -595,13 +616,8 @@
                 <!-- Step 2 -->
                 <div id="step-2" class="wizard-step">
                     <h3 style="font-size:1rem;">Verfügbarkeit anpassen</h3>
-                    <p class="text-small">Wähle Personen ab, die im gesamten Zeitraum NICHT können.</p>
+                    <p class="text-small">Abwählen, wer in diesem Zeitraum NICHT kann ( ignorieren, wenn bereits datumsgenaue Verfügbarkeiten importiert wurden).</p>
                     <div id="gen-availability-list" class="team-grid" style="max-height:300px; overflow-y:auto;"></div>
-                    <div style="margin-top:12px; padding:8px; background:var(--c-primary-light); border-radius:8px;">
-                        <strong>Verfügbarkeitsdetails:</strong>
-                        <div id="availability-summary">Keine detaillierten Daten geladen.</div>
-                        <button class="btn btn-secondary" onclick="App.Wizard.editAvailability()" style="margin-top:8px;">Detaillierte Verfügbarkeit bearbeiten</button>
-                    </div>
                     <div style="display:flex; gap:8px; margin-top:12px;">
                         <button class="btn btn-secondary" onclick="App.Wizard.next(1)">Zurück</button>
                         <button class="btn btn-primary" onclick="App.Wizard.generate()">Plan generieren</button>
@@ -636,10 +652,12 @@
         <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-house"></i><span>Home</span></button>
         <button class="nav-item" data-view="team"><i class="fa-solid fa-users"></i><span>Team</span></button>
         <button class="nav-item" data-view="wizard"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Planen</span></button>
+        <button class="nav-item" data-view="avail"><i class="fa-solid fa-calendar-check"></i><span>Verf.</span></button>
         <button class="nav-item" data-view="stats"><i class="fa-solid fa-chart-simple"></i><span>Stats</span></button>
     </nav>
 
     <!-- Modals -->
+
     <!-- Modal: Eintrag bearbeiten -->
     <div id="modal-entry" class="modal-overlay">
         <div class="modal">
@@ -671,24 +689,37 @@
                 <input type="text" id="mem-name" placeholder="Name">
                 <select id="mem-role"><option value="fixed">Stamm</option><option value="rotate" selected>Springer</option><option value="emergency">Notfall</option></select>
                 <select id="mem-shift"><option value="both">Beide Schichten</option><option value="early">Nur Früh</option><option value="late">Nur Spät</option></select>
-                <div class="full-width">
-                    <label class="checkbox-item"><input type="checkbox" id="mem-turnier"> Turnier-Erfahrung (für Spätschicht)</label>
-                </div>
+                <label class="checkbox-item"><input type="checkbox" id="mem-turnier"> Turnier-Programm Kenntnis</label>
                 <button class="btn btn-primary" onclick="App.Team.save()">Speichern</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Export -->
+    <!-- Modal: Export mit Customizing -->
     <div id="modal-export" class="modal-overlay">
-        <div class="modal">
+        <div class="modal" style="max-width:600px;">
             <h3>Exportieren</h3>
             <div class="form-grid" style="grid-template-columns:1fr;">
-                <button class="btn btn-secondary" onclick="App.Export.pdfWithConfig()"><i class="fa-solid fa-file-pdf"></i> PDF (mit Einstellungen)</button>
-                <button class="btn btn-secondary" onclick="App.Export.csv()"><i class="fa-solid fa-file-csv"></i> CSV</button>
-                <button class="btn btn-secondary" onclick="App.Export.whatsapp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-                <button class="btn btn-secondary" onclick="App.Export.ics()"><i class="fa-solid fa-calendar-plus"></i> ICS (mit Auswahl)</button>
-                <button class="btn btn-secondary" onclick="App.Export.json()"><i class="fa-solid fa-database"></i> JSON Backup</button>
+                <div class="card-header"><h4>PDF Einstellungen</h4></div>
+                <input type="text" id="pdf-header" placeholder="Kopfzeile (z.B. SC Brombach)" value="SC Brombach">
+                <input type="text" id="pdf-footer" placeholder="Fußzeile (z.B. Stand: ...)" value="Generiert mit v6.0">
+                <select id="pdf-color">
+                    <option value="blue">Blau (Standard)</option>
+                    <option value="black">Schwarz/Weiß</option>
+                    <option value="green">Grün</option>
+                    <option value="red">Rot</option>
+                </select>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="App.Export.pdf('custom')"><i class="fa-solid fa-file-pdf"></i> PDF mit Einstellungen</button>
+                    <button class="btn btn-secondary" onclick="App.Export.pdf('standard')"><i class="fa-solid fa-file-pdf"></i> PDF Standard</button>
+                    <button class="btn btn-secondary" onclick="App.Export.pdf('list')"><i class="fa-solid fa-list"></i> PDF Kompakt</button>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="App.Export.csv()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                    <button class="btn btn-secondary" onclick="App.Export.whatsapp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+                    <button class="btn btn-secondary" onclick="App.Export.ics()"><i class="fa-solid fa-calendar-plus"></i> ICS (mit Auswahl)</button>
+                    <button class="btn btn-secondary" onclick="App.Export.json()"><i class="fa-solid fa-database"></i> JSON Backup</button>
+                </div>
             </div>
             <button class="btn-ghost" onclick="App.Modals.close('export')" style="margin-top:12px;">Schließen</button>
         </div>
@@ -696,26 +727,28 @@
 
     <!-- Modal: OCR Import (mit Mehrfachauswahl) -->
     <div id="modal-ocr" class="modal-overlay">
-        <div class="modal">
-            <h3>Smart Import</h3>
+        <div class="modal" style="max-width:700px;">
+            <h3>Smart Import (Bilder / CSV)</h3>
             <div class="drop-zone" id="ocr-dropzone">
                 <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem;"></i>
-                <p>Klick oder zieh Bilder/CSV rein (mehrere möglich)</p>
-                <input type="file" id="ocr-file" hidden multiple accept="image/*,.csv">
+                <p>Klick oder zieh mehrere Bilder/CSV rein</p>
+                <input type="file" id="ocr-file" multiple accept="image/*,.csv">
             </div>
             <div id="ocr-preview" style="max-height:200px; overflow-y:auto; margin:8px 0; font-size:0.8rem;"></div>
-            <div class="form-grid" style="grid-template-columns:1fr 1fr;">
-                <button class="btn btn-secondary" onclick="App.OCR.importAsSchedule()" id="ocr-import-schedule" disabled>Als Schichten</button>
-                <button class="btn btn-secondary" onclick="App.OCR.importAsAvailability()" id="ocr-import-avail" disabled>Als Verfügbarkeit</button>
+            <div class="flex-row" style="justify-content:space-between;">
+                <div>
+                    <button class="btn btn-secondary" onclick="App.OCR.importAsSchedule()" id="ocr-import-schedule" disabled>Als Schichten übernehmen</button>
+                    <button class="btn btn-secondary" onclick="App.OCR.importAsAvailability()" id="ocr-import-avail" disabled>Als Verfügbarkeit importieren</button>
+                </div>
+                <button class="btn-ghost" onclick="App.OCR.reset()">Zurücksetzen</button>
             </div>
             <div style="display:flex; gap:8px; margin-top:12px;">
-                <button class="btn-ghost" onclick="App.Modals.close('ocr')">Abbrechen</button>
-                <button class="btn-ghost" onclick="App.OCR.reset()">Zurücksetzen</button>
+                <button class="btn-ghost" onclick="App.Modals.close('ocr')">Fertig</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Plan Manager (mehrere Pläne) -->
+    <!-- Modal: Plan Manager -->
     <div id="modal-planManager" class="modal-overlay">
         <div class="modal">
             <h3>Pläne verwalten</h3>
@@ -740,7 +773,7 @@
         </div>
     </div>
 
-    <!-- Modal: OCR Editor (für manuelle Korrektur) -->
+    <!-- Modal: OCR-Editor -->
     <div id="modal-ocr-edit" class="modal-overlay">
         <div class="modal" style="max-width:700px;">
             <h3>OCR-Ergebnisse bearbeiten</h3>
@@ -752,28 +785,14 @@
         </div>
     </div>
 
-    <!-- Modal: PDF Einstellungen -->
-    <div id="modal-pdfsettings" class="modal-overlay">
+    <!-- Modal: Verfügbarkeit importieren (manuell / aus OCR) -->
+    <div id="modal-availImport" class="modal-overlay">
         <div class="modal">
-            <h3>PDF Einstellungen</h3>
-            <div class="form-grid">
-                <div><label>Kopfzeile</label><input type="text" id="pdf-header" value="SC Brombach Einsatzplan"></div>
-                <div><label>Fußzeile</label><input type="text" id="pdf-footer" value="Generiert mit v6.0"></div>
-                <div><label>Layout</label>
-                    <select id="pdf-layout">
-                        <option value="standard">Standard (farbig)</option>
-                        <option value="chess">Schachbrett (S/W)</option>
-                        <option value="compact">Kompakt</option>
-                        <option value="detailed">Detailliert mit Verfügbarkeit</option>
-                    </select>
-                </div>
-                <div><label>Schriftgröße</label><input type="number" id="pdf-fontsize" value="9" min="6" max="14"></div>
-                <div class="full-width">
-                    <label class="checkbox-item"><input type="checkbox" id="pdf-page-numbers" checked> Seitenzahlen</label>
-                </div>
-                <button class="btn btn-primary" onclick="App.Export.generatePDFWithSettings()">PDF erstellen</button>
-                <button class="btn-ghost" onclick="App.Modals.close('pdfsettings')">Abbrechen</button>
-            </div>
+            <h3>Verfügbarkeiten importieren</h3>
+            <p>Die erkannten Daten aus dem Scan werden als Verfügbarkeiten für die jeweiligen Daten gespeichert.</p>
+            <button class="btn btn-primary" onclick="App.Availability.importFromOCR()">Aus letztem Scan importieren</button>
+            <button class="btn btn-secondary" onclick="App.Modals.open('ocr')">Neuen Scan durchführen</button>
+            <button class="btn-ghost" onclick="App.Modals.close('availImport')">Schließen</button>
         </div>
     </div>
 
@@ -814,53 +833,45 @@
                         timer = setTimeout(() => fn.apply(this, args), delay);
                     };
                 },
-                normalizeTime: (timeStr) => {
-                    // Konvertiert "17:00 bis 18:30" zu "17:00 - 18:30"
-                    return timeStr.replace(' bis ', ' - ');
-                },
-                // Kombiniert mehrere OCR-Ergebnisse (gleiches Datum+Zeit werden zusammengeführt)
-                mergeOCRData: (arrays) => {
-                    const map = new Map();
-                    arrays.flat().forEach(item => {
-                        const key = `${item.date}|${item.time}`;
-                        if (map.has(key)) {
-                            const existing = map.get(key);
-                            // Namen vereinigen (doppelte entfernen)
-                            existing.names = [...new Set([...existing.names, ...item.names])];
-                        } else {
-                            map.set(key, { ...item, names: [...item.names] });
-                        }
-                    });
-                    return Array.from(map.values());
+                // Namensnormalisierung für OCR (Du = Kaspar, Tilde/Telefonnummern entfernen)
+                normalizeName: (raw) => {
+                    let name = raw.trim();
+                    // "Du" → Kaspar
+                    if (name === 'Du' || name === 'du') return 'Kaspar';
+                    // Entferne vorangestellte Tilde, Telefonnummern (beginnend mit + oder Zahlen)
+                    name = name.replace(/^~/, '');
+                    name = name.replace(/\+491?[0-9 ]+/g, '').trim();
+                    // Leere Einträge ignorieren
+                    return name;
                 }
             };
 
-            // ---------- Datenstruktur: Mehrere Pläne mit Verfügbarkeiten ----------
+            // ---------- Datenstruktur: Mehrere Pläne + Verfügbarkeiten pro Plan ----------
             const DEFAULT_PLANS = {
                 'default': {
                     id: 'default',
                     name: 'Hauptplan',
                     schedule: [],
-                    availability: [], // Array von {date, time, names} für detaillierte Verfügbarkeit
-                    settings: { minPerShift: 2, maxPerShift: 3, preferDoubles: true }
+                    availabilities: [], // Array von { personId, date, shiftType }  (shiftType: 'early', 'late', 'both')
+                    settings: { minPerShift: 2, maxPerShift: 3, preferDoubles: true, requireTurnier: true }
                 }
             };
             const DEFAULT_TEAM = [
-                { id: '1', name: 'Kaspar', role: 'fixed', shift: 'both', turnier: true },
-                { id: '2', name: 'Uwe', role: 'rotate', shift: 'late', turnier: false },
-                { id: '3', name: 'Nico', role: 'rotate', shift: 'both', turnier: true },
-                { id: '4', name: 'Dmitry', role: 'rotate', shift: 'both', turnier: false },
-                { id: '5', name: 'Gento', role: 'rotate', shift: 'early', turnier: false },
-                { id: '6', name: 'Stephan', role: 'rotate', shift: 'early', turnier: false },
-                { id: '7', name: 'Markus', role: 'emergency', shift: 'both', turnier: true }
+                { id: '1', name: 'Kaspar', role: 'fixed', shift: 'both', turnierPro: true },
+                { id: '2', name: 'Uwe', role: 'rotate', shift: 'late', turnierPro: false },
+                { id: '3', name: 'Nico', role: 'rotate', shift: 'both', turnierPro: true },
+                { id: '4', name: 'Dmitry', role: 'rotate', shift: 'both', turnierPro: true },
+                { id: '5', name: 'Gento', role: 'rotate', shift: 'early', turnierPro: false },
+                { id: '6', name: 'Stephan', role: 'rotate', shift: 'early', turnierPro: false },
+                { id: '7', name: 'Markus', role: 'emergency', shift: 'both', turnierPro: true }
             ];
 
             let appState = {
                 plans: {},
                 currentPlanId: 'default',
                 team: [...DEFAULT_TEAM],
-                tempAvailability: [], // global gesperrte Personen (Ids)
-                ocrRawData: [],
+                tempAvailability: [], // für Wizard (personIds die NICHT verfügbar)
+                ocrRawData: [], // gesammelte OCR-Ergebnisse (mehrere Dateien)
                 icsSelectedPersons: []
             };
 
@@ -883,10 +894,10 @@
                 }
                 if (!appState.plans[appState.currentPlanId]) {
                     appState.currentPlanId = 'default';
-                    appState.plans.default = { id: 'default', name: 'Hauptplan', schedule: [], availability: [], settings: { minPerShift:2, maxPerShift:3, preferDoubles:true } };
+                    appState.plans.default = { id: 'default', name: 'Hauptplan', schedule: [], availabilities: [], settings: { minPerShift:2, maxPerShift:3, preferDoubles:true, requireTurnier:true } };
                 }
-                // Sicherstellen, dass jedes Teammitglied ein turnier-Feld hat
-                appState.team.forEach(m => { if (m.turnier === undefined) m.turnier = false; });
+                // Jeder Plan sollte availabilities haben
+                Object.values(appState.plans).forEach(p => { if (!p.availabilities) p.availabilities = []; });
             }
             function saveState() {
                 const toStore = {
@@ -903,7 +914,6 @@
 
             // ---------- Event-Delegation einrichten ----------
             function setupEventDelegation() {
-                // Navigation
                 document.querySelectorAll('[data-view]').forEach(el => {
                     el.addEventListener('click', (e) => {
                         e.preventDefault();
@@ -912,7 +922,6 @@
                     });
                 });
 
-                // Team-Grid: Klick auf Bearbeiten-Button
                 document.getElementById('team-grid').addEventListener('click', (e) => {
                     const btn = e.target.closest('.edit-member-btn');
                     if (btn) {
@@ -922,7 +931,6 @@
                     }
                 });
 
-                // Tabelle: Klick auf Bearbeiten-Button
                 document.getElementById('table-body').addEventListener('click', (e) => {
                     const btn = e.target.closest('.edit-entry-btn');
                     if (btn) {
@@ -932,7 +940,6 @@
                     }
                 });
 
-                // Verfügbarkeits-Checkboxen im Wizard (Step 2) - globale Sperre
                 document.getElementById('gen-availability-list').addEventListener('change', (e) => {
                     if (e.target.type === 'checkbox') {
                         const memberId = e.target.value;
@@ -944,7 +951,7 @@
                     }
                 });
 
-                // DropZone für OCR (mehrere Dateien)
+                // OCR DropZone
                 const dropZone = document.getElementById('ocr-dropzone');
                 const fileInput = document.getElementById('ocr-file');
                 dropZone.addEventListener('click', () => fileInput.click());
@@ -955,14 +962,13 @@
                     dropZone.classList.remove('dragover');
                     if (e.dataTransfer.files.length) {
                         fileInput.files = e.dataTransfer.files;
-                        App.OCR.process(Array.from(e.dataTransfer.files));
+                        App.OCR.processMultiple(e.dataTransfer.files);
                     }
                 });
                 fileInput.addEventListener('change', (e) => {
-                    if (e.target.files.length) App.OCR.process(Array.from(e.target.files));
+                    if (e.target.files.length) App.OCR.processMultiple(e.target.files);
                 });
 
-                // Modal-Overlay schließen bei Klick auf Hintergrund
                 document.querySelectorAll('.modal-overlay').forEach(overlay => {
                     overlay.addEventListener('click', (e) => {
                         if (e.target === overlay) {
@@ -970,6 +976,10 @@
                             App.Modals.close(id);
                         }
                     });
+                });
+
+                document.getElementById('entry-time').addEventListener('change', (e) => {
+                    document.getElementById('entry-time-custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
                 });
             }
 
@@ -980,9 +990,6 @@
                     this.UI.updatePlanSelector();
                     this.UI.renderAll();
                     document.getElementById('gen-start-date').valueAsDate = Utils.getNextFriday(new Date());
-                    document.getElementById('entry-time').addEventListener('change', (e) => {
-                        document.getElementById('entry-time-custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
-                    });
                     setupEventDelegation();
                     Utils.hideLoader();
                 },
@@ -993,6 +1000,7 @@
                     document.querySelectorAll('.nav-item, .desktop-nav a').forEach(el => el.classList.remove('active'));
                     document.querySelectorAll(`[data-view="${view}"]`).forEach(el => el.classList.add('active'));
                     if (view === 'stats') this.Stats.render();
+                    if (view === 'avail') this.Availability.renderList();
                 },
 
                 Modals: {
@@ -1003,7 +1011,6 @@
                         if (id === 'member') this.prepareMemberModal(null);
                         if (id === 'planManager') this.renderPlanList();
                         if (id === 'ics-personen') this.prepareICSPersonen();
-                        if (id === 'pdfsettings') this.preparePDFSettings();
                     },
                     close(id) {
                         const modal = document.getElementById('modal-' + id);
@@ -1061,7 +1068,7 @@
                                 document.getElementById('mem-name').value = member.name;
                                 document.getElementById('mem-role').value = member.role;
                                 document.getElementById('mem-shift').value = member.shift;
-                                document.getElementById('mem-turnier').checked = member.turnier || false;
+                                document.getElementById('mem-turnier').checked = member.turnierPro || false;
                             }
                         } else {
                             document.getElementById('mem-id').value = '';
@@ -1078,7 +1085,7 @@
                             const div = document.createElement('div');
                             div.className = 'member-card';
                             div.innerHTML = `
-                                <div class="info"><strong>${plan.name}</strong> (${plan.schedule.length} Schichten, ${plan.availability?.length || 0} Verfügbarkeiten)</div>
+                                <div class="info"><strong>${plan.name}</strong> (${plan.schedule.length} Schichten, ${plan.availabilities.length} Verfüg.)</div>
                                 <div class="member-actions">
                                     <button class="btn-ghost" onclick="App.Plan.switch('${plan.id}')"><i class="fa-solid fa-check"></i></button>
                                     <button class="btn-ghost" onclick="App.Plan.rename('${plan.id}')"><i class="fa-solid fa-pen"></i></button>
@@ -1097,14 +1104,6 @@
                             label.innerHTML = `<input type="checkbox" value="${m.name}"> ${m.name}`;
                             container.appendChild(label);
                         });
-                    },
-                    preparePDFSettings() {
-                        // Voreinstellungen aus localStorage laden? (optional)
-                        document.getElementById('pdf-header').value = 'SC Brombach Einsatzplan';
-                        document.getElementById('pdf-footer').value = 'Generiert mit v6.0';
-                        document.getElementById('pdf-layout').value = 'standard';
-                        document.getElementById('pdf-fontsize').value = '9';
-                        document.getElementById('pdf-page-numbers').checked = true;
                     }
                 },
 
@@ -1126,8 +1125,8 @@
                             id,
                             name,
                             schedule: [],
-                            availability: [],
-                            settings: { minPerShift:2, maxPerShift:3, preferDoubles:true }
+                            availabilities: [],
+                            settings: { minPerShift:2, maxPerShift:3, preferDoubles:true, requireTurnier:true }
                         };
                         saveState();
                         this.switch(id);
@@ -1199,7 +1198,8 @@
                                     if (mem.role === 'fixed') color = '#dbeafe';
                                     else if (mem.role === 'emergency') color = '#fee2e2';
                                 }
-                                return `<span class="chip" style="background:${color};">${n}</span>`;
+                                let turnierIcon = (mem && mem.turnierPro) ? ' <i class="fa-solid fa-chess-board" style="font-size:0.7rem;"></i>' : '';
+                                return `<span class="chip" style="background:${color};">${n}${turnierIcon}</span>`;
                             }).join(' ');
                             const dateDisplay = entry.date === lastDate ? '<span style="opacity:0.3">"</span>' : `<strong>${entry.date}</strong>`;
                             lastDate = entry.date;
@@ -1221,10 +1221,10 @@
                             let badgeClass = 'role-rotate', roleLabel = 'Springer';
                             if (m.role === 'fixed') { badgeClass = 'role-fixed'; roleLabel = 'Stamm'; }
                             if (m.role === 'emergency') { badgeClass = 'role-emergency'; roleLabel = 'Notfall'; }
-                            const turnierIcon = m.turnier ? '<i class="fa-solid fa-chess-queen" style="color:var(--c-primary); margin-left:4px;" title="Turnier-Erfahrung"></i>' : '';
+                            const turnierBadge = m.turnierPro ? '<span class="turnier-pro-badge"><i class="fa-regular fa-chess-queen"></i> Pro</span>' : '';
                             div.innerHTML = `
                                 <div class="info">
-                                    <div class="name">${m.name} ${turnierIcon}</div>
+                                    <div class="name">${m.name} ${turnierBadge}</div>
                                     <div class="details">${m.shift === 'both' ? 'Beide' : (m.shift==='early'?'Nur Früh':'Nur Spät')}</div>
                                 </div>
                                 <div class="member-actions">
@@ -1291,17 +1291,92 @@
                         const name = document.getElementById('mem-name').value.trim();
                         const role = document.getElementById('mem-role').value;
                         const shift = document.getElementById('mem-shift').value;
-                        const turnier = document.getElementById('mem-turnier').checked;
+                        const turnierPro = document.getElementById('mem-turnier').checked;
                         if (!name) return alert('Name erforderlich');
                         if (id) {
                             const idx = appState.team.findIndex(m => m.id === id);
-                            if (idx !== -1) appState.team[idx] = { id, name, role, shift, turnier };
+                            if (idx !== -1) appState.team[idx] = { id, name, role, shift, turnierPro };
                         } else {
-                            appState.team.push({ id: Utils.uid(), name, role, shift, turnier });
+                            appState.team.push({ id: Utils.uid(), name, role, shift, turnierPro });
                         }
                         saveState();
                         App.UI.renderTeam();
                         App.Modals.close('member');
+                    }
+                },
+
+                // Verfügbarkeiten verwalten
+                Availability: {
+                    renderList() {
+                        const plan = currentPlan();
+                        const container = document.getElementById('avail-list');
+                        container.innerHTML = '';
+                        if (plan.availabilities.length === 0) {
+                            container.innerHTML = '<p class="text-small">Keine Verfügbarkeiten hinterlegt. Importiere sie über den Scan.</p>';
+                            return;
+                        }
+                        // Gruppiere nach Datum
+                        const byDate = {};
+                        plan.availabilities.forEach(a => {
+                            if (!byDate[a.date]) byDate[a.date] = { early: [], late: [], both: [] };
+                            if (a.shiftType === 'early') byDate[a.date].early.push(a.personId);
+                            else if (a.shiftType === 'late') byDate[a.date].late.push(a.personId);
+                            else if (a.shiftType === 'both') byDate[a.date].both.push(a.personId);
+                        });
+                        Object.keys(byDate).sort().forEach(date => {
+                            const card = document.createElement('div');
+                            card.className = 'member-card';
+                            card.style.flexDirection = 'column';
+                            card.style.alignItems = 'flex-start';
+                            const earlyNames = byDate[date].early.map(id => appState.team.find(m => m.id === id)?.name).filter(Boolean).join(', ');
+                            const lateNames = byDate[date].late.map(id => appState.team.find(m => m.id === id)?.name).filter(Boolean).join(', ');
+                            const bothNames = byDate[date].both.map(id => appState.team.find(m => m.id === id)?.name).filter(Boolean).join(', ');
+                            card.innerHTML = `
+                                <div><strong>${date}</strong></div>
+                                <div class="text-small">Früh: ${earlyNames || '—'}</div>
+                                <div class="text-small">Spät: ${lateNames || '—'}</div>
+                                <div class="text-small">Beide: ${bothNames || '—'}</div>
+                                <button class="btn-ghost" onclick="App.Availability.removeDate('${date}')" style="align-self:flex-end;"><i class="fa-solid fa-trash"></i></button>
+                            `;
+                            container.appendChild(card);
+                        });
+                    },
+                    removeDate(date) {
+                        const plan = currentPlan();
+                        plan.availabilities = plan.availabilities.filter(a => a.date !== date);
+                        saveState();
+                        this.renderList();
+                    },
+                    clearAll() {
+                        if (confirm('Alle Verfügbarkeiten löschen?')) {
+                            currentPlan().availabilities = [];
+                            saveState();
+                            this.renderList();
+                        }
+                    },
+                    importFromOCR() {
+                        const plan = currentPlan();
+                        const ocr = appState.ocrRawData;
+                        if (!ocr.length) return alert('Keine OCR-Daten vorhanden. Führe zuerst einen Scan durch.');
+                        ocr.forEach(item => {
+                            const date = item.date;
+                            const shiftType = item.time.includes('17:00') ? 'early' : (item.time.includes('18:15') ? 'late' : 'both'); // vereinfacht
+                            item.names.forEach(rawName => {
+                                const normName = Utils.normalizeName(rawName);
+                                const person = appState.team.find(m => m.name.toLowerCase() === normName.toLowerCase());
+                                if (person) {
+                                    // Prüfen ob bereits existiert
+                                    const exists = plan.availabilities.some(a => a.personId === person.id && a.date === date && a.shiftType === shiftType);
+                                    if (!exists) {
+                                        plan.availabilities.push({ personId: person.id, date, shiftType });
+                                    }
+                                }
+                            });
+                        });
+                        saveState();
+                        this.renderList();
+                        App.Modals.close('availImport');
+                        App.nav('avail');
                     }
                 },
 
@@ -1316,31 +1391,17 @@
                     renderAvailability() {
                         const container = document.getElementById('gen-availability-list');
                         container.innerHTML = '';
-                        // Globale Sperre: Alle als verfügbar markieren (Checkbox an = gesperrt)
-                        appState.tempAvailability = []; // zurücksetzen
+                        // Standardmäßig alle als verfügbar markieren (Checkbox an)
+                        appState.tempAvailability = appState.team.map(m => m.id);
                         appState.team.forEach(m => {
                             const div = document.createElement('div');
                             div.className = 'member-card';
                             div.innerHTML = `
                                 <span>${m.name}</span>
-                                <input type="checkbox" value="${m.id}" style="width:18px; height:18px;">
+                                <input type="checkbox" value="${m.id}" checked style="width:18px; height:18px;">
                             `;
                             container.appendChild(div);
                         });
-
-                        // Zusammenfassung der detaillierten Verfügbarkeit
-                        const avail = currentPlan().availability || [];
-                        const summary = document.getElementById('availability-summary');
-                        if (avail.length === 0) {
-                            summary.innerText = 'Keine detaillierten Verfügbarkeiten geladen.';
-                        } else {
-                            summary.innerText = `${avail.length} Termine mit Verfügbarkeiten geladen.`;
-                        }
-                    },
-                    editAvailability() {
-                        // Öffnet den OCR-Editor mit den aktuellen availability-Daten des Plans
-                        appState.ocrRawData = currentPlan().availability || [];
-                        App.OCR.openEditor();
                     },
                     generate() {
                         Utils.showLoader('Generiere fairen Plan...');
@@ -1358,11 +1419,14 @@
                             const history = {};
                             appState.team.forEach(m => history[m.id] = 0);
 
-                            // Verfügbarkeits-Map erstellen (date|time -> Set von Namen)
-                            const availabilityMap = new Map();
-                            (currentPlan().availability || []).forEach(a => {
-                                const key = `${a.date}|${a.time}`;
-                                availabilityMap.set(key, new Set(a.names));
+                            // Verfügbarkeiten aus dem Plan holen (falls vorhanden)
+                            const plan = currentPlan();
+                            const availByDate = {};
+                            plan.availabilities.forEach(a => {
+                                if (!availByDate[a.date]) availByDate[a.date] = { early: [], late: [], both: [] };
+                                if (a.shiftType === 'early') availByDate[a.date].early.push(a.personId);
+                                else if (a.shiftType === 'late') availByDate[a.date].late.push(a.personId);
+                                else if (a.shiftType === 'both') availByDate[a.date].both.push(a.personId);
                             });
 
                             for (let w = 0; w < weeks; w++) {
@@ -1372,60 +1436,58 @@
                                     { time: "18:15 - 19:45", type: "late", assigned: [] }
                                 ];
 
-                                // Für jede Schicht: Verfügbare Personen ermitteln (global nicht gesperrt UND falls Map existiert, in Map enthalten)
-                                const getAvailable = (timeStr, type) => {
-                                    const key = `${dateStr}|${timeStr}`;
-                                    const availSet = availabilityMap.get(key);
-                                    return appState.team.filter(m => {
-                                        if (appState.tempAvailability.includes(m.id)) return false; // global gesperrt
-                                        if (availSet) {
-                                            return availSet.has(m.name); // nur wenn in detaillierter Liste
-                                        }
-                                        return true; // keine detaillierte -> alle verfügbar
-                                    });
-                                };
+                                // Verfügbare Personen für dieses Datum ermitteln
+                                const availToday = availByDate[dateStr] || { early: [], late: [], both: [] };
+                                const allAvailIds = [...availToday.early, ...availToday.late, ...availToday.both];
 
-                                // Fixed zuweisen (nur wenn verfügbar)
+                                // Helfer: prüft ob eine Person an diesem Datum für eine Schicht verfügbar ist
+                                function isAvailable(personId, shiftType) {
+                                    if (allAvailIds.length === 0) {
+                                        // Keine spezifischen Verfügbarkeiten => alle gelten als verfügbar (außer temporär abgewählt)
+                                        return !appState.tempAvailability.includes(personId);
+                                    }
+                                    // Spezifische Verfügbarkeit: in both oder im entsprechenden shift
+                                    return availToday.both.includes(personId) || availToday[shiftType].includes(personId);
+                                }
+
+                                // 1. Fixed zuweisen (nur wenn verfügbar)
                                 shifts.forEach(shift => {
-                                    const available = getAvailable(shift.time, shift.type);
-                                    const fixed = available.filter(m => m.role === 'fixed' && (m.shift === 'both' || m.shift === shift.type));
+                                    const fixed = appState.team.filter(m =>
+                                        m.role === 'fixed' &&
+                                        isAvailable(m.id, shift.type) &&
+                                        (m.shift === 'both' || m.shift === shift.type)
+                                    );
                                     fixed.forEach(m => {
-                                        if (shift.assigned.length < max) { // Fixed zählen zum Max
-                                            shift.assigned.push(m);
-                                            history[m.id]++;
-                                        }
+                                        shift.assigned.push(m);
+                                        history[m.id]++;
                                     });
                                 });
 
-                                // Springer und ggf. Notfall zuweisen
+                                // 2. Springer zuteilen (unter Berücksichtigung von Doppelschichten & TurnierPro)
                                 shifts.forEach((shift, sIdx) => {
                                     let currentCount = shift.assigned.length;
-                                    const available = getAvailable(shift.time, shift.type);
+                                    if (currentCount >= max) return;
 
-                                    // Bereits zugewiesene Fixed abziehen
-                                    const remainingSlots = max - currentCount;
-                                    if (remainingSlots <= 0) return;
-
-                                    // Kandidaten: rotate, die noch nicht zugewiesen und verfügbar
-                                    let candidates = available.filter(m => 
-                                        m.role === 'rotate' && 
-                                        !shift.assigned.includes(m) &&
-                                        (m.shift === 'both' || m.shift === shift.type)
+                                    let candidates = appState.team.filter(m =>
+                                        m.role === 'rotate' &&
+                                        isAvailable(m.id, shift.type) &&
+                                        (m.shift === 'both' || m.shift === shift.type) &&
+                                        !shift.assigned.includes(m)
                                     );
 
-                                    // Sortieren nach Fairness und Doppelschicht-Bonus
+                                    // Wenn Spätschicht und Turnier-Profi erforderlich, filtern
+                                    if (requireTurnier && shift.type === 'late') {
+                                        candidates = candidates.filter(m => m.turnierPro);
+                                    }
+
+                                    // Sortierung nach Historie und Doppelschicht-Bonus
                                     candidates.sort((a, b) => {
                                         let scoreA = history[a.id] || 0;
                                         let scoreB = history[b.id] || 0;
                                         if (preferDoubles && sIdx === 1) {
-                                            // Wenn a in Frühschicht dieser Woche, Bonus
+                                            // Bevorzuge diejenigen, die bereits in der Frühschicht sind
                                             if (shifts[0].assigned.includes(a)) scoreA -= 2;
                                             if (shifts[0].assigned.includes(b)) scoreB -= 2;
-                                        }
-                                        // Turnier-Bonus für Spätschicht
-                                        if (shift.type === 'late' && requireTurnier) {
-                                            if (a.turnier) scoreA -= 1;
-                                            if (b.turnier) scoreB -= 1;
                                         }
                                         if (randomFair) {
                                             scoreA += Math.random() * 0.5;
@@ -1434,31 +1496,30 @@
                                         return scoreA - scoreB;
                                     });
 
-                                    // So viele wie möglich von den Springern nehmen
-                                    const toAdd = Math.min(remainingSlots, candidates.length);
+                                    const toAdd = Math.min(max - currentCount, candidates.length);
                                     for (let i = 0; i < toAdd; i++) {
                                         shift.assigned.push(candidates[i]);
                                         history[candidates[i].id]++;
                                     }
+                                });
 
-                                    // Falls immer noch nicht min erreicht, Notfall (emergency) verwenden
+                                // 3. Notfall-Reserve: wenn immer noch nicht genug, emergency dazu (falls verfügbar)
+                                shifts.forEach(shift => {
                                     if (shift.assigned.length < min) {
-                                        let emergencyCandidates = available.filter(m => 
-                                            m.role === 'emergency' && 
-                                            !shift.assigned.includes(m) &&
-                                            (m.shift === 'both' || m.shift === shift.type)
+                                        const emergency = appState.team.filter(m =>
+                                            m.role === 'emergency' &&
+                                            isAvailable(m.id, shift.type) &&
+                                            (m.shift === 'both' || m.shift === shift.type) &&
+                                            !shift.assigned.includes(m)
                                         );
-                                        emergencyCandidates.sort((a,b) => history[a.id] - history[b.id]);
-                                        const needed = min - shift.assigned.length;
-                                        const addEmerg = Math.min(needed, emergencyCandidates.length);
-                                        for (let i = 0; i < addEmerg; i++) {
-                                            shift.assigned.push(emergencyCandidates[i]);
-                                            history[emergencyCandidates[i].id]++;
-                                        }
+                                        emergency.slice(0, min - shift.assigned.length).forEach(m => {
+                                            shift.assigned.push(m);
+                                            history[m.id]++;
+                                        });
                                     }
                                 });
 
-                                // Schichten nur speichern, wenn mindestens min erreicht
+                                // Nur eintragen wenn mindestens min erreicht
                                 shifts.forEach(s => {
                                     if (s.assigned.length >= min) {
                                         newEntries.push({
@@ -1474,7 +1535,6 @@
                                 currentDate.setDate(currentDate.getDate() + 7);
                             }
 
-                            const plan = currentPlan();
                             plan.schedule.push(...newEntries);
                             saveState();
                             Utils.hideLoader();
@@ -1485,114 +1545,106 @@
                 },
 
                 OCR: {
-                    async process(files) {
-                        if (!files || files.length === 0) return;
-                        Utils.showLoader(`Analysiere ${files.length} Datei(en)...`);
-                        const preview = document.getElementById('ocr-preview');
-                        preview.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> OCR läuft...';
-
-                        let allData = [];
-
-                        for (const file of files) {
-                            let data = [];
+                    processedFiles: 0,
+                    async processMultiple(files) {
+                        appState.ocrRawData = []; // zurücksetzen
+                        Utils.showLoader(`Verarbeite ${files.length} Datei(en)...`);
+                        for (let file of files) {
                             if (file.name.endsWith('.csv')) {
                                 const text = await file.text();
-                                data = this.parseCSV(text);
+                                const data = this.parseCSV(text);
+                                appState.ocrRawData.push(...data);
                             } else {
                                 try {
                                     const worker = await Tesseract.createWorker('deu');
                                     const ret = await worker.recognize(file);
                                     await worker.terminate();
-                                    data = this.parseWhatsAppText(ret.data.text);
+                                    const data = this.parseWhatsAppText(ret.data.text);
+                                    appState.ocrRawData.push(...data);
                                 } catch (e) {
                                     console.warn('OCR Fehler', e);
-                                    preview.innerHTML += `<br>Fehler bei ${file.name}`;
-                                    continue;
                                 }
                             }
-                            allData.push(data);
                         }
-
-                        // Zusammenführen der Daten aus verschiedenen Dateien
-                        appState.ocrRawData = Utils.mergeOCRData(allData);
-                        this.renderPreview(appState.ocrRawData);
                         Utils.hideLoader();
+                        this.renderPreview(appState.ocrRawData);
                         document.getElementById('ocr-import-schedule').disabled = appState.ocrRawData.length === 0;
                         document.getElementById('ocr-import-avail').disabled = appState.ocrRawData.length === 0;
                     },
 
+                    // Spezielles Parsing für WhatsApp-Umfragen (basierend auf Screenshots)
                     parseWhatsAppText(text) {
                         const lines = text.split('\n');
                         const result = [];
                         let currentDate = '';
                         let currentTime = '';
                         let collecting = false;
-                        const teamNames = appState.team.map(m => m.name.toLowerCase());
-                        const nameMap = new Map(appState.team.map(m => [m.name.toLowerCase(), m.name]));
+                        const nameMap = {
+                            'du': 'Kaspar',
+                            '~dmitry': 'Dmitry',
+                            '~stephan': 'Stephan',
+                            'gento': 'Gento',
+                            'gentoe': 'Gento',
+                            'markus haag': 'Markus',
+                            'uwe hecht': 'Uwe',
+                            'nico brandl': 'Nico'
+                        };
 
                         for (let line of lines) {
                             line = line.trim();
-                            if (!line) continue;
-
-                            // Termin-Überschrift: z.B. "06.03 - 17:00 bis 18:30"
-                            const match = line.match(/(\d{2}\.\d{2})\s*[-–]\s*(\d{2}:\d{2})\s*(bis|-)\s*(\d{2}:\d{2})/);
-                            if (match) {
-                                // Vorherigen Termin abschließen
-                                if (currentDate && currentTime && collecting) {
-                                    // Namen wurden bereits gesammelt
-                                }
-                                currentDate = match[1];
-                                const start = match[2];
-                                const end = match[4];
-                                currentTime = Utils.normalizeTime(`${start} - ${end}`);
+                            // Datum erkennen: "06.03 - 17:00 bis 18:30"
+                            const dateTimeMatch = line.match(/(\d{2}\.\d{2})\s*[-–]\s*(\d{2}:\d{2})\s*bis\s*(\d{2}:\d{2})/);
+                            if (dateTimeMatch) {
+                                currentDate = dateTimeMatch[1];
+                                const start = dateTimeMatch[2];
+                                const end = dateTimeMatch[3];
+                                // Grobe Zuordnung: 17:00 = early, 18:15 = late
+                                if (start === '17:00') currentTime = '17:00 - 18:30';
+                                else if (start === '18:15') currentTime = '18:15 - 19:45';
+                                else currentTime = `${start} - ${end}`;
                                 collecting = true;
-                                // Neuen Eintrag anlegen
-                                result.push({
-                                    date: currentDate,
-                                    time: currentTime,
-                                    names: []
-                                });
                                 continue;
                             }
-
-                            // Namen erkennen (wenn wir in einem Termin sind)
-                            if (collecting && result.length > 0) {
-                                const last = result[result.length-1];
-                                // "Du" -> Kaspar
-                                if (line.includes('Du') || line.includes('du')) {
-                                    if (!last.names.includes('Kaspar')) last.names.push('Kaspar');
-                                }
-                                // Suche nach bekannten Namen (case-insensitive, ignoriere ~ und Telefonnummern)
-                                for (let [lowerName, origName] of nameMap.entries()) {
-                                    if (line.toLowerCase().includes(lowerName)) {
-                                        if (!last.names.includes(origName)) last.names.push(origName);
+                            // "4 Stimmen" ignorieren
+                            if (line.includes('Stimmen') || line.includes('Stimmabgaben')) continue;
+                            // Namen sammeln
+                            if (collecting && line.length > 0 && !line.match(/^\d{2}:\d{2}/) && !line.includes('+49') && !line.includes('+41')) {
+                                let name = Utils.normalizeName(line);
+                                if (name && name.length > 1) {
+                                    // Mapping auf bekannte Namen
+                                    const lower = name.toLowerCase();
+                                    for (let [key, mapped] of Object.entries(nameMap)) {
+                                        if (lower.includes(key)) {
+                                            name = mapped;
+                                            break;
+                                        }
                                     }
+                                    // Prüfen, ob es einen Eintrag für aktuelles Datum/Zeit gibt
+                                    let entry = result.find(e => e.date === currentDate && e.time === currentTime);
+                                    if (!entry) {
+                                        entry = { date: currentDate, time: currentTime, names: [] };
+                                        result.push(entry);
+                                    }
+                                    if (!entry.names.includes(name)) entry.names.push(name);
                                 }
-                                // Auch nach "~Name" suchen (z.B. "~Dmitry")
-                                const tildeMatch = line.match(/~(\w+)/);
-                                if (tildeMatch) {
-                                    const tildeName = tildeMatch[1];
-                                    const found = appState.team.find(m => m.name.toLowerCase() === tildeName.toLowerCase());
-                                    if (found && !last.names.includes(found.name)) last.names.push(found.name);
-                                }
-                                // Telefonnummern ignorieren
                             }
                         }
-                        // Leere Einträge entfernen
-                        return result.filter(r => r.names.length > 0);
+                        return result;
                     },
 
                     parseCSV(text) {
                         const lines = text.split('\n');
                         const data = [];
-                        lines.forEach(l => {
-                            if (!l.trim()) return;
+                        lines.forEach((l, idx) => {
+                            if (idx === 0 && l.includes('Datum')) return; // Kopfzeile
                             const parts = l.split(';');
                             if (parts.length >= 3) {
-                                let date = parts[0].trim();
-                                let time = Utils.normalizeTime(parts[1].trim());
-                                let names = parts[2].split(',').map(s => s.trim());
-                                data.push({ date, time, names });
+                                const names = parts[2].split(',').map(s => s.trim());
+                                data.push({
+                                    date: parts[0].trim(),
+                                    time: parts[1].trim().replace('bis', '-'),
+                                    names: names
+                                });
                             }
                         });
                         return data;
@@ -1633,7 +1685,7 @@
                             div.style.flexDirection = 'column';
                             div.style.alignItems = 'stretch';
                             div.innerHTML = `
-                                <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                                <div style="display:flex; gap:4px;">
                                     <input type="text" value="${row.date}" placeholder="Datum" data-idx="${idx}" class="ocr-edit-date" style="width:70px;">
                                     <select data-idx="${idx}" class="ocr-edit-time">
                                         <option value="17:00 - 18:30" ${row.time.includes('17:00')?'selected':''}>Früh</option>
@@ -1688,16 +1740,9 @@
                     },
 
                     importAsAvailability() {
-                        const plan = currentPlan();
-                        plan.availability = appState.ocrRawData; // speichern als detaillierte Verfügbarkeit
-                        saveState();
-                        alert('Verfügbarkeitsdaten wurden übernommen. Du kannst sie im Wizard unter "Detaillierte Verfügbarkeit bearbeiten" anpassen.');
+                        // Öffne das Verfügbarkeits-Import-Modal zur Bestätigung
                         App.Modals.close('ocr');
-                        App.nav('wizard');
-                        // Step 2 aktualisieren, falls offen
-                        if (document.getElementById('step-2').classList.contains('active')) {
-                            App.Wizard.renderAvailability();
-                        }
+                        App.Modals.open('availImport');
                     },
 
                     reset() {
@@ -1741,61 +1786,33 @@
                 },
 
                 Export: {
-                    pdfWithConfig() {
-                        App.Modals.open('pdfsettings');
-                    },
-                    generatePDFWithSettings() {
+                    pdf(design) {
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF();
-                        const header = document.getElementById('pdf-header').value;
-                        const footer = document.getElementById('pdf-footer').value;
-                        const layout = document.getElementById('pdf-layout').value;
-                        const fontSize = parseInt(document.getElementById('pdf-fontsize').value);
-                        const pageNumbers = document.getElementById('pdf-page-numbers').checked;
+                        const header = document.getElementById('pdf-header').value || 'SC Brombach';
+                        const footer = document.getElementById('pdf-footer').value || '';
+                        const colorMap = { blue: [37,99,235], black: [0,0,0], green: [16,185,129], red: [239,68,68] };
+                        const color = colorMap[document.getElementById('pdf-color').value] || [37,99,235];
 
                         doc.setFontSize(16);
                         doc.text(header, 14, 20);
-                        doc.setFontSize(fontSize);
+                        doc.setFontSize(9);
                         const plan = currentPlan();
                         const range = plan.schedule.length > 0 ? `${plan.schedule[0].date} - ${plan.schedule[plan.schedule.length-1].date}` : 'Leer';
                         doc.text(`Zeitraum: ${range}`, 14, 28);
-
-                        let theme = 'grid';
-                        let headColor = [37,99,235];
-                        let textColor = [255,255,255];
-                        if (layout === 'chess') {
-                            headColor = [0,0,0];
-                        } else if (layout === 'compact') {
-                            theme = 'plain';
-                            headColor = [255,255,255];
-                            textColor = [0,0,0];
-                        } else if (layout === 'detailed') {
-                            // detailliert: zusätzliche Spalte Verfügbarkeit?
-                            // Wir zeigen einfach mehr Info
-                        }
-
-                        const body = plan.schedule.map(s => [s.date, s.time, s.names.join(', ')]);
                         doc.autoTable({
                             startY: 35,
                             head: [['Datum', 'Uhrzeit', 'Team']],
-                            body: body,
-                            theme: theme,
-                            headStyles: { fillColor: headColor, textColor: textColor },
-                            styles: { fontSize: fontSize, cellPadding: 3 },
-                            foot: pageNumbers ? [['', '', `Seite ${doc.internal.getNumberOfPages()}`]] : null
+                            body: plan.schedule.map(s => [s.date, s.time, s.names.join(', ')]),
+                            theme: design === 'list' ? 'plain' : 'grid',
+                            headStyles: { fillColor: color, textColor: [255,255,255] },
+                            styles: { fontSize: 9, cellPadding: 3 }
                         });
-
                         if (footer) {
-                            const pageCount = doc.internal.getNumberOfPages();
-                            for (let i = 1; i <= pageCount; i++) {
-                                doc.setPage(i);
-                                doc.setFontSize(8);
-                                doc.text(footer, 14, doc.internal.pageSize.height - 10);
-                            }
+                            doc.setFontSize(8);
+                            doc.text(footer, 14, doc.internal.pageSize.height - 10);
                         }
-
-                        doc.save(`plan_${layout}.pdf`);
-                        App.Modals.close('pdfsettings');
+                        doc.save(`plan_${design}.pdf`);
                     },
                     csv() {
                         let csv = "Datum;Uhrzeit;Namen\n";
@@ -1807,12 +1824,13 @@
                         link.click();
                     },
                     whatsapp() {
-                        let text = "🤗 *Hallo zusammen!* 🤗\n\n";
-                        text += "Hier ist der neue Einsatzplan für den SC Brombach – bitte prüft, ob ihr an euren Terminen könnt. Danke für euren Einsatz!\n\n";
-                        text += "*Einsatzplan:*\n\n";
+                        let text = "📢 *Einsatzplan SC Brombach* 📢\n\n";
+                        text += "Hallo zusammen,\n\n";
+                        text += "hier ist der neue Plan für die kommenden Wochen:\n\n";
                         currentPlan().schedule.forEach(r => text += `📅 ${r.date} (${r.time})\n👥 ${r.names.join(', ')}\n\n`);
+                        text += "Bitte bescheid sagen, falls jemand tauschen muss.\n";
                         text += "Viele Grüße\nEuer Planungs-Team";
-                        navigator.clipboard.writeText(text).then(() => alert("Text in Zwischenablage kopiert!"));
+                        navigator.clipboard.writeText(text).then(() => alert("WhatsApp-Text in Zwischenablage kopiert!"));
                     },
                     json() {
                         const data = {
