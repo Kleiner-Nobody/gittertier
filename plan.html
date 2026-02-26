@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SC Brombach · Einsatzplaner v8.0 (Enterprise)</title>
+    <!-- Fonts, Icons, Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* ---------- Design System v8 – perfekt für Mobil & Desktop, jetzt mit noch mehr Features ---------- */
+        :root {
+            --c-bg: #f1f5f9;
+            --c-surface: #ffffff;
+            --c-text: #0f172a;
+            --c-text-muted: #475569;
+            --c-primary: #2563eb;
+            --c-primary-hover: #1d4ed8;
+            --c-primary-light: #dbeafe;
+            --c-success: #16a34a;
+            --c-warning: #ca8a04;
+            --c-danger: #dc2626;
+            --c-border: #e2e8f0;
+            --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.1);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 16px;
+            --header-h: 64px;
+            --nav-h: 70px;
+            --safe-bottom: env(safe-area-inset-bottom, 0);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--c-bg);
+            color: var(--c-text);
+            margin: 0;
+            padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        /* Animationen */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Header */
+        header {
+            height: var(--header-h);
+            background: var(--c-surface);
+            border-bottom: 1px solid var(--c-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+        }
+        .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1rem; color: var(--c-text); text-decoration: none; white-space: nowrap; }
+        .brand img { height: 32px; width: auto; border-radius: 6px; }
+        .brand span { color: var(--c-primary); }
+
+        .plan-selector { display: flex; align-items: center; gap: 4px; background: var(--c-bg); padding: 4px 10px; border-radius: 40px; font-size: 0.8rem; }
+        .plan-selector select { background: transparent; border: none; font-weight: 600; color: var(--c-text); padding: 4px; font-size: 0.8rem; max-width: 110px; }
+        .plan-selector button { padding: 4px; }
+
+        /* Desktop Nav */
+        .desktop-nav { display: none; gap: 20px; }
+        .desktop-nav a { text-decoration: none; color: var(--c-text-muted); font-weight: 500; cursor: pointer; padding: 8px 0; font-size: 0.95rem; transition: 0.2s; }
+        .desktop-nav a:hover, .desktop-nav a.active { color: var(--c-primary); border-bottom: 2px solid var(--c-primary); }
+
+        /* Mobile Bottom Navigation */
+        .mobile-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--c-surface); border-top: 1px solid var(--c-border);
+            height: calc(var(--nav-h) + var(--safe-bottom));
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100; padding-bottom: var(--safe-bottom);
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--c-text-muted); font-size: 0.7rem; gap: 2px; background: none; border: none;
+            height: 100%; cursor: pointer; transition: 0.2s; padding: 0 2px;
+        }
+        .nav-item i { font-size: 1.4rem; }
+        .nav-item.active { color: var(--c-primary); }
+        .nav-item span { font-size: 0.65rem; font-weight: 500; }
+
+        @media (min-width: 640px) {
+            .mobile-nav { display: none; }
+            body { padding-bottom: 0; }
+            .desktop-nav { display: flex; }
+        }
+
+        /* Main */
+        main { max-width: 1200px; margin: 12px auto; padding: 0 12px; width: 100%; overflow-x: hidden; }
+        .view { display: none; animation: fadeIn 0.25s ease-out; }
+        .view.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: var(--c-surface); border-radius: var(--radius); box-shadow: var(--shadow);
+            border: 1px solid var(--c-border); padding: 16px; margin-bottom: 16px; width: 100%; overflow-x: auto;
+            transition: 0.2s;
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--c-border); flex-wrap: wrap; gap: 8px; }
+        .card-header h2 { font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 6px; }
+
+        /* Formular */
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 500px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+        .full-width { grid-column: 1 / -1; }
+        label { display: block; font-size: 0.8rem; color: var(--c-text-muted); margin-bottom: 4px; font-weight: 500; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 1px solid var(--c-border); border-radius: 12px;
+            font-size: 0.95rem; background: #fff; transition: 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--c-primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.15); outline: none; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 16px;
+            border-radius: 40px; font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer;
+            transition: all 0.2s; width: 100%; background: var(--c-surface); border: 1px solid var(--c-border); color: var(--c-text);
+        }
+        .btn-primary { background: var(--c-primary); color: white; border: none; }
+        .btn-primary:active { background: var(--c-primary-hover); transform: scale(0.98); }
+        .btn-secondary { background: white; border: 1px solid var(--c-border); color: var(--c-text); }
+        .btn-danger { background: #fee2e2; color: var(--c-danger); border-color: #fecaca; }
+        .btn-ghost { background: transparent; color: var(--c-text-muted); padding: 8px; width: auto; border: none; }
+        .btn-ghost:active { color: var(--c-primary); background: var(--c-primary-light); }
+
+        /* Team-Liste */
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+        .member-card {
+            background: #f8fafc; border: 1px solid var(--c-border); padding: 12px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
+        }
+        .member-card .info { flex: 1; min-width: 0; }
+        .member-card .name { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 4px; }
+        .member-card .details { font-size: 0.75rem; color: var(--c-text-muted); }
+        .member-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+        .role-badge { font-size: 0.65rem; padding: 4px 8px; border-radius: 40px; font-weight: 700; text-transform: uppercase; }
+        .role-fixed { background: #dbeafe; color: #1e40af; }
+        .role-rotate { background: #e0f2fe; color: #0369a1; }
+        .role-reserve { background: #fef9c3; color: #854d0e; }
+        .role-emergency { background: #fee2e2; color: #991b1b; }
+        .expert-badge { background: #fef3c7; color: #92400e; font-size: 0.6rem; padding: 2px 6px; border-radius: 30px; margin-left: 4px; }
+
+        /* Verfügbarkeitstabelle (neu) – basierend auf importierten Daten */
+        .avail-wrapper { overflow-x: auto; border-radius: 16px; border: 1px solid var(--c-border); background: white; }
+        .avail-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 800px; }
+        .avail-table th { background: #f1f5f9; padding: 10px 6px; text-align: center; border: 1px solid var(--c-border); font-weight: 600; }
+        .avail-table td { padding: 6px; text-align: center; border: 1px solid var(--c-border); }
+        .avail-checkbox { width: 22px; height: 22px; accent-color: var(--c-primary); margin: 0 auto; display: block; cursor: pointer; }
+        .avail-person-cell { font-weight: 600; text-align: left; padding-left: 8px; }
+
+        /* Tabelle Einsatzplan */
+        .table-container { overflow-x: auto; border-radius: 16px; border: 1px solid var(--c-border); background: white; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th { background: #f8fafc; text-align: left; padding: 12px 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--c-text-muted); border-bottom: 1px solid var(--c-border); }
+        td { padding: 12px 10px; border-bottom: 1px solid var(--c-border); vertical-align: middle; font-size: 0.9rem; }
+        tr:last-child td { border-bottom: none; }
+        .chip {
+            display: inline-block; background: var(--c-primary-light); color: var(--c-primary); padding: 4px 10px;
+            border-radius: 40px; font-size: 0.8rem; margin: 2px; border: 1px solid var(--c-primary);
+            transition: 0.2s; cursor: grab;
+        }
+        .chip:active { cursor: grabbing; }
+
+        /* Drag & Drop */
+        .drag-over { background-color: #f1f5f9; border: 2px dashed var(--c-primary); }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 200; display: none; align-items: flex-end; justify-content: center; transition: opacity 0.2s;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--c-surface); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0;
+            padding: 20px; transform: translateY(0); animation: slideUp 0.3s ease;
+            max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+        }
+        @media (min-width: 640px) {
+            .modal-overlay { align-items: center; }
+            .modal { border-radius: 24px; width: 90%; max-width: 700px; }
+        }
+
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+        .checkbox-item {
+            display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 8px 14px;
+            border-radius: 40px; border: 1px solid var(--c-border); font-size: 0.9rem;
+        }
+        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--c-primary); }
+
+        .drop-zone {
+            border: 2px dashed var(--c-border); border-radius: 20px; padding: 30px; text-align: center;
+            color: var(--c-text-muted); cursor: pointer; transition: 0.2s; background: #fafafa;
+        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--c-primary); background: var(--c-primary-light); }
+
+        .loader-overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 300;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .loader-spinner { width: 48px; height: 48px; border: 5px solid #e2e8f0; border-top: 5px solid var(--c-primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+
+        /* Wizard Steps */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; }
+        .step-indicator { display: flex; gap: 8px; margin-bottom: 20px; }
+        .step-dot { flex: 1; height: 6px; background: #cbd5e1; border-radius: 3px; transition: 0.3s; }
+        .step-dot.active { background: var(--c-primary); }
+        .step-dot.completed { background: var(--c-success); }
+
+        /* Toast-Benachrichtigungen */
+        .toast-container {
+            position: fixed; bottom: 80px; left: 12px; right: 12px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        }
+        .toast {
+            background: var(--c-surface); border-radius: 40px; padding: 12px 16px;
+            box-shadow: var(--shadow-lg); border-left: 4px solid var(--c-primary);
+            font-size: 0.9rem; animation: slideUp 0.2s; pointer-events: auto;
+        }
+        .toast.success { border-left-color: var(--c-success); }
+        .toast.error { border-left-color: var(--c-danger); }
+        .toast.warning { border-left-color: var(--c-warning); }
+
+        /* Statistik-Karten */
+        .stat-card-small { background: #f8fafc; border-radius: 12px; padding: 12px; text-align: center; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+
+        /* Responsive Anpassungen */
+        @media (max-width: 480px) {
+            .card { padding: 12px; }
+            .btn { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="loader" class="loader-overlay">
+        <div class="loader-spinner"></div>
+        <div id="loader-text">Leistung pur ...</div>
+    </div>
+
+    <!-- Toast-Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <img src="https://www.loerrach.de/ceasy/resource/3714" alt="SCB">
+            <div>SC Brombach <span>v8.0</span></div>
+        </div>
+        <div class="plan-selector">
+            <i class="fa-solid fa-calendar-alt"></i>
+            <select id="plan-select" onchange="App.Plan.switch(this.value)"></select>
+            <button class="btn-ghost" onclick="App.Modals.open('planManager')" title="Pläne"><i class="fa-solid fa-gear"></i></button>
+        </div>
+        <nav class="desktop-nav">
+            <a data-view="dashboard">Übersicht</a>
+            <a data-view="team">Team</a>
+            <a data-view="availability">Verfügbarkeit</a>
+            <a data-view="stats">Statistik</a>
+        </nav>
+        <button class="btn btn-primary" onclick="App.Modals.open('export')" style="width:auto; padding:8px 16px;">
+            <i class="fa-solid fa-download"></i><span>Export</span>
+        </button>
+    </header>
+
+    <!-- Hauptbereich -->
+    <main>
+        <!-- DASHBOARD -->
+        <div id="view-dashboard" class="view active">
+            <div class="form-grid" style="grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="card stat-card" style="background:linear-gradient(145deg, #2563eb, #1e40af); color:white;">
+                    <div style="font-size:0.8rem; opacity:0.9;">Nächster Termin</div>
+                    <div id="next-shift-display" style="font-size:2rem; font-weight:700;">--.--.</div>
+                    <div id="next-shift-team" style="font-size:0.85rem;">Keine Daten</div>
+                </div>
+                <div class="card" style="display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <div style="font-size:0.8rem; color:var(--c-text-muted);">Schichten gesamt</div>
+                        <div id="total-shifts-count" style="font-size:2.2rem; font-weight:700;">0</div>
+                    </div>
+                    <i class="fa-solid fa-calendar-check" style="font-size:2.5rem; color:#cbd5e1;"></i>
+                </div>
+            </div>
+
+            <!-- Schnellstatistiken -->
+            <div class="form-grid" style="grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px;">
+                <div class="stat-card-small">
+                    <div style="font-size:0.7rem; color:var(--c-text-muted);">Stamm</div>
+                    <div id="stats-fixed-count" class="stat-value">0</div>
+                </div>
+                <div class="stat-card-small">
+                    <div style="font-size:0.7rem; color:var(--c-text-muted);">Springer</div>
+                    <div id="stats-rotate-count" class="stat-value">0</div>
+                </div>
+                <div class="stat-card-small">
+                    <div style="font-size:0.7rem; color:var(--c-text-muted);">Reserve</div>
+                    <div id="stats-reserve-count" class="stat-value">0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-list"></i> Einsatzplan <span id="current-plan-name"></span></h2>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="btn-ghost" onclick="App.Modals.open('ocr')"><i class="fa-solid fa-camera"></i> Scan</button>
+                        <button class="btn-ghost" onclick="App.Modals.open('entry')"><i class="fa-solid fa-plus"></i> Eintrag</button>
+                        <button class="btn-ghost" onclick="App.Modals.open('wizard')"><i class="fa-solid fa-wand-magic-sparkles"></i> Generator</button>
+                    </div>
+                </div>
+                <div class="table-container" id="schedule-table-container">
+                    <table id="main-table">
+                        <thead><tr><th>Datum</th><th>Zeit</th><th>Team</th><th>Aktionen</th></tr></thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
+                <div id="empty-state" style="padding:40px; text-align:center; color:var(--c-text-muted); display:none;">
+                    <i class="fa-solid fa-clipboard-list" style="font-size:3rem; opacity:0.3;"></i>
+                    <p>Noch keine Einträge. Importiere Verfügbarkeiten oder starte den Generator.</p>
+                    <button class="btn btn-secondary" onclick="App.Modals.open('wizard')" style="width:auto;">Generator starten</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEAM -->
+        <div id="view-team" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-users"></i> Teammitglieder</h2>
+                    <button class="btn btn-primary" onclick="App.Modals.open('member')" style="width:auto;">+ Neu</button>
+                </div>
+                <div id="team-grid" class="team-grid"></div>
+            </div>
+        </div>
+
+        <!-- VERFÜGBARKEIT (völlig neu) – basierend auf importierten Daten -->
+        <div id="view-availability" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-calendar-check"></i> Verfügbarkeiten pro Termin</h2>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn btn-primary" onclick="App.Availability.importFromOcr()" style="width:auto;"><i class="fa-solid fa-upload"></i> Aus Scan übernehmen</button>
+                        <button class="btn btn-secondary" onclick="App.Modals.open('availBulk')" style="width:auto;"><i class="fa-solid fa-pen"></i> Bereich</button>
+                    </div>
+                </div>
+                <p class="text-small" style="margin-bottom:12px;">
+                    Die Tabelle zeigt alle Termine (Datum + Uhrzeit), die aus hochgeladenen Scans/CSV stammen. 
+                    ✓ bedeutet, die Person ist für diesen Termin verfügbar. Standardmäßig alle nicht verfügbar.
+                </p>
+                <div class="avail-wrapper">
+                    <table class="avail-table" id="avail-table">
+                        <thead id="avail-thead"></thead>
+                        <tbody id="avail-tbody"></tbody>
+                    </table>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="App.Availability.saveFromTable()"><i class="fa-solid fa-save"></i> Verfügbarkeiten speichern</button>
+                    <button class="btn btn-secondary" onclick="App.Availability.renderTable()"><i class="fa-solid fa-rotate-right"></i> Aktualisieren</button>
+                    <button class="btn btn-ghost" onclick="App.Availability.resetAll()"><i class="fa-solid fa-trash"></i> Alle zurücksetzen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATISTIK -->
+        <div id="view-stats" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Einsätze pro Person</h2>
+                </div>
+                <div style="height:280px;"><canvas id="statsChart"></canvas></div>
+                <div class="card-header" style="margin-top:16px;">
+                    <h2><i class="fa-solid fa-chart-line"></i> Fairness-Score</h2>
+                </div>
+                <p>Standardabweichung: <strong id="fairness-score">0</strong> (je kleiner, desto fairer)</p>
+                <div class="card-header" style="margin-top:16px;">
+                    <h2><i class="fa-solid fa-clock"></i> Auslastung pro Schicht</h2>
+                </div>
+                <div style="height:200px;"><canvas id="shiftChart"></canvas></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-house"></i><span>Home</span></button>
+        <button class="nav-item" data-view="team"><i class="fa-solid fa-users"></i><span>Team</span></button>
+        <button class="nav-item" data-view="availability"><i class="fa-solid fa-calendar-check"></i><span>Verf.</span></button>
+        <button class="nav-item" data-view="stats"><i class="fa-solid fa-chart-simple"></i><span>Stats</span></button>
+    </nav>
+
+    <!-- ========== MODALS ========== -->
+
+    <!-- Modal: Eintrag (bearbeiten/neu) -->
+    <div id="modal-entry" class="modal-overlay">
+        <div class="modal">
+            <div class="card-header"><h3>Eintrag</h3><button class="btn-ghost" onclick="App.Modals.close('entry')"><i class="fa-solid fa-times"></i></button></div>
+            <input type="hidden" id="entry-id">
+            <div class="form-grid">
+                <div><label>Datum (TT.MM.)</label><input type="text" id="entry-date" placeholder="z.B. 09.01."></div>
+                <div><label>Zeit</label>
+                    <select id="entry-time">
+                        <option value="17:00 - 18:30">Früh (17:00-18:30)</option>
+                        <option value="18:15 - 19:45">Spät (18:15-19:45)</option>
+                        <option value="custom">Benutzerdefiniert</option>
+                    </select>
+                    <input type="text" id="entry-time-custom" style="display:none; margin-top:8px;" placeholder="z.B. 16:00-17:30">
+                </div>
+                <div class="full-width"><label>Teilnehmer</label><div id="entry-team-select" class="checkbox-group"></div></div>
+                <button class="btn btn-primary" onclick="App.Actions.saveEntry()">Speichern</button>
+                <button class="btn btn-danger" id="btn-delete-entry" style="display:none;" onclick="App.Actions.deleteEntryFromModal()">Löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Mitglied (bearbeiten/neu) -->
+    <div id="modal-member" class="modal-overlay">
+        <div class="modal">
+            <div class="card-header"><h3>Mitglied</h3><button class="btn-ghost" onclick="App.Modals.close('member')"><i class="fa-solid fa-times"></i></button></div>
+            <input type="hidden" id="mem-id">
+            <div class="form-grid">
+                <input type="text" id="mem-name" placeholder="Name">
+                <select id="mem-role">
+                    <option value="fixed">Stamm</option>
+                    <option value="rotate" selected>Springer</option>
+                    <option value="reserve">Reserve (niedrige Priorität)</option>
+                    <option value="emergency">Notfall</option>
+                </select>
+                <select id="mem-shift"><option value="both">Beide Schichten</option><option value="early">Nur Früh</option><option value="late">Nur Spät</option></select>
+                <label class="checkbox-item"><input type="checkbox" id="mem-expert"> Experte (Turnier-Programm)</label>
+                <button class="btn btn-primary" onclick="App.Team.save()">Speichern</button>
+                <button class="btn btn-danger" id="btn-delete-member" style="display:none;" onclick="App.Team.deleteFromModal()">Mitglied löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Export (erweitert) -->
+    <div id="modal-export" class="modal-overlay">
+        <div class="modal">
+            <h3>Export & PDF</h3>
+            <div class="form-grid" style="grid-template-columns:1fr;">
+                <button class="btn btn-secondary" onclick="App.Export.pdfQuick('standard')"><i class="fa-solid fa-file-pdf"></i> PDF Standard</button>
+                <button class="btn btn-secondary" onclick="App.Export.pdfQuick('chess')"><i class="fa-solid fa-chess-knight"></i> PDF S/W</button>
+                <button class="btn btn-secondary" onclick="App.Export.pdfQuick('modern')"><i class="fa-solid fa-paint-roller"></i> PDF Modern</button>
+                <button class="btn btn-secondary" onclick="App.Modals.open('pdfConfig')"><i class="fa-solid fa-sliders"></i> PDF individuell</button>
+                <button class="btn btn-secondary" onclick="App.Export.csv()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                <button class="btn btn-secondary" onclick="App.Export.excel()"><i class="fa-solid fa-file-excel"></i> Excel (XLSX)</button>
+                <button class="btn btn-secondary" onclick="App.Export.whatsapp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp (emotional)</button>
+                <button class="btn btn-secondary" onclick="App.Export.ics()"><i class="fa-solid fa-calendar-plus"></i> ICS (mit Personenwahl)</button>
+                <button class="btn btn-secondary" onclick="App.Export.json()"><i class="fa-solid fa-database"></i> JSON Backup</button>
+                <button class="btn btn-secondary" onclick="App.Export.png()"><i class="fa-solid fa-image"></i> PNG (Screenshot)</button>
+            </div>
+            <button class="btn-ghost" onclick="App.Modals.close('export')" style="margin-top:12px;">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Modal: PDF-Konfiguration (detailliert) -->
+    <div id="modal-pdfConfig" class="modal-overlay">
+        <div class="modal">
+            <h3>PDF individuell anpassen</h3>
+            <div class="form-grid">
+                <div><label>Kopfzeile</label><input type="text" id="pdf-header" value="SC Brombach - Einsatzplan"></div>
+                <div><label>Fußzeile</label><input type="text" id="pdf-footer" value="Generiert am ..."></div>
+                <div><label>Schriftgröße</label><select id="pdf-fontsize"><option value="8">Klein</option><option value="10" selected>Normal</option><option value="12">Groß</option><option value="14">Sehr groß</option></select></div>
+                <div><label>Farbschema</label><select id="pdf-colorscheme"><option value="standard">Blau</option><option value="chess">S/W</option><option value="forest">Grün</option><option value="sunset">Orange</option><option value="ocean">Türkis</option></select></div>
+                <div><label>Logo hinzufügen</label><input type="checkbox" id="pdf-logo" checked></div>
+                <div><label>Spalten</label><select id="pdf-columns"><option value="3">Datum, Zeit, Team</option><option value="4">+ Schichttyp</option><option value="5">+ Anzahl Personen</option></select></div>
+                <div><label>Seitenausrichtung</label><select id="pdf-orientation"><option value="portrait">Hochformat</option><option value="landscape">Querformat</option></select></div>
+                <div><label>Mit Farben (Rolle hervorheben)</label><input type="checkbox" id="pdf-color-roles" checked></div>
+                <div><label>Tabellen-Linien</label><select id="pdf-lines"><option value="all">Alle</option><option value="horizontal">Nur horizontal</option><option value="none">Keine</option></select></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button class="btn btn-primary" onclick="App.Export.pdfCustom()">PDF erstellen</button>
+                <button class="btn-ghost" onclick="App.Modals.close('pdfConfig')">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: OCR Import (mehrere Dateien, verbesserte Erkennung) -->
+    <div id="modal-ocr" class="modal-overlay">
+        <div class="modal">
+            <h3>Smart Import (Bilder / CSV)</h3>
+            <div class="drop-zone" id="ocr-dropzone">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem;"></i>
+                <p>Klick oder zieh Bilder/CSV rein (mehrere möglich)</p>
+                <input type="file" id="ocr-file" multiple hidden accept="image/*,.csv">
+            </div>
+            <div id="ocr-preview" style="max-height:200px; overflow-y:auto; margin:12px 0; background:#f8fafc; border-radius:12px; padding:8px;"></div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+                <button class="btn btn-secondary" onclick="App.OCR.importAsSchedule()" id="ocr-import-schedule" disabled>Als feste Schichten</button>
+                <button class="btn btn-secondary" onclick="App.OCR.importAsAvailability()" id="ocr-import-avail" disabled>Als Verfügbarkeit</button>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+                <button class="btn-ghost" onclick="App.Modals.close('ocr')">Schließen</button>
+                <button class="btn-ghost" onclick="App.OCR.reset()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: OCR-Editor -->
+    <div id="modal-ocr-edit" class="modal-overlay">
+        <div class="modal" style="max-width:700px;">
+            <h3>Ergebnisse bearbeiten</h3>
+            <div id="ocr-edit-table" style="max-height:300px; overflow-y:auto;"></div>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+                <button class="btn btn-primary" onclick="App.OCR.saveEdits()">Übernehmen</button>
+                <button class="btn-ghost" onclick="App.Modals.close('ocr-edit')">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Verfügbarkeit (Bereich) -->
+    <div id="modal-availBulk" class="modal-overlay">
+        <div class="modal">
+            <h3>Verfügbarkeit für Zeitraum</h3>
+            <div class="form-grid">
+                <div><label>Von (Freitag)</label><input type="date" id="avail-start"></div>
+                <div><label>Bis (Freitag)</label><input type="date" id="avail-end"></div>
+                <div class="full-width"><label>Personen</label><div id="avail-person-list" class="checkbox-group"></div></div>
+                <div><label>Setzen auf</label><select id="avail-status"><option value="true">Verfügbar</option><option value="false">Nicht verfügbar</option></select></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button class="btn btn-primary" onclick="App.Availability.setBulk()">Übernehmen</button>
+                <button class="btn-ghost" onclick="App.Modals.close('availBulk')">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Plan Manager -->
+    <div id="modal-planManager" class="modal-overlay">
+        <div class="modal">
+            <h3>Pläne verwalten</h3>
+            <div id="plan-list" style="margin:15px 0;"></div>
+            <div class="form-grid" style="grid-template-columns:2fr 1fr;">
+                <input type="text" id="new-plan-name" placeholder="Neuer Plan Name">
+                <button class="btn btn-primary" onclick="App.Plan.create()">Anlegen</button>
+            </div>
+            <div style="margin-top:10px;">
+                <button class="btn btn-secondary" onclick="App.Plan.duplicate()"><i class="fa-solid fa-copy"></i> Aktuellen Plan duplizieren</button>
+                <button class="btn btn-secondary" onclick="App.Plan.merge()"><i class="fa-solid fa-code-merge"></i> Pläne zusammenführen</button>
+            </div>
+            <button class="btn-ghost" onclick="App.Modals.close('planManager')">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Modal: ICS Personenauswahl -->
+    <div id="modal-ics-personen" class="modal-overlay">
+        <div class="modal">
+            <h3>ICS Export – Personen wählen</h3>
+            <div id="ics-personen-list" class="checkbox-group" style="max-height:250px; overflow-y:auto;"></div>
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button class="btn btn-primary" onclick="App.Export.generateICS()">Exportieren</button>
+                <button class="btn-ghost" onclick="App.Modals.close('ics-personen')">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Generator (Wizard) – 5 Schritte -->
+    <div id="modal-wizard" class="modal-overlay">
+        <div class="modal" style="max-width:700px;">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Generator (5 Schritte)</h2>
+                <button class="btn-ghost" onclick="App.Modals.close('wizard')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="step-indicator" id="wizard-steps">
+                <div class="step-dot active" id="wiz-dot-1"></div>
+                <div class="step-dot" id="wiz-dot-2"></div>
+                <div class="step-dot" id="wiz-dot-3"></div>
+                <div class="step-dot" id="wiz-dot-4"></div>
+                <div class="step-dot" id="wiz-dot-5"></div>
+            </div>
+
+            <!-- Schritt 1: Terminauswahl (aus Verfügbarkeiten) -->
+            <div id="wiz-step-1" class="wizard-step active">
+                <h3 style="font-size:1rem; margin-bottom:12px;">1. Termine aus Verfügbarkeiten wählen</h3>
+                <p>Wähle die Termine (Datum + Uhrzeit), für die ein Plan erstellt werden soll. Nur Termine mit mindestens einer verfügbaren Person werden angezeigt.</p>
+                <div id="wiz-termine-liste" style="max-height:200px; overflow-y:auto; border:1px solid var(--c-border); border-radius:12px; padding:8px;">
+                    <!-- wird dynamisch befüllt -->
+                </div>
+                <div style="margin-top:12px;">
+                    <label><input type="checkbox" id="wiz-select-all-termine"> Alle auswählen</label>
+                </div>
+                <button class="btn btn-primary" onclick="App.Wizard.next(2)" style="margin-top:16px;" id="wiz-next-1">Weiter</button>
+            </div>
+
+            <!-- Schritt 2: Personen-Gewichtung -->
+            <div id="wiz-step-2" class="wizard-step">
+                <h3 style="font-size:1rem; margin-bottom:12px;">2. Gewichtung der Rollen</h3>
+                <div class="form-grid">
+                    <div><label>Faktor Reserve (niedriger = seltener)</label><input type="number" id="wiz-reserve-factor" min="0.1" max="2" step="0.1" value="0.7"></div>
+                    <div><label>Faktor Springer</label><input type="number" id="wiz-rotate-factor" min="0.1" max="2" step="0.1" value="1.0"></div>
+                    <div><label>Faktor Stamm (fest)</label><input type="number" id="wiz-fixed-factor" min="0.1" max="2" step="0.1" value="1.0" disabled></div>
+                    <div><label>Experten-Bonus (für Spätschicht)</label><input type="number" id="wiz-expert-bonus" min="0" max="2" step="0.1" value="0.5"></div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:16px;">
+                    <button class="btn btn-secondary" onclick="App.Wizard.next(1)">Zurück</button>
+                    <button class="btn btn-primary" onclick="App.Wizard.next(3)">Weiter</button>
+                </div>
+            </div>
+
+            <!-- Schritt 3: Schicht-Optionen -->
+            <div id="wiz-step-3" class="wizard-step">
+                <h3 style="font-size:1rem; margin-bottom:12px;">3. Schicht-Einstellungen</h3>
+                <div class="form-grid">
+                    <div><label>Min / Max Früh</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="number" id="wiz-min-early" min="1" max="6" value="2" style="width:80px;"> min
+                            <input type="number" id="wiz-max-early" min="1" max="6" value="3" style="width:80px;"> max
+                        </div>
+                    </div>
+                    <div><label>Min / Max Spät</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="number" id="wiz-min-late" min="1" max="6" value="2" style="width:80px;"> min
+                            <input type="number" id="wiz-max-late" min="1" max="6" value="4" style="width:80px;"> max
+                        </div>
+                    </div>
+                    <div><label>Doppelschichten bevorzugen (wer früh kommt, auch spät einplanen)</label>
+                        <input type="checkbox" id="wiz-pref-doubles" checked>
+                    </div>
+                    <div><label>Experten in Spätschicht bevorzugen</label>
+                        <input type="checkbox" id="wiz-pref-expert" checked>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:16px;">
+                    <button class="btn btn-secondary" onclick="App.Wizard.next(2)">Zurück</button>
+                    <button class="btn btn-primary" onclick="App.Wizard.next(4)">Weiter</button>
+                </div>
+            </div>
+
+            <!-- Schritt 4: Fairness-Algorithmus -->
+            <div id="wiz-step-4" class="wizard-step">
+                <h3 style="font-size:1rem; margin-bottom:12px;">4. Fairness-Optionen</h3>
+                <div class="form-grid">
+                    <div><label>Algorithmus</label>
+                        <select id="wiz-algorithm">
+                            <option value="balanced">Ausgleichend (bisherige Einsätze)</option>
+                            <option value="random">Zufällig fair (mit Streuung)</option>
+                            <option value="strict">Streng nach Anzahl (kein Zufall)</option>
+                        </select>
+                    </div>
+                    <div><label>Zufallsfaktor (0 = kein Zufall, 1 = maximal)</label>
+                        <input type="range" id="wiz-randomness" min="0" max="1" step="0.1" value="0.3">
+                    </div>
+                    <div><label>Maximale Einsätze pro Person (0 = unbegrenzt)</label>
+                        <input type="number" id="wiz-max-entries" min="0" max="20" value="0">
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:16px;">
+                    <button class="btn btn-secondary" onclick="App.Wizard.next(3)">Zurück</button>
+                    <button class="btn btn-primary" onclick="App.Wizard.next(5)">Weiter</button>
+                </div>
+            </div>
+
+            <!-- Schritt 5: Vorschau & Generierung -->
+            <div id="wiz-step-5" class="wizard-step">
+                <h3 style="font-size:1rem; margin-bottom:12px;">5. Vorschau & Generierung</h3>
+                <p>Folgende Termine werden bearbeitet: <span id="wiz-termine-count">0</span></p>
+                <div style="max-height:150px; overflow-y:auto; border:1px solid var(--c-border); border-radius:8px; padding:8px; margin-bottom:12px;" id="wiz-preview-list"></div>
+                <button class="btn btn-primary" onclick="App.Wizard.generate()">Jetzt generieren</button>
+                <div style="display:flex; gap:10px; margin-top:16px;">
+                    <button class="btn btn-secondary" onclick="App.Wizard.next(4)">Zurück</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Backup/Restore -->
+    <div id="modal-backup" class="modal-overlay">
+        <div class="modal">
+            <h3>Backup & Wiederherstellung</h3>
+            <div class="form-grid">
+                <button class="btn btn-secondary" onclick="App.Backup.create()"><i class="fa-solid fa-download"></i> Backup herunterladen</button>
+                <div class="drop-zone" id="backup-dropzone">
+                    <i class="fa-solid fa-cloud-upload-alt"></i> Backup-Datei hierher ziehen
+                    <input type="file" id="backup-file" hidden accept=".json">
+                </div>
+            </div>
+            <button class="btn-ghost" onclick="App.Modals.close('backup')">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Modal: Hilfe -->
+    <div id="modal-help" class="modal-overlay">
+        <div class="modal">
+            <h3>Hilfe & Anleitung</h3>
+            <p>1. Importiere Verfügbarkeiten über "Scan" (Bilder oder CSV).</p>
+            <p>2. Gehe zu "Verfügbarkeit" und passe die Checkboxen an.</p>
+            <p>3. Starte den Generator (Schlosssymbol) und folge den 5 Schritten.</p>
+            <p>4. Exportiere den Plan als PDF, WhatsApp etc.</p>
+            <button class="btn-ghost" onclick="App.Modals.close('help')">Schließen</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- ERWEITERTE HILFSFUNKTIONEN ----------
+            const Utils = {
+                uid: () => Date.now().toString(36) + Math.random().toString(36).substring(2),
+                formatDate: (d) => {
+                    if (!d) return '';
+                    const day = String(d.getDate()).padStart(2,'0');
+                    const month = String(d.getMonth()+1).padStart(2,'0');
+                    return `${day}.${month}.`;
+                },
+                parseDateDE: (str) => {
+                    if (!str) return null;
+                    const parts = str.split('.');
+                    if (parts.length < 2) return null;
+                    const d = new Date();
+                    d.setDate(parseInt(parts[0]));
+                    d.setMonth(parseInt(parts[1])-1);
+                    if (parts[2]) d.setFullYear(parseInt(parts[2]));
+                    return d;
+                },
+                getNextFriday: (date) => {
+                    const d = new Date(date);
+                    d.setDate(d.getDate() + ((7 + 5 - d.getDay()) % 7));
+                    return d;
+                },
+                getAllFridays: (startDate, weeks) => {
+                    const fridays = [];
+                    let current = new Date(startDate);
+                    for (let i = 0; i < weeks; i++) {
+                        fridays.push(Utils.formatDate(current));
+                        current.setDate(current.getDate() + 7);
+                    }
+                    return fridays;
+                },
+                showLoader: (msg = 'Arbeite...') => {
+                    document.getElementById('loader-text').innerText = msg;
+                    document.getElementById('loader').style.display = 'flex';
+                },
+                hideLoader: () => document.getElementById('loader').style.display = 'none',
+                toast: (msg, type = 'info') => {
+                    const container = document.getElementById('toast-container');
+                    const toast = document.createElement('div');
+                    toast.className = `toast ${type}`;
+                    toast.innerText = msg;
+                    container.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                },
+                toDateInput: (dateStr) => {
+                    if (!dateStr) return '';
+                    const parts = dateStr.split('.');
+                    if (parts.length >= 2) {
+                        const year = new Date().getFullYear();
+                        return `${year}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                    }
+                    return '';
+                },
+                fromDateInput: (input) => {
+                    if (!input) return '';
+                    const [year, month, day] = input.split('-');
+                    return `${day}.${month}.`;
+                },
+                // Sortierung für Datum (DE)
+                sortDates: (a, b) => {
+                    const [da, ma] = a.split('.').map(Number);
+                    const [db, mb] = b.split('.').map(Number);
+                    if (ma !== mb) return ma - mb;
+                    return da - db;
+                }
+            };
+
+            // ---------- BASISDATEN ----------
+            const DEFAULT_TEAM = [
+                { id: '1', name: 'Kaspar', role: 'fixed', shift: 'both', expert: false },
+                { id: '2', name: 'Uwe', role: 'rotate', shift: 'late', expert: true },
+                { id: '3', name: 'Nico', role: 'rotate', shift: 'both', expert: false },
+                { id: '4', name: 'Dmitry', role: 'rotate', shift: 'both', expert: false },
+                { id: '5', name: 'Stephan', role: 'rotate', shift: 'early', expert: false },
+                { id: '6', name: 'Gento', role: 'rotate', shift: 'early', expert: false },
+                { id: '7', name: 'Markus', role: 'emergency', shift: 'both', expert: true }
+            ];
+
+            const DEFAULT_PLANS = {
+                'default': {
+                    id: 'default',
+                    name: 'Hauptplan',
+                    schedule: [],
+                    availability: [], // { personId, date, time, available } – jetzt mit Zeit
+                    settings: { minEarly:2, maxEarly:3, minLate:2, maxLate:4, preferDoubles: true }
+                }
+            };
+
+            // ---------- APP STATE ----------
+            let appState = {
+                plans: {},
+                currentPlanId: 'default',
+                team: [],
+                ocrRawData: [], // gesammelte OCR-Daten (mehrere Uploads)
+                icsSelectedPersons: []
+            };
+
+            // ---------- LOCALSTORAGE ----------
+            function loadState() {
+                try {
+                    const stored = localStorage.getItem('scb_v8_data');
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        appState.plans = parsed.plans || DEFAULT_PLANS;
+                        appState.currentPlanId = parsed.currentPlanId || 'default';
+                        appState.team = parsed.team || DEFAULT_TEAM;
+                    } else {
+                        appState.plans = JSON.parse(JSON.stringify(DEFAULT_PLANS));
+                        appState.team = JSON.parse(JSON.stringify(DEFAULT_TEAM));
+                    }
+                } catch (e) {
+                    console.warn('Fehler beim Laden', e);
+                    appState.plans = JSON.parse(JSON.stringify(DEFAULT_PLANS));
+                    appState.team = JSON.parse(JSON.stringify(DEFAULT_TEAM));
+                }
+                // Sicherstellen, dass jedes Teammitglied ein expert-Feld und role reserve hat
+                appState.team.forEach(m => {
+                    if (m.expert === undefined) m.expert = false;
+                    if (!['fixed','rotate','reserve','emergency'].includes(m.role)) m.role = 'rotate';
+                });
+                // Standardverfügbarkeit: alle false (leer)
+                if (!appState.plans[appState.currentPlanId]) {
+                    appState.currentPlanId = 'default';
+                    appState.plans.default = { id: 'default', name: 'Hauptplan', schedule: [], availability: [], settings: { minEarly:2, maxEarly:3, minLate:2, maxLate:4, preferDoubles:true } };
+                }
+            }
+            function saveState() {
+                const toStore = {
+                    plans: appState.plans,
+                    currentPlanId: appState.currentPlanId,
+                    team: appState.team
+                };
+                localStorage.setItem('scb_v8_data', JSON.stringify(toStore));
+            }
+
+            function currentPlan() {
+                return appState.plans[appState.currentPlanId] || appState.plans.default;
+            }
+
+            // ---------- EVENT DELEGATION ----------
+            function setupEventDelegation() {
+                document.querySelectorAll('[data-view]').forEach(el => {
+                    el.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        App.nav(el.dataset.view);
+                    });
+                });
+
+                document.getElementById('team-grid').addEventListener('click', (e) => {
+                    const btn = e.target.closest('.edit-member-btn');
+                    if (btn) {
+                        e.stopPropagation();
+                        App.Modals.openMember(btn.dataset.id);
+                    }
+                });
+
+                document.getElementById('table-body').addEventListener('click', (e) => {
+                    const btn = e.target.closest('.edit-entry-btn');
+                    if (btn) {
+                        e.stopPropagation();
+                        App.Modals.openEntry(btn.dataset.id);
+                    }
+                });
+
+                // Drag & Drop für Tabelle (einfaches Verschieben von Chips) – erweiterte Funktion später
+                // Hier nur Grundgerüst
+
+                // DropZone OCR
+                const dropZone = document.getElementById('ocr-dropzone');
+                const fileInput = document.getElementById('ocr-file');
+                dropZone.addEventListener('click', () => fileInput.click());
+                dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    if (e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                        App.OCR.processMultiple(e.dataTransfer.files);
+                    }
+                });
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length) App.OCR.processMultiple(e.target.files);
+                });
+
+                // Backup DropZone
+                const backupDrop = document.getElementById('backup-dropzone');
+                const backupFile = document.getElementById('backup-file');
+                if (backupDrop) {
+                    backupDrop.addEventListener('click', () => backupFile.click());
+                    backupDrop.addEventListener('dragover', (e) => e.preventDefault());
+                    backupDrop.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        if (e.dataTransfer.files.length) {
+                            backupFile.files = e.dataTransfer.files;
+                            App.Backup.restore(e.dataTransfer.files[0]);
+                        }
+                    });
+                    backupFile.addEventListener('change', (e) => {
+                        if (e.target.files[0]) App.Backup.restore(e.target.files[0]);
+                    });
+                }
+
+                // Modal-Hintergrund schließen
+                document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                    overlay.addEventListener('click', (e) => {
+                        if (e.target === overlay) {
+                            const id = overlay.id.replace('modal-', '');
+                            App.Modals.close(id);
+                        }
+                    });
+                });
+
+                // Entry time custom
+                document.getElementById('entry-time').addEventListener('change', (e) => {
+                    document.getElementById('entry-time-custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+                });
+
+                // "Alle auswählen" im Wizard
+                document.getElementById('wiz-select-all-termine')?.addEventListener('change', (e) => {
+                    const checkboxes = document.querySelectorAll('#wiz-termine-liste input[type="checkbox"]');
+                    checkboxes.forEach(cb => cb.checked = e.target.checked);
+                });
+            }
+
+            // ---------- APP OBJEKT ----------
+            const App = {
+                init() {
+                    loadState();
+                    this.UI.updatePlanSelector();
+                    this.UI.renderAll();
+                    //document.getElementById('gen-start-date').valueAsDate = Utils.getNextFriday(new Date());
+                    setupEventDelegation();
+                    Utils.hideLoader();
+                    Utils.toast('Willkommen beim SC Brombach Einsatzplaner v8.0', 'success');
+                },
+
+                nav(view) {
+                    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+                    document.getElementById('view-' + view).classList.add('active');
+                    document.querySelectorAll('.nav-item, .desktop-nav a').forEach(el => el.classList.remove('active'));
+                    document.querySelectorAll(`[data-view="${view}"]`).forEach(el => el.classList.add('active'));
+                    if (view === 'stats') this.Stats.render();
+                    if (view === 'availability') this.Availability.renderTable();
+                },
+
+                Modals: {
+                    open(id) {
+                        const modal = document.getElementById('modal-' + id);
+                        if (modal) modal.classList.add('open');
+                        if (id === 'entry') this.prepareEntryModal(null);
+                        if (id === 'member') this.prepareMemberModal(null);
+                        if (id === 'planManager') this.renderPlanList();
+                        if (id === 'ics-personen') this.prepareICSPersonen();
+                        if (id === 'availBulk') this.prepareAvailBulk();
+                        if (id === 'wizard') this.prepareWizard();
+                    },
+                    close(id) {
+                        const modal = document.getElementById('modal-' + id);
+                        if (modal) modal.classList.remove('open');
+                    },
+                    openEntry(entryId) {
+                        this.prepareEntryModal(entryId);
+                        document.getElementById('modal-entry').classList.add('open');
+                    },
+                    openMember(memberId) {
+                        this.prepareMemberModal(memberId);
+                        document.getElementById('modal-member').classList.add('open');
+                    },
+                    prepareEntryModal(entryId) {
+                        const container = document.getElementById('entry-team-select');
+                        container.innerHTML = '';
+                        appState.team.forEach(m => {
+                            const label = document.createElement('label');
+                            label.className = 'checkbox-item';
+                            label.innerHTML = `<input type="checkbox" name="entry-member" value="${m.name}"> ${m.name}`;
+                            container.appendChild(label);
+                        });
+                        if (entryId) {
+                            const entry = currentPlan().schedule.find(e => e.id === entryId);
+                            if (entry) {
+                                document.getElementById('entry-id').value = entry.id;
+                                document.getElementById('entry-date').value = entry.date;
+                                const timeSelect = document.getElementById('entry-time');
+                                if (entry.time.includes('17:00')) timeSelect.value = '17:00 - 18:30';
+                                else if (entry.time.includes('18:15')) timeSelect.value = '18:15 - 19:45';
+                                else {
+                                    timeSelect.value = 'custom';
+                                    document.getElementById('entry-time-custom').style.display = 'block';
+                                    document.getElementById('entry-time-custom').value = entry.time;
+                                }
+                                container.querySelectorAll('input').forEach(cb => {
+                                    if (entry.names.includes(cb.value)) cb.checked = true;
+                                });
+                                document.getElementById('btn-delete-entry').style.display = 'inline-block';
+                            }
+                        } else {
+                            document.getElementById('entry-id').value = '';
+                            document.getElementById('entry-date').value = '';
+                            document.getElementById('entry-time').value = '17:00 - 18:30';
+                            document.getElementById('entry-time-custom').style.display = 'none';
+                            container.querySelectorAll('input').forEach(cb => cb.checked = false);
+                            document.getElementById('btn-delete-entry').style.display = 'none';
+                        }
+                    },
+                    prepareMemberModal(memberId) {
+                        if (memberId) {
+                            const member = appState.team.find(m => m.id === memberId);
+                            if (member) {
+                                document.getElementById('mem-id').value = member.id;
+                                document.getElementById('mem-name').value = member.name;
+                                document.getElementById('mem-role').value = member.role;
+                                document.getElementById('mem-shift').value = member.shift;
+                                document.getElementById('mem-expert').checked = member.expert || false;
+                                document.getElementById('btn-delete-member').style.display = 'inline-block';
+                            }
+                        } else {
+                            document.getElementById('mem-id').value = '';
+                            document.getElementById('mem-name').value = '';
+                            document.getElementById('mem-role').value = 'rotate';
+                            document.getElementById('mem-shift').value = 'both';
+                            document.getElementById('mem-expert').checked = false;
+                            document.getElementById('btn-delete-member').style.display = 'none';
+                        }
+                    },
+                    renderPlanList() {
+                        const container = document.getElementById('plan-list');
+                        container.innerHTML = '';
+                        Object.values(appState.plans).forEach(plan => {
+                            const div = document.createElement('div');
+                            div.className = 'member-card';
+                            div.innerHTML = `
+                                <div class="info"><strong>${plan.name}</strong> (${plan.schedule.length} Schichten)</div>
+                                <div class="member-actions">
+                                    <button class="btn-ghost" onclick="App.Plan.switch('${plan.id}')"><i class="fa-solid fa-check"></i></button>
+                                    <button class="btn-ghost" onclick="App.Plan.rename('${plan.id}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn-ghost" onclick="App.Plan.delete('${plan.id}')"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            `;
+                            container.appendChild(div);
+                        });
+                    },
+                    prepareICSPersonen() {
+                        const container = document.getElementById('ics-personen-list');
+                        container.innerHTML = '';
+                        appState.team.forEach(m => {
+                            const label = document.createElement('label');
+                            label.className = 'checkbox-item';
+                            label.innerHTML = `<input type="checkbox" value="${m.name}"> ${m.name}`;
+                            container.appendChild(label);
+                        });
+                    },
+                    prepareAvailBulk() {
+                        const container = document.getElementById('avail-person-list');
+                        container.innerHTML = '';
+                        appState.team.forEach(m => {
+                            const label = document.createElement('label');
+                            label.className = 'checkbox-item';
+                            label.innerHTML = `<input type="checkbox" value="${m.id}"> ${m.name}`;
+                            container.appendChild(label);
+                        });
+                        const nextFriday = Utils.getNextFriday(new Date());
+                        document.getElementById('avail-start').valueAsDate = nextFriday;
+                        const end = new Date(nextFriday);
+                        end.setDate(end.getDate() + 28);
+                        document.getElementById('avail-end').valueAsDate = end;
+                    },
+                    prepareWizard() {
+                        // Setze Schritt 1 aktiv
+                        document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+                        document.getElementById('wiz-step-1').classList.add('active');
+                        document.querySelectorAll('.step-dot').forEach((dot,i) => {
+                            dot.classList.toggle('active', i===0);
+                            dot.classList.remove('completed');
+                        });
+                        // Terminliste aus Verfügbarkeiten füllen
+                        this.fillTermineList();
+                    },
+                    fillTermineList() {
+                        const plan = currentPlan();
+                        const container = document.getElementById('wiz-termine-liste');
+                        if (!container) return;
+                        // Sammle alle eindeutigen Termine (Datum + Zeit) aus availability
+                        const termSet = new Set();
+                        plan.availability.forEach(a => {
+                            termSet.add(a.date + '|' + a.time);
+                        });
+                        const termArray = Array.from(termSet).map(t => {
+                            const [date, time] = t.split('|');
+                            return { date, time };
+                        }).sort((a,b) => Utils.sortDates(a.date, b.date) || a.time.localeCompare(b.time));
+
+                        container.innerHTML = '';
+                        if (termArray.length === 0) {
+                            container.innerHTML = '<p class="text-small">Keine Verfügbarkeiten vorhanden. Bitte zuerst importieren.</p>';
+                            document.getElementById('wiz-next-1').disabled = true;
+                            return;
+                        }
+                        document.getElementById('wiz-next-1').disabled = false;
+                        termArray.forEach(t => {
+                            const div = document.createElement('div');
+                            div.style.margin = '4px 0';
+                            div.innerHTML = `<label><input type="checkbox" class="wiz-term-check" data-date="${t.date}" data-time="${t.time}" checked> ${t.date} – ${t.time}</label>`;
+                            container.appendChild(div);
+                        });
+                    }
+                },
+
+                Plan: {
+                    switch(planId) {
+                        if (appState.plans[planId]) {
+                            appState.currentPlanId = planId;
+                            saveState();
+                            App.UI.updatePlanSelector();
+                            App.UI.renderAll();
+                            App.Modals.close('planManager');
+                            Utils.toast(`Plan gewechselt zu: ${appState.plans[planId].name}`, 'success');
+                        }
+                    },
+                    create() {
+                        const name = document.getElementById('new-plan-name').value.trim();
+                        if (!name) return alert('Name eingeben');
+                        const id = 'plan_' + Utils.uid();
+                        appState.plans[id] = {
+                            id,
+                            name,
+                            schedule: [],
+                            availability: [],
+                            settings: { minEarly:2, maxEarly:3, minLate:2, maxLate:4, preferDoubles:true }
+                        };
+                        saveState();
+                        this.switch(id);
+                        document.getElementById('new-plan-name').value = '';
+                    },
+                    rename(planId) {
+                        const newName = prompt('Neuen Namen eingeben:', appState.plans[planId].name);
+                        if (newName && newName.trim()) {
+                            appState.plans[planId].name = newName.trim();
+                            saveState();
+                            App.Modals.renderPlanList();
+                            App.UI.updatePlanSelector();
+                        }
+                    },
+                    delete(planId) {
+                        if (planId === 'default') return alert('Standardplan kann nicht gelöscht werden.');
+                        if (confirm('Plan wirklich löschen?')) {
+                            delete appState.plans[planId];
+                            if (appState.currentPlanId === planId) appState.currentPlanId = 'default';
+                            saveState();
+                            App.Modals.renderPlanList();
+                            App.UI.updatePlanSelector();
+                            App.UI.renderAll();
+                        }
+                    },
+                    duplicate() {
+                        const current = currentPlan();
+                        const newName = prompt('Name für duplizierten Plan:', current.name + ' (Kopie)');
+                        if (!newName) return;
+                        const newId = 'plan_' + Utils.uid();
+                        appState.plans[newId] = JSON.parse(JSON.stringify(current));
+                        appState.plans[newId].id = newId;
+                        appState.plans[newId].name = newName;
+                        saveState();
+                        this.switch(newId);
+                        App.Modals.renderPlanList();
+                    },
+                    merge() {
+                        // Einfache Zusammenführung: alle Termine aus anderen Plänen übernehmen
+                        const planList = Object.values(appState.plans).filter(p => p.id !== currentPlan().id);
+                        if (planList.length === 0) return alert('Keine anderen Pläne vorhanden.');
+                        let mergedCount = 0;
+                        planList.forEach(p => {
+                            p.schedule.forEach(entry => {
+                                if (!currentPlan().schedule.some(e => e.date === entry.date && e.time === entry.time && JSON.stringify(e.names) === JSON.stringify(entry.names))) {
+                                    currentPlan().schedule.push(JSON.parse(JSON.stringify(entry)));
+                                    mergedCount++;
+                                }
+                            });
+                            // Auch Verfügbarkeiten zusammenführen?
+                            p.availability.forEach(a => {
+                                if (!currentPlan().availability.some(av => av.personId === a.personId && av.date === a.date && av.time === a.time)) {
+                                    currentPlan().availability.push(JSON.parse(JSON.stringify(a)));
+                                }
+                            });
+                        });
+                        saveState();
+                        App.UI.renderAll();
+                        Utils.toast(`${mergedCount} neue Schichten hinzugefügt.`, 'success');
+                        App.Modals.close('planManager');
+                    }
+                },
+
+                UI: {
+                    updatePlanSelector() {
+                        const select = document.getElementById('plan-select');
+                        select.innerHTML = '';
+                        Object.values(appState.plans).forEach(plan => {
+                            const opt = document.createElement('option');
+                            opt.value = plan.id;
+                            opt.textContent = plan.name;
+                            if (plan.id === appState.currentPlanId) opt.selected = true;
+                            select.appendChild(opt);
+                        });
+                        document.getElementById('current-plan-name').innerText = currentPlan().name;
+                    },
+                    renderAll() {
+                        this.renderSchedule();
+                        this.renderTeam();
+                        this.updateDashboardStats();
+                        this.updateStatsCounts();
+                    },
+                    renderSchedule() {
+                        const tbody = document.getElementById('table-body');
+                        tbody.innerHTML = '';
+                        const schedule = currentPlan().schedule;
+                        if (schedule.length === 0) {
+                            document.getElementById('empty-state').style.display = 'block';
+                            document.getElementById('main-table').style.display = 'none';
+                            return;
+                        }
+                        document.getElementById('empty-state').style.display = 'none';
+                        document.getElementById('main-table').style.display = 'table';
+                        const sorted = [...schedule].sort((a,b) => {
+                            const dateA = a.date.split('.').reverse().join('');
+                            const dateB = b.date.split('.').reverse().join('');
+                            return dateA.localeCompare(dateB) || a.time.localeCompare(b.time);
+                        });
+                        let lastDate = '';
+                        sorted.forEach(entry => {
+                            const tr = document.createElement('tr');
+                            const namesHtml = entry.names.map(n => {
+                                const mem = appState.team.find(m => m.name === n);
+                                let color = '#e5e7eb';
+                                if (mem) {
+                                    if (mem.role === 'fixed') color = '#dbeafe';
+                                    else if (mem.role === 'emergency') color = '#fee2e2';
+                                    else if (mem.role === 'reserve') color = '#fef9c3';
+                                }
+                                let expertIcon = (mem && mem.expert) ? ' <i class="fa-solid fa-star" style="color:#f59e0b; font-size:0.6rem;" title="Experte"></i>' : '';
+                                return `<span class="chip" draggable="true" data-name="${n}" data-entry-id="${entry.id}">${n}${expertIcon}</span>`;
+                            }).join(' ');
+                            const dateDisplay = entry.date === lastDate ? '<span style="opacity:0.3">"</span>' : `<strong>${entry.date}</strong>`;
+                            lastDate = entry.date;
+                            tr.innerHTML = `
+                                <td>${dateDisplay}</td>
+                                <td>${entry.time}</td>
+                                <td class="entry-names" data-entry-id="${entry.id}">${namesHtml}</td>
+                                <td><button class="btn-ghost edit-entry-btn" data-id="${entry.id}"><i class="fa-solid fa-pen"></i></button></td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                        // Drag & Drop für Chips (einfaches Verschieben innerhalb der Tabelle)
+                        document.querySelectorAll('.chip').forEach(chip => {
+                            chip.addEventListener('dragstart', (e) => {
+                                e.dataTransfer.setData('text/plain', e.target.dataset.name);
+                                e.dataTransfer.setData('entry-id', e.target.closest('td').dataset.entryId);
+                            });
+                        });
+                        document.querySelectorAll('.entry-names').forEach(td => {
+                            td.addEventListener('dragover', (e) => e.preventDefault());
+                            td.addEventListener('drop', (e) => {
+                                e.preventDefault();
+                                const name = e.dataTransfer.getData('text/plain');
+                                const sourceEntryId = e.dataTransfer.getData('entry-id');
+                                const targetEntryId = td.dataset.entryId;
+                                if (!name || !sourceEntryId || !targetEntryId) return;
+                                const plan = currentPlan();
+                                const sourceEntry = plan.schedule.find(e => e.id === sourceEntryId);
+                                const targetEntry = plan.schedule.find(e => e.id === targetEntryId);
+                                if (!sourceEntry || !targetEntry) return;
+                                // Person aus source entfernen, zu target hinzufügen
+                                const person = appState.team.find(m => m.name === name);
+                                if (!person) return;
+                                sourceEntry.names = sourceEntry.names.filter(n => n !== name);
+                                if (!targetEntry.names.includes(name)) targetEntry.names.push(name);
+                                saveState();
+                                App.UI.renderSchedule();
+                                Utils.toast(`${name} verschoben`, 'info');
+                            });
+                        });
+                    },
+                    renderTeam() {
+                        const grid = document.getElementById('team-grid');
+                        grid.innerHTML = '';
+                        appState.team.forEach(m => {
+                            const div = document.createElement('div');
+                            div.className = 'member-card';
+                            let badgeClass = 'role-rotate', roleLabel = 'Springer';
+                            if (m.role === 'fixed') { badgeClass = 'role-fixed'; roleLabel = 'Stamm'; }
+                            else if (m.role === 'reserve') { badgeClass = 'role-reserve'; roleLabel = 'Reserve'; }
+                            else if (m.role === 'emergency') { badgeClass = 'role-emergency'; roleLabel = 'Notfall'; }
+                            const expertBadge = m.expert ? '<span class="expert-badge">Experte</span>' : '';
+                            div.innerHTML = `
+                                <div class="info">
+                                    <div class="name">${m.name} ${expertBadge}</div>
+                                    <div class="details">${m.shift === 'both' ? 'Beide' : (m.shift==='early'?'Nur Früh':'Nur Spät')}</div>
+                                </div>
+                                <div class="member-actions">
+                                    <span class="role-badge ${badgeClass}">${roleLabel}</span>
+                                    <button class="btn-ghost edit-member-btn" data-id="${m.id}"><i class="fa-solid fa-gear"></i></button>
+                                </div>
+                            `;
+                            grid.appendChild(div);
+                        });
+                    },
+                    updateDashboardStats() {
+                        const schedule = currentPlan().schedule;
+                        document.getElementById('total-shifts-count').innerText = schedule.length;
+                        if (schedule.length > 0) {
+                            const sorted = [...schedule].sort((a,b) => {
+                                const da = Utils.parseDateDE(a.date);
+                                const db = Utils.parseDateDE(b.date);
+                                return da - db;
+                            });
+                            const next = sorted[0];
+                            document.getElementById('next-shift-display').innerText = next.date;
+                            document.getElementById('next-shift-team').innerText = next.names.join(', ');
+                        } else {
+                            document.getElementById('next-shift-display').innerText = '--.--.';
+                            document.getElementById('next-shift-team').innerText = 'Keine Daten';
+                        }
+                    },
+                    updateStatsCounts() {
+                        const fixed = appState.team.filter(m => m.role === 'fixed').length;
+                        const rotate = appState.team.filter(m => m.role === 'rotate').length;
+                        const reserve = appState.team.filter(m => m.role === 'reserve').length;
+                        document.getElementById('stats-fixed-count').innerText = fixed;
+                        document.getElementById('stats-rotate-count').innerText = rotate;
+                        document.getElementById('stats-reserve-count').innerText = reserve;
+                    }
+                },
+
+                Actions: {
+                    saveEntry() {
+                        const id = document.getElementById('entry-id').value;
+                        const date = document.getElementById('entry-date').value.trim();
+                        let time = document.getElementById('entry-time').value;
+                        if (time === 'custom') time = document.getElementById('entry-time-custom').value.trim();
+                        const names = Array.from(document.querySelectorAll('#entry-team-select input:checked')).map(cb => cb.value);
+                        if (!date || names.length === 0) return alert('Datum und mindestens eine Person erforderlich.');
+                        const plan = currentPlan();
+                        if (id) {
+                            const idx = plan.schedule.findIndex(e => e.id === id);
+                            if (idx !== -1) plan.schedule[idx] = { ...plan.schedule[idx], date, time, names };
+                        } else {
+                            plan.schedule.push({ id: Utils.uid(), date, time, names, aiGenerated: false });
+                        }
+                        saveState();
+                        App.UI.renderAll();
+                        App.Modals.close('entry');
+                        Utils.toast('Eintrag gespeichert', 'success');
+                    },
+                    deleteEntryFromModal() {
+                        const id = document.getElementById('entry-id').value;
+                        if (id && confirm('Löschen?')) {
+                            const plan = currentPlan();
+                            plan.schedule = plan.schedule.filter(e => e.id !== id);
+                            saveState();
+                            App.UI.renderAll();
+                            App.Modals.close('entry');
+                            Utils.toast('Eintrag gelöscht', 'warning');
+                        }
+                    }
+                },
+
+                Team: {
+                    save() {
+                        const id = document.getElementById('mem-id').value;
+                        const name = document.getElementById('mem-name').value.trim();
+                        const role = document.getElementById('mem-role').value;
+                        const shift = document.getElementById('mem-shift').value;
+                        const expert = document.getElementById('mem-expert').checked;
+                        if (!name) return alert('Name erforderlich');
+                        if (id) {
+                            const idx = appState.team.findIndex(m => m.id === id);
+                            if (idx !== -1) appState.team[idx] = { id, name, role, shift, expert };
+                        } else {
+                            appState.team.push({ id: Utils.uid(), name, role, shift, expert });
+                        }
+                        saveState();
+                        App.UI.renderTeam();
+                        App.Modals.close('member');
+                        Utils.toast('Mitglied gespeichert', 'success');
+                    },
+                    deleteFromModal() {
+                        const id = document.getElementById('mem-id').value;
+                        if (!id) return;
+                        if (confirm('Dieses Mitglied wirklich löschen?')) {
+                            appState.team = appState.team.filter(m => m.id !== id);
+                            saveState();
+                            App.UI.renderTeam();
+                            App.Modals.close('member');
+                            Utils.toast('Mitglied gelöscht', 'warning');
+                        }
+                    }
+                },
+
+                // ========== VERFÜGBARKEIT (NEU) ==========
+                Availability: {
+                    renderTable() {
+                        const plan = currentPlan();
+                        const team = appState.team;
+                        // Sammle alle eindeutigen Termine (Datum + Zeit) aus availability (oder importierten Daten)
+                        const termSet = new Set();
+                        plan.availability.forEach(a => {
+                            termSet.add(a.date + '|' + a.time);
+                        });
+                        // Falls keine, zeige leere Tabelle
+                        const termArray = Array.from(termSet).map(t => {
+                            const [date, time] = t.split('|');
+                            return { date, time };
+                        }).sort((a,b) => Utils.sortDates(a.date, b.date) || a.time.localeCompare(b.time));
+
+                        const thead = document.getElementById('avail-thead');
+                        const tbody = document.getElementById('avail-tbody');
+                        if (termArray.length === 0) {
+                            thead.innerHTML = '<tr><th>Keine Termine vorhanden. Bitte importieren.</th></tr>';
+                            tbody.innerHTML = '';
+                            return;
+                        }
+
+                        thead.innerHTML = '<tr><th>Person</th>' + termArray.map(t => `<th>${t.date}<br><small>${t.time}</small></th>`).join('') + '</tr>';
+                        tbody.innerHTML = '';
+
+                        team.forEach(member => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `<td class="avail-person-cell">${member.name}</td>` + termArray.map(t => {
+                                const availEntry = plan.availability.find(a => a.personId === member.id && a.date === t.date && a.time === t.time);
+                                const checked = availEntry ? availEntry.available : false;
+                                return `<td><input type="checkbox" class="avail-checkbox" data-person="${member.id}" data-date="${t.date}" data-time="${t.time}" ${checked ? 'checked' : ''}></td>`;
+                            }).join('');
+                            tbody.appendChild(tr);
+                        });
+                    },
+
+                    saveFromTable() {
+                        const plan = currentPlan();
+                        const checkboxes = document.querySelectorAll('#avail-tbody .avail-checkbox');
+                        const newAvail = [];
+                        checkboxes.forEach(cb => {
+                            const personId = cb.dataset.person;
+                            const date = cb.dataset.date;
+                            const time = cb.dataset.time;
+                            const available = cb.checked;
+                            newAvail.push({ personId, date, time, available });
+                        });
+                        plan.availability = newAvail;
+                        saveState();
+                        Utils.toast('Verfügbarkeiten gespeichert.', 'success');
+                    },
+
+                    importFromOcr() {
+                        // Übernimmt die aktuellen OCR-Rohdaten und erstellt Verfügbarkeitseinträge
+                        if (appState.ocrRawData.length === 0) {
+                            return Utils.toast('Keine OCR-Daten vorhanden. Bitte zuerst importieren.', 'error');
+                        }
+                        const plan = currentPlan();
+                        appState.ocrRawData.forEach(row => {
+                            row.names.forEach(personName => {
+                                const member = appState.team.find(m => m.name === personName);
+                                if (member) {
+                                    // Vorhandenen Eintrag für diese Person, Datum und Zeit löschen
+                                    plan.availability = plan.availability.filter(a => !(a.personId === member.id && a.date === row.date && a.time === row.time));
+                                    plan.availability.push({ personId: member.id, date: row.date, time: row.time, available: true });
+                                }
+                            });
+                        });
+                        saveState();
+                        this.renderTable();
+                        Utils.toast('Verfügbarkeiten aus OCR importiert.', 'success');
+                        App.Modals.close('ocr');
+                    },
+
+                    openBulkModal() {
+                        App.Modals.open('availBulk');
+                    },
+
+                    setBulk() {
+                        const start = document.getElementById('avail-start').value;
+                        const end = document.getElementById('avail-end').value;
+                        if (!start || !end) return alert('Bitte Zeitraum wählen');
+                        const startDate = new Date(start);
+                        const endDate = new Date(end);
+                        const status = document.getElementById('avail-status').value === 'true';
+                        const selectedPersons = Array.from(document.querySelectorAll('#avail-person-list input:checked')).map(cb => cb.value);
+                        if (selectedPersons.length === 0) return alert('Bitte mindestens eine Person wählen');
+
+                        // Generiere alle Freitage im Zeitraum (nur Früh- und Spätschicht)
+                        const fridays = [];
+                        let current = Utils.getNextFriday(startDate);
+                        while (current <= endDate) {
+                            const dateStr = Utils.formatDate(current);
+                            fridays.push({ date: dateStr, time: '17:00 - 18:30' });
+                            fridays.push({ date: dateStr, time: '18:15 - 19:45' });
+                            current.setDate(current.getDate() + 7);
+                        }
+
+                        const plan = currentPlan();
+                        // Entferne vorhandene Einträge für diese Personen und Daten
+                        plan.availability = plan.availability.filter(a => !(selectedPersons.includes(a.personId) && fridays.some(f => f.date === a.date && f.time === a.time)));
+                        // Füge neue hinzu
+                        selectedPersons.forEach(pid => {
+                            fridays.forEach(f => {
+                                plan.availability.push({ personId: pid, date: f.date, time: f.time, available: status });
+                            });
+                        });
+                        saveState();
+                        App.Modals.close('availBulk');
+                        this.renderTable();
+                        Utils.toast('Verfügbarkeiten aktualisiert.', 'success');
+                    },
+
+                    resetAll() {
+                        if (confirm('Alle Verfügbarkeiten zurücksetzen? (Alle werden auf nicht verfügbar gesetzt)')) {
+                            const plan = currentPlan();
+                            plan.availability = [];
+                            saveState();
+                            this.renderTable();
+                            Utils.toast('Alle Verfügbarkeiten zurückgesetzt.', 'info');
+                        }
+                    }
+                },
+
+                // ========== OCR & IMPORT (verbesserte Erkennung) ==========
+                OCR: {
+                    async processMultiple(files) {
+                        if (!files || files.length === 0) return;
+                        Utils.showLoader(`Analysiere ${files.length} Dateien ...`);
+                        const preview = document.getElementById('ocr-preview');
+                        preview.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> OCR läuft...';
+
+                        let allData = [];
+
+                        for (let file of files) {
+                            let data = [];
+                            if (file.name.endsWith('.csv')) {
+                                const text = await file.text();
+                                data = this.parseCSV(text);
+                            } else {
+                                try {
+                                    const worker = await Tesseract.createWorker('deu');
+                                    const ret = await worker.recognize(file);
+                                    await worker.terminate();
+                                    data = this.parseText(ret.data.text);
+                                } catch (e) {
+                                    console.warn('OCR Fehler bei', file.name, e);
+                                    continue;
+                                }
+                            }
+                            allData = allData.concat(data);
+                        }
+
+                        // Duplikate entfernen (gleiches Datum, gleiche Zeit, gleiche Namen)
+                        const unique = [];
+                        const seen = new Set();
+                        allData.forEach(d => {
+                            const key = d.date + '|' + d.time + '|' + d.names.sort().join(',');
+                            if (!seen.has(key)) {
+                                seen.add(key);
+                                unique.push(d);
+                            }
+                        });
+
+                        appState.ocrRawData = unique;
+                        this.renderPreview(unique);
+                        Utils.hideLoader();
+                        document.getElementById('ocr-import-schedule').disabled = unique.length === 0;
+                        document.getElementById('ocr-import-avail').disabled = unique.length === 0;
+                        Utils.toast(`${unique.length} Einträge erkannt.`, 'success');
+                    },
+
+                    // Verbesserte Texterkennung für WhatsApp-Screenshots (jetzt mit Zeiterkennung)
+                    parseText(text) {
+                        const lines = text.split('\n');
+                        const result = [];
+                        let currentDate = null;
+                        let currentTime = null;
+                        const nameSet = new Set();
+
+                        // Hilfsfunktion zum Hinzufügen eines Eintrags
+                        const flush = () => {
+                            if (currentDate && currentTime && nameSet.size > 0) {
+                                result.push({
+                                    date: currentDate,
+                                    time: currentTime,
+                                    names: Array.from(nameSet)
+                                });
+                                nameSet.clear();
+                            }
+                        };
+
+                        for (let line of lines) {
+                            line = line.trim();
+                            if (!line) continue;
+
+                            // Suche nach Datum + Zeit, z.B. "06.03 - 17:00 bis 18:30"
+                            const dateTimeMatch = line.match(/(\d{1,2}\.\d{1,2})\s*[-–]\s*(\d{1,2}:\d{2})\s*(?:bis|-)\s*(\d{1,2}:\d{2})/i);
+                            if (dateTimeMatch) {
+                                flush(); // vorherigen Eintrag speichern
+                                currentDate = dateTimeMatch[1];
+                                const start = dateTimeMatch[2];
+                                const end = dateTimeMatch[3];
+                                if (start === '17:00' && end === '18:30') currentTime = '17:00 - 18:30';
+                                else if (start === '18:15' && end === '19:45') currentTime = '18:15 - 19:45';
+                                else currentTime = `${start} - ${end}`;
+                                continue;
+                            }
+
+                            // Suche nach Namen
+                            if (currentDate && currentTime) {
+                                const lowerLine = line.toLowerCase();
+                                appState.team.forEach(m => {
+                                    const nameLower = m.name.toLowerCase();
+                                    if (lowerLine.includes(nameLower) || 
+                                        (nameLower === 'kaspar' && (lowerLine.includes('du') || lowerLine.includes('ich')))) {
+                                        nameSet.add(m.name);
+                                    }
+                                });
+                                // Auch direkte "Du" Erkennung
+                                if (lowerLine.includes('du') || lowerLine.includes('ich')) {
+                                    const kaspar = appState.team.find(m => m.name.toLowerCase() === 'kaspar');
+                                    if (kaspar) nameSet.add(kaspar.name);
+                                }
+                            }
+                        }
+                        flush(); // letzte Gruppe
+                        return result;
+                    },
+
+                    parseCSV(text) {
+                        const lines = text.split('\n');
+                        const data = [];
+                        lines.forEach(l => {
+                            const parts = l.split(';');
+                            if (parts.length >= 3) {
+                                let names = parts[2].split(',').map(s => s.trim());
+                                // Mapping "Du" -> "Kaspar"
+                                names = names.map(n => n === 'Du' ? 'Kaspar' : n);
+                                data.push({
+                                    date: parts[0].trim(),
+                                    time: parts[1].trim(),
+                                    names: names
+                                });
+                            }
+                        });
+                        return data;
+                    },
+
+                    renderPreview(data) {
+                        const preview = document.getElementById('ocr-preview');
+                        preview.innerHTML = '';
+                        if (data.length === 0) {
+                            preview.innerText = 'Keine Einträge erkannt.';
+                            return;
+                        }
+                        const table = document.createElement('table');
+                        table.style.width = '100%';
+                        table.style.fontSize = '0.75rem';
+                        table.innerHTML = '<thead><tr><th>Datum</th><th>Zeit</th><th>Namen</th></tr></thead><tbody>';
+                        data.forEach((row, idx) => {
+                            table.innerHTML += `<tr>
+                                <td>${row.date}</td>
+                                <td>${row.time}</td>
+                                <td>${row.names.join(', ')}</td>
+                            </tr>`;
+                        });
+                        table.innerHTML += '</tbody>';
+                        preview.appendChild(table);
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'btn-ghost';
+                        editBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Bearbeiten';
+                        editBtn.onclick = () => App.OCR.openEditor();
+                        preview.appendChild(editBtn);
+                    },
+
+                    openEditor() {
+                        const container = document.getElementById('ocr-edit-table');
+                        container.innerHTML = '';
+                        appState.ocrRawData.forEach((row, idx) => {
+                            const div = document.createElement('div');
+                            div.className = 'member-card';
+                            div.style.flexDirection = 'column';
+                            div.style.alignItems = 'stretch';
+                            div.innerHTML = `
+                                <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                                    <input type="text" value="${row.date}" placeholder="Datum" data-idx="${idx}" class="ocr-edit-date" style="width:70px;">
+                                    <select data-idx="${idx}" class="ocr-edit-time" style="width:110px;">
+                                        <option value="17:00 - 18:30" ${row.time.includes('17:00')?'selected':''}>Früh</option>
+                                        <option value="18:15 - 19:45" ${row.time.includes('18:15')?'selected':''}>Spät</option>
+                                        <option value="custom">Andere</option>
+                                    </select>
+                                    <input type="text" value="${row.names.join(', ')}" placeholder="Namen (kommagetrennt)" data-idx="${idx}" class="ocr-edit-names" style="flex:1; min-width:150px;">
+                                </div>
+                            `;
+                            container.appendChild(div);
+                        });
+                        App.Modals.open('ocr-edit');
+                    },
+
+                    saveEdits() {
+                        const newData = [];
+                        document.querySelectorAll('.ocr-edit-date').forEach(inp => {
+                            const idx = inp.dataset.idx;
+                            const timeSelect = document.querySelector(`.ocr-edit-time[data-idx="${idx}"]`);
+                            let time = timeSelect.value;
+                            if (time === 'custom') {
+                                time = prompt('Zeit eingeben (z.B. 16:00 - 17:30)') || '17:00 - 18:30';
+                            }
+                            const namesStr = document.querySelector(`.ocr-edit-names[data-idx="${idx}"]`).value;
+                            const names = namesStr.split(',').map(s => s.trim()).filter(s => s);
+                            newData.push({
+                                date: inp.value,
+                                time: time,
+                                names: names
+                            });
+                        });
+                        appState.ocrRawData = newData;
+                        this.renderPreview(newData);
+                        App.Modals.close('ocr-edit');
+                        Utils.toast('Änderungen übernommen', 'success');
+                    },
+
+                    importAsSchedule() {
+                        const plan = currentPlan();
+                        appState.ocrRawData.forEach(row => {
+                            plan.schedule.push({
+                                id: Utils.uid(),
+                                date: row.date,
+                                time: row.time,
+                                names: row.names,
+                                aiGenerated: false
+                            });
+                        });
+                        saveState();
+                        App.UI.renderAll();
+                        App.Modals.close('ocr');
+                        appState.ocrRawData = [];
+                        Utils.toast('Schichten importiert.', 'success');
+                    },
+
+                    importAsAvailability() {
+                        // Jetzt mit Zeit
+                        const plan = currentPlan();
+                        appState.ocrRawData.forEach(row => {
+                            row.names.forEach(personName => {
+                                const member = appState.team.find(m => m.name === personName);
+                                if (member) {
+                                    plan.availability = plan.availability.filter(a => !(a.personId === member.id && a.date === row.date && a.time === row.time));
+                                    plan.availability.push({ personId: member.id, date: row.date, time: row.time, available: true });
+                                }
+                            });
+                        });
+                        saveState();
+                        App.Modals.close('ocr');
+                        appState.ocrRawData = [];
+                        Utils.toast('Verfügbarkeiten importiert.', 'success');
+                        App.nav('availability');
+                        App.Availability.renderTable();
+                    },
+
+                    reset() {
+                        appState.ocrRawData = [];
+                        document.getElementById('ocr-preview').innerHTML = '';
+                        document.getElementById('ocr-import-schedule').disabled = true;
+                        document.getElementById('ocr-import-avail').disabled = true;
+                        document.getElementById('ocr-file').value = '';
+                    }
+                },
+
+                // ========== GENERATOR (5 Schritte) ==========
+                Wizard: {
+                    next(step) {
+                        document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+                        document.getElementById('wiz-step-' + step).classList.add('active');
+                        document.querySelectorAll('.step-dot').forEach((dot, idx) => {
+                            dot.classList.toggle('active', idx+1 === step);
+                            if (idx+1 < step) dot.classList.add('completed');
+                            else dot.classList.remove('completed');
+                        });
+                        if (step === 2) {
+                            // Vielleicht irgendwas vorbereiten
+                        }
+                        if (step === 5) {
+                            this.updatePreview();
+                        }
+                    },
+
+                    updatePreview() {
+                        // Anzahl ausgewählter Termine anzeigen
+                        const checkboxes = document.querySelectorAll('#wiz-termine-liste input.wiz-term-check:checked');
+                        document.getElementById('wiz-termine-count').innerText = checkboxes.length;
+                        const previewList = document.getElementById('wiz-preview-list');
+                        previewList.innerHTML = '';
+                        checkboxes.forEach(cb => {
+                            const date = cb.dataset.date;
+                            const time = cb.dataset.time;
+                            previewList.innerHTML += `<div>${date} – ${time}</div>`;
+                        });
+                    },
+
+                    generate() {
+                        // Sammle ausgewählte Termine
+                        const selectedTermines = [];
+                        document.querySelectorAll('#wiz-termine-liste input.wiz-term-check:checked').forEach(cb => {
+                            selectedTermines.push({ date: cb.dataset.date, time: cb.dataset.time });
+                        });
+                        if (selectedTermines.length === 0) {
+                            return Utils.toast('Bitte mindestens einen Termin auswählen.', 'error');
+                        }
+
+                        // Einstellungen auslesen
+                        const reserveFactor = parseFloat(document.getElementById('wiz-reserve-factor').value) || 0.7;
+                        const rotateFactor = parseFloat(document.getElementById('wiz-rotate-factor').value) || 1.0;
+                        const expertBonus = parseFloat(document.getElementById('wiz-expert-bonus').value) || 0.5;
+                        const minEarly = parseInt(document.getElementById('wiz-min-early').value) || 2;
+                        const maxEarly = parseInt(document.getElementById('wiz-max-early').value) || 3;
+                        const minLate = parseInt(document.getElementById('wiz-min-late').value) || 2;
+                        const maxLate = parseInt(document.getElementById('wiz-max-late').value) || 4;
+                        const preferDoubles = document.getElementById('wiz-pref-doubles').checked;
+                        const prefExpert = document.getElementById('wiz-pref-expert').checked;
+                        const algorithm = document.getElementById('wiz-algorithm').value;
+                        const randomness = parseFloat(document.getElementById('wiz-randomness').value) || 0.3;
+                        const maxEntries = parseInt(document.getElementById('wiz-max-entries').value) || 0;
+
+                        const plan = currentPlan();
+                        const team = appState.team;
+                        const availability = plan.availability;
+
+                        // Hilfsfunktion: prüft ob Person an einem Termin verfügbar ist
+                        const isAvailable = (personId, date, time) => {
+                            const entry = availability.find(a => a.personId === personId && a.date === date && a.time === time);
+                            return entry ? entry.available : false;
+                        };
+
+                        // Zählung bisheriger Einsätze pro Person (aus dem bestehenden Plan)
+                        const history = {};
+                        team.forEach(m => history[m.id] = 0);
+                        plan.schedule.forEach(entry => {
+                            entry.names.forEach(name => {
+                                const m = team.find(t => t.name === name);
+                                if (m) history[m.id]++;
+                            });
+                        });
+
+                        const newEntries = [];
+
+                        selectedTermines.forEach(term => {
+                            const date = term.date;
+                            const time = term.time;
+                            const shiftType = time.includes('17:00') ? 'early' : (time.includes('18:15') ? 'late' : 'other');
+                            const min = shiftType === 'early' ? minEarly : (shiftType === 'late' ? minLate : 2);
+                            const max = shiftType === 'early' ? maxEarly : (shiftType === 'late' ? maxLate : 3);
+                            if (shiftType === 'other') return; // nur bekannte Schichten
+
+                            // Verfügbare Kandidaten nach Rolle sortieren
+                            const assigned = [];
+
+                            // 1. Stamm (fixed) – müssen, wenn verfügbar
+                            const fixedCandidates = team.filter(m =>
+                                m.role === 'fixed' &&
+                                (m.shift === 'both' || m.shift === shiftType) &&
+                                isAvailable(m.id, date, time)
+                            );
+                            fixedCandidates.forEach(m => {
+                                if (assigned.length < max) {
+                                    assigned.push(m);
+                                    history[m.id]++;
+                                }
+                            });
+
+                            // 2. Springer (rotate) – normale Priorität
+                            let rotateCandidates = team.filter(m =>
+                                m.role === 'rotate' &&
+                                (m.shift === 'both' || m.shift === shiftType) &&
+                                !assigned.includes(m) &&
+                                isAvailable(m.id, date, time)
+                            );
+
+                            // Sortierung nach Fairness
+                            rotateCandidates.sort((a, b) => {
+                                let scoreA = history[a.id] * rotateFactor;
+                                let scoreB = history[b.id] * rotateFactor;
+                                if (prefExpert && shiftType === 'late') {
+                                    if (a.expert && !b.expert) scoreA -= expertBonus;
+                                    if (!a.expert && b.expert) scoreB -= expertBonus;
+                                }
+                                if (algorithm === 'random') {
+                                    scoreA += Math.random() * randomness;
+                                    scoreB += Math.random() * randomness;
+                                } else if (algorithm === 'strict') {
+                                    // nichts
+                                }
+                                return scoreA - scoreB;
+                            });
+
+                            for (let m of rotateCandidates) {
+                                if (assigned.length >= max) break;
+                                assigned.push(m);
+                                history[m.id]++;
+                            }
+
+                            // 3. Reserve – niedrige Priorität
+                            let reserveCandidates = team.filter(m =>
+                                m.role === 'reserve' &&
+                                (m.shift === 'both' || m.shift === shiftType) &&
+                                !assigned.includes(m) &&
+                                isAvailable(m.id, date, time)
+                            );
+                            reserveCandidates.sort((a, b) => {
+                                let scoreA = history[a.id] * reserveFactor;
+                                let scoreB = history[b.id] * reserveFactor;
+                                if (algorithm === 'random') {
+                                    scoreA += Math.random() * randomness;
+                                    scoreB += Math.random() * randomness;
+                                }
+                                return scoreA - scoreB;
+                            });
+                            for (let m of reserveCandidates) {
+                                if (assigned.length >= max) break;
+                                assigned.push(m);
+                                history[m.id]++;
+                            }
+
+                            // 4. Emergency – nur wenn Minimum nicht erreicht
+                            if (assigned.length < min) {
+                                let emergencyCandidates = team.filter(m =>
+                                    m.role === 'emergency' &&
+                                    (m.shift === 'both' || m.shift === shiftType) &&
+                                    !assigned.includes(m) &&
+                                    isAvailable(m.id, date, time)
+                                );
+                                emergencyCandidates.sort((a,b) => history[a.id] - history[b.id]);
+                                for (let m of emergencyCandidates) {
+                                    if (assigned.length >= min) break;
+                                    assigned.push(m);
+                                    history[m.id]++;
+                                }
+                            }
+
+                            if (assigned.length >= min) {
+                                newEntries.push({
+                                    id: Utils.uid(),
+                                    date: date,
+                                    time: time,
+                                    names: assigned.map(m => m.name),
+                                    aiGenerated: true
+                                });
+                            }
+                        });
+
+                        plan.schedule.push(...newEntries);
+                        saveState();
+                        App.UI.renderAll();
+                        App.Modals.close('wizard');
+                        Utils.toast(`${newEntries.length} neue Schichten generiert!`, 'success');
+                    }
+                },
+
+                // ========== STATISTIK ==========
+                Stats: {
+                    chartInstance: null,
+                    shiftChartInstance: null,
+                    render() {
+                        const ctx = document.getElementById('statsChart').getContext('2d');
+                        const counts = {};
+                        appState.team.forEach(m => counts[m.name] = 0);
+                        currentPlan().schedule.forEach(e => {
+                            e.names.forEach(n => { if (counts[n] !== undefined) counts[n]++; });
+                        });
+                        const values = Object.values(counts);
+                        const mean = values.reduce((a,b)=>a+b,0) / (values.length||1);
+                        const variance = values.reduce((a,b)=>a + (b-mean)**2,0) / (values.length||1);
+                        document.getElementById('fairness-score').innerText = Math.sqrt(variance).toFixed(2);
+
+                        if (this.chartInstance) this.chartInstance.destroy();
+                        this.chartInstance = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: Object.keys(counts),
+                                datasets: [{
+                                    label: 'Einsätze',
+                                    data: Object.values(counts),
+                                    backgroundColor: '#2563eb',
+                                    borderRadius: 6
+                                }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+                        });
+
+                        // Zweites Diagramm: Verteilung Früh/Spät
+                        const shiftCtx = document.getElementById('shiftChart').getContext('2d');
+                        const earlyCount = currentPlan().schedule.filter(e => e.time.includes('17:00')).length;
+                        const lateCount = currentPlan().schedule.filter(e => e.time.includes('18:15')).length;
+                        if (this.shiftChartInstance) this.shiftChartInstance.destroy();
+                        this.shiftChartInstance = new Chart(shiftCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Frühschicht', 'Spätschicht'],
+                                datasets: [{
+                                    data: [earlyCount, lateCount],
+                                    backgroundColor: ['#2563eb', '#f59e0b']
+                                }]
+                            }
+                        });
+                    }
+                },
+
+                // ========== EXPORT (erweitert) ==========
+                Export: {
+                    pdfQuick(design) {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+                        let headColor, theme = 'grid';
+                        if (design === 'standard') headColor = [37,99,235];
+                        else if (design === 'chess') headColor = [0,0,0];
+                        else if (design === 'modern') headColor = [22,163,74]; // grün
+                        doc.setFontSize(16);
+                        doc.text("SC Brombach - Einsatzplan", 14, 20);
+                        doc.setFontSize(9);
+                        const plan = currentPlan();
+                        const range = plan.schedule.length > 0 ? `${plan.schedule[0].date} - ${plan.schedule[plan.schedule.length-1].date}` : 'Leer';
+                        doc.text(`Zeitraum: ${range}`, 14, 28);
+                        doc.autoTable({
+                            startY: 35,
+                            head: [['Datum', 'Uhrzeit', 'Team']],
+                            body: plan.schedule.map(s => [s.date, s.time, s.names.join(', ')]),
+                            theme: theme,
+                            headStyles: { fillColor: headColor, textColor: 255 },
+                            styles: { fontSize: 9, cellPadding: 3 }
+                        });
+                        doc.save(`plan_${design}.pdf`);
+                    },
+
+                    pdfCustom() {
+                        const { jsPDF } = window.jspdf;
+                        const orientation = document.getElementById('pdf-orientation').value;
+                        const doc = new jsPDF({ orientation });
+                        const header = document.getElementById('pdf-header').value || 'SC Brombach';
+                        const footer = document.getElementById('pdf-footer').value || '';
+                        const fontSize = parseInt(document.getElementById('pdf-fontsize').value) || 10;
+                        const colorscheme = document.getElementById('pdf-colorscheme').value;
+                        const withLogo = document.getElementById('pdf-logo').checked;
+                        const columns = document.getElementById('pdf-columns').value;
+                        const colorRoles = document.getElementById('pdf-color-roles').checked;
+                        const lines = document.getElementById('pdf-lines').value;
+
+                        let headColor;
+                        if (colorscheme === 'standard') headColor = [37,99,235];
+                        else if (colorscheme === 'chess') headColor = [0,0,0];
+                        else if (colorscheme === 'forest') headColor = [22,163,74];
+                        else if (colorscheme === 'sunset') headColor = [234,88,12];
+                        else if (colorscheme === 'ocean') headColor = [6,182,212];
+
+                        doc.setFontSize(16);
+                        doc.text(header, 14, 20);
+                        if (withLogo) {
+                            doc.setFontSize(8);
+                            doc.text('⚔️ SC Brombach', 14, 27);
+                        }
+                        doc.setFontSize(fontSize);
+                        const plan = currentPlan();
+                        const range = plan.schedule.length > 0 ? `${plan.schedule[0].date} - ${plan.schedule[plan.schedule.length-1].date}` : 'Leer';
+                        doc.text(`Zeitraum: ${range}`, 14, withLogo ? 34 : 28);
+
+                        let startY = withLogo ? 40 : 35;
+                        let head = [['Datum', 'Uhrzeit', 'Team']];
+                        if (columns === '4') head = [['Datum', 'Uhrzeit', 'Schicht', 'Team']];
+                        if (columns === '5') head = [['Datum', 'Uhrzeit', 'Schicht', 'Team', 'Anzahl']];
+                        let body = [];
+                        if (columns === '4') {
+                            body = plan.schedule.map(s => {
+                                const shiftType = s.time.includes('17:00') ? 'Früh' : (s.time.includes('18:15') ? 'Spät' : 'Andere');
+                                return [s.date, s.time, shiftType, s.names.join(', ')];
+                            });
+                        } else if (columns === '5') {
+                            body = plan.schedule.map(s => {
+                                const shiftType = s.time.includes('17:00') ? 'Früh' : (s.time.includes('18:15') ? 'Spät' : 'Andere');
+                                return [s.date, s.time, shiftType, s.names.join(', '), s.names.length];
+                            });
+                        } else {
+                            body = plan.schedule.map(s => [s.date, s.time, s.names.join(', ')]);
+                        }
+
+                        // Wenn Farben nach Rolle, müssen wir die Zellen einfärben – autoTable unterstützt das nicht direkt
+                        // Daher hier nur als Option, aber wir lassen es weg
+
+                        doc.autoTable({
+                            startY: startY,
+                            head: head,
+                            body: body,
+                            theme: lines === 'none' ? 'plain' : (lines === 'horizontal' ? 'striped' : 'grid'),
+                            headStyles: { fillColor: headColor, textColor: 255 },
+                            styles: { fontSize: fontSize, cellPadding: 3, lineColor: lines==='none'?[255,255,255]:[200,200,200] }
+                        });
+
+                        if (footer) {
+                            const pageCount = doc.internal.getNumberOfPages();
+                            for (let i = 1; i <= pageCount; i++) {
+                                doc.setPage(i);
+                                doc.setFontSize(8);
+                                doc.text(footer, 14, doc.internal.pageSize.height - 10);
+                            }
+                        }
+                        doc.save('plan_individuell.pdf');
+                        App.Modals.close('pdfConfig');
+                    },
+
+                    csv() {
+                        let csv = "Datum;Uhrzeit;Namen\n";
+                        currentPlan().schedule.forEach(r => csv += `${r.date};${r.time};${r.names.join(',')}\n`);
+                        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = "plan.csv";
+                        link.click();
+                    },
+
+                    excel() {
+                        const wb = XLSX.utils.book_new();
+                        const data = [['Datum', 'Uhrzeit', 'Namen']];
+                        currentPlan().schedule.forEach(r => data.push([r.date, r.time, r.names.join(', ')]));
+                        const ws = XLSX.utils.aoa_to_sheet(data);
+                        XLSX.utils.book_append_sheet(wb, ws, 'Einsatzplan');
+                        XLSX.writeFile(wb, 'plan.xlsx');
+                    },
+
+                    whatsapp() {
+                        let text = "📢 *Hallo zusammen!* 📢\n\n";
+                        text += "Hier ist der neue Einsatzplan für die nächsten Wochen:\n\n";
+                        currentPlan().schedule.forEach(r => text += `📅 *${r.date}* (${r.time})\n👥 ${r.names.join(', ')}\n\n`);
+                        text += "Vielen Dank an alle Helfer! 🙏\n";
+                        text += "Bei Fragen einfach melden.\n";
+                        text += "Euer SC Brombach-Team 🤗";
+                        navigator.clipboard.writeText(text).then(() => Utils.toast("WhatsApp-Text in Zwischenablage kopiert!", 'success'));
+                    },
+
+                    json() {
+                        const data = {
+                            plan: currentPlan(),
+                            team: appState.team,
+                            exportDate: new Date().toISOString()
+                        };
+                        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `backup_${currentPlan().name}.json`;
+                        link.click();
+                    },
+
+                    ics() {
+                        App.Modals.open('ics-personen');
+                    },
+
+                    generateICS() {
+                        const selected = Array.from(document.querySelectorAll('#ics-personen-list input:checked')).map(cb => cb.value);
+                        if (selected.length === 0) return alert('Mindestens eine Person wählen.');
+                        let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//SC Brombach//Planer//DE\n";
+                        currentPlan().schedule.forEach(entry => {
+                            const common = entry.names.filter(n => selected.includes(n));
+                            if (common.length === 0) return;
+                            const dateParts = entry.date.split('.');
+                            if (dateParts.length < 2) return;
+                            const day = dateParts[0].padStart(2,'0');
+                            const month = dateParts[1].padStart(2,'0');
+                            const year = new Date().getFullYear();
+                            const startTime = entry.time.split(' - ')[0].replace(':', '');
+                            const endTime = entry.time.split(' - ')[1].replace(':', '');
+                            const start = `${year}${month}${day}T${startTime}00`;
+                            const end = `${year}${month}${day}T${endTime}00`;
+                            icsContent += `BEGIN:VEVENT\nUID:${Utils.uid()}@scbrombach\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTSTART:${start}\nDTEND:${end}\nSUMMARY:Einsatz (${common.join(',')})\nEND:VEVENT\n`;
+                        });
+                        icsContent += "END:VCALENDAR";
+                        const blob = new Blob([icsContent], {type: 'text/calendar;charset=utf-8'});
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `termine.ics`;
+                        link.click();
+                        App.Modals.close('ics-personen');
+                    },
+
+                    png() {
+                        // Einfache PNG-Export-Funktion: Nutze html2canvas? Ist nicht eingebunden, daher simulieren
+                        Utils.toast('PNG-Export erfordert html2canvas – bitte manuell Screenshot machen.', 'warning');
+                    }
+                },
+
+                // ========== BACKUP ==========
+                Backup: {
+                    create() {
+                        const data = {
+                            plans: appState.plans,
+                            team: appState.team,
+                            currentPlanId: appState.currentPlanId,
+                            exportDate: new Date().toISOString()
+                        };
+                        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `scb_backup_${new Date().toISOString().slice(0,10)}.json`;
+                        link.click();
+                        Utils.toast('Backup erstellt', 'success');
+                    },
+                    restore(file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const data = JSON.parse(e.target.result);
+                                if (data.plans && data.team) {
+                                    appState.plans = data.plans;
+                                    appState.team = data.team;
+                                    appState.currentPlanId = data.currentPlanId || 'default';
+                                    saveState();
+                                    App.UI.renderAll();
+                                    App.Modals.close('backup');
+                                    Utils.toast('Backup erfolgreich wiederhergestellt!', 'success');
+                                } else {
+                                    Utils.toast('Ungültiges Backup-Format', 'error');
+                                }
+                            } catch (err) {
+                                Utils.toast('Fehler beim Lesen der Datei', 'error');
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                }
+            };
+
+            window.App = App;
+            window.onload = () => App.init();
+        })();
+    </script>
+</body>
+</html>
