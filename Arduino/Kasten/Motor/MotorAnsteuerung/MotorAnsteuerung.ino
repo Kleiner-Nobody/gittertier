@@ -1,6 +1,8 @@
 /* Hoverboard Dual Motor Serial Control + Speed Read + PWM Ramp
  *
  * Steuerung von LEFT und RIGHT Motor separat über Serial Commands:
+ * Empfängt Daten nun sicher über SoftwareSerial (Pin 8) vom R4 (38400 Baud)
+ * Debug-Ausgaben an PC über Hardware Serial (USB) (115200 Baud)
  *
  * LPWM,120   -> nur linker Motor
  * RPWM,200   -> nur rechter Motor
@@ -11,27 +13,29 @@
  * LBRAKE,0   -> linker Motor Bremse aus
  * BRAKE,1    -> beide Motoren bremsen
  *
- * Misst Geschwindigkeit beider Motoren separat
- * Sanftes Hochfahren der PWM (Ramp-Up) ohne Blockierung
- *
  * Platform: Arduino Nano
  */
  
 #include <Arduino.h>
+#include <SoftwareSerial.h> // NEU: Für die konfliktfreie Kommunikation mit dem R4
  
 // CONSTANTS
-const unsigned long SPEED_TIMEOUT = 500000;12
+const unsigned long SPEED_TIMEOUT = 500000;
 const unsigned int UPDATE_TIME = 500;
-const double BAUD_RATE = 115200;
 const double WHEEL_DIAMETER_CM = 17.0;
 const double WHEEL_CIRCUMFERENCE_CM = WHEEL_DIAMETER_CM * 3.14159265;
  
 // RAMP SETTINGS & HARDWARE CONFIG
-const int RAMP_STEP = 1;      // Schrittweite PWM pro Intervall (kleiner = sanfter)
-const int RAMP_DELAY = 15;    // Zeit zwischen Schritten in ms (15ms ist sehr weich)
-unsigned long lastRampTime = 0; // Für non-blocking Ramp-Up
+const int RAMP_STEP = 1;      
+const int RAMP_DELAY = 15;    
+unsigned long lastRampTime = 0; 
 
-const bool INVERT_RIGHT_MOTOR = true; // Invertiert die logische Richtung für den rechten Motor
+const bool INVERT_RIGHT_MOTOR = true; 
+
+// KOMMUNIKATIONS PINS (SoftwareSerial)
+const int PIN_R4_RX = 8; // Hier kommt das Kabel vom R4 TX (Pin 8) an!
+const int PIN_R4_TX = 7; // Wird nicht physisch benötigt, aber für Bibliothek erforderlich
+SoftwareSerial r4Serial(PIN_R4_RX, PIN_R4_TX);
  
 // MOTOR PINS
 const int PIN_DIR_R   = 2;
@@ -61,6 +65,12 @@ int pwmTargetR = 0, pwmCurrentR = 0;
 // SETUP
 void setup()
 {
+    // PC Debugging (USB)
+    Serial.begin(115200);
+    
+    // R4 Kommunikation (Pin 8)
+    r4Serial.begin(38400); 
+
     // RIGHT MOTOR
     pinMode(PIN_SPEED_R, INPUT);
     pinMode(PIN_PWM_R, OUTPUT);
@@ -79,37 +89,41 @@ void setup()
     digitalWrite(PIN_DIR_L, LOW);
     analogWrite(PIN_PWM_L, 0);
  
-    Serial.begin(BAUD_RATE);
-    Serial.println("Dual Motor Control Ready (Nano) with Non-Blocking PWM Ramp");
+    Serial.println("==========================================");
+    Serial.println("MOTOR NANO ONLINE & BEREIT");
+    Serial.println("Warte auf Befehle von R4 auf PIN 8...");
+    Serial.println("==========================================");
 }
  
 // MAIN LOOP
 void loop()
 {
-    if (ReadFromSerial())
+    // 1. Lauschen auf den R4 (Pin 8)
+    if (ReadFromR4()) {
         ProcessCommand(_command, _data);
+    }
  
-    // PWM Ramp-Up
+    // 2. PWM Ramp-Up
     UpdatePWMRamp();
  
-    // Geschwindigkeit messen
+    // 3. Geschwindigkeit messen
     ReadSpeedRight();
     ReadSpeedLeft();
  
-    // Seriellausgabe
+    // 4. Seriellausgabe (Nur wenn Bewegung da ist, um Spam zu vermeiden)
     WriteSpeedToSerial();
 }
  
-// READ SERIAL
-bool ReadFromSerial()
+// READ FROM R4 (SoftwareSerial)
+bool ReadFromR4()
 {
     static String cmdBuffer;
     static String dataBuffer;
     static bool isCommand = true;
  
-    if (!Serial.available()) return false;
+    if (!r4Serial.available()) return false;
  
-    char recByte = Serial.read();
+    char recByte = r4Serial.read();
  
     if (recByte == '\r')
     {
@@ -117,9 +131,10 @@ bool ReadFromSerial()
         _command = cmdBuffer;
         _data = dataBuffer.toInt();
  
-        Serial.print("Received: ");
+        // DEBUG AUSGABE FÜR DICH: Wir zeigen exakt, was reinkam
+        Serial.print("\n[R4 EMPFANGEN] -> Befehl: ");
         Serial.print(_command);
-        Serial.print(",");
+        Serial.print(" | Wert: ");
         Serial.println(_data);
  
         cmdBuffer = "";
@@ -148,7 +163,6 @@ void ProcessCommand(String command, int data)
 {
     command.toUpperCase();
  
-    // Prüfen ob Befehl mit L oder R anfängt
     if (command.startsWith("L") || command.startsWith("R"))
     {
         char side = command.charAt(0);
@@ -157,7 +171,6 @@ void ProcessCommand(String command, int data)
     }
     else
     {
-        // Kein Präfix -> beide Motoren
         ExecuteCommand(command, data, 'L');
         ExecuteCommand(command, data, 'R');
     }
@@ -175,9 +188,8 @@ void ExecuteCommand(String cmd, int data, char side)
     if (cmd == "PWM")
     {
         data = constrain(data, 0, 255);
-        *pwmTarget = data; // Ramp-Up kümmert sich um den Rest
+        *pwmTarget = data; 
         
-        // Wenn Richtung noch nicht gesetzt, default auf vorwärts (inkl. Invertierungs-Check für R)
         static bool dirSetL = false, dirSetR = false;
         if (side=='L' && !dirSetL) { digitalWrite(*pinDIR,1); dirSetL=true; }
         if (side=='R' && !dirSetR) { 
@@ -186,42 +198,37 @@ void ExecuteCommand(String cmd, int data, char side)
             dirSetR=true; 
         }
  
-        Serial.print(side);
-        Serial.print(" PWM target = ");
-        Serial.println(data);
+        Serial.print("   -> Setze "); Serial.print(side);
+        Serial.print(" PWM ZIEL auf: "); Serial.println(data);
     }
     else if (cmd == "BRAKE")
     {
         digitalWrite(*pinBRAKE, data);
-        Serial.print(side);
-        Serial.print(" BRAKE = ");
-        Serial.println(data);
+        Serial.print("   -> Setze "); Serial.print(side);
+        Serial.print(" BREMSE auf: "); Serial.println(data);
     }
     else if (cmd == "DIR")
     {
         int actualDirection = data;
         
-        // Logische Invertierung für den rechten Motor, falls aktiviert
         if (side == 'R' && INVERT_RIGHT_MOTOR) {
             actualDirection = (data == 1) ? 0 : 1;
         }
         
         digitalWrite(*pinDIR, actualDirection);
-        Serial.print(side);
-        Serial.print(" DIR = ");
-        Serial.println(data); // Konsolenausgabe zeigt den logischen Wert (z.B. "1" für vorwärts)
+        Serial.print("   -> Setze "); Serial.print(side);
+        Serial.print(" RICHTUNG auf: "); Serial.println(data);
     }
-    else
-        Serial.println("Unknown command");
+    else {
+        Serial.println("   -> [FEHLER] Unbekannter Befehl ignoriert!");
+    }
 }
- 
  
 // PWM Ramp-Up Update (NON-BLOCKING)
 void UpdatePWMRamp()
 {
     unsigned long currentMillis = millis();
     
-    // Nur aktualisieren, wenn RAMP_DELAY Millisekunden vergangen sind
     if (currentMillis - lastRampTime >= RAMP_DELAY) 
     {
         lastRampTime = currentMillis;
@@ -263,7 +270,7 @@ void ReadSpeedRight()
         unsigned long now = micros();
         double elapsed = now - lastTime;
         double period = elapsed * 2.0;
-        freqR = (1.0 / period) * 1000000.0; // Syntaxfehler aus Originalcode behoben
+        freqR = (1.0 / period) * 1000000.0;
         rpmR = freqR / 45.0 * 60.0;
         if (rpmR > 5000) rpmR = 0;
         kphR = (WHEEL_CIRCUMFERENCE_CM * rpmR * 60.0) / 100000.0;
@@ -300,21 +307,19 @@ void ReadSpeedLeft()
     else if (micros() > timeout) freqL = rpmL = kphL = 0;
 }
  
-// WRITE SPEED TO SERIAL
+// WRITE SPEED TO SERIAL (Reduziert auf echte Bewegungen)
 void WriteSpeedToSerial()
 {
     static unsigned long nextUpdate = 0;
     if (millis() < nextUpdate) return;
  
-    Serial.print("LEFT  -> RPM:");
-    Serial.print(rpmL,1);
-    Serial.print(" KPH:");
-    Serial.print(kphL,1);
- 
-    Serial.print("   RIGHT -> RPM:");
-    Serial.print(rpmR,1);
-    Serial.print(" KPH:");
-    Serial.println(kphR,1);
+    // Drucke die Geschwindigkeit NUR, wenn der Roboter sich tatsächlich bewegt!
+    if (rpmL > 1.0 || rpmR > 1.0) {
+        Serial.print("[INFO] Bewegung: LEFT -> RPM:");
+        Serial.print(rpmL,1);
+        Serial.print(" | RIGHT -> RPM:");
+        Serial.println(rpmR,1);
+    }
  
     nextUpdate = millis() + UPDATE_TIME;
 }
