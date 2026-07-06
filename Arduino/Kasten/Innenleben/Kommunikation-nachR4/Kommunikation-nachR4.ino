@@ -1,102 +1,171 @@
 /**
- * GITTERTIER PRO - SENSOR HUB (R3) - v16.1 (FIXED POWER LOGIC)
- * Problem behoben: Kein Spammen von REQ_OFF mehr.
+ * GITTERTIER PRO - SENSOR HUB (Arduino UNO R3)
+ * Liest 3-Wege-Schalter korrekt aus und sendet Zustandsänderungen via Serial an den R4
+ * Baudrate: 115200
  */
 
-#include <Arduino.h>
+// --- PIN DEFINITIONEN ---
+// Schalter 1: Information Dome (3-Wege)
+const int PIN_DOME_L       = 2;  // Rainbow
+const int PIN_DOME_R       = 3;  // Blink/Disco
 
-const uint8_t PIN_SW[]      = {2, 3, 4, 5, 6, 7, 8, 9};
-const uint8_t PIN_POWER     = 10;
-const uint8_t PIN_EMERGENCY = 13;
+// Schalter 2: Blinker (3-Wege)
+const int PIN_BLINKER_L    = 4;  // Links
+const int PIN_BLINKER_R    = 5;  // Rechts
 
-// --- STATE MANAGEMENT ---
-enum State { S_OFF, S_BOOT, S_ACTIVE };
-State currentState = S_OFF;
+// Schalter 3: Geschwindigkeit (3-Wege)
+const int PIN_SPEED_FAST   = 6;  // Schnell / Turbo
+const int PIN_SPEED_SLOW   = 7;  // Langsam
 
-// Entprellung & Timer
-unsigned long lastPowerPress = 0;
-const unsigned long POWER_COOLDOWN = 2000; // 2 Sekunden Sperre nach Druck
+// Schalter 4: Navigation (3-Wege)
+const int PIN_NAVI_AUTO    = 8;  // Auto On
+const int PIN_NAVI_ON      = 9;  // Navi
+
+// Schalter 5: Autonom (2-Wege) -> DER FEHLENDE SW 8!
+const int PIN_AUTONOM      = A0; // On / Off
+
+// System-Pins
+const int PIN_POWER_TASTER = 10; // Blau (Momentary)
+const int PIN_LAUT_R       = 11; // Lila
+const int PIN_LAUT_L       = 12; // Gelb
+const int PIN_NOT_AUS      = 13; // Rot (Öffner / NC)
+
+// --- LOGIK VARIABLEN ---
+int lastDome = -1, lastBlinker = -1, lastSpeed = -1, lastNavi = -1, lastAutonom = -1;
+
+bool systemAktiv = false;
+int letzterPowerStatus = HIGH;
+unsigned long letzteEntprellZeit = 0;
+const int entprellVerzoegerung = 50;
+bool letzterNotAusStatus = HIGH;
 
 void setup() {
-  Serial.begin(115200);
-  for (int i = 0; i < 8; i++) pinMode(PIN_SW[i], INPUT_PULLUP);
-  pinMode(PIN_POWER, INPUT_PULLUP);
-  pinMode(PIN_EMERGENCY, INPUT_PULLUP);
+  Serial.begin(115200); // TX geht an RX vom R4
   
-  delay(500);
-}
+  // Alle Pins als Input mit Pullup initialisieren
+  pinMode(PIN_DOME_L, INPUT_PULLUP);
+  pinMode(PIN_DOME_R, INPUT_PULLUP);
+  pinMode(PIN_BLINKER_L, INPUT_PULLUP);
+  pinMode(PIN_BLINKER_R, INPUT_PULLUP);
+  pinMode(PIN_SPEED_FAST, INPUT_PULLUP);
+  pinMode(PIN_SPEED_SLOW, INPUT_PULLUP);
+  pinMode(PIN_NAVI_AUTO, INPUT_PULLUP);
+  pinMode(PIN_NAVI_ON, INPUT_PULLUP);
+  pinMode(PIN_AUTONOM, INPUT_PULLUP); // SW 8
+  
+  pinMode(PIN_POWER_TASTER, INPUT_PULLUP);
+  pinMode(PIN_NOT_AUS, INPUT_PULLUP);
+  
+  pinMode(PIN_LAUT_L, OUTPUT);
+  pinMode(PIN_LAUT_R, OUTPUT);
 
-void sendCmd(String type, String id, String val) {
-  // Format: [TYPE:ID:VAL]
-  Serial.print("[");
-  Serial.print(type); Serial.print(":");
-  Serial.print(id);   Serial.print(":");
-  Serial.print(val);
-  Serial.println("]");
+  tone(PIN_LAUT_R, 1000, 100);
 }
 
 void loop() {
-  unsigned long now = millis();
+  // 1. NOT-AUS CHECK (NC Logik)
+  bool aktuellerNotAus = digitalRead(PIN_NOT_AUS);
+  if (aktuellerNotAus != letzterNotAusStatus) {
+    if (aktuellerNotAus == HIGH) {
+      Serial.println("[SYS:ALARM:ON]");
+      systemStopp();
+    } else {
+      Serial.println("[SYS:ALARM:OFF]");
+    }
+    letzterNotAusStatus = aktuellerNotAus;
+    delay(50);
+  }
 
-  // 1. POWER BUTTON LOGIK (Momentary)
-  // Wir lesen den Taster. LOW = Gedrückt.
-  if (digitalRead(PIN_POWER) == LOW) {
+  if (aktuellerNotAus == HIGH) return; // Bei Not-Aus alles blockieren
+
+  // 2. POWER-TOGGLE
+  int aktuellerPowerStatus = digitalRead(PIN_POWER_TASTER);
+  if (aktuellerPowerStatus == LOW && letzterPowerStatus == HIGH && (millis() - letzteEntprellZeit) > entprellVerzoegerung) {
+    systemAktiv = !systemAktiv;
+    letzteEntprellZeit = millis();
     
-    // Nur reagieren, wenn Cooldown vorbei ist
-    if (now - lastPowerPress > POWER_COOLDOWN) {
-      
-      if (currentState == S_OFF) {
-        // System starten
-        currentState = S_BOOT;
-        sendCmd("SYS", "PWR", "START");
-        lastPowerPress = now;
-        
-      } else if (currentState == S_ACTIVE) {
-        // System beenden wollen
-        // Wir ändern den Status NICHT auf OFF, das macht nur das Display visuell.
-        // Aber wir senden den Wunsch.
-        sendCmd("SYS", "PWR", "REQ_OFF");
-        
-        // Trick: Wir setzen den Status auf S_OFF, damit beim nächsten Drücken
-        // wieder "START" gesendet wird. Das Display entscheidet, ob es wirklich ausgeht.
-        currentState = S_OFF; 
-        lastPowerPress = now;
-      }
+    if (systemAktiv) {
+      Serial.println("[SYS:POWER:ON]");
+      tone(PIN_LAUT_L, 440, 100); delay(100); tone(PIN_LAUT_L, 880, 200);
+      sendeAlleZustaende(); // Status aller Schalter initial senden
+    } else {
+      Serial.println("[SYS:POWER:OFF]");
+      tone(PIN_LAUT_R, 880, 100); delay(100); tone(PIN_LAUT_R, 440, 200);
     }
   }
+  letzterPowerStatus = aktuellerPowerStatus;
+  
+  if (!systemAktiv) return; // Wenn System aus, keine Schalter auswerten
 
-  // Automatischer Wechsel von BOOT zu ACTIVE nach 3 Sekunden
-  if (currentState == S_BOOT && (now - lastPowerPress > 3000)) {
-    currentState = S_ACTIVE;
+  // 3. SCHALTER ABFRAGEN
+  checkAlleSchalter();
+}
+
+// Hilfsfunktion: Wandelt 2 Pins eines 3-Wege-Schalters in einen Zustand um
+int read3Pos(int pinL, int pinR) {
+  if (digitalRead(pinL) == LOW) return 1;       // Position 1
+  if (digitalRead(pinR) == LOW) return 2;       // Position 2
+  return 0;                                     // Mitte (Beide HIGH)
+}
+
+void checkAlleSchalter() {
+  // DOME
+  int d = read3Pos(PIN_DOME_L, PIN_DOME_R);
+  if(d != lastDome) { 
+    Serial.println("[SW:DOME:" + String(d) + "]"); 
+    lastDome = d; delay(20); 
   }
 
-  // 2. NOT-AUS (Immer Vorrang)
-  static int lastStop = -1;
-  int stopVal = digitalRead(PIN_EMERGENCY);
-  if (stopVal != lastStop) {
-    sendCmd("SYS", "ALARM", stopVal == HIGH ? "ON" : "OFF");
-    lastStop = stopVal;
+  // BLINKER
+  int b = read3Pos(PIN_BLINKER_L, PIN_BLINKER_R);
+  if(b != lastBlinker) { 
+    Serial.println("[SW:BLINK:" + String(b) + "]"); 
+    if(b == 1) tone(PIN_LAUT_L, 600, 50);
+    if(b == 2) tone(PIN_LAUT_R, 600, 50);
+    lastBlinker = b; delay(20); 
   }
 
-  // 3. SCHALTER & HEARTBEAT (Nur wenn ACTIVE)
-  if (currentState == S_ACTIVE) {
-    
-    // Schalter scannen
-    static int lastSw[8];
-    for (int i = 0; i < 8; i++) {
-      int val = digitalRead(PIN_SW[i]);
-      if (val != lastSw[i]) {
-        // 1 = AN (LOW), 0 = AUS (HIGH)
-        sendCmd("DATA", String(i), val == LOW ? "1" : "0");
-        lastSw[i] = val;
-      }
-    }
-
-    // Heartbeat alle 2 Sekunden
-    static unsigned long lastBeat = 0;
-    if (now - lastBeat > 2000) {
-      sendCmd("SYS", "LIFE", String(now));
-      lastBeat = now;
-    }
+  // SPEED
+  int s = read3Pos(PIN_SPEED_FAST, PIN_SPEED_SLOW);
+  if(s != lastSpeed) { 
+    Serial.println("[SW:SPEED:" + String(s) + "]"); 
+    lastSpeed = s; delay(20); 
   }
+
+  // NAVI
+  int n = read3Pos(PIN_NAVI_AUTO, PIN_NAVI_ON);
+  if(n != lastNavi) { 
+    Serial.println("[SW:NAVI:" + String(n) + "]"); 
+    lastNavi = n; delay(20); 
+  }
+
+  // AUTONOM (2-Wege Schalter)
+  int a = (digitalRead(PIN_AUTONOM) == LOW) ? 1 : 0;
+  if(a != lastAutonom) { 
+    Serial.println("[SW:AUTO:" + String(a) + "]"); 
+    lastAutonom = a; delay(20); 
+  }
+}
+
+void sendeAlleZustaende() {
+  lastDome = read3Pos(PIN_DOME_L, PIN_DOME_R);
+  Serial.println("[SW:DOME:" + String(lastDome) + "]"); delay(10);
+  
+  lastBlinker = read3Pos(PIN_BLINKER_L, PIN_BLINKER_R);
+  Serial.println("[SW:BLINK:" + String(lastBlinker) + "]"); delay(10);
+  
+  lastSpeed = read3Pos(PIN_SPEED_FAST, PIN_SPEED_SLOW);
+  Serial.println("[SW:SPEED:" + String(lastSpeed) + "]"); delay(10);
+  
+  lastNavi = read3Pos(PIN_NAVI_AUTO, PIN_NAVI_ON);
+  Serial.println("[SW:NAVI:" + String(lastNavi) + "]"); delay(10);
+  
+  lastAutonom = (digitalRead(PIN_AUTONOM) == LOW) ? 1 : 0;
+  Serial.println("[SW:AUTO:" + String(lastAutonom) + "]"); delay(10);
+}
+
+void systemStopp() {
+  noTone(PIN_LAUT_L);
+  noTone(PIN_LAUT_R);
+  systemAktiv = false; 
 }

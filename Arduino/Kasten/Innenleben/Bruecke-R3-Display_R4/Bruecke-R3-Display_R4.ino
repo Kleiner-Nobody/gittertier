@@ -1,279 +1,458 @@
 /**
- * GITTERTIER PRO - INDUSTRIAL MASTER HUB (v15.0 - DOME EDITION)
+ * ============================================================================================
+ * GITTERTIER PRO - INDUSTRIAL MASTER HUB v18.5 (SMART PARSER & PROTOCOL TRANSLATOR)
+ * ============================================================================================
  * Hardware: Arduino UNO R4 WiFi
- *
- * AUFGABE:
- * - Brücke zwischen UNO R3 (Serial1) und ESP32-S3 Display (BLE)
- * - Steuerung Information Dome (NeoPixel an D6)
- * - Auslesen des 5-Wege Joysticks (D2-D5)
- * - Steuerung der 12x8 LED-Matrix
+ * * AUFGABE DES HUBS:
+ * 1. Empfang und Entschlüsselung zusammenhängender Datenblöcke vom R3 (Serial1).
+ * 2. Übersetzung von logischen R3-Befehlen (SW:ID:VAL) in Display-kompatible Pin-Befehle (DATA:PIN:VAL).
+ * 3. Sicheres BLE-Central-Management mit garantiert synchroner Authentifizierung.
+ * 4. Isolierte Motor-Ansteuerung via SoftwareSerial auf Pin 7 & 8.
+ * ============================================================================================
  */
 
 #include <ArduinoBLE.h>
 #include <Arduino_LED_Matrix.h>
-#include <Adafruit_NeoPixel.h> // Bibliothek für den Information Dome
+#include <Adafruit_NeoPixel.h>
+#include <SoftwareSerial.h>
 
-// =========================================================================
-// 1. HARDWARE-SETUP & PINS
-// =========================================================================
+// ============================================================================================
+// KONSTANTEN & HARDWARE-PINS
+// ============================================================================================
+#define VERSION "v18.5"
+#define AUTH_KEY "AUTH|GITTER_77_PRO_SEC"
+#define TARGET_BLE_NAME "Gittertier Pro"
+
+// Joystick (Schalten gegen GND)
 const uint8_t PIN_JOY_UP    = 2;
 const uint8_t PIN_JOY_DOWN  = 3;
 const uint8_t PIN_JOY_LEFT  = 4;
 const uint8_t PIN_JOY_RIGHT = 5;
 
-// Information Dome Settings
-#define DOME_PIN    6
-#define DOME_LEDS   16       // Anzahl der LEDs im Ring/Dome
-Adafruit_NeoPixel dome(DOME_LEDS, DOME_PIN, NEO_GRB + NEO_KHZ800);
+// Information Dome 
+const uint8_t PIN_DOME      = 6;
+#define DOME_LEDS 16
+Adafruit_NeoPixel dome(DOME_LEDS, PIN_DOME, NEO_GRB + NEO_KHZ800);
 
+// Motor Nano Isolation (SoftwareSerial)
+const uint8_t PIN_NANO_RX   = 7;
+const uint8_t PIN_NANO_TX   = 8;
+SoftwareSerial motorNano(PIN_NANO_RX, PIN_NANO_TX);
+
+// LED Matrix (HUD)
 ArduinoLEDMatrix matrix;
 
-// =========================================================================
-// 2. BLE & PROTOKOLL KONFIGURATION
-// =========================================================================
-const char* DISPLAY_NAME = "Gittertier Pro";
-const char* SERVICE_UUID = "19b10000-e8f2-537e-4f6c-d104768a1214";
-const char* CHAR_UUID    = "19b10001-e8f2-537e-4f6c-d104768a1214";
-const char* AUTH_KEY     = "GITTER_77_PRO_SEC";
-
-BLEService        gService(SERVICE_UUID);
-BLEStringCharacteristic displayChar(CHAR_UUID, BLERead | BLEWrite | BLENotify, 30);
-
-bool isAuthorized = false;
-
-// =========================================================================
-// 3. MATRIX SYMBOLS (Feedback)
-// =========================================================================
-const uint32_t SYMBOL_HEART[] = {
-    0x3184a444,
-    0x42081100,
-    0xa0040000
-};
-const uint32_t SYMBOL_STOP[] = {
-    0xf909f99f,
-    0x90f90f90,
-    0xf99f909f
-};
-const uint32_t SYMBOL_ERROR[] = {
-    0xb4000005,
-    0x500aa005,
-    0x0000002d
+// ============================================================================================
+// SYSTEM-ZUSTÄNDE (State Machine)
+// ============================================================================================
+enum SystemState {
+    BOOTING,
+    BLE_SCANNING,
+    BLE_CONNECTING,
+    BLE_AUTHENTICATING,
+    SYSTEM_RUNNING,
+    SYSTEM_ALARM
 };
 
-// =========================================================================
-// 4. DOME STATE MACHINE (Non-Blocking)
-// =========================================================================
-enum DomeMode { DOME_OFF, DOME_RAINBOW, DOME_BLINK };
-DomeMode currentDomeMode = DOME_OFF;
+SystemState currentState = BOOTING;
+bool bleAuthenticated = false;
+bool emergencyStopActive = false;
+int currentSpeedPWM = 150; // Standard Motor PWM
 
-unsigned long lastDomeUpdate = 0;
-uint16_t domePixelCycle = 0;
-uint16_t domeBlinkState = 0; // 0=Rot, 1=Grün, 2=Blau, 3=Weiß
+unsigned long lastHeartbeat = 0;
+const unsigned long HEARTBEAT_INTERVAL = 2000;
 
-// Helper: Wheel Funktion für Regenbogenfarben
-uint32_t Wheel(byte WheelPos) {
-    WheelPos = 255 - WheelPos;
-    if(WheelPos < 85) {
-        return dome.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-    }
-    if(WheelPos < 170) {
-        WheelPos -= 85;
-        return dome.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-    }
-    WheelPos -= 170;
-    return dome.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+// BLE Objekte
+BLEDevice peripheral;
+BLECharacteristic dataChar;
+
+// Serieller Puffer für R3 Daten
+String r3InputBuffer = "";
+
+// ============================================================================================
+// MATRIX GRAFIKEN (HUD)
+// ============================================================================================
+const uint32_t HUD_SEARCHING[] = {
+    0x00018000, 0x00660000, 0x01818000 
+};
+const uint32_t HUD_HEART[] = {
+    0x3184a444, 0x42081100, 0xa0040000
+};
+const uint32_t HUD_STOP[] = {
+    0xf909f99f, 0x90f90f90, 0xf99f909f
+};
+const uint32_t HUD_ARROW_UP[] = {
+    0x0400e001, 0xf03f8044, 0x04404400
+};
+const uint32_t HUD_ARROW_DOWN[] = {
+    0x44044004, 0x403f801f, 0x00e00040
+};
+
+// ============================================================================================
+// DOME ANIMATION LOGIK (Non-Blocking)
+// ============================================================================================
+enum DomeEffect { OFF, RAINBOW, BLINK_DISCO, SOLID_RED };
+DomeEffect currentDomeEffect = OFF;
+
+uint32_t wheel(byte pos) {
+    pos = 255 - pos;
+    if (pos < 85) return dome.Color(255 - pos * 3, 0, pos * 3);
+    if (pos < 170) { pos -= 85; return dome.Color(0, pos * 3, 255 - pos * 3); }
+    pos -= 170; return dome.Color(pos * 3, 255 - pos * 3, 0);
 }
 
 void updateDome() {
-    unsigned long now = millis();
+    static unsigned long lastUpdate = 0;
+    static uint16_t j = 0;
+    static bool blinkState = false;
 
-    if (currentDomeMode == DOME_OFF) {
-        // Sicherstellen, dass alles aus ist (einmalig)
-        static bool isCleared = false;
-        if (!isCleared) {
+    if (emergencyStopActive) {
+        currentDomeEffect = SOLID_RED;
+    }
+
+    switch (currentDomeEffect) {
+        case RAINBOW:
+            if (millis() - lastUpdate > 20) {
+                for (uint16_t i = 0; i < dome.numPixels(); i++) {
+                    dome.setPixelColor(i, wheel(((i * 256 / dome.numPixels()) + j) & 255));
+                }
+                dome.show();
+                j++;
+                lastUpdate = millis();
+            }
+            break;
+
+        case BLINK_DISCO:
+            if (millis() - lastUpdate > 150) {
+                blinkState = !blinkState;
+                uint32_t color = blinkState ? dome.Color(0, 255, 255) : dome.Color(255, 0, 255);
+                dome.fill(color);
+                dome.show();
+                lastUpdate = millis();
+            }
+            break;
+
+        case SOLID_RED:
+            dome.fill(dome.Color(255, 0, 0));
+            dome.show();
+            break;
+
+        case OFF:
             dome.clear();
             dome.show();
-            isCleared = true;
-        }
-        return;
-    }
-
-    // RAINBOW MODUS (Schalter Links)
-    if (currentDomeMode == DOME_RAINBOW) {
-        if (now - lastDomeUpdate > 20) { // Speed: 20ms
-            for(int i=0; i< dome.numPixels(); i++) {
-                dome.setPixelColor(i, Wheel(((i * 256 / dome.numPixels()) + domePixelCycle) & 255));
-            }
-            dome.show();
-            domePixelCycle++;
-            lastDomeUpdate = now;
-        }
-    }
-    // BLINK MODUS (Schalter Rechts)
-    else if (currentDomeMode == DOME_BLINK) {
-        if (now - lastDomeUpdate > 1000) { // Speed: 1000ms (1 Sekunde)
-            uint32_t c = 0;
-            switch(domeBlinkState) {
-                case 0: c = dome.Color(255, 0, 0); break;   // Rot
-                case 1: c = dome.Color(0, 255, 0); break;   // Grün
-                case 2: c = dome.Color(0, 0, 255); break;   // Blau
-                case 3: c = dome.Color(255, 255, 255); break; // Weiß
-            }
-            dome.fill(c);
-            dome.show();
-            
-            domeBlinkState++;
-            if (domeBlinkState > 3) domeBlinkState = 0;
-            lastDomeUpdate = now;
-        }
+            break;
     }
 }
 
-// =========================================================================
-// 5. HELPER FUNCTIONS
-// =========================================================================
-
-void updateMatrix(const uint32_t icon[]) {
-    matrix.loadFrame(icon);
+// ============================================================================================
+// BLE FUNKTIONEN (Senden & Management)
+// ============================================================================================
+void sendBLECommand(String msg) {
+    // Verhindert das Senden ins Leere und Pufferüberläufe
+    if (bleAuthenticated && dataChar && dataChar.canWrite()) {
+        dataChar.writeValue(msg.c_str());
+        delay(15); // Kritisches Delay, damit das ESP32 Display die Datenflut verarbeiten kann
+    }
 }
 
 void manageBLE() {
-    BLEDevice central = BLE.central();
-    if (central) {
-        if (central.connected()) {
-           // Connection active
-        }
+    switch (currentState) {
+        case BLE_SCANNING:
+            BLE.scanForName(TARGET_BLE_NAME);
+            peripheral = BLE.available();
+            if (peripheral) {
+                Serial.println("Display Peripheral gefunden! Stoppe Scan...");
+                BLE.stopScan();
+                currentState = BLE_CONNECTING;
+            }
+            break;
+
+        case BLE_CONNECTING:
+            if (peripheral.connect()) {
+                Serial.println("Physisch verbunden. Entdecke Charakteristiken...");
+                if (peripheral.discoverAttributes()) {
+                    dataChar = peripheral.characteristic("19b10001-e8f2-537e-4f6c-d104768a1214");
+                    if (dataChar) {
+                        currentState = BLE_AUTHENTICATING;
+                    } else {
+                        Serial.println("Fehler: Charakteristik fehlt. Reset.");
+                        peripheral.disconnect();
+                        currentState = BLE_SCANNING;
+                    }
+                } else {
+                    Serial.println("Fehler: Attribute nicht gefunden. Reset.");
+                    peripheral.disconnect();
+                    currentState = BLE_SCANNING;
+                }
+            } else {
+                currentState = BLE_SCANNING;
+            }
+            break;
+
+        case BLE_AUTHENTICATING:
+            Serial.println("Führe Sicherheits-Handshake aus...");
+            dataChar.writeValue(AUTH_KEY);
+            delay(150); // Warten bis Display das AUTH_OK verarbeitet hat
+            
+            bleAuthenticated = true;
+            currentState = SYSTEM_RUNNING;
+            matrix.loadFrame(HUD_HEART);
+            Serial.println("Authentifizierung erfolgreich. SYSTEM BEREIT.");
+            break;
+
+        case SYSTEM_RUNNING:
+        case SYSTEM_ALARM:
+            // Permanente Überwachung der Verbindungsstabilität
+            if (!peripheral.connected()) {
+                Serial.println("CRITICAL: BLE Verbindung abgerissen!");
+                bleAuthenticated = false;
+                matrix.loadFrame(HUD_SEARCHING);
+                currentState = BLE_SCANNING;
+            }
+            break;
     }
 }
 
-void showBootProgress(int percent) {
-    // Simpel: Zeige Prozent auf Serial, Matrix macht Animation
-    Serial.print("Boot: "); Serial.print(percent); Serial.println("%");
-}
-
-// =========================================================================
-// 6. SERIAL PARSER (R3 -> R4)
-// =========================================================================
-
-String inputBuffer = "";
-
-void parseR3Data() {
+// ============================================================================================
+// SMART PARSER (Verarbeitet zusammengeklebte R3-Pakete)
+// ============================================================================================
+void parseR3Input() {
+    // 1. Alles in den Puffer lesen, was aktuell an der Hardware UART anliegt
     while (Serial1.available()) {
         char c = (char)Serial1.read();
+        r3InputBuffer += c;
+    }
+
+    // 2. Suche nach der innersten Klammerstruktur [ ... ]
+    int startIdx = r3InputBuffer.indexOf('[');
+    int endIdx = r3InputBuffer.indexOf(']');
+
+    // Solange wir gültige Start- und Endklammern haben, iterieren wir
+    while (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+        // Extrahiere das reine Paket OHNE die Klammern (z.B. "SW:SPEED:1")
+        String packet = r3InputBuffer.substring(startIdx + 1, endIdx);
         
-        if (c == '[') {
-            inputBuffer = ""; // Start packet
-        } else if (c == ']') {
-            // Paket Ende -> Verarbeiten
-            // Format: TYPE:ID:VAL  (z.B. SW:1:1)
-            
-            int firstSep = inputBuffer.indexOf(':');
-            int secondSep = inputBuffer.indexOf(':', firstSep + 1);
-            
-            if (firstSep > 0 && secondSep > 0) {
-                String type = inputBuffer.substring(0, firstSep);
-                String id   = inputBuffer.substring(firstSep + 1, secondSep);
-                String val  = inputBuffer.substring(secondSep + 1);
+        // Verarbeite das isolierte Paket
+        processR3Packet(packet);
+        
+        // Schneide das verarbeitete Paket aus dem Puffer heraus
+        r3InputBuffer = r3InputBuffer.substring(endIdx + 1);
+        
+        // Suche nach dem nächsten Paket im verbleibenden String
+        startIdx = r3InputBuffer.indexOf('[');
+        endIdx = r3InputBuffer.indexOf(']');
+    }
+
+    // 3. Puffer-Sicherheitsnetz: 
+    // Falls Mülldaten ohne schließende Klammer den Speicher füllen, leeren wir ihn.
+    if (r3InputBuffer.length() > 250) {
+        Serial.println("WARNUNG: RX Puffer übergelaufen, leere Puffer.");
+        r3InputBuffer = "";
+    }
+}
+
+// ============================================================================================
+// PROTOCOL TRANSLATOR (Logik zu Display UI Mapping)
+// ============================================================================================
+void processR3Packet(String packet) {
+    Serial.print("RX (Parsed): ");
+    Serial.println(packet);
+
+    // 1. SYSTEM-COMMANDS (Power & Alarm)
+    if (packet == "SYS:ALARM:ON") {
+        emergencyStopActive = true;
+        currentState = SYSTEM_ALARM;
+        matrix.loadFrame(HUD_STOP);
+        motorNano.print("BRAKE,1\r");
+        sendBLECommand("[SYS:ALARM:ON]");
+        return;
+    }
+    if (packet == "SYS:ALARM:OFF") {
+        emergencyStopActive = false;
+        currentState = SYSTEM_RUNNING;
+        matrix.loadFrame(HUD_HEART);
+        motorNano.print("BRAKE,0\r");
+        sendBLECommand("[SYS:ALARM:OFF]");
+        return;
+    }
+    if (packet == "SYS:POWER:ON") {
+        sendBLECommand("[SYS:PWR:START]");
+        return;
+    }
+    if (packet == "SYS:POWER:OFF") {
+        sendBLECommand("[SYS:PWR:REQ_OFF]");
+        return;
+    }
+
+    // 2. SCHALTER-TRANSLATION (R3 Logik -> Display Pins)
+    if (packet.startsWith("SW:")) {
+        int firstSep = packet.indexOf(':', 3);
+        if (firstSep > 0) {
+            String id = packet.substring(3, firstSep);
+            String valStr = packet.substring(firstSep + 1);
+            int val = valStr.toInt();
+
+            // DOME (Pin 2 & 3 auf dem Display)
+            if (id == "DOME") {
+                if (val == 1) currentDomeEffect = RAINBOW;
+                else if (val == 2) currentDomeEffect = BLINK_DISCO;
+                else currentDomeEffect = OFF;
                 
-                // --- LOGIK FÜR INFORMATION DOME (Schalter oben Rechts) ---
-                // Laut Kabelplan: 
-                // Schalter Oben Rechts (Links)  = Pin 2 am R3 = ID "1" im Protokoll
-                // Schalter Oben Rechts (Rechts) = Pin 3 am R3 = ID "2" im Protokoll
-                
-                if (type == "SW") {
-                    if (id == "1") { // Links geschaltet
-                        if (val == "1") {
-                            currentDomeMode = DOME_RAINBOW;
-                            Serial.println("Dome: Rainbow Active");
-                        } else {
-                            // Wenn ausgeschaltet, und wir im Rainbow Modus waren -> OFF
-                            if (currentDomeMode == DOME_RAINBOW) currentDomeMode = DOME_OFF;
-                        }
-                    }
-                    else if (id == "2") { // Rechts geschaltet
-                        if (val == "1") {
-                            currentDomeMode = DOME_BLINK;
-                            domeBlinkState = 0; // Reset Blink sequence
-                            Serial.println("Dome: Blink Active");
-                        } else {
-                            // Wenn ausgeschaltet, und wir im Blink Modus waren -> OFF
-                            if (currentDomeMode == DOME_BLINK) currentDomeMode = DOME_OFF;
-                        }
-                    }
-                }
-                
-                // Weiterleitung an Display via BLE
-                // Wir senden ALLES weiter, damit das Display auch Bescheid weiß
-                if (displayChar.written() || true) { // Check connection logic
-                     String bleMsg = "[" + inputBuffer + "]";
-                     displayChar.writeValue(bleMsg.c_str());
-                }
-                
-                // NOT-AUS Logik für Matrix
-                if (type == "SYS" && id == "ALARM" && val == "ON") {
-                    updateMatrix(SYMBOL_STOP);
-                    // Bei Not-Aus auch Dome rot machen?
-                    dome.fill(dome.Color(255, 0, 0));
-                    dome.show();
-                    // Blockiert hier nicht den Loop, aber visualisiert
-                }
+                // Mappe Zustand 1 auf Pin 2, Zustand 2 auf Pin 3
+                sendBLECommand(val == 1 ? "[DATA:2:1]" : "[DATA:2:0]");
+                sendBLECommand(val == 2 ? "[DATA:3:1]" : "[DATA:3:0]");
             }
-            inputBuffer = "";
-        } else {
-            inputBuffer += c;
+            // BLINKER (Pin 4 & 5 auf dem Display)
+            else if (id == "BLINK") {
+                sendBLECommand(val == 1 ? "[DATA:4:1]" : "[DATA:4:0]");
+                sendBLECommand(val == 2 ? "[DATA:5:1]" : "[DATA:5:0]");
+            }
+            // SPEED (Pin 6 & 7 auf dem Display)
+            else if (id == "SPEED") {
+                if (val == 1) currentSpeedPWM = 255; // Turbo
+                else if (val == 2) currentSpeedPWM = 100; // Langsam
+                else currentSpeedPWM = 150; // Normal (0/Mitte)
+                
+                sendBLECommand(val == 1 ? "[DATA:6:1]" : "[DATA:6:0]");
+                sendBLECommand(val == 2 ? "[DATA:7:1]" : "[DATA:7:0]");
+            }
+            // NAVI (Pin 8 & 9 auf dem Display)
+            else if (id == "NAVI") {
+                sendBLECommand(val == 1 ? "[DATA:8:1]" : "[DATA:8:0]");
+                sendBLECommand(val == 2 ? "[DATA:9:1]" : "[DATA:9:0]");
+            }
+            // AUTONOM (Hat keine direkte Pin-Repräsentation im aktuellen Display OS 22.0, 
+            // wird aber für zukünftige Erweiterungen als RAW-Daten durchgereicht)
+            else if (id == "AUTO") {
+                sendBLECommand("[SW:AUTO:" + valStr + "]");
+            }
         }
     }
 }
 
-// =========================================================================
-// 7. SETUP & MAIN LOOP
-// =========================================================================
+// ============================================================================================
+// JOYSTICK & MOTOR STEUERUNG (SoftwareSerial zu Nano)
+// ============================================================================================
+void handleJoystick() {
+    if (emergencyStopActive || currentState != SYSTEM_RUNNING) return;
 
+    bool up    = !digitalRead(PIN_JOY_UP);
+    bool down  = !digitalRead(PIN_JOY_DOWN);
+    bool left  = !digitalRead(PIN_JOY_LEFT);
+    bool right = !digitalRead(PIN_JOY_RIGHT);
+
+    static int lastJoyState = -1; // 0: Stop, 1: Up, 2: Down, 3: Left, 4: Right
+    static int lastSpeedSent = -1;
+    int currentJoyState = 0;
+
+    if (up) currentJoyState = 1;
+    else if (down) currentJoyState = 2;
+    else if (left) currentJoyState = 3;
+    else if (right) currentJoyState = 4;
+
+    // Sende Befehle nur bei Richtungs- ODER Geschwindigkeitsänderung
+    if (currentJoyState != lastJoyState || currentSpeedPWM != lastSpeedSent) {
+        
+        // Die \r Endung ist absolut kritisch für den Motor Nano Parser!
+        switch (currentJoyState) {
+            case 0: 
+                motorNano.print("PWM,0\r"); 
+                matrix.loadFrame(HUD_HEART);
+                sendBLECommand("[JOY:MOVE:CENTER]");
+                break;
+            case 1: 
+                motorNano.print("DIR,1\r"); 
+                motorNano.print("PWM," + String(currentSpeedPWM) + "\r");
+                matrix.loadFrame(HUD_ARROW_UP);
+                sendBLECommand("[JOY:MOVE:UP]");
+                break;
+            case 2: 
+                motorNano.print("DIR,0\r"); 
+                motorNano.print("PWM," + String(currentSpeedPWM) + "\r");
+                matrix.loadFrame(HUD_ARROW_DOWN);
+                sendBLECommand("[JOY:MOVE:DOWN]");
+                break;
+            case 3: 
+                motorNano.print("LDIR,0\r");
+                motorNano.print("RDIR,1\r"); 
+                motorNano.print("PWM," + String(currentSpeedPWM) + "\r");
+                sendBLECommand("[JOY:MOVE:LEFT]");
+                break;
+            case 4: 
+                motorNano.print("LDIR,1\r");
+                motorNano.print("RDIR,0\r"); 
+                motorNano.print("PWM," + String(currentSpeedPWM) + "\r");
+                sendBLECommand("[JOY:MOVE:RIGHT]");
+                break;
+        }
+        lastJoyState = currentJoyState;
+        lastSpeedSent = currentSpeedPWM;
+    }
+}
+
+// ============================================================================================
+// SETUP & MAIN LOOP
+// ============================================================================================
 void setup() {
-    Serial.begin(115200);   // Debug zum PC
-    Serial1.begin(115200);  // Datenleitung vom R3 (RX/TX Pins)
-    
-    // Matrix Init
-    matrix.begin();
-    updateMatrix(SYMBOL_HEART); // Start-Symbol
-    
-    // Dome Init
-    dome.begin();
-    dome.show();
-    dome.setBrightness(100);
-    
-    // Joystick Pins
+    // 1. Kommunikations-Hardware
+    Serial.begin(115200);    // Debug Ausgabe (PC)
+    Serial1.begin(115200);   // R3 Kommunikation (RX=Pin0, TX=Pin1)
+    motorNano.begin(115200); // Motor Nano Isolation via SoftwareSerial (Pin 7, 8)
+
+    // 2. Hardware-Pins konfigurieren
     pinMode(PIN_JOY_UP, INPUT_PULLUP);
     pinMode(PIN_JOY_DOWN, INPUT_PULLUP);
     pinMode(PIN_JOY_LEFT, INPUT_PULLUP);
     pinMode(PIN_JOY_RIGHT, INPUT_PULLUP);
 
-    // BLE Init
+    // 3. Optische Schnittstellen aktivieren
+    matrix.begin();
+    matrix.loadFrame(HUD_SEARCHING);
+    
+    dome.begin();
+    dome.setBrightness(150);
+    dome.show();
+
+    // 4. BLE Controller starten
     if (!BLE.begin()) {
-        Serial.println(F("BLE-Modul konnte nicht gestartet werden!"));
-        updateMatrix(SYMBOL_ERROR);
-        while (1);
+        Serial.println("FATAL: BLE-Modul Start fehlgeschlagen!");
+        while (1) {
+            dome.fill(dome.Color(255, 100, 0));
+            dome.show();
+            delay(500);
+            dome.clear();
+            dome.show();
+            delay(500);
+        }
     }
 
-    BLE.setLocalName(DISPLAY_NAME);
-    BLE.setAdvertisedService(gService);
-    gService.addCharacteristic(displayChar);
-    BLE.addService(gService);
-    BLE.advertise();
+    Serial.print("\n=== GITTERTIER PRO HUB ");
+    Serial.print(VERSION);
+    Serial.println(" ===");
+    Serial.println("Rollen: BLE Central | Protocol Bridge | Motor Controller");
+    Serial.println("Initialisiere BLE Scan...");
     
-    Serial.println(F("R4 ONLINE. Suche Display..."));
+    currentState = BLE_SCANNING;
 }
 
 void loop() {
-    // 1. BLE Management
-    BLE.poll(); // Wichtig für Event-Handling
+    // BLE State Machine triggern (Verbindungsaufbau & Keep-Alive)
+    manageBLE();
 
-    // 2. Kommunikation vom R3 abwickeln
-    parseR3Data();
-    
-    // 3. Information Dome Animation (Non-Blocking)
+    // R3 Daten asynchron abgreifen, trennen und sofort visualisieren/ausführen
+    parseR3Input();
+
+    // Joystick auswerten und via SoftwareSerial zum Motor schicken
+    handleJoystick();
+
+    // Neopixel Animation flüssig aktualisieren
     updateDome();
-    
-    // 4. Joystick Logik (optional für Senden an Display)
-    // Hier könnte man Joystick Events an das Display senden
+
+    // Heartbeat an das Display senden, um Watchdog-Auslösung zu verhindern
+    if (millis() - lastHeartbeat > HEARTBEAT_INTERVAL) {
+        if (bleAuthenticated) {
+            sendBLECommand("[SYS:LIFE:STABLE]");
+        }
+        lastHeartbeat = millis();
+    }
 }
